@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="tr">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,88 +8,124 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Dancing+Script:wght@600;700&display=swap"
+        rel="stylesheet">
     <!-- Swiper CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-    
+
     <style>
-        body { font-family: 'Inter', sans-serif; overflow: hidden; }
-        
-        /* Özel Marquee Animasyonu */
+        body {
+            font-family: 'Montserrat', sans-serif;
+            overflow: hidden;
+            background-color: #e2e8f0;
+        }
+
+        .font-script {
+            font-family: 'Dancing Script', cursive;
+        }
+
+        /* Marquee */
         .marquee-container {
             overflow: hidden;
             white-space: nowrap;
         }
+
         .marquee-content {
             display: inline-block;
-            animation: marquee 20s linear infinite;
-        }
-        @keyframes marquee {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
+            animation: marquee 30s linear infinite;
         }
 
-        /* 3D Rotating Card */
-        .rotating-card-container {
-            perspective: 1000px;
+        @keyframes marquee {
+            0% {
+                transform: translateX(100%);
+            }
+
+            100% {
+                transform: translateX(-100%);
+            }
         }
-        .rotating-card {
-            transition: transform 0.6s;
-            transform-style: preserve-3d;
+
+        /* Dot Pattern Background for Hadith */
+        .bg-dots {
+            background-color: #f0fdf9;
+            background-image: radial-gradient(#ccfbf1 2px, transparent 2px);
+            background-size: 20px 20px;
         }
-        /* Basit bir fade efekti ile içerik değiştirme tercih edilebilir 3D yerine, ancak kullanıcı "Dönen Bilgi Kartı" dedi. 
-           Şimdilik CSS animasyonu ile içerik değişimi kurgulayacağız. */
     </style>
 </head>
-<body class="bg-gray-100 h-screen w-screen flex flex-col p-2 gap-2">
+
+<body class="h-screen w-screen flex flex-col p-3 gap-3 box-border bg-[#eef2f6]">
 
     <!-- Ana İçerik Grid -->
-    <div class="grid grid-cols-12 gap-2 flex-grow h-[calc(100%-3rem)]">
-        
+    <div class="grid grid-cols-12 gap-3 flex-grow h-[calc(100%-4rem)]">
+
         <!-- SOL SÜTUN (5 Birim) -->
-        <div class="col-span-5 flex flex-col gap-2 h-full">
-            
-            <!-- HEADER (Logo, İsim, Slogan) - Flex -->
-            <div class="bg-white rounded-xl shadow-lg p-4 flex items-center gap-4 flex-[1]">
-                <div class="w-16 h-16 bg-blue-900 rounded-full flex items-center justify-center text-white font-bold text-xl">
-                    <!-- Logo Yeri -->
-                    LOGO
-                </div>
-                <div>
-                    <h1 class="text-3xl font-extrabold text-blue-900 tracking-tight">ÖMER AVNİ YEL</h1>
-                    <p class="text-gray-500 font-medium italic">"İlgiyle bilginin buluştuğu yer..."</p>
-                </div>
-            </div>
+        <div class="col-span-5 flex flex-col gap-3 h-full">
 
-            <!-- HADİS KARTI (Orta) - Flex-[3] -->
-            <div class="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center justify-center text-center relative overflow-hidden flex-[3]">
-                <div class="absolute top-0 left-0 w-full h-2 bg-green-500"></div>
-                <h2 class="text-green-700 font-bold text-xl mb-4 bg-green-100 px-4 py-1 rounded-full">Haftanın Hadis-i Şerifi</h2>
-                
-                <div id="hadith-content" class="text-2xl font-serif text-gray-800 leading-relaxed font-semibold">
-                    Yükleniyor...
-                </div>
-                <!-- Görsel için img etiketi gizli başlayacak -->
-                <img id="hadith-image" src="" class="hidden max-h-full object-contain rounded-lg" />
-            </div>
-
-            <!-- YURT KARTI (Alt) - Flex-[2] -->
-            <div class="bg-gradient-to-r from-orange-500 to-red-600 rounded-xl shadow-lg p-4 flex flex-col text-white flex-[2] relative overflow-hidden">
-                <div class="absolute top-2 right-4 opacity-20">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                    </svg>
-                </div>
-                <h2 class="text-xl font-bold mb-2 border-b border-white/30 pb-1 w-max">🏆 Günün Kazanan Yatakhanesi</h2>
-                <div class="flex items-center justify-around h-full">
-                    <div class="text-center">
-                        <div class="text-xs uppercase tracking-wider opacity-80 mb-1">Kazanan 1</div>
-                        <div id="winner1" class="text-4xl font-extrabold drop-shadow-md">---</div>
+            <!-- HEADER -->
+            <div class="bg-[#1e1f35] rounded-xl shadow-lg p-4 flex items-center justify-between text-white flex-[1.5]">
+                <div class="flex items-center gap-4">
+                    <div
+                        class="w-16 h-16 border-2 border-white/20 rounded-full flex items-center justify-center relative overflow-hidden bg-white/5">
+                        <svg class="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5L12 22l10-8.5-5-2.5-5 2.5z" />
+                        </svg>
                     </div>
-                    <div class="h-12 w-0.5 bg-white/40"></div>
-                    <div class="text-center">
-                        <div class="text-xs uppercase tracking-wider opacity-80 mb-1">Kazanan 2</div>
-                        <div id="winner2" class="text-4xl font-extrabold drop-shadow-md">---</div>
+                    <div>
+                        <h1 class="text-2xl font-extrabold tracking-tight leading-tight">ÖMER AVNİ YEL</h1>
+                        <p class="text-[0.65rem] tracking-[0.2em] font-medium text-gray-400 uppercase">Öğrenci Yurdu -
+                            Dijital Pano</p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p class="font-script text-2xl text-gray-300 leading-none">ilgiyle bilginin</p>
+                    <p class="font-script text-2xl text-white leading-none">buluştuğu yer</p>
+                </div>
+            </div>
+
+            <!-- HADİS KARTI -->
+            <div
+                class="bg-dots rounded-xl shadow-md p-6 flex flex-col items-center justify-center text-center relative flex-[4] border border-green-100">
+                <span class="bg-emerald-100 text-emerald-700 px-4 py-1 rounded-full text-xs font-bold mb-4 shadow-sm"
+                    id="hijri-date">Hicri Tarih</span>
+
+                <h2 class="text-emerald-600 font-bold text-sm tracking-wider mb-6 flex items-center gap-2">
+                    <span>★</span> HAFTANIN HADİS-İ ŞERİFİ <span>★</span>
+                </h2>
+
+                <div id="hadith-content"
+                    class="text-3xl font-serif text-gray-800 font-bold leading-relaxed relative px-8">
+                    <span class="absolute -top-4 -left-2 text-6xl text-emerald-200 font-serif opacity-50">“</span>
+                    Yükleniyor...
+                    <span class="absolute -bottom-8 -right-2 text-6xl text-emerald-200 font-serif opacity-50">”</span>
+                </div>
+                <img id="hadith-image" src="" class="hidden max-h-full object-contain rounded-lg shadow-lg" />
+
+                <div class="mt-8 text-emerald-500 text-xs font-bold tracking-widest uppercase">KAYNAK...</div>
+            </div>
+
+            <!-- YURT KARTI -->
+            <div
+                class="bg-gradient-to-r from-red-400 to-orange-300 rounded-xl shadow-md p-5 flex flex-col justify-center text-white flex-[2.5] relative">
+                <h2
+                    class="text-center font-bold text-sm tracking-wider mb-4 flex items-center justify-center gap-2 text-white/90">
+                    <span class="text-yellow-200 text-lg">♛</span> GÜNÜN KAZANAN YATAKHANESİ <span
+                        class="text-yellow-200 text-lg">♛</span>
+                </h2>
+                <div class="flex items-center justify-around w-full px-4">
+                    <!-- Winner 1 -->
+                    <div class="flex flex-col items-center w-1/2 border-r border-white/20">
+                        <div class="text-4xl font-black drop-shadow-sm mb-1" id="winner1">---</div>
+                        <span
+                            class="bg-yellow-400 text-yellow-900 text-[0.65rem] font-bold px-2 py-0.5 rounded shadow-sm">0.KEZ</span>
+                    </div>
+                    <!-- Winner 2 -->
+                    <div class="flex flex-col items-center w-1/2">
+                        <div class="text-4xl font-black drop-shadow-sm mb-1" id="winner2">---</div>
+                        <span
+                            class="bg-yellow-400 text-yellow-900 text-[0.65rem] font-bold px-2 py-0.5 rounded shadow-sm">0.KEZ</span>
                     </div>
                 </div>
             </div>
@@ -96,46 +133,96 @@
         </div>
 
         <!-- SAĞ SÜTUN (7 Birim) -->
-        <div class="col-span-7 flex flex-col gap-2 h-full">
-            
-            <!-- VİDEO ALANI (Üst) - Flex-[2] -->
-            <div class="bg-black rounded-xl shadow-lg border-4 border-gray-900 overflow-hidden flex-[2] relative group">
-                <!-- YouTube Player -->
+        <div class="col-span-7 flex flex-col gap-3 h-full">
+
+            <!-- VİDEO ALANI -->
+            <div
+                class="bg-black rounded-xl shadow-lg overflow-hidden flex-[2.5] relative group border-4 border-[#1e1f35]">
                 <div id="player" class="absolute inset-0 w-full h-full"></div>
-                <!-- Swiper Slider (Video yoksa veya bittiğinde görünür) -->
                 <div class="swiper mySwiper absolute inset-0 w-full h-full hidden">
-                    <div class="swiper-wrapper" id="slide-wrapper">
-                        <!-- Slaytlar JS ile eklenecek -->
-                    </div>
+                    <div class="swiper-wrapper" id="slide-wrapper"></div>
                 </div>
             </div>
 
-            <!-- ALT BİLGİ ŞERİDİ (Alt) - Flex-[1] -->
-            <div class="flex gap-2 flex-[1]">
-                
-                <!-- Künye / Saat / Hava (Sol 1/3) -->
-                <div class="bg-blue-600 rounded-xl shadow-lg text-white p-4 flex flex-col items-center justify-center w-1/3 relative overflow-hidden">
-                    <div class="text-6xl font-bold tracking-widest" id="clock">12:00</div>
-                    <div class="text-lg opacity-90 mt-2 flex items-center gap-2">
-                        <span id="date">12 Aralık 2025</span>
+            <!-- ALT BİLGİ ŞERİDİ (Grid yapısı ekran görüntüsündeki gibi 2 parça alt alta solda, büyük parça sağda) -->
+            <div class="flex gap-3 flex-[1.2]">
+
+                <!-- Sol Kısım (Saat & Hava) -->
+                <div class="flex flex-col gap-3 w-1/3">
+                    <!-- Saat -->
+                    <div
+                        class="bg-[#1e293b] rounded-xl shadow-lg text-white flex flex-col items-center justify-center flex-1 p-2">
+                        <div class="text-5xl font-extrabold tracking-tighter" id="clock">12:00</div>
+                        <div class="text-xs font-semibold text-blue-200 mt-1 uppercase tracking-wide" id="date">12
+                            ARALIK CUMA</div>
                     </div>
-                    <!-- Hava Durumu (Mock) -->
-                    <div class="mt-2 flex items-center gap-2 bg-blue-700 px-3 py-1 rounded-full text-sm">
-                        <span>☀️</span>
-                        <span>İstanbul, 15°C</span>
+                    <!-- Hava -->
+                    <div
+                        class="bg-blue-500 rounded-xl shadow-lg text-white flex items-center justify-between flex-1 px-6 relative overflow-hidden">
+                        <div class="z-10">
+                            <div class="text-[0.65rem] font-bold opacity-80 uppercase tracking-widest mb-1">İSTANBUL
+                            </div>
+                            <div class="text-3xl font-bold flex items-start leading-none">
+                                <span id="weather-temp">--</span><span class="text-lg mt-0.5">°</span>
+                            </div>
+                            <div class="text-[0.65rem] opacity-70 mt-1">Açık</div>
+                        </div>
+                        <svg class="w-12 h-12 text-white/80 z-10" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M19.36 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.64-4.96z" />
+                        </svg>
+                        <!-- Cloud decoration -->
+                        <div
+                            class="absolute -right-4 -bottom-4 text-white/10 w-24 h-24 rounded-full bg-white/20 blur-xl">
+                        </div>
                     </div>
                 </div>
 
-                <!-- Dönen Bilgi Kartı (Sağ 2/3) -->
-                <div class="bg-gradient-to-br from-purple-600 to-indigo-700 rounded-xl shadow-lg w-2/3 p-6 flex flex-col justify-center relative overflow-hidden text-white">
-                    <div id="info-carousel" class="transition-opacity duration-500 ease-in-out">
-                        <h3 class="text-lg font-bold text-purple-200 mb-2 uppercase tracking-wider border-b border-purple-400/30 pb-1 inline-block" id="info-title">DUYURU</h3>
-                        <p class="text-2xl font-medium leading-snug" id="info-content">
-                            Sistem hazırlanıyor...
-                        </p>
+                <!-- Sağ Kısım (Dönen Kart: Duyuru / Sınav) -->
+                <div
+                    class="w-2/3 bg-gradient-to-br from-[#4c1d95] to-[#7c3aed] rounded-xl shadow-lg p-5 flex flex-col relative overflow-hidden text-white border border-purple-800">
+
+                    <!-- Dönen Alan -->
+                    <div id="info-carousel"
+                        class="transition-all duration-700 ease-in-out h-full flex flex-col justify-center">
+
+                        <!-- Header -->
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex items-center gap-2">
+                                <span class="text-yellow-400 text-xl">🏆</span>
+                                <h3 class="font-bold text-lg tracking-wide uppercase" id="info-title">Yükleniyor...</h3>
+                            </div>
+                            <span
+                                class="bg-white/10 text-[0.6rem] px-2 py-1 rounded uppercase tracking-wider font-bold text-purple-100"
+                                id="info-badge">PANOMUZ</span>
+                        </div>
+
+                        <!-- Content Container -->
+                        <div
+                            class="bg-white/10 rounded-xl p-4 flex items-center justify-between border border-white/5 shadow-inner backdrop-blur-sm flex-grow">
+
+                            <!-- Left: Info -->
+                            <div class="flex items-center gap-4">
+                                <div class="w-16 h-16 rounded-full bg-yellow-500 flex items-center justify-center text-white font-bold text-lg shadow-lg border-4 border-yellow-300 transform -rotate-6"
+                                    id="info-circle-badge">
+                                    ℹ️
+                                </div>
+                                <div>
+                                    <div class="text-[0.65rem] text-purple-200 uppercase tracking-widest font-bold mb-0.5"
+                                        id="info-top-label">BİLGİLENDİRME</div>
+                                    <div class="text-2xl font-bold tracking-tight" id="info-main-text">---</div>
+                                </div>
+                            </div>
+
+                            <!-- Right: Decoration -->
+                            <div class="text-yellow-400 text-4xl drop-shadow-lg opacity-80">
+                                🎖️
+                            </div>
+
+                        </div>
+
                     </div>
-                    <!-- İlerleme Çubuğu -->
-                    <div class="absolute bottom-0 left-0 h-1.5 bg-yellow-400" id="info-progress" style="width: 0%"></div>
+
                 </div>
 
             </div>
@@ -143,14 +230,19 @@
 
     </div>
 
-    <!-- FOOTER (Kayan Yazı) -->
-    <div class="h-12 bg-red-700 text-white flex items-center rounded-xl shadow-lg overflow-hidden relative">
-        <div class="bg-red-800 px-4 h-full flex items-center font-bold z-10 shadow-md">
-            DUYURULAR
+    <!-- FOOTER -->
+    <div
+        class="h-10 bg-[#312e81] text-white flex items-center rounded-lg shadow-lg overflow-hidden relative border-t-2 border-indigo-400">
+        <div class="bg-[#4338ca] px-4 h-full flex items-center justify-center z-10 shadow-md">
+            <svg class="w-4 h-4 text-yellow-400 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z">
+                </path>
+            </svg>
+            <span class="font-bold text-xs tracking-wider ml-2">GÜNÜN SÖZÜ</span>
         </div>
-        <div class="marquee-container w-full">
-            <div class="marquee-content px-4 text-xl font-medium" id="marquee-text">
-                Dijital Pano sistemine hoşgeldiniz.
+        <div class="marquee-container w-full bg-[#312e81]">
+            <div class="marquee-content px-4 text-sm font-medium tracking-wide text-indigo-100" id="marquee-text">
+                Dijital Pano sistemine hoşgeldiniz...
             </div>
         </div>
     </div>
@@ -158,9 +250,9 @@
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script src="https://www.youtube.com/iframe_api"></script>
-    <!-- Supabase JS (Script içinde JS dosyasına referans vereceğiz) -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase.js"></script>
     <script src="js/main.js"></script>
 </body>
+
 </html>

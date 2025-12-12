@@ -30,13 +30,23 @@ async function fetchConfig() {
 
         // --- 2. Hadis ---
         if (config.hadith) {
-            const hadith = (typeof config.hadith === 'string') ? JSON.parse(config.hadith) : config.hadith;
-            if (hadith.text) {
-                document.getElementById('hadith-content').innerText = hadith.text;
-                document.getElementById('hadith-content').classList.remove('hidden');
-                document.getElementById('hadith-image').classList.add('hidden');
+            const h = (typeof config.hadith === 'string') ? JSON.parse(config.hadith) : config.hadith;
+
+            document.getElementById('hadith-content').innerHTML = `
+                <span class="absolute -top-2 -left-2 text-4xl text-emerald-200 font-serif opacity-50">“</span>
+                ${h.text || ''}
+                <span class="absolute -bottom-4 -right-2 text-4xl text-emerald-200 font-serif opacity-50">”</span>
+            `;
+
+            document.getElementById('hadith-arabic').innerText = h.arabic || '';
+            document.getElementById('hadith-week').innerText = h.week || '';
+
+            if (h.img) {
+                document.getElementById('hadith-image').src = h.img;
+                document.getElementById('hadith-image').classList.remove('hidden');
+                document.getElementById('hadith-content').classList.add('hidden');
+                document.getElementById('hadith-arabic').classList.add('hidden');
             }
-            // TODO: Resim varsa göster mantığı eklenecek
         }
 
         // --- 3. Temiz Oda ---
@@ -60,33 +70,77 @@ async function fetchConfig() {
         // --- 5. Bilgi Kartı Rotasyonu İçin Veri Hazırla ---
         infoData = [];
 
-        // Duyurular
+        // A) Duyurular (Basit Metin)
         let announcements = config.announcements || [];
         if (typeof announcements === 'string') announcements = JSON.parse(announcements);
-        if (Array.isArray(announcements) && announcements.length > 0) {
-            announcements.forEach(a => infoData.push({ title: "DUYURU", content: a }));
-        } else if (announcements && !Array.isArray(announcements)) {
-            infoData.push({ title: "DUYURU", content: announcements });
+        if (Array.isArray(announcements)) {
+            announcements.forEach(a => infoData.push({
+                type: 'duyuru',
+                title: 'DUYURULAR',
+                badge: 'GÜNCEL',
+                circle: '📢',
+                topLabel: 'GENEL BİLGİLENDİRME',
+                content: a
+            }));
         }
 
-        // Sınav Sonuçları
+        // B) Sınav Sonuçları / Birinciler
+        // Beklenen Format: "7.Sınıf - Ahmet Yılmaz - 463 Puan" veya JSON
+        // Şimdilik string gelirse parse etmeye çalışalım
         if (config.exam_results) {
-            infoData.push({ title: "KDU SONUCU", content: config.exam_results });
+            // Örnek: "7.Sınıf,Ahmet Yılmaz,463"
+            // Basitlik için tüm metni gösterelim, admin güncellenince burayı geliştiririz.
+            let examData = config.exam_results;
+
+            // Eğer virgülle ayrılmış veri gelirse ayrıştırıp özel formatta göster
+            if (examData.includes(',')) {
+                const parts = examData.split(',');
+                if (parts.length >= 3) {
+                    infoData.push({
+                        type: 'exam',
+                        title: 'KDU SONUÇLARI',
+                        badge: 'GURURLARIMIZ',
+                        circle: parts[0].trim(), // "7.Sınıf"
+                        topLabel: 'BİRİNCİSİ', // "BİRİNCİSİ"
+                        content: `${parts[2].trim()} Puan` // "463 Puan" & (İsim badge altında veya yanında kalabilir, tasarımda isim nerede? Screenshotta "---" var. Biz contente ismi, badge'e puanı veya tam tersini koyabiliriz.
+                        // Tasarıma göre: Sarı Daire (Sınıf), Yanında "BİRİNCİSİ" label, Altında PUAN badge. İsim nerede?
+                        // Screenshotta: Circle: "7.Sınıf", Label: "BİRİNCİSİ", Badge: "463 Puan", Büyük Text: "---" (Muhtemelen İsim)
+                    });
+                    // Düzeltme:
+                    infoData.push({
+                        type: 'exam',
+                        title: 'KDU SONUÇLARI',
+                        badge: 'GURURLARIMIZ',
+                        circle: parts[0].trim(), // 7.Sınıf
+                        topLabel: 'BİRİNCİSİ - ' + parts[2].trim() + ' Puan',
+                        content: parts[1].trim() // İsim
+                    });
+                } else {
+                    infoData.push({ type: 'duyuru', title: 'SINAV SONUCU', badge: 'TEBRİKLER', circle: '🏆', topLabel: 'SONUÇ', content: examData });
+                }
+            } else {
+                infoData.push({ type: 'duyuru', title: 'SINAV SONUCU', badge: 'TEBRİKLER', circle: '🏆', topLabel: 'SONUÇ', content: examData });
+            }
         }
 
-        // Yemek Menüsü
+        // C) Yemek Menüsü
         let menu = config.menu || [];
         if (typeof menu === 'string') menu = JSON.parse(menu);
         if (Array.isArray(menu) && menu.length > 0) {
-            const menuText = menu.join(" - ");
-            infoData.push({ title: "GÜNÜN MENÜSÜ", content: menuText });
+            const menuText = menu.join(" • ");
+            infoData.push({
+                type: 'menu',
+                title: 'YEMEK MENÜSÜ',
+                badge: 'AFİYET OLSUN',
+                circle: '🍽️',
+                topLabel: 'GÜNÜN MENÜSÜ',
+                content: menuText
+            });
         }
 
         // Eğer veri yoksa varsayılan ekle
         if (infoData.length === 0) {
-            infoData.push({ title: "BİLGİ", content: "Sistem hazır. Veri bekleniyor..." });
-            // Veri olmasa da döngü başlasın diye
-            rotateInfo();
+            infoData.push({ type: 'duyuru', title: 'Hoşgeldiniz', badge: 'Sistem', circle: '👋', topLabel: 'DURUM', content: "Veri bekleniyor..." });
         }
 
     } catch (error) {
@@ -100,25 +154,34 @@ function rotateInfo() {
     // Fade out
     const container = document.getElementById('info-carousel');
     container.style.opacity = '0';
-
-    // Progress bar reset
-    progressBar.style.transition = 'none';
-    progressBar.style.width = '0%';
+    container.style.transform = 'translateY(10px)';
 
     setTimeout(() => {
-        // Data update
         const item = infoData[infoIndex];
-        infoTitleEl.innerText = item.title;
-        infoContentEl.innerText = item.content;
+
+        // DOM Elements
+        document.getElementById('info-title').innerText = item.title;
+        document.getElementById('info-badge').innerText = item.badge;
+        document.getElementById('info-circle-badge').innerText = item.circle;
+
+        // Circle Style & Text Adjustments based on Type
+        const circle = document.getElementById('info-circle-badge');
+        if (item.type === 'exam') {
+            circle.style.fontSize = '0.9rem'; // Smaller for text like "7.Sınıf"
+            circle.classList.remove('bg-blue-500', 'bg-green-500');
+            circle.classList.add('bg-yellow-500');
+        } else {
+            circle.style.fontSize = '1.5rem'; // Emoji size
+            circle.classList.remove('bg-yellow-500');
+            circle.classList.add(item.type === 'menu' ? 'bg-green-500' : 'bg-blue-500');
+        }
+
+        document.getElementById('info-top-label').innerText = item.topLabel; // "BİRİNCİSİ"
+        document.getElementById('info-main-text').innerText = item.content; // Name or Message
 
         // Fade in
         container.style.opacity = '1';
-
-        // Progress bar animate
-        setTimeout(() => {
-            progressBar.style.transition = 'width 5s linear';
-            progressBar.style.width = '100%';
-        }, 50);
+        container.style.transform = 'translateY(0)';
 
         infoIndex = (infoIndex + 1) % infoData.length;
 

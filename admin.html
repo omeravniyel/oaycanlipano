@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pano Yönetim Paneli</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -38,7 +39,7 @@
                     <input type="text" id="video_url" class="w-full border rounded-md p-2 mb-3"
                         placeholder="Örn: dQw4w9WgXcQ">
 
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Kayan Yazı (Marquee)</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Günün Sözü (Marquee)</label>
                     <textarea id="marquee_text" rows="2" class="w-full border rounded-md p-2"></textarea>
                 </div>
 
@@ -47,10 +48,14 @@
                     <h3 class="font-bold text-lg mb-3 text-purple-600">📢 Bilgi Kartları</h3>
 
                     <label class="block text-sm font-medium text-gray-700 mb-1">Genel Duyuru</label>
-                    <textarea id="announcements" rows="2" class="w-full border rounded-md p-2 mb-3"></textarea>
+                    <textarea id="announcements" rows="2" class="w-full border rounded-md p-2 mb-3"
+                        placeholder="Her satıra bir duyuru yazabilirsiniz... (Henüz çoklu destek yok, tek satır)"></textarea>
 
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Sınav Sonuçları (Link/Metin)</label>
-                    <input type="text" id="exam_results" class="w-full border rounded-md p-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Sınav Birincisi (Format: Sınıf, İsim,
+                        Puan)</label>
+                    <div class="text-xs text-gray-500 mb-1">Örn: 7.Sınıf, Ahmet Yılmaz, 463</div>
+                    <input type="text" id="exam_results" class="w-full border rounded-md p-2"
+                        placeholder="7.Sınıf,İsim Soyisim,Puan">
                 </div>
 
                 <!-- Temiz Oda -->
@@ -85,29 +90,58 @@
                 <!-- Hadis-i Şerif -->
                 <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
                     <h3 class="font-bold text-lg mb-3 text-green-600">🕌 Hadis-i Şerif</h3>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Hadis Metni</label>
-                    <textarea id="hadith_text" rows="3" class="w-full border rounded-md p-2 mb-3"></textarea>
 
-                    <div class="flex items-center gap-2">
-                        <span class="text-sm font-bold">Veya Dosya Seçin (Otomatik Sol Galeri):</span>
-                        <!-- Dosya yükleme butonu daha sonra JS ile entegre edilecek -->
-                    </div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Hadis Arapça Metni</label>
+                    <textarea id="hadith_arabic" rows="2"
+                        class="w-full border rounded-md p-2 mb-2 text-right font-serif"
+                        placeholder="Arapça metin buraya..."></textarea>
+
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Hadis Türkçe Meali</label>
+                    <textarea id="hadith_text" rows="3" class="w-full border rounded-md p-2 mb-2"></textarea>
+
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Hafta Bilgisi (Kaynak/Tarih)</label>
+                    <input type="text" id="hadith_week" class="w-full border rounded-md p-2 mb-3"
+                        placeholder="Örn: 10-16 Aralık Haftası">
                 </div>
 
                 <!-- Medya Yöneticisi -->
                 <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
                     <h3 class="font-bold text-lg mb-3 text-blue-600">📁 Dosya Yönetimi</h3>
-                    <div class="grid grid-cols-2 gap-4">
-                        <button id="params-btn"
-                            class="bg-blue-100 hover:bg-blue-200 text-blue-800 py-3 rounded-lg font-semibold transition">
-                            Ana Galeri Yönet
-                        </button>
-                        <button
-                            class="bg-green-100 hover:bg-green-200 text-green-800 py-3 rounded-lg font-semibold transition">
-                            Sol Galeri Yönet
-                        </button>
+
+                    <!-- Tab Headers -->
+                    <div class="flex gap-2 mb-4">
+                        <button onclick="switchTab('galeri')" id="tab-galeri"
+                            class="flex-1 py-1 bg-blue-600 text-white rounded shadow text-sm font-bold">Ana Galeri
+                            (Slayt)</button>
+                        <button onclick="switchTab('sol_galeri')" id="tab-sol_galeri"
+                            class="flex-1 py-1 bg-gray-200 text-gray-700 rounded text-sm font-bold">Sol Galeri
+                            (Hadis)</button>
                     </div>
-                    <p class="text-xs text-gray-500 mt-2 italic">* Dosya yükleme modalları eklenecek.</p>
+
+                    <!-- Upload Area -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Yeni Dosya Yükle</label>
+                        <div class="flex gap-2">
+                            <input type="file" id="file_input" multiple accept="image/*" class="block w-full text-sm text-gray-500
+                              file:mr-4 file:py-2 file:px-4
+                              file:rounded-full file:border-0
+                              file:text-sm file:font-semibold
+                              file:bg-blue-50 file:text-blue-700
+                              hover:file:bg-blue-100
+                            " />
+                            <button id="upload-btn"
+                                class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-blue-700 transition">
+                                ⬆ Yükle
+                            </button>
+                        </div>
+                        <p id="upload-status" class="text-xs text-gray-500 mt-1"></p>
+                    </div>
+
+                    <!-- File List -->
+                    <div id="file-list"
+                        class="grid grid-cols-3 gap-2 max-h-60 overflow-y-auto p-2 border rounded bg-white">
+                        <div class="text-center text-gray-400 col-span-3 py-4 text-xs">Yükleniyor...</div>
+                    </div>
                 </div>
 
             </div>
