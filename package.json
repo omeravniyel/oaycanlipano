@@ -1,0 +1,16 @@
+{
+  "name": "dijital-pano",
+  "version": "1.0.0",
+  "description": "Dijital Pano Uygulaması",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0"
+  },
+  "devDependencies": {
+    "serve": "^14.2.1"
+  }
+}

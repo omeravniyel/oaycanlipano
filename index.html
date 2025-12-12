@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dijital Pano</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Swiper CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    
+    <style>
+        body { font-family: 'Inter', sans-serif; overflow: hidden; }
+        
+        /* Özel Marquee Animasyonu */
+        .marquee-container {
+            overflow: hidden;
+            white-space: nowrap;
+        }
+        .marquee-content {
+            display: inline-block;
+            animation: marquee 20s linear infinite;
+        }
+        @keyframes marquee {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(-100%); }
+        }
+
+        /* 3D Rotating Card */
+        .rotating-card-container {
+            perspective: 1000px;
+        }
+        .rotating-card {
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+        }
+        /* Basit bir fade efekti ile içerik değiştirme tercih edilebilir 3D yerine, ancak kullanıcı "Dönen Bilgi Kartı" dedi. 
+           Şimdilik CSS animasyonu ile içerik değişimi kurgulayacağız. */
+    </style>
+</head>
+<body class="bg-gray-100 h-screen w-screen flex flex-col p-2 gap-2">
+
+    <!-- Ana İçerik Grid -->
+    <div class="grid grid-cols-12 gap-2 flex-grow h-[calc(100%-3rem)]">
+        
+        <!-- SOL SÜTUN (5 Birim) -->
+        <div class="col-span-5 flex flex-col gap-2 h-full">
+            
+            <!-- HEADER (Logo, İsim, Slogan) - Flex -->
+            <div class="bg-white rounded-xl shadow-lg p-4 flex items-center gap-4 flex-[1]">
+                <div class="w-16 h-16 bg-blue-900 rounded-full flex items-center justify-center text-white font-bold text-xl">
+                    <!-- Logo Yeri -->
+                    LOGO
+                </div>
+                <div>
+                    <h1 class="text-3xl font-extrabold text-blue-900 tracking-tight">ÖMER AVNİ YEL</h1>
+                    <p class="text-gray-500 font-medium italic">"İlgiyle bilginin buluştuğu yer..."</p>
+                </div>
+            </div>
+
+            <!-- HADİS KARTI (Orta) - Flex-[3] -->
+            <div class="bg-white rounded-xl shadow-lg p-6 flex flex-col items-center justify-center text-center relative overflow-hidden flex-[3]">
+                <div class="absolute top-0 left-0 w-full h-2 bg-green-500"></div>
+                <h2 class="text-green-700 font-bold text-xl mb-4 bg-green-100 px-4 py-1 rounded-full">Haftanın Hadis-i Şerifi</h2>
+                
+                <div id="hadith-content" class="text-2xl font-serif text-gray-800 leading-relaxed font-semibold">
+                    Yükleniyor...
+                </div>
+                <!-- Görsel için img etiketi gizli başlayacak -->
+                <img id="hadith-image" src="" class="hidden max-h-full object-contain rounded-lg" />
+            </div>
+
+            <!-- YURT KARTI (Alt) - Flex-[2] -->
+            <div class="bg-gradient-to-r from-orange-500 to-red-600 rounded-xl shadow-lg p-4 flex flex-col text-white flex-[2] relative overflow-hidden">
+                <div class="absolute top-2 right-4 opacity-20">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-24 w-24" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                </div>
+                <h2 class="text-xl font-bold mb-2 border-b border-white/30 pb-1 w-max">🏆 Günün Kazanan Yatakhanesi</h2>
+                <div class="flex items-center justify-around h-full">
+                    <div class="text-center">
+                        <div class="text-xs uppercase tracking-wider opacity-80 mb-1">Kazanan 1</div>
+                        <div id="winner1" class="text-4xl font-extrabold drop-shadow-md">---</div>
+                    </div>
+                    <div class="h-12 w-0.5 bg-white/40"></div>
+                    <div class="text-center">
+                        <div class="text-xs uppercase tracking-wider opacity-80 mb-1">Kazanan 2</div>
+                        <div id="winner2" class="text-4xl font-extrabold drop-shadow-md">---</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- SAĞ SÜTUN (7 Birim) -->
+        <div class="col-span-7 flex flex-col gap-2 h-full">
+            
+            <!-- VİDEO ALANI (Üst) - Flex-[2] -->
+            <div class="bg-black rounded-xl shadow-lg border-4 border-gray-900 overflow-hidden flex-[2] relative group">
+                <!-- YouTube Player -->
+                <div id="player" class="absolute inset-0 w-full h-full"></div>
+                <!-- Swiper Slider (Video yoksa veya bittiğinde görünür) -->
+                <div class="swiper mySwiper absolute inset-0 w-full h-full hidden">
+                    <div class="swiper-wrapper" id="slide-wrapper">
+                        <!-- Slaytlar JS ile eklenecek -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- ALT BİLGİ ŞERİDİ (Alt) - Flex-[1] -->
+            <div class="flex gap-2 flex-[1]">
+                
+                <!-- Künye / Saat / Hava (Sol 1/3) -->
+                <div class="bg-blue-600 rounded-xl shadow-lg text-white p-4 flex flex-col items-center justify-center w-1/3 relative overflow-hidden">
+                    <div class="text-6xl font-bold tracking-widest" id="clock">12:00</div>
+                    <div class="text-lg opacity-90 mt-2 flex items-center gap-2">
+                        <span id="date">12 Aralık 2025</span>
+                    </div>
+                    <!-- Hava Durumu (Mock) -->
+                    <div class="mt-2 flex items-center gap-2 bg-blue-700 px-3 py-1 rounded-full text-sm">
+                        <span>☀️</span>
+                        <span>İstanbul, 15°C</span>
+                    </div>
+                </div>
+
+                <!-- Dönen Bilgi Kartı (Sağ 2/3) -->
+                <div class="bg-gradient-to-br from-purple-600 to-indigo-700 rounded-xl shadow-lg w-2/3 p-6 flex flex-col justify-center relative overflow-hidden text-white">
+                    <div id="info-carousel" class="transition-opacity duration-500 ease-in-out">
+                        <h3 class="text-lg font-bold text-purple-200 mb-2 uppercase tracking-wider border-b border-purple-400/30 pb-1 inline-block" id="info-title">DUYURU</h3>
+                        <p class="text-2xl font-medium leading-snug" id="info-content">
+                            Sistem hazırlanıyor...
+                        </p>
+                    </div>
+                    <!-- İlerleme Çubuğu -->
+                    <div class="absolute bottom-0 left-0 h-1.5 bg-yellow-400" id="info-progress" style="width: 0%"></div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- FOOTER (Kayan Yazı) -->
+    <div class="h-12 bg-red-700 text-white flex items-center rounded-xl shadow-lg overflow-hidden relative">
+        <div class="bg-red-800 px-4 h-full flex items-center font-bold z-10 shadow-md">
+            DUYURULAR
+        </div>
+        <div class="marquee-container w-full">
+            <div class="marquee-content px-4 text-xl font-medium" id="marquee-text">
+                Dijital Pano sistemine hoşgeldiniz.
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <!-- Supabase JS (Script içinde JS dosyasına referans vereceğiz) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
