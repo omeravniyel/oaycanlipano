@@ -57,11 +57,31 @@
                     <input type="text" id="exam_name" class="w-full border rounded-md p-2 mb-2"
                         placeholder="Örn: 1. Dönem 1. Yazılı">
 
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Sınıf Birincileri (Liste)</label>
-                    <div class="text-xs text-gray-500 mb-1">Format: <strong>Sınıf, İsim, Puan</strong> (Her satıra bir
-                        tane)</div>
-                    <textarea id="exam_winners" rows="4" class="w-full border rounded-md p-2 font-mono text-sm"
-                        placeholder="5.Sınıf, Ali Veli, 450&#10;6.Sınıf, Ayşe Demir, 480"></textarea>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Sınıf Birincileri</label>
+                    <div class="space-y-2">
+                        <div class="flex items-center gap-2">
+                            <span class="w-16 font-bold text-sm text-gray-600">5. Sınıf</span>
+                            <input type="text" id="winner_5" class="flex-1 border rounded-md p-2 text-sm"
+                                placeholder="Ad Soyad Puan">
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-16 font-bold text-sm text-gray-600">6. Sınıf</span>
+                            <input type="text" id="winner_6" class="flex-1 border rounded-md p-2 text-sm"
+                                placeholder="Ad Soyad Puan">
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-16 font-bold text-sm text-gray-600">7. Sınıf</span>
+                            <input type="text" id="winner_7" class="flex-1 border rounded-md p-2 text-sm"
+                                placeholder="Ad Soyad Puan">
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-16 font-bold text-sm text-gray-600">8. Sınıf</span>
+                            <input type="text" id="winner_8" class="flex-1 border rounded-md p-2 text-sm"
+                                placeholder="Ad Soyad Puan">
+                        </div>
+                    </div>
+                    <div class="text-xs text-gray-400 mt-1">Sadece "Ad Soyad Puan" yazınız. Sınıf bilgisi otomatik
+                        eklenecektir.</div>
                 </div>
 
                 <!-- Temiz Oda -->

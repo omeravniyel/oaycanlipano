@@ -10,16 +10,27 @@ async function loadData() {
         const res = await fetch('/api/get-config');
         const config = await res.json();
 
-        if (config.video_url) document.getElementById('video_url').value = config.video_url;
+        // --- Load Data Fixes ---
+        document.getElementById('video_url').value = config.video_url || ''; // Fix: Allow blank
         if (config.marquee_text) document.getElementById('marquee_text').value = config.marquee_text;
 
         if (config.exam_config) {
             const ec = (typeof config.exam_config === 'string') ? JSON.parse(config.exam_config) : config.exam_config;
             document.getElementById('exam_name').value = ec.name || '';
-            document.getElementById('exam_winners').value = ec.winners || '';
+
+            // Winners Parsing (Simple Check)
+            const w = ec.winners || '';
+            // Beklenen: "5.Sınıf, Ali, 100\n6.Sınıf, Veli, 200..."
+            const lines = w.split('\n');
+            lines.forEach(line => {
+                if (line.includes('5.Sınıf')) document.getElementById('winner_5').value = line.split(',').slice(1).join(',').trim();
+                if (line.includes('6.Sınıf')) document.getElementById('winner_6').value = line.split(',').slice(1).join(',').trim();
+                if (line.includes('7.Sınıf')) document.getElementById('winner_7').value = line.split(',').slice(1).join(',').trim();
+                if (line.includes('8.Sınıf')) document.getElementById('winner_8').value = line.split(',').slice(1).join(',').trim();
+            });
         } else if (config.exam_results) {
-            // Eski veri desteği (Migration)
-            document.getElementById('exam_winners').value = config.exam_results;
+            // Eski veri desteği (Migration) - Bu kısım artık winner_X inputları için geçerli değil, kaldırılabilir veya güncellenebilir.
+            // Şimdilik sadece exam_config'i kontrol ediyoruz.
         }
 
         if (config.clean_room) {

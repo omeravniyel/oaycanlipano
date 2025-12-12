@@ -37,14 +37,28 @@ async function fetchConfig() {
         const res = await fetch('/api/get-config');
         const config = await res.json();
 
-        // --- 1. Video Ayarla ---
-        if (config.video_url && player && typeof player.loadVideoById === 'function') {
-            player.loadVideoById(config.video_url);
+        // --- 1. Galeri & Video Ayarla ---
+        // Önce resimleri çekelim (Eğer boşsa)
+        if (galleryImages.length === 0) await fetchGalleryImages();
+
+        let newVideoId = config.video_url || null;
+        // ID parse
+        if (newVideoId) {
+            if (newVideoId.includes('v=')) newVideoId = newVideoId.split('v=')[1].split('&')[0];
+            else if (newVideoId.includes('youtu.be/')) newVideoId = newVideoId.split('youtu.be/')[1];
+            else if (newVideoId.includes('embed/')) newVideoId = newVideoId.split('embed/')[1];
         }
 
-        // --- 2. Marquee ---
-        if (config.marquee_text) {
-            document.getElementById('marquee-text').innerHTML = config.marquee_text;
+        // Değişim var mı?
+        if (newVideoId !== videoId) {
+            videoId = newVideoId;
+            // State Yenile
+            if (videoId) switchMedia('video');
+            else switchMedia('slide');
+        } else if (currentMediaState === 'none') {
+            // İlk açılış
+            if (videoId) switchMedia('video');
+            else switchMedia('slide');
         }
 
         // --- 3. Temiz Oda ---
@@ -219,17 +233,40 @@ fetchConfig();
 
 
 // --- YOUTUBE API ---
+// --- YOUTUBE & HYBRID LOOP ---
 var player;
+var galleryImages = [];
+var currentMediaState = 'none'; // 'video', 'slide'
+var videoId = null;
+var slideIntervalHandle = null;
+
+// Galeriyi Çek
+async function fetchGalleryImages() {
+    try {
+        const { data, error } = await supabase.storage.from('galeri').list();
+        if (!error && data) {
+            galleryImages = data.map(f => supabase.storage.from('galeri').getPublicUrl(f.name).data.publicUrl);
+        }
+
+        // Swiper Wrapper Güncelle
+        const wrapper = document.getElementById('slide-wrapper');
+        wrapper.innerHTML = '';
+        galleryImages.forEach(url => {
+            const slide = document.createElement('div');
+            slide.className = 'swiper-slide flex items-center justify-center bg-black';
+            slide.innerHTML = `<img src="${url}" class="w-full h-full object-contain" />`;
+            wrapper.appendChild(slide);
+        });
+
+    } catch (e) { console.error("Galeri hatası", e); }
+}
+
 function onYouTubeIframeAPIReady() {
     player = new YT.Player('player', {
-        videoId: 'dQw4w9WgXcQ', // Placeholder, API'den güncellenecek
-        playerVars: {
-            'autoplay': 1,
-            'controls': 0,
-            'mute': 1, // Otomatik oynatma için sessiz başlamalı
-            'loop': 1,
-            'playlist': 'dQw4w9WgXcQ'
-        },
+        height: '100%',
+        width: '100%',
+        videoId: '',
+        playerVars: { 'autoplay': 0, 'controls': 0, 'mute': 0 },
         events: {
             'onStateChange': onPlayerStateChange
         }
@@ -238,9 +275,71 @@ function onYouTubeIframeAPIReady() {
 
 function onPlayerStateChange(event) {
     if (event.data == YT.PlayerState.ENDED) {
-        // Video bittiğinde slayta geç
-        // TODO: Slayt mantığını entegre et
-        // Şimdilik tekrar başa alalım (Hybrid döngü henüz kurgulanmadı)
-        player.playVideo();
+        // Video bitti, Slider'a geç
+        switchMedia('slide');
     }
 }
+
+// Medya Döngü Kontrolü
+function switchMedia(mode) {
+    const playerEl = document.getElementById('player');
+    const swiperEl = document.querySelector('.mySwiper');
+
+    // Temizle
+    if (slideIntervalHandle) clearInterval(slideIntervalHandle);
+
+    if (mode === 'video' && videoId) {
+        // Video Modu
+        currentMediaState = 'video';
+        swiperEl.classList.add('hidden');
+        // playerEl görünürlüğü YouTube iframe tarafından yönetilir ama wrapper row/col
+        // Youtube API'sini resetle play
+        if (player && typeof player.playVideo === 'function') {
+            player.loadVideoById(videoId);
+            player.playVideo();
+        }
+
+    } else if (mode === 'slide' && galleryImages.length > 0) {
+        // Slayt Modu
+        currentMediaState = 'slide';
+        swiperEl.classList.remove('hidden');
+        if (player && typeof player.stopVideo === 'function') player.stopVideo();
+
+        // Swiper Init (Eğer yoksa)
+        if (!window.mySwiperInstance) {
+            window.mySwiperInstance = new Swiper(".mySwiper", {
+                spaceBetween: 30,
+                effect: "fade",
+                centeredSlides: true,
+                autoplay: {
+                    delay: 10000, // 10 Saniye
+                    disableOnInteraction: false,
+                },
+            });
+
+            // Swiper sonuna gelince videoya dön (Eğer video varsa)
+            window.mySwiperInstance.on('reachBeginning', () => {
+                // Loop modunda reachEnd tetiklenmeyebilir, realIndex takibi gerekebilir
+                // Basitlik için: Autoplay döngüsü yerine, bir tur bitince videoya dönmeye çalışalım
+            });
+
+            // Manuel süre kontrolü daha güvenli
+        }
+
+        // Eğer video Varsa, belirli bir süre (örn görsel sayısı * 10sn) sonra tekrar videoya dön
+        if (videoId) {
+            slideIntervalHandle = setTimeout(() => {
+                switchMedia('video');
+            }, galleryImages.length * 10000); // Her resim 10 sn
+        }
+
+    } else {
+        // Fallback
+        if (videoId) switchMedia('video');
+        else if (galleryImages.length > 0) switchMedia('slide');
+    }
+}
+
+
+// FetchConfig içinde Video ID güncellemesi ve Init
+// ... (Bu kısım fetchConfig içinde çağrılacak)
