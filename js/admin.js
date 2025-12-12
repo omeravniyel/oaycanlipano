@@ -211,9 +211,15 @@ document.getElementById('save-btn').addEventListener('click', async () => {
             })
         },
         {
+        {
             key: 'exam_config', value: JSON.stringify({
                 name: document.getElementById('exam_name').value,
-                winners: document.getElementById('exam_winners').value
+                winners: [
+                    document.getElementById('winner_5') ? `5.Sınıf, ${document.getElementById('winner_5').value}` : '',
+                    document.getElementById('winner_6') ? `6.Sınıf, ${document.getElementById('winner_6').value}` : '',
+                    document.getElementById('winner_7') ? `7.Sınıf, ${document.getElementById('winner_7').value}` : '',
+                    document.getElementById('winner_8') ? `8.Sınıf, ${document.getElementById('winner_8').value}` : ''
+                ].filter(s => s.split(',')[1].trim() !== '').join('\n')
             })
         },
         {
