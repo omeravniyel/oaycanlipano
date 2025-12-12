@@ -12,7 +12,15 @@ async function loadData() {
 
         if (config.video_url) document.getElementById('video_url').value = config.video_url;
         if (config.marquee_text) document.getElementById('marquee_text').value = config.marquee_text;
-        if (config.exam_results) document.getElementById('exam_results').value = config.exam_results;
+
+        if (config.exam_config) {
+            const ec = (typeof config.exam_config === 'string') ? JSON.parse(config.exam_config) : config.exam_config;
+            document.getElementById('exam_name').value = ec.name || '';
+            document.getElementById('exam_winners').value = ec.winners || '';
+        } else if (config.exam_results) {
+            // Eski veri desteği (Migration)
+            document.getElementById('exam_winners').value = config.exam_results;
+        }
 
         if (config.clean_room) {
             const cr = (typeof config.clean_room === 'string') ? JSON.parse(config.clean_room) : config.clean_room;
@@ -162,13 +170,18 @@ document.getElementById('save-btn').addEventListener('click', async () => {
         { key: 'marquee_text', value: document.getElementById('marquee_text').value },
         { key: 'announcements', value: JSON.stringify([document.getElementById('announcements').value]) }, // Array olarak saklayalım
         { key: 'menu', value: JSON.stringify(menuArr) },
-        { key: 'exam_results', value: document.getElementById('exam_results').value },
         {
             key: 'hadith', value: JSON.stringify({
                 text: document.getElementById('hadith_text').value,
                 arabic: document.getElementById('hadith_arabic').value,
                 week: document.getElementById('hadith_week').value,
                 img: null
+            })
+        },
+        {
+            key: 'exam_config', value: JSON.stringify({
+                name: document.getElementById('exam_name').value,
+                winners: document.getElementById('exam_winners').value
             })
         },
         {

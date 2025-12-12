@@ -11,7 +11,7 @@ export default async function handler(request, response) {
 
     const { key, value } = request.body;
 
-    if (!key || !value) {
+    if (!key || value === undefined) {
         return response.status(400).json({ error: 'Missing key or value' });
     }
 
