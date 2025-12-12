@@ -351,5 +351,39 @@ function switchMedia(mode) {
 }
 
 
-// FetchConfig içinde Video ID güncellemesi ve Init
-// ... (Bu kısım fetchConfig içinde çağrılacak)
+// --- WEATHER API (Open-Meteo) ---
+async function fetchWeather() {
+    try {
+        // Zeytinburnu Coordinats: 40.99, 28.90
+        const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=40.99&longitude=28.90&current_weather=true');
+        const data = await res.json();
+
+        if (data.current_weather) {
+            const temp = Math.round(data.current_weather.temperature);
+            const code = data.current_weather.weathercode;
+
+            // WMO Weather Codes to Text/Icon
+            let desc = "AÇIK";
+            let icon = "☀️";
+
+            // Simple mapping
+            if (code >= 1 && code <= 3) { desc = "PARÇALI BULUTLU"; icon = "⛅"; }
+            else if (code >= 45 && code <= 48) { desc = "SİSLİ"; icon = "🌫️"; }
+            else if (code >= 51 && code <= 67) { desc = "YAĞMURLU"; icon = "🌧️"; }
+            else if (code >= 71 && code <= 77) { desc = "KARLI"; icon = "❄️"; }
+            else if (code >= 80 && code <= 82) { desc = "SAĞANAK"; icon = "🌦️"; }
+            else if (code >= 95) { desc = "FIRTINA"; icon = "⛈️"; }
+
+            // DOM'da elementler varsa güncelle
+            if (document.getElementById('weather-temp')) document.getElementById('weather-temp').innerText = `${temp}°`;
+            if (document.getElementById('weather-desc')) document.getElementById('weather-desc').innerText = desc;
+            if (document.getElementById('weather-icon')) document.getElementById('weather-icon').innerText = icon;
+        }
+    } catch (e) {
+        console.error("Hava durumu hatası:", e);
+    }
+}
+
+// Initial Fetch and Interval
+fetchWeather();
+setInterval(fetchWeather, 30 * 60 * 1000); // 30 Mins
