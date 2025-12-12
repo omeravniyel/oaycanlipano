@@ -211,7 +211,6 @@ document.getElementById('save-btn').addEventListener('click', async () => {
             })
         },
         {
-        {
             key: 'exam_config', value: JSON.stringify({
                 name: document.getElementById('exam_name').value,
                 winners: [
@@ -222,48 +221,55 @@ document.getElementById('save-btn').addEventListener('click', async () => {
                 ].filter(s => s.split(',')[1].trim() !== '').join('\n')
             })
         },
-        {
-            key: 'winning_dorms', value: JSON.stringify({
-                dorm1: {
-                    name: document.getElementById('dorm1_name').value,
-                    count: document.getElementById('dorm1_count').value,
-                    s1: document.getElementById('dorm1_s1').value,
-                    s2: document.getElementById('dorm1_s2').value,
-                    s3: document.getElementById('dorm1_s3').value,
-                    s4: document.getElementById('dorm1_s4').value,
-                    s5: document.getElementById('dorm1_s5').value,
-                    s6: document.getElementById('dorm1_s6').value
-                },
-                dorm2: {
-                    name: document.getElementById('dorm2_name').value,
-                    count: document.getElementById('dorm2_count').value,
-                    s1: document.getElementById('dorm2_s1').value,
-                    s2: document.getElementById('dorm2_s2').value,
-                    s3: document.getElementById('dorm2_s3').value,
-                    s4: document.getElementById('dorm2_s4').value,
-                    s5: document.getElementById('dorm2_s5').value,
-                    s6: document.getElementById('dorm2_s6').value
-                }
-            })
+        document.getElementById('winner_5') ? `5.Sınıf, ${document.getElementById('winner_5').value}` : '',
+        document.getElementById('winner_6') ? `6.Sınıf, ${document.getElementById('winner_6').value}` : '',
+        document.getElementById('winner_7') ? `7.Sınıf, ${document.getElementById('winner_7').value}` : '',
+        document.getElementById('winner_8') ? `8.Sınıf, ${document.getElementById('winner_8').value}` : ''
+    ].filter(s => s.split(',')[1].trim() !== '').join('\n')
+})
+        },
+{
+    key: 'winning_dorms', value: JSON.stringify({
+        dorm1: {
+            name: document.getElementById('dorm1_name').value,
+            count: document.getElementById('dorm1_count').value,
+            s1: document.getElementById('dorm1_s1').value,
+            s2: document.getElementById('dorm1_s2').value,
+            s3: document.getElementById('dorm1_s3').value,
+            s4: document.getElementById('dorm1_s4').value,
+            s5: document.getElementById('dorm1_s5').value,
+            s6: document.getElementById('dorm1_s6').value
+        },
+        dorm2: {
+            name: document.getElementById('dorm2_name').value,
+            count: document.getElementById('dorm2_count').value,
+            s1: document.getElementById('dorm2_s1').value,
+            s2: document.getElementById('dorm2_s2').value,
+            s3: document.getElementById('dorm2_s3').value,
+            s4: document.getElementById('dorm2_s4').value,
+            s5: document.getElementById('dorm2_s5').value,
+            s6: document.getElementById('dorm2_s6').value
         }
+    })
+}
     ];
 
-    try {
-        // Her bir anahtar için API çağrısı (Upsert)
-        // Promise.all ile paralel gönder
-        await Promise.all(updates.map(item =>
-            fetch('/api/save-config', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(item)
-            })
-        ));
+try {
+    // Her bir anahtar için API çağrısı (Upsert)
+    // Promise.all ile paralel gönder
+    await Promise.all(updates.map(item =>
+        fetch('/api/save-config', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(item)
+        })
+    ));
 
-        alert("Başarıyla Kaydedildi! ✅");
-        btn.innerHTML = "<span>💾 Kaydet</span>";
-    } catch (error) {
-        console.error(error);
-        alert("Hata oluştu!");
-        btn.innerText = "Hata!";
-    }
+    alert("Başarıyla Kaydedildi! ✅");
+    btn.innerHTML = "<span>💾 Kaydet</span>";
+} catch (error) {
+    console.error(error);
+    alert("Hata oluştu!");
+    btn.innerText = "Hata!";
+}
 });
