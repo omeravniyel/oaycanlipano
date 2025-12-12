@@ -84,18 +84,35 @@
                         eklenecektir.</div>
                 </div>
 
-                <!-- Temiz Oda -->
+                <!-- Temiz Oda / Kazanan Yatakhane -->
                 <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
-                    <h3 class="font-bold text-lg mb-3 text-orange-600">🏆 Günün Olası</h3>
+                    <h3 class="font-bold text-lg mb-3 text-orange-600">🏆 Günün Kazanan Yatakhanesi</h3>
+
+                    <div class="grid grid-cols-2 gap-2 mb-3">
+                        <div>
+                            <label class="text-xs font-bold text-gray-500">Yatakhane Adı (Örn: 101)</label>
+                            <input type="text" id="dorm_name" class="w-full border rounded-md p-2" placeholder="101">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-gray-500">Kaçıncı Kez? (Örn: 5. Kez)</label>
+                            <input type="text" id="dorm_count" class="w-full border rounded-md p-2" placeholder="5">
+                        </div>
+                    </div>
+
+                    <label class="text-xs font-bold text-gray-500 mb-1 block">Kazanan Öğrenciler</label>
                     <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="text-xs font-bold text-gray-500">Kazanan 1</label>
-                            <input type="text" id="clean_room_1" class="w-full border rounded-md p-2">
-                        </div>
-                        <div>
-                            <label class="text-xs font-bold text-gray-500">Kazanan 2</label>
-                            <input type="text" id="clean_room_2" class="w-full border rounded-md p-2">
-                        </div>
+                        <input type="text" id="dorm_std_1" class="w-full border rounded-md p-2 text-sm"
+                            placeholder="1. Öğrenci">
+                        <input type="text" id="dorm_std_2" class="w-full border rounded-md p-2 text-sm"
+                            placeholder="2. Öğrenci">
+                        <input type="text" id="dorm_std_3" class="w-full border rounded-md p-2 text-sm"
+                            placeholder="3. Öğrenci">
+                        <input type="text" id="dorm_std_4" class="w-full border rounded-md p-2 text-sm"
+                            placeholder="4. Öğrenci">
+                        <input type="text" id="dorm_std_5" class="w-full border rounded-md p-2 text-sm"
+                            placeholder="5. Öğrenci">
+                        <input type="text" id="dorm_std_6" class="w-full border rounded-md p-2 text-sm"
+                            placeholder="6. Öğrenci">
                     </div>
                 </div>
             </div>

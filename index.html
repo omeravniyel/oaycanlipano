@@ -141,26 +141,34 @@
 
             <!-- YURT KARTI -->
             <div
-                class="bg-gradient-to-r from-red-400 to-orange-300 rounded-xl shadow-md p-5 flex flex-col justify-center text-white flex-[2.5] relative">
-                <h2
-                    class="text-center font-bold text-sm tracking-wider mb-4 flex items-center justify-center gap-2 text-white/90">
-                    <span class="text-yellow-200 text-lg">♛</span> GÜNÜN KAZANAN YATAKHANESİ <span
-                        class="text-yellow-200 text-lg">♛</span>
-                </h2>
-                <div class="flex items-center justify-around w-full px-4">
-                    <!-- Winner 1 -->
-                    <div class="flex flex-col items-center w-1/2 border-r border-white/20">
-                        <div class="text-4xl font-black drop-shadow-sm mb-1" id="winner1">---</div>
-                        <span
-                            class="bg-yellow-400 text-yellow-900 text-[0.65rem] font-bold px-2 py-0.5 rounded shadow-sm">0.KEZ</span>
+                class="bg-gradient-to-r from-red-400 to-orange-300 rounded-xl shadow-md p-4 flex flex-col items-center text-white flex-[2.5] relative overflow-hidden">
+
+                <!-- Başlık & Sayaç -->
+                <div class="w-full flex justify-between items-center border-b border-white/20 pb-2 mb-2">
+                    <div class="flex items-center gap-2">
+                        <span class="text-2xl">🏆</span>
+                        <div class="leading-tight">
+                            <div class="text-[0.65rem] opacity-90 font-bold uppercase tracking-wider">Günün Kazananı
+                            </div>
+                            <div class="text-lg font-black" id="dorm-name">---</div>
+                        </div>
                     </div>
-                    <!-- Winner 2 -->
-                    <div class="flex flex-col items-center w-1/2">
-                        <div class="text-4xl font-black drop-shadow-sm mb-1" id="winner2">---</div>
-                        <span
-                            class="bg-yellow-400 text-yellow-900 text-[0.65rem] font-bold px-2 py-0.5 rounded shadow-sm">0.KEZ</span>
+                    <div class="bg-white/20 px-3 py-1 rounded-lg backdrop-blur-sm">
+                        <span class="text-xs font-bold" id="dorm-count">0. KEZ</span>
                     </div>
                 </div>
+
+                <!-- İsim Listesi (Grid) -->
+                <div
+                    class="w-full grid grid-cols-2 gap-x-4 gap-y-1 text-sm font-semibold text-center items-center justify-center h-full">
+                    <div id="dorm-s1" class="truncate border-b border-white/10 pb-1">---</div>
+                    <div id="dorm-s2" class="truncate border-b border-white/10 pb-1">---</div>
+                    <div id="dorm-s3" class="truncate border-b border-white/10 pb-1">---</div>
+                    <div id="dorm-s4" class="truncate border-b border-white/10 pb-1">---</div>
+                    <div id="dorm-s5" class="truncate">---</div>
+                    <div id="dorm-s6" class="truncate">---</div>
+                </div>
+
             </div>
 
         </div>

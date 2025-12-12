@@ -61,11 +61,21 @@ async function fetchConfig() {
             else switchMedia('slide');
         }
 
-        // --- 3. Temiz Oda ---
-        if (config.clean_room) {
-            const cr = (typeof config.clean_room === 'string') ? JSON.parse(config.clean_room) : config.clean_room;
-            document.getElementById('winner1').innerText = cr.room1 || '---';
-            document.getElementById('winner2').innerText = cr.room2 || '---';
+        // --- 3. Kazanan Yatakhane ---
+        if (config.winning_dorm) {
+            const wd = (typeof config.winning_dorm === 'string') ? JSON.parse(config.winning_dorm) : config.winning_dorm;
+            document.getElementById('dorm-name').innerText = wd.name ? (wd.name + " NOLU ODA") : '---';
+            document.getElementById('dorm-count').innerText = wd.count ? (wd.count + ". KEZ") : '';
+
+            document.getElementById('dorm-s1').innerText = wd.s1 || '';
+            document.getElementById('dorm-s2').innerText = wd.s2 || '';
+            document.getElementById('dorm-s3').innerText = wd.s3 || '';
+            document.getElementById('dorm-s4').innerText = wd.s4 || '';
+            document.getElementById('dorm-s5').innerText = wd.s5 || '';
+            document.getElementById('dorm-s6').innerText = wd.s6 || '';
+        } else if (config.clean_room) {
+            // Eski Veri Desteği (Opsiyonel, geçici olarak boş bırakılabilir ya da eski veriyi uydurabiliriz)
+            // Yeni tasarım çok farklı olduğu için eski veriyi göstermeyelim.
         }
 
         // --- 4. Hadis ---

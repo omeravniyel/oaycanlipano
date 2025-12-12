@@ -33,10 +33,19 @@ async function loadData() {
             // Şimdilik sadece exam_config'i kontrol ediyoruz.
         }
 
-        if (config.clean_room) {
-            const cr = (typeof config.clean_room === 'string') ? JSON.parse(config.clean_room) : config.clean_room;
-            document.getElementById('clean_room_1').value = cr.room1 || '';
-            document.getElementById('clean_room_2').value = cr.room2 || '';
+        if (config.winning_dorm) {
+            const wd = (typeof config.winning_dorm === 'string') ? JSON.parse(config.winning_dorm) : config.winning_dorm;
+            document.getElementById('dorm_name').value = wd.name || '';
+            document.getElementById('dorm_count').value = wd.count || '';
+            document.getElementById('dorm_std_1').value = wd.s1 || '';
+            document.getElementById('dorm_std_2').value = wd.s2 || '';
+            document.getElementById('dorm_std_3').value = wd.s3 || '';
+            document.getElementById('dorm_std_4').value = wd.s4 || '';
+            document.getElementById('dorm_std_5').value = wd.s5 || '';
+            document.getElementById('dorm_std_6').value = wd.s6 || '';
+        } else if (config.clean_room) {
+            // Migration support: clean_room verisi varsa (eski sistem) buraya taşıyabiliriz veya yok sayabiliriz.
+            // Şimdilik temiz bırakalım.
         }
 
         if (config.hadith) {
@@ -196,9 +205,15 @@ document.getElementById('save-btn').addEventListener('click', async () => {
             })
         },
         {
-            key: 'clean_room', value: JSON.stringify({
-                room1: document.getElementById('clean_room_1').value,
-                room2: document.getElementById('clean_room_2').value
+            key: 'winning_dorm', value: JSON.stringify({
+                name: document.getElementById('dorm_name').value,
+                count: document.getElementById('dorm_count').value,
+                s1: document.getElementById('dorm_std_1').value,
+                s2: document.getElementById('dorm_std_2').value,
+                s3: document.getElementById('dorm_std_3').value,
+                s4: document.getElementById('dorm_std_4').value,
+                s5: document.getElementById('dorm_std_5').value,
+                s6: document.getElementById('dorm_std_6').value
             })
         }
     ];
