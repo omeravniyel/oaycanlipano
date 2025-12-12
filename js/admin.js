@@ -1,9 +1,14 @@
-import { createClient } from '@supabase/supabase-js'
+// Supabase Client (CDN'den gelen global 'supabase' objesini kullanir)
+// Eger html'de <script src="...supabase-js"></script> varsa window.supabase tanimlidir.
+const { createClient } = supabase;
 
-// --- KONFIGURASYON ---
 const supabaseUrl = 'https://oayedbausnwdbyubwuhs.supabase.co';
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9heWVkYmF1c253ZGJ5dWJ3dWhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzM5NDEwNTcsImV4cCI6MjA0OTUxNzA1N30.s-FjBwJ_yTQ2g0oIqGDWz1OQ8lK8sE2xT-s5QWkZ0';
-const supabase = createClient(supabaseUrl, supabaseKey);
+const _supabase = createClient(supabaseUrl, supabaseKey);
+
+// Global degisken cakismasi yasanmamasi icin:
+const sbClient = _supabase; // Yerel kullanim icin isim degisikligi
+
 
 // --- GLOBAL DEGISKENLER ---
 let currentBucket = 'galeri';
