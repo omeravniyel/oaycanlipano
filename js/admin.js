@@ -1,38 +1,37 @@
-console.log("Admin paneli yüklendi.");
+import { createClient } from '@supabase/supabase-js'
 
-// Sayfa yüklendiğinde mevcut verileri getir
-window.addEventListener('input', () => {
-    // Değişiklik oldu mu?
-});
+// Supabase Yapılandırması
+const supabaseUrl = 'https://oayedbausnwdbyubwuhs.supabase.co'
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9heWVkYmF1c253ZGJ5dWJ3dWhzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzM5NDEwNTcsImV4cCI6MjA0OTUxNzA1N30.s-FjBwJ_yTQ2g0oIqGDWz1OQ8lK8sE2xT-s5QWkZ0'
+const supabase = createClient(supabaseUrl, supabaseKey)
 
+// --- Load Data ---
 async function loadData() {
     try {
         const res = await fetch('/api/get-config');
         const config = await res.json();
 
-        // --- Load Data Fixes ---
-        document.getElementById('video_url').value = config.video_url || ''; // Fix: Allow blank
-        if (config.marquee_text) document.getElementById('marquee_text').value = config.marquee_text;
+        // Video & Marquee
+        document.getElementById('video_url').value = config.video_url || '';
+        document.getElementById('marquee_text').value = config.marquee_text || '';
 
+        // Exam Config (Sınıf Birincileri)
         if (config.exam_config) {
             const ec = (typeof config.exam_config === 'string') ? JSON.parse(config.exam_config) : config.exam_config;
             document.getElementById('exam_name').value = ec.name || '';
 
-            // Winners Parsing (Simple Check)
+            // Winners Parsing (5.Sınıf, Ali...)
             const w = ec.winners || '';
-            // Beklenen: "5.Sınıf, Ali, 100\n6.Sınıf, Veli, 200..."
             const lines = w.split('\n');
             lines.forEach(line => {
-                if (line.includes('5.Sınıf')) document.getElementById('winner_5').value = line.split(',').slice(1).join(',').trim();
-                if (line.includes('6.Sınıf')) document.getElementById('winner_6').value = line.split(',').slice(1).join(',').trim();
-                if (line.includes('7.Sınıf')) document.getElementById('winner_7').value = line.split(',').slice(1).join(',').trim();
-                if (line.includes('8.Sınıf')) document.getElementById('winner_8').value = line.split(',').slice(1).join(',').trim();
+                if (line.includes('5.Sınıf')) document.getElementById('winner_5').value = line.split(',')[1].trim();
+                if (line.includes('6.Sınıf')) document.getElementById('winner_6').value = line.split(',')[1].trim();
+                if (line.includes('7.Sınıf')) document.getElementById('winner_7').value = line.split(',')[1].trim();
+                if (line.includes('8.Sınıf')) document.getElementById('winner_8').value = line.split(',')[1].trim();
             });
-        } else if (config.exam_results) {
-            // Eski veri desteği (Migration) - Bu kısım artık winner_X inputları için geçerli değil, kaldırılabilir veya güncellenebilir.
-            // Şimdilik sadece exam_config'i kontrol ediyoruz.
         }
 
+        // Winning Dorms (Kazanan Yurtlar)
         if (config.winning_dorms) {
             const wd = (typeof config.winning_dorms === 'string') ? JSON.parse(config.winning_dorms) : config.winning_dorms;
 
@@ -60,6 +59,7 @@ async function loadData() {
             }
         }
 
+        // Hadis
         if (config.hadith) {
             const h = (typeof config.hadith === 'string') ? JSON.parse(config.hadith) : config.hadith;
             document.getElementById('hadith_text').value = h.text || '';
@@ -67,6 +67,7 @@ async function loadData() {
             document.getElementById('hadith_week').value = h.week || '';
         }
 
+        // Yemek Menüsü
         if (config.menu) {
             const m = (typeof config.menu === 'string') ? JSON.parse(config.menu) : config.menu;
             if (Array.isArray(m)) {
@@ -77,9 +78,9 @@ async function loadData() {
             }
         }
 
+        // Duyurular
         if (config.announcements) {
             const a = (typeof config.announcements === 'string') ? JSON.parse(config.announcements) : config.announcements;
-            // Şimdilik sadece tek duyuru varsayımı veya array ise ilkini textareaya bas
             if (Array.isArray(a) && a.length > 0) document.getElementById('announcements').value = a[0];
             else document.getElementById('announcements').value = a || '';
         }
@@ -88,7 +89,8 @@ async function loadData() {
         console.error("Veri yükleme hatası", e);
     }
 }
-// --- DOSYA YÖNETİMİ ---
+
+// --- FILE UPLOAD (Galeri & Sol Galeri) ---
 let currentBucket = 'galeri';
 
 window.switchTab = async function (bucket) {
@@ -181,95 +183,94 @@ document.getElementById('upload-btn').addEventListener('click', async () => {
     await listFiles();
 });
 
-// İlk yükleme
-loadData();
-listFiles();
-
+// --- SAVE BUTTON ---
 document.getElementById('save-btn').addEventListener('click', async () => {
     const btn = document.getElementById('save-btn');
+    const originalText = btn.innerText;
     btn.innerText = "Kaydediliyor...";
+    btn.disabled = true;
 
-    // Verileri Topla
-    const menuArr = [
-        document.getElementById('menu_1').value,
-        document.getElementById('menu_2').value,
-        document.getElementById('menu_3').value,
-        document.getElementById('menu_4').value
-    ].filter(i => i.trim() !== "");
+    try {
+        // Menu Array
+        const menuArr = [
+            document.getElementById('menu_1').value,
+            document.getElementById('menu_2').value,
+            document.getElementById('menu_3').value,
+            document.getElementById('menu_4').value
+        ].filter(i => i.trim() !== "");
 
-    const updates = [
-        { key: 'video_url', value: document.getElementById('video_url').value },
-        { key: 'marquee_text', value: document.getElementById('marquee_text').value },
-        { key: 'announcements', value: JSON.stringify([document.getElementById('announcements').value]) }, // Array olarak saklayalım
-        { key: 'menu', value: JSON.stringify(menuArr) },
-        {
-            key: 'hadith', value: JSON.stringify({
-                text: document.getElementById('hadith_text').value,
-                arabic: document.getElementById('hadith_arabic').value,
-                week: document.getElementById('hadith_week').value,
-                img: null
+        // Exam Winners String Construction
+        const winnersList = [
+            document.getElementById('winner_5').value ? `5.Sınıf, ${document.getElementById('winner_5').value}` : null,
+            document.getElementById('winner_6').value ? `6.Sınıf, ${document.getElementById('winner_6').value}` : null,
+            document.getElementById('winner_7').value ? `7.Sınıf, ${document.getElementById('winner_7').value}` : null,
+            document.getElementById('winner_8').value ? `8.Sınıf, ${document.getElementById('winner_8').value}` : null
+        ].filter(Boolean).join('\n');
+
+        const updates = [
+            { key: 'video_url', value: document.getElementById('video_url').value },
+            { key: 'marquee_text', value: document.getElementById('marquee_text').value },
+            { key: 'announcements', value: JSON.stringify([document.getElementById('announcements').value]) },
+            { key: 'menu', value: JSON.stringify(menuArr) },
+            {
+                key: 'hadith', value: JSON.stringify({
+                    text: document.getElementById('hadith_text').value,
+                    arabic: document.getElementById('hadith_arabic').value,
+                    week: document.getElementById('hadith_week').value,
+                    img: null
+                })
+            },
+            {
+                key: 'exam_config', value: JSON.stringify({
+                    name: document.getElementById('exam_name').value,
+                    winners: winnersList
+                })
+            },
+            {
+                key: 'winning_dorms', value: JSON.stringify({
+                    dorm1: {
+                        name: document.getElementById('dorm1_name').value,
+                        count: document.getElementById('dorm1_count').value,
+                        s1: document.getElementById('dorm1_s1').value,
+                        s2: document.getElementById('dorm1_s2').value,
+                        s3: document.getElementById('dorm1_s3').value,
+                        s4: document.getElementById('dorm1_s4').value,
+                        s5: document.getElementById('dorm1_s5').value,
+                        s6: document.getElementById('dorm1_s6').value
+                    },
+                    dorm2: {
+                        name: document.getElementById('dorm2_name').value,
+                        count: document.getElementById('dorm2_count').value,
+                        s1: document.getElementById('dorm2_s1').value,
+                        s2: document.getElementById('dorm2_s2').value,
+                        s3: document.getElementById('dorm2_s3').value,
+                        s4: document.getElementById('dorm2_s4').value,
+                        s5: document.getElementById('dorm2_s5').value,
+                        s6: document.getElementById('dorm2_s6').value
+                    }
+                })
+            }
+        ];
+
+        // API Call
+        await Promise.all(updates.map(item =>
+            fetch('/api/save-config', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(item)
             })
-        },
-        {
-            key: 'exam_config', value: JSON.stringify({
-                name: document.getElementById('exam_name').value,
-                winners: [
-                    document.getElementById('winner_5') ? `5.Sınıf, ${document.getElementById('winner_5').value}` : '',
-                    document.getElementById('winner_6') ? `6.Sınıf, ${document.getElementById('winner_6').value}` : '',
-                    document.getElementById('winner_7') ? `7.Sınıf, ${document.getElementById('winner_7').value}` : '',
-                    document.getElementById('winner_8') ? `8.Sınıf, ${document.getElementById('winner_8').value}` : ''
-                ].filter(s => s.split(',')[1].trim() !== '').join('\n')
-            })
-        },
-        document.getElementById('winner_5') ? `5.Sınıf, ${document.getElementById('winner_5').value}` : '',
-        document.getElementById('winner_6') ? `6.Sınıf, ${document.getElementById('winner_6').value}` : '',
-        document.getElementById('winner_7') ? `7.Sınıf, ${document.getElementById('winner_7').value}` : '',
-        document.getElementById('winner_8') ? `8.Sınıf, ${document.getElementById('winner_8').value}` : ''
-    ].filter(s => s.split(',')[1].trim() !== '').join('\n')
-})
-        },
-{
-    key: 'winning_dorms', value: JSON.stringify({
-        dorm1: {
-            name: document.getElementById('dorm1_name').value,
-            count: document.getElementById('dorm1_count').value,
-            s1: document.getElementById('dorm1_s1').value,
-            s2: document.getElementById('dorm1_s2').value,
-            s3: document.getElementById('dorm1_s3').value,
-            s4: document.getElementById('dorm1_s4').value,
-            s5: document.getElementById('dorm1_s5').value,
-            s6: document.getElementById('dorm1_s6').value
-        },
-        dorm2: {
-            name: document.getElementById('dorm2_name').value,
-            count: document.getElementById('dorm2_count').value,
-            s1: document.getElementById('dorm2_s1').value,
-            s2: document.getElementById('dorm2_s2').value,
-            s3: document.getElementById('dorm2_s3').value,
-            s4: document.getElementById('dorm2_s4').value,
-            s5: document.getElementById('dorm2_s5').value,
-            s6: document.getElementById('dorm2_s6').value
-        }
-    })
-}
-    ];
+        ));
 
-try {
-    // Her bir anahtar için API çağrısı (Upsert)
-    // Promise.all ile paralel gönder
-    await Promise.all(updates.map(item =>
-        fetch('/api/save-config', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(item)
-        })
-    ));
-
-    alert("Başarıyla Kaydedildi! ✅");
-    btn.innerHTML = "<span>💾 Kaydet</span>";
-} catch (error) {
-    console.error(error);
-    alert("Hata oluştu!");
-    btn.innerText = "Hata!";
-}
+        alert("Başarıyla kaydedildi!");
+    } catch (e) {
+        console.error(e);
+        alert("Kaydetme hatası: " + e.message);
+    } finally {
+        btn.innerText = originalText;
+        btn.disabled = false;
+    }
 });
+
+// Init
+loadData();
+listFiles();
