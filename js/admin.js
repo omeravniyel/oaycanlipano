@@ -33,19 +33,31 @@ async function loadData() {
             // Şimdilik sadece exam_config'i kontrol ediyoruz.
         }
 
-        if (config.winning_dorm) {
-            const wd = (typeof config.winning_dorm === 'string') ? JSON.parse(config.winning_dorm) : config.winning_dorm;
-            document.getElementById('dorm_name').value = wd.name || '';
-            document.getElementById('dorm_count').value = wd.count || '';
-            document.getElementById('dorm_std_1').value = wd.s1 || '';
-            document.getElementById('dorm_std_2').value = wd.s2 || '';
-            document.getElementById('dorm_std_3').value = wd.s3 || '';
-            document.getElementById('dorm_std_4').value = wd.s4 || '';
-            document.getElementById('dorm_std_5').value = wd.s5 || '';
-            document.getElementById('dorm_std_6').value = wd.s6 || '';
-        } else if (config.clean_room) {
-            // Migration support: clean_room verisi varsa (eski sistem) buraya taşıyabiliriz veya yok sayabiliriz.
-            // Şimdilik temiz bırakalım.
+        if (config.winning_dorms) {
+            const wd = (typeof config.winning_dorms === 'string') ? JSON.parse(config.winning_dorms) : config.winning_dorms;
+
+            // Dorm 1
+            if (wd.dorm1) {
+                document.getElementById('dorm1_name').value = wd.dorm1.name || '';
+                document.getElementById('dorm1_count').value = wd.dorm1.count || '';
+                document.getElementById('dorm1_s1').value = wd.dorm1.s1 || '';
+                document.getElementById('dorm1_s2').value = wd.dorm1.s2 || '';
+                document.getElementById('dorm1_s3').value = wd.dorm1.s3 || '';
+                document.getElementById('dorm1_s4').value = wd.dorm1.s4 || '';
+                document.getElementById('dorm1_s5').value = wd.dorm1.s5 || '';
+                document.getElementById('dorm1_s6').value = wd.dorm1.s6 || '';
+            }
+            // Dorm 2
+            if (wd.dorm2) {
+                document.getElementById('dorm2_name').value = wd.dorm2.name || '';
+                document.getElementById('dorm2_count').value = wd.dorm2.count || '';
+                document.getElementById('dorm2_s1').value = wd.dorm2.s1 || '';
+                document.getElementById('dorm2_s2').value = wd.dorm2.s2 || '';
+                document.getElementById('dorm2_s3').value = wd.dorm2.s3 || '';
+                document.getElementById('dorm2_s4').value = wd.dorm2.s4 || '';
+                document.getElementById('dorm2_s5').value = wd.dorm2.s5 || '';
+                document.getElementById('dorm2_s6').value = wd.dorm2.s6 || '';
+            }
         }
 
         if (config.hadith) {
@@ -205,15 +217,27 @@ document.getElementById('save-btn').addEventListener('click', async () => {
             })
         },
         {
-            key: 'winning_dorm', value: JSON.stringify({
-                name: document.getElementById('dorm_name').value,
-                count: document.getElementById('dorm_count').value,
-                s1: document.getElementById('dorm_std_1').value,
-                s2: document.getElementById('dorm_std_2').value,
-                s3: document.getElementById('dorm_std_3').value,
-                s4: document.getElementById('dorm_std_4').value,
-                s5: document.getElementById('dorm_std_5').value,
-                s6: document.getElementById('dorm_std_6').value
+            key: 'winning_dorms', value: JSON.stringify({
+                dorm1: {
+                    name: document.getElementById('dorm1_name').value,
+                    count: document.getElementById('dorm1_count').value,
+                    s1: document.getElementById('dorm1_s1').value,
+                    s2: document.getElementById('dorm1_s2').value,
+                    s3: document.getElementById('dorm1_s3').value,
+                    s4: document.getElementById('dorm1_s4').value,
+                    s5: document.getElementById('dorm1_s5').value,
+                    s6: document.getElementById('dorm1_s6').value
+                },
+                dorm2: {
+                    name: document.getElementById('dorm2_name').value,
+                    count: document.getElementById('dorm2_count').value,
+                    s1: document.getElementById('dorm2_s1').value,
+                    s2: document.getElementById('dorm2_s2').value,
+                    s3: document.getElementById('dorm2_s3').value,
+                    s4: document.getElementById('dorm2_s4').value,
+                    s5: document.getElementById('dorm2_s5').value,
+                    s6: document.getElementById('dorm2_s6').value
+                }
             })
         }
     ];
