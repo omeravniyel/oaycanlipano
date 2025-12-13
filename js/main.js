@@ -216,7 +216,9 @@ async function fetchConfig() {
 
         // --- 6. Günün Sözü (Footer Marquee) ---
         if (config.quote_of_day) {
-            document.getElementById('marquee-text').innerText = `★ ${config.quote_of_day} ★`;
+            // Virgüllerle ayrılmış sözleri yıldızlarla ayır
+            const quotes = config.quote_of_day.split(',').map(q => q.trim()).filter(q => q);
+            document.getElementById('marquee-text').innerText = quotes.map(q => `★ ${q} ★`).join(' ');
         }
 
         // Eski interval'i temizle
