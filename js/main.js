@@ -227,8 +227,8 @@ async function fetchConfig() {
         // İlk rotasyonu başlat
         rotateInfo();
 
-        // 5 saniyede bir döndür
-        infoRotationInterval = setInterval(rotateInfo, 5000);
+        // 7 saniyede bir döndür
+        infoRotationInterval = setInterval(rotateInfo, 7000);
 
     } catch (error) {
         console.error("Veri çekme hatası:", error);
