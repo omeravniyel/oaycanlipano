@@ -420,33 +420,31 @@ function startLeftGalleryRotation() {
     showLeftGalleryImage();
 }
 
-// Görseli göster
+// Görseli göster (Tek kutu)
 function showLeftGalleryImage() {
-    const hadithOverlay = document.getElementById('hadith-gallery-overlay');
-    const hadithImage = document.getElementById('hadith-gallery-image');
-    const dormOverlay = document.getElementById('dorm-gallery-overlay');
-    const dormImage = document.getElementById('dorm-gallery-image');
+    const galleryContainer = document.getElementById('left-gallery-container');
+    const galleryImage = document.getElementById('left-gallery-image');
+    const normalContent = document.getElementById('left-normal-content');
 
     // Mevcut görseli al
     const currentImage = leftGalleryImages[leftGalleryIndex];
 
-    // Her iki bölümde de aynı görseli göster
-    hadithImage.src = currentImage;
-    dormImage.src = currentImage;
+    // Görseli ayarla
+    galleryImage.src = currentImage;
 
-    // Overlay'leri göster
-    hadithOverlay.classList.remove('hidden');
-    dormOverlay.classList.remove('hidden');
+    // Galeri container'ını göster, normal içeriği gizle
+    galleryContainer.classList.remove('hidden');
+    normalContent.classList.add('hidden');
 
     // Sonraki görsele geç
     leftGalleryIndex++;
 
     // Eğer tüm görseller gösterildiyse
     if (leftGalleryIndex >= leftGalleryImages.length) {
-        // 10 saniye sonra overlay'leri gizle
+        // 10 saniye sonra galeriyi gizle
         leftGalleryTimeout = setTimeout(() => {
-            hadithOverlay.classList.add('hidden');
-            dormOverlay.classList.add('hidden');
+            galleryContainer.classList.add('hidden');
+            normalContent.classList.remove('hidden');
 
             // 20 saniye bekle, sonra tekrar başla
             leftGalleryTimeout = setTimeout(() => {
