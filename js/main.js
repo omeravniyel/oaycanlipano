@@ -251,16 +251,30 @@ function rotateInfo() {
         document.getElementById('info-badge').innerText = item.badge;
         document.getElementById('info-circle-badge').innerText = item.circle;
 
+        // Kart arkaplan rengini değiştir (yemek için özel)
+        const cardContainer = container.parentElement;
+        if (item.type === 'menu') {
+            // Yemek menüsü için özel gradient
+            cardContainer.className = 'w-2/3 bg-gradient-to-br from-orange-500 via-red-500 to-pink-500 rounded-xl shadow-lg p-5 flex flex-col relative overflow-hidden text-white border border-orange-700';
+        } else {
+            // Diğerleri için mor gradient
+            cardContainer.className = 'w-2/3 bg-gradient-to-br from-[#4c1d95] to-[#7c3aed] rounded-xl shadow-lg p-5 flex flex-col relative overflow-hidden text-white border border-purple-800';
+        }
+
         // Circle Style & Text Adjustments based on Type
         const circle = document.getElementById('info-circle-badge');
         if (item.type === 'exam') {
             circle.style.fontSize = '0.9rem'; // Smaller for text like "7.Sınıf"
-            circle.classList.remove('bg-blue-500', 'bg-green-500');
+            circle.classList.remove('bg-blue-500', 'bg-green-500', 'bg-orange-500');
             circle.classList.add('bg-yellow-500');
+        } else if (item.type === 'menu') {
+            circle.style.fontSize = '1.8rem'; // Bigger emoji for menu
+            circle.classList.remove('bg-yellow-500', 'bg-blue-500');
+            circle.classList.add('bg-orange-500');
         } else {
             circle.style.fontSize = '1.5rem'; // Emoji size
-            circle.classList.remove('bg-yellow-500');
-            circle.classList.add(item.type === 'menu' ? 'bg-green-500' : 'bg-blue-500');
+            circle.classList.remove('bg-yellow-500', 'bg-orange-500');
+            circle.classList.add('bg-blue-500');
         }
 
         document.getElementById('info-top-label').innerText = item.topLabel; // "BİRİNCİSİ"
