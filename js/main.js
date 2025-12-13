@@ -322,9 +322,10 @@ function switchMedia(mode) {
                 effect: "fade",
                 centeredSlides: true,
                 autoplay: {
-                    delay: 10000, // 10 Saniye
+                    delay: 12000, // 12 Saniye
                     disableOnInteraction: false,
                 },
+                loop: true, // Sonsuz döngü
             });
 
             // Swiper sonuna gelince videoya dön (Eğer video varsa)
@@ -336,12 +337,9 @@ function switchMedia(mode) {
             // Manuel süre kontrolü daha güvenli
         }
 
-        // Eğer video Varsa, belirli bir süre (örn görsel sayısı * 10sn) sonra tekrar videoya dön
-        if (videoId) {
-            slideIntervalHandle = setTimeout(() => {
-                switchMedia('video');
-            }, galleryImages.length * 10000); // Her resim 10 sn
-        }
+        // Video bitince galeri sürekli döner, videoya geri dönmez
+        // Sadece video varsa ve kullanıcı manuel olarak değiştirmek isterse video tekrar oynar
+
 
     } else {
         // Fallback
