@@ -30,6 +30,14 @@ updateClock();
 // --- Konfigürasyon Çekme ve UI Güncelleme ---
 let infoData = [];
 let infoIndex = 0;
+let infoRotationInterval = null; // Bilgi kartı rotasyon interval'i
+
+// Yatakhane isim rotasyonu için değişkenler
+let dorm1Names = [];
+let dorm2Names = [];
+let dorm1NameIndex = 0;
+let dorm2NameIndex = 0;
+let dormNameRotationInterval = null;
 
 // Verileri API'den Çek
 async function fetchConfig() {
@@ -67,12 +75,16 @@ async function fetchConfig() {
             const d1 = (typeof config.dorm1 === 'string') ? JSON.parse(config.dorm1) : config.dorm1;
             document.getElementById('dorm1-name').innerText = d1.name || '---';
             document.getElementById('dorm1-count').innerText = d1.count ? (d1.count + '.KEZ') : '0.KEZ';
-            document.getElementById('dorm1-s1').innerText = d1.s1 || '---';
-            document.getElementById('dorm1-s2').innerText = d1.s2 || '---';
-            document.getElementById('dorm1-s3').innerText = d1.s3 || '---';
-            document.getElementById('dorm1-s4').innerText = d1.s4 || '---';
-            document.getElementById('dorm1-s5').innerText = d1.s5 || '---';
-            document.getElementById('dorm1-s6').innerText = d1.s6 || '---';
+
+            // İsimleri diziye kaydet
+            dorm1Names = [
+                d1.s1 || '---',
+                d1.s2 || '---',
+                d1.s3 || '---',
+                d1.s4 || '---',
+                d1.s5 || '---',
+                d1.s6 || '---'
+            ].filter(name => name !== '---'); // Boş olanları filtrele
         }
 
         // Yatakhane 2
@@ -80,13 +92,20 @@ async function fetchConfig() {
             const d2 = (typeof config.dorm2 === 'string') ? JSON.parse(config.dorm2) : config.dorm2;
             document.getElementById('dorm2-name').innerText = d2.name || '---';
             document.getElementById('dorm2-count').innerText = d2.count ? (d2.count + '.KEZ') : '0.KEZ';
-            document.getElementById('dorm2-s1').innerText = d2.s1 || '---';
-            document.getElementById('dorm2-s2').innerText = d2.s2 || '---';
-            document.getElementById('dorm2-s3').innerText = d2.s3 || '---';
-            document.getElementById('dorm2-s4').innerText = d2.s4 || '---';
-            document.getElementById('dorm2-s5').innerText = d2.s5 || '---';
-            document.getElementById('dorm2-s6').innerText = d2.s6 || '---';
+
+            // İsimleri diziye kaydet
+            dorm2Names = [
+                d2.s1 || '---',
+                d2.s2 || '---',
+                d2.s3 || '---',
+                d2.s4 || '---',
+                d2.s5 || '---',
+                d2.s6 || '---'
+            ].filter(name => name !== '---'); // Boş olanları filtrele
         }
+
+        // İsim rotasyonunu başlat
+        startDormNameRotation();
 
         // --- 4. Hadis ---
         if (config.hadith) {
@@ -200,8 +219,16 @@ async function fetchConfig() {
             document.getElementById('marquee-text').innerText = config.quote_of_day;
         }
 
+        // Eski interval'i temizle
+        if (infoRotationInterval) {
+            clearInterval(infoRotationInterval);
+        }
+
         // İlk rotasyonu başlat
         rotateInfo();
+
+        // 5 saniyede bir döndür
+        infoRotationInterval = setInterval(rotateInfo, 5000);
 
     } catch (error) {
         console.error("Veri çekme hatası:", error);
@@ -246,6 +273,52 @@ function rotateInfo() {
         infoIndex = (infoIndex + 1) % infoData.length;
 
     }, 500);
+}
+
+// Yatakhane isim rotasyonu
+function startDormNameRotation() {
+    // Mevcut interval'i temizle
+    if (dormNameRotationInterval) {
+        clearInterval(dormNameRotationInterval);
+    }
+
+    // İlk gösterimi yap
+    updateDormNames();
+
+    // 5 saniyede bir güncelle
+    dormNameRotationInterval = setInterval(updateDormNames, 5000);
+}
+
+function updateDormNames() {
+    // Yatakhane 1 için
+    if (dorm1Names.length > 0) {
+        // Tüm slotları temizle
+        for (let i = 1; i <= 6; i++) {
+            document.getElementById(`dorm1-s${i}`).innerText = '---';
+        }
+
+        // Sadece mevcut ismi göster
+        const currentName = dorm1Names[dorm1NameIndex];
+        document.getElementById(`dorm1-s${(dorm1NameIndex % 6) + 1}`).innerText = currentName;
+
+        // İndeksi artır
+        dorm1NameIndex = (dorm1NameIndex + 1) % dorm1Names.length;
+    }
+
+    // Yatakhane 2 için
+    if (dorm2Names.length > 0) {
+        // Tüm slotları temizle
+        for (let i = 1; i <= 6; i++) {
+            document.getElementById(`dorm2-s${i}`).innerText = '---';
+        }
+
+        // Sadece mevcut ismi göster
+        const currentName = dorm2Names[dorm2NameIndex];
+        document.getElementById(`dorm2-s${(dorm2NameIndex % 6) + 1}`).innerText = currentName;
+
+        // İndeksi artır
+        dorm2NameIndex = (dorm2NameIndex + 1) % dorm2Names.length;
+    }
 }
 
 // Başlangıçta verileri çek
