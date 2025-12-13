@@ -61,21 +61,31 @@ async function fetchConfig() {
             else switchMedia('slide');
         }
 
-        // --- 3. Kazanan Yatakhane ---
-        if (config.winning_dorm) {
-            const wd = (typeof config.winning_dorm === 'string') ? JSON.parse(config.winning_dorm) : config.winning_dorm;
-            document.getElementById('dorm-name').innerText = wd.name ? (wd.name + " NOLU ODA") : '---';
-            document.getElementById('dorm-count').innerText = wd.count ? (wd.count + ". KEZ") : '';
+        // --- 3. Kazanan Yatakhaneler ---
+        // Yatakhane 1
+        if (config.dorm1) {
+            const d1 = (typeof config.dorm1 === 'string') ? JSON.parse(config.dorm1) : config.dorm1;
+            document.getElementById('dorm1-name').innerText = d1.name || '---';
+            document.getElementById('dorm1-count').innerText = d1.count ? (d1.count + '.KEZ') : '0.KEZ';
+            document.getElementById('dorm1-s1').innerText = d1.s1 || '---';
+            document.getElementById('dorm1-s2').innerText = d1.s2 || '---';
+            document.getElementById('dorm1-s3').innerText = d1.s3 || '---';
+            document.getElementById('dorm1-s4').innerText = d1.s4 || '---';
+            document.getElementById('dorm1-s5').innerText = d1.s5 || '---';
+            document.getElementById('dorm1-s6').innerText = d1.s6 || '---';
+        }
 
-            document.getElementById('dorm-s1').innerText = wd.s1 || '';
-            document.getElementById('dorm-s2').innerText = wd.s2 || '';
-            document.getElementById('dorm-s3').innerText = wd.s3 || '';
-            document.getElementById('dorm-s4').innerText = wd.s4 || '';
-            document.getElementById('dorm-s5').innerText = wd.s5 || '';
-            document.getElementById('dorm-s6').innerText = wd.s6 || '';
-        } else if (config.clean_room) {
-            // Eski Veri Desteği (Opsiyonel, geçici olarak boş bırakılabilir ya da eski veriyi uydurabiliriz)
-            // Yeni tasarım çok farklı olduğu için eski veriyi göstermeyelim.
+        // Yatakhane 2
+        if (config.dorm2) {
+            const d2 = (typeof config.dorm2 === 'string') ? JSON.parse(config.dorm2) : config.dorm2;
+            document.getElementById('dorm2-name').innerText = d2.name || '---';
+            document.getElementById('dorm2-count').innerText = d2.count ? (d2.count + '.KEZ') : '0.KEZ';
+            document.getElementById('dorm2-s1').innerText = d2.s1 || '---';
+            document.getElementById('dorm2-s2').innerText = d2.s2 || '---';
+            document.getElementById('dorm2-s3').innerText = d2.s3 || '---';
+            document.getElementById('dorm2-s4').innerText = d2.s4 || '---';
+            document.getElementById('dorm2-s5').innerText = d2.s5 || '---';
+            document.getElementById('dorm2-s6').innerText = d2.s6 || '---';
         }
 
         // --- 4. Hadis ---
@@ -184,6 +194,12 @@ async function fetchConfig() {
         if (infoData.length === 0) {
             infoData.push({ type: 'duyuru', title: 'Hoşgeldiniz', badge: 'Sistem', circle: '👋', topLabel: 'DURUM', content: "Veri bekleniyor..." });
         }
+
+        // --- 6. Günün Sözü (Footer Marquee) ---
+        if (config.quote_of_day) {
+            document.getElementById('marquee-text').innerText = config.quote_of_day;
+        }
+
 
     } catch (error) {
         console.error("Veri çekme hatası:", error);
