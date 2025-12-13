@@ -250,13 +250,12 @@ var currentMediaState = 'none'; // 'video', 'slide'
 var videoId = null;
 var slideIntervalHandle = null;
 
-// Galeriyi Çek
+// Galeriyi Çek (Yerel klasörden)
 async function fetchGalleryImages() {
     try {
-        const { data, error } = await supabase.storage.from('galeri').list();
-        if (!error && data) {
-            galleryImages = data.map(f => supabase.storage.from('galeri').getPublicUrl(f.name).data.publicUrl);
-        }
+        const res = await fetch('/api/get-gallery');
+        const data = await res.json();
+        galleryImages = data.images || [];
 
         // Swiper Wrapper Güncelle
         const wrapper = document.getElementById('slide-wrapper');
@@ -268,7 +267,11 @@ async function fetchGalleryImages() {
             wrapper.appendChild(slide);
         });
 
-    } catch (e) { console.error("Galeri hatası", e); }
+        console.log('Galeri görselleri yüklendi:', galleryImages.length);
+
+    } catch (e) {
+        console.error("Galeri hatası", e);
+    }
 }
 
 function onYouTubeIframeAPIReady() {
