@@ -216,7 +216,7 @@ async function fetchConfig() {
 
         // --- 6. Günün Sözü (Footer Marquee) ---
         if (config.quote_of_day) {
-            document.getElementById('marquee-text').innerText = config.quote_of_day;
+            document.getElementById('marquee-text').innerText = `★ ${config.quote_of_day} ★`;
         }
 
         // Eski interval'i temizle
