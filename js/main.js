@@ -387,3 +387,78 @@ async function fetchWeather() {
 // Initial Fetch and Interval
 fetchWeather();
 setInterval(fetchWeather, 30 * 60 * 1000); // 30 Mins
+
+// --- SOL GALERİ ROTASYONU ---
+let leftGalleryImages = [];
+let leftGalleryIndex = 0;
+let leftGalleryTimeout = null;
+
+// Sol galeri görsellerini yükle
+async function fetchLeftGalleryImages() {
+    try {
+        const res = await fetch('/api/get-left-gallery');
+        const data = await res.json();
+        leftGalleryImages = data.images || [];
+
+        // Eğer görseller varsa rotasyonu başlat
+        if (leftGalleryImages.length > 0) {
+            startLeftGalleryRotation();
+        }
+    } catch (error) {
+        console.error('Sol galeri yükleme hatası:', error);
+    }
+}
+
+// Sol galeri rotasyonunu başlat
+function startLeftGalleryRotation() {
+    if (leftGalleryImages.length === 0) return;
+
+    // Mevcut timeout'u temizle
+    if (leftGalleryTimeout) clearTimeout(leftGalleryTimeout);
+
+    // Görseli göster
+    showLeftGalleryImage();
+}
+
+// Görseli göster
+function showLeftGalleryImage() {
+    const hadithOverlay = document.getElementById('hadith-gallery-overlay');
+    const hadithImage = document.getElementById('hadith-gallery-image');
+    const dormOverlay = document.getElementById('dorm-gallery-overlay');
+    const dormImage = document.getElementById('dorm-gallery-image');
+
+    // Mevcut görseli al
+    const currentImage = leftGalleryImages[leftGalleryIndex];
+
+    // Her iki bölümde de aynı görseli göster
+    hadithImage.src = currentImage;
+    dormImage.src = currentImage;
+
+    // Overlay'leri göster
+    hadithOverlay.classList.remove('hidden');
+    dormOverlay.classList.remove('hidden');
+
+    // Sonraki görsele geç
+    leftGalleryIndex++;
+
+    // Eğer tüm görseller gösterildiyse
+    if (leftGalleryIndex >= leftGalleryImages.length) {
+        // 10 saniye sonra overlay'leri gizle
+        leftGalleryTimeout = setTimeout(() => {
+            hadithOverlay.classList.add('hidden');
+            dormOverlay.classList.add('hidden');
+
+            // 20 saniye bekle, sonra tekrar başla
+            leftGalleryTimeout = setTimeout(() => {
+                leftGalleryIndex = 0;
+                showLeftGalleryImage();
+            }, 20000); // 20 saniye bekleme
+        }, 10000); // Son görseli 10 saniye göster
+    } else {
+        // 10 saniye sonra bir sonraki görseli göster
+        leftGalleryTimeout = setTimeout(showLeftGalleryImage, 10000);
+    }
+}
+
+// Sayfa yüklendiğinde sol galeriyi başlat
+fetchLeftGalleryImages();
