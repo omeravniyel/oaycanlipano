@@ -200,17 +200,11 @@ async function fetchConfig() {
             document.getElementById('marquee-text').innerText = config.quote_of_day;
         }
 
+        // İlk rotasyonu başlat
+        rotateInfo();
 
     } catch (error) {
         console.error("Veri çekme hatası:", error);
-        // Başlangıçta verileri çek
-        fetchConfig();
-        // Her 10 saniyede bir verileri güncelle (Admin'de yapılan değişiklikler hızlı yansısın)
-        setInterval(fetchConfig, 10000);
-
-        // Start Rotation
-        rotateInfo();
-        setInterval(rotateInfo, 5500);
     }
 }
 
