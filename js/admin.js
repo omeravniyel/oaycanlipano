@@ -18,6 +18,25 @@ function removeAnnouncement(btn) {
     btn.parentElement.remove();
 }
 
+// Sınav kazananı ekleme
+function addExamWinner() {
+    const container = document.getElementById('exam-winners-container');
+    const div = document.createElement('div');
+    div.className = 'flex gap-2 items-center';
+    div.innerHTML = `
+        <input type="text" class="exam-class flex-1 px-3 py-2 border border-gray-300 rounded-lg" placeholder="Sınıf (örn: 7.Sınıf)">
+        <input type="text" class="exam-student flex-1 px-3 py-2 border border-gray-300 rounded-lg" placeholder="İsim Soyisim">
+        <input type="number" class="exam-score w-32 px-3 py-2 border border-gray-300 rounded-lg" placeholder="Puan">
+        <button type="button" onclick="removeExamWinner(this)" class="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Sil</button>
+    `;
+    container.appendChild(div);
+}
+
+// Sınav kazananı silme
+function removeExamWinner(btn) {
+    btn.parentElement.remove();
+}
+
 // Mesaj gösterme
 function showMessage(message, type = 'success') {
     const container = document.getElementById('message-container');
@@ -92,7 +111,28 @@ async function loadData() {
         if (config.exam_config) {
             const exam = typeof config.exam_config === 'string' ? JSON.parse(config.exam_config) : config.exam_config;
             document.getElementById('exam-name').value = exam.name || '';
-            document.getElementById('exam-winners').value = exam.winners || '';
+
+            // Kazananları yükle
+            if (exam.winners) {
+                const container = document.getElementById('exam-winners-container');
+                container.innerHTML = '';
+                const lines = exam.winners.split('\n').filter(l => l.trim() !== '');
+
+                lines.forEach(line => {
+                    const parts = line.split(',');
+                    if (parts.length >= 3) {
+                        const div = document.createElement('div');
+                        div.className = 'flex gap-2 items-center';
+                        div.innerHTML = `
+                            <input type="text" class="exam-class flex-1 px-3 py-2 border border-gray-300 rounded-lg" value="${parts[0].trim()}" placeholder="Sınıf (örn: 7.Sınıf)">
+                            <input type="text" class="exam-student flex-1 px-3 py-2 border border-gray-300 rounded-lg" value="${parts[1].trim()}" placeholder="İsim Soyisim">
+                            <input type="number" class="exam-score w-32 px-3 py-2 border border-gray-300 rounded-lg" value="${parts[2].trim()}" placeholder="Puan">
+                            <button type="button" onclick="removeExamWinner(this)" class="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Sil</button>
+                        `;
+                        container.appendChild(div);
+                    }
+                });
+            }
         }
 
         // Günün Sözü
@@ -159,9 +199,27 @@ document.getElementById('admin-form').addEventListener('submit', async (e) => {
             .filter(val => val !== '');
 
         // Sınav
+        const examWinnerRows = document.querySelectorAll('#exam-winners-container > div');
+        const examWinners = [];
+        examWinnerRows.forEach(row => {
+            const classInput = row.querySelector('.exam-class');
+            const studentInput = row.querySelector('.exam-student');
+            const scoreInput = row.querySelector('.exam-score');
+
+            if (classInput && studentInput && scoreInput) {
+                const classVal = classInput.value.trim();
+                const studentVal = studentInput.value.trim();
+                const scoreVal = scoreInput.value.trim();
+
+                if (classVal && studentVal && scoreVal) {
+                    examWinners.push(`${classVal},${studentVal},${scoreVal}`);
+                }
+            }
+        });
+
         const exam_config = {
             name: document.getElementById('exam-name').value,
-            winners: document.getElementById('exam-winners').value
+            winners: examWinners.join('\n')
         };
 
         // Günün Sözü
