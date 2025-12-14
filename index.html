@@ -63,13 +63,13 @@
     </style>
 </head>
 
-<body class="h-screen w-screen flex flex-col p-3 gap-3 box-border bg-[#eef2f6]">
+<body class="min-h-screen w-screen flex flex-col p-3 gap-3 box-border bg-[#eef2f6] overflow-y-auto lg:overflow-hidden">
 
     <!-- Ana İçerik Grid -->
-    <div class="grid grid-cols-12 gap-3 flex-grow h-[calc(100%-4rem)]">
+    <div class="flex flex-col lg:grid lg:grid-cols-12 gap-3 flex-grow lg:h-[calc(100%-4rem)] h-auto">
 
         <!-- SOL SÜTUN (5 Birim) -->
-        <div class="col-span-5 flex flex-col gap-3 h-full">
+        <div class="w-full lg:col-span-5 flex flex-col gap-3 lg:h-full h-auto">
 
             <!-- HEADER -->
             <div class="bg-[#1e1f35] rounded-xl shadow-lg p-3 flex items-center justify-between text-white flex-[0.8]">
@@ -94,7 +94,7 @@
 
 
             <!-- HADİS VE YATAKHANE BİRLEŞİK ALAN (Galeri için) -->
-            <div class="flex-[7.2] relative rounded-xl overflow-hidden">
+            <div class="flex-[7.2] relative rounded-xl overflow-hidden min-h-[400px] lg:min-h-0">
 
                 <!-- Sol Galeri (Tek Kutu) -->
                 <div id="left-gallery-container"
@@ -218,11 +218,11 @@
         </div>
 
         <!-- SAĞ SÜTUN (7 Birim) -->
-        <div class="col-span-7 flex flex-col gap-3 h-full">
+        <div class="w-full lg:col-span-7 flex flex-col gap-3 lg:h-full h-auto">
 
             <!-- VİDEO ALANI -->
             <div
-                class="bg-black rounded-xl shadow-lg overflow-hidden flex-[2.5] relative group border-4 border-[#1e1f35]">
+                class="bg-black rounded-xl shadow-lg overflow-hidden flex-[2.5] relative group border-4 border-[#1e1f35] min-h-[250px] lg:min-h-0">
                 <div id="player" class="absolute inset-0 w-full h-full"></div>
                 <div class="swiper mySwiper absolute inset-0 w-full h-full hidden">
                     <div class="swiper-wrapper" id="slide-wrapper"></div>
