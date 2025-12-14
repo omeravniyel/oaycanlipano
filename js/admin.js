@@ -1,6 +1,14 @@
 // Admin Panel JavaScript
 console.log("Admin panel yüklendi");
 
+// Authentication Control
+const CURRENT_SLUG = localStorage.getItem('admin_slug');
+const CURRENT_PASSWORD = localStorage.getItem('admin_password');
+
+if (!CURRENT_SLUG) {
+    window.location.href = '/login.html';
+}
+
 // Duyuru ekleme
 function addAnnouncement() {
     const container = document.getElementById('announcements-container');
@@ -54,8 +62,15 @@ function showMessage(message, type = 'success') {
 // Verileri yükle
 async function loadData() {
     try {
-        const res = await fetch('/api/get-config');
+        const res = await fetch(`/api/get-config?slug=${CURRENT_SLUG}`);
         const config = await res.json();
+
+        // --- 0. Kurum Ayarları ---
+        if (config.institution_title) document.getElementById('institution-title').value = config.institution_title;
+        if (config.institution_subtitle) document.getElementById('institution-subtitle').value = config.institution_subtitle;
+        if (config.institution_slogan1) document.getElementById('institution-slogan1').value = config.institution_slogan1;
+        if (config.institution_slogan2) document.getElementById('institution-slogan2').value = config.institution_slogan2;
+        if (config.institution_logo) document.getElementById('institution-logo').value = config.institution_logo;
 
         // Hadis
         if (config.hadith) {
@@ -148,7 +163,7 @@ async function loadData() {
         console.log('Veriler yüklendi');
     } catch (error) {
         console.error('Veri yükleme hatası:', error);
-        showMessage('Veriler yüklenirken hata oluştu!', 'error');
+        showMessage('Veriler yüklenirken hata oluştu! Girdiğiniz link yanlış olabilir mi?', 'error');
     }
 }
 
@@ -228,25 +243,39 @@ document.getElementById('admin-form').addEventListener('submit', async (e) => {
         // Video URL
         const video_url = document.getElementById('video-url').value;
 
-        // Tüm verileri kaydet
-        const dataToSave = [
-            { key: 'hadith', value: JSON.stringify(hadith) },
-            { key: 'dorm1', value: JSON.stringify(dorm1) },
-            { key: 'dorm2', value: JSON.stringify(dorm2) },
-            { key: 'announcements', value: JSON.stringify(announcements) },
-            { key: 'exam_config', value: JSON.stringify(exam_config) },
-            { key: 'quote_of_day', value: quote_of_day },
-            { key: 'video_url', value: video_url }
-        ];
+        // Kurum Ayarları
+        const institution_title = document.getElementById('institution-title').value;
+        const institution_subtitle = document.getElementById('institution-subtitle').value;
+        const institution_slogan1 = document.getElementById('institution-slogan1').value;
+        const institution_slogan2 = document.getElementById('institution-slogan2').value;
+        const institution_logo = document.getElementById('institution-logo').value;
 
-        // Her bir veriyi kaydet
-        for (const item of dataToSave) {
-            await fetch('/api/save-config', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(item)
-            });
-        }
+        // Tüm verileri tek bir objede topla (Yeni sistem)
+        const newConfig = {
+            hadith: JSON.stringify(hadith),
+            dorm1: JSON.stringify(dorm1),
+            dorm2: JSON.stringify(dorm2),
+            announcements: JSON.stringify(announcements),
+            exam_config: JSON.stringify(exam_config),
+            quote_of_day,
+            video_url,
+            institution_title,
+            institution_subtitle,
+            institution_slogan1,
+            institution_slogan2,
+            institution_logo
+        };
+
+        // Kaydet (Tek seferde)
+        await fetch('/api/save-config', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                slug: CURRENT_SLUG,
+                password: CURRENT_PASSWORD,
+                config: newConfig
+            })
+        });
 
         showMessage('✅ Tüm veriler başarıyla kaydedildi!', 'success');
 

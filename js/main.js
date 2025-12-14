@@ -42,8 +42,28 @@ let dormNameRotationInterval = null;
 // Verileri API'den Çek
 async function fetchConfig() {
     try {
-        const res = await fetch('/api/get-config');
+        // URL'den slug'ı al (örn: kartaltepe.com/omeravniyel -> slug: omeravniyel)
+        const path = window.location.pathname;
+        const slug = path.split('/')[1] || ''; // Boşsa varsayılanı API halleder
+
+        const res = await fetch(`/api/get-config?slug=${slug}`);
         const config = await res.json();
+
+        // --- 0. Header Bilgileri ---
+        if (config.institution_title) document.getElementById('header-title').innerText = config.institution_title;
+        else document.getElementById('header-title').innerText = 'ÖMER AVNİ YEL';
+
+        if (config.institution_subtitle) document.getElementById('header-subtitle').innerText = config.institution_subtitle;
+        else document.getElementById('header-subtitle').innerText = 'ÖĞRENCİ YURDU - DİJİTAL PANO';
+
+        if (config.institution_slogan1) document.getElementById('header-slogan1').innerText = config.institution_slogan1;
+        else document.getElementById('header-slogan1').innerText = 'ilgiyle bilginin';
+
+        if (config.institution_slogan2) document.getElementById('header-slogan2').innerText = config.institution_slogan2;
+        else document.getElementById('header-slogan2').innerText = 'buluştuğu yer';
+
+        if (config.institution_logo) document.getElementById('header-logo').src = config.institution_logo;
+        // else default logo kalır
 
         // --- 1. Galeri & Video Ayarla ---
         // Önce resimleri çekelim (Eğer boşsa)
