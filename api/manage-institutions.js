@@ -35,7 +35,8 @@ export default async function handler(request, response) {
 
         // --- EKLEME / GÜNCELLEME ---
         if (action === 'upsert') {
-            const { slug, name, password, logo, subtitle, slogan1, slogan2 } = payload;
+            let { slug, name, password, logo, subtitle, slogan1, slogan2 } = payload;
+            slug = slug.trim(); // Boşlukları temizle
 
             // 1. Önce bu kurum var mı kontrol et
             const { data: existing, error: fetchError } = await supabase

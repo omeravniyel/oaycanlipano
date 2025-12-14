@@ -252,8 +252,8 @@
             submitBtn.innerText = "⏳ İşleniyor...";
 
             const payload = {
-                name: document.getElementById('new-name').value,
-                slug: document.getElementById('new-slug').value,
+                name: document.getElementById('new-name').value.trim(),
+                slug: document.getElementById('new-slug').value.trim(),
                 password: document.getElementById('new-password').value,
                 logo: document.getElementById('new-logo').value,
                 subtitle: document.getElementById('new-subtitle').value,
