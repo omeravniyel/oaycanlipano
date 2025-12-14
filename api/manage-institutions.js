@@ -35,7 +35,7 @@ export default async function handler(request, response) {
 
         // --- EKLEME / GÜNCELLEME ---
         if (action === 'upsert') {
-            const { slug, name, password, logo } = payload;
+            const { slug, name, password, logo, subtitle, slogan1, slogan2 } = payload;
 
             // 1. Önce bu kurum var mı kontrol et
             const { data: existing, error: fetchError } = await supabase
@@ -48,18 +48,19 @@ export default async function handler(request, response) {
 
             if (existing) {
                 // --- GÜNCELLEME (UPDATE) ---
-                // Mevcut config'i koru, sadece logo ve başlık güncelle
                 const updatedConfig = existing.config || {};
-                updatedConfig.institution_title = name; // İsim değişirse başlık da değişsin
+
+                // Gelen değerleri güncelle
+                updatedConfig.institution_title = name;
                 if (logo) updatedConfig.institution_logo = logo;
+                // Opsiyonel alanlar
+                if (subtitle) updatedConfig.institution_subtitle = subtitle;
+                if (slogan1) updatedConfig.institution_slogan1 = slogan1;
+                if (slogan2) updatedConfig.institution_slogan2 = slogan2;
 
                 const { data, error } = await supabase
                     .from('institutions')
-                    .update({
-                        name,
-                        password,
-                        config: updatedConfig
-                    })
+                    .update({ name, password, config: updatedConfig })
                     .eq('slug', slug)
                     .select();
 
@@ -70,9 +71,9 @@ export default async function handler(request, response) {
                 // --- YENİ KAYIT (INSERT) ---
                 const defaultConfig = {
                     institution_title: name,
-                    institution_subtitle: 'DİJİTAL PANO SİSTEMİ',
-                    institution_slogan1: 'Hoşgeldiniz',
-                    institution_slogan2: 'Bilgi Ekranı',
+                    institution_subtitle: subtitle || 'DİJİTAL PANO SİSTEMİ',
+                    institution_slogan1: slogan1 || 'Hoşgeldiniz',
+                    institution_slogan2: slogan2 || 'Bilgi Ekranı',
                     institution_logo: logo || '',
                     announcements: [],
                     menu: []
@@ -80,12 +81,7 @@ export default async function handler(request, response) {
 
                 const { data, error } = await supabase
                     .from('institutions')
-                    .insert({
-                        slug,
-                        name,
-                        password,
-                        config: defaultConfig
-                    })
+                    .insert({ slug, name, password, config: defaultConfig })
                     .select();
 
                 if (error) throw error;
