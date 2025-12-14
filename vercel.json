@@ -17,6 +17,10 @@
             "destination": "/super-admin.html"
         },
         {
+            "source": "/:slug/admin",
+            "destination": "/login.html"
+        },
+        {
             "source": "/login",
             "destination": "/login.html"
         },

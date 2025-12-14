@@ -1,0 +1,108 @@
+
+// --- BİLGİ KARTI ROTASYONU (Duyuru -> Menü -> Sınav) ---
+let infoState = 0; // 0: Duyuru, 1: Menü, 2: Sınav
+const infoRotationInterval = 15000; // 15 saniyede bir değiş
+
+function rotateInfo() {
+    const cardTitle = document.getElementById('info-title');
+    const cardBadge = document.getElementById('info-badge');
+    const badgeIcon = document.getElementById('info-circle-badge'); // Yuvarlak ikon
+    const topLabel = document.getElementById('info-top-label');
+    const mainText = document.getElementById('info-main-text');
+    const infoContainer = document.getElementById('info-carousel').parentElement; // Arkaplan rengi için
+
+    // Elementler yoksa dur (Hata önlemi)
+    if (!cardTitle || !mainText) return;
+
+    // Bir sonraki moda geç
+    infoState = (infoState + 1) % 3;
+
+    // --- 1. MENÜ MODU ---
+    if (infoState === 1) {
+        // Eğer menü yoksa bir sonrakine geç (Sınav veya Duyuru)
+        if (!window.lunchMenu && !window.dinnerMenu) {
+            rotateInfo();
+            return;
+        }
+
+        // Tasarım Değişimi (Turuncu/Yemek)
+        // Mevcut gradient'i temizle ve yenisini ekle
+        infoContainer.className = "w-2/3 bg-gradient-to-br from-orange-600 to-red-600 rounded-xl shadow-lg p-5 flex flex-col relative overflow-hidden text-white border border-orange-800 transition-colors duration-1000";
+        
+        cardTitle.innerText = "GÜNÜN YEMEĞİ";
+        cardBadge.innerText = "AFİYET OLSUN";
+        cardBadge.className = "bg-white/10 text-[0.6rem] px-2 py-1 rounded uppercase tracking-wider font-bold text-orange-100";
+        badgeIcon.innerHTML = "🍽️";
+        badgeIcon.className = "w-16 h-16 rounded-full bg-white text-orange-600 flex items-center justify-center font-bold text-2xl shadow-lg border-4 border-orange-200 transform -rotate-6";
+        
+        topLabel.innerText = "YEMEK LİSTESİ";
+        
+        // İçerik Hazırla
+        let menuHTML = '<div class="flex flex-col gap-2 w-full">';
+        if (window.lunchMenu) {
+            menuHTML += `
+                <div class="bg-black/20 p-2 rounded-lg">
+                    <div class="text-[0.6rem] text-orange-200 font-bold tracking-widest mb-1">ÖĞLE YEMEĞİ</div>
+                    <div class="text-sm font-medium leading-snug whitespace-pre-line">${window.lunchMenu}</div>
+                </div>`;
+        }
+        if (window.dinnerMenu) {
+            menuHTML += `
+                <div class="bg-black/20 p-2 rounded-lg">
+                    <div class="text-[0.6rem] text-orange-200 font-bold tracking-widest mb-1">AKŞAM YEMEĞİ</div>
+                    <div class="text-sm font-medium leading-snug whitespace-pre-line">${window.dinnerMenu}</div>
+                </div>`;
+        }
+        menuHTML += '</div>';
+        
+        mainText.innerHTML = menuHTML;
+        mainText.className = "text-base font-normal tracking-wide w-full"; // Font ayarı
+        return;
+    }
+
+    // --- 2. SINAV MODU ---
+    if (infoState === 2) {
+        // Sınav sonucu kontrolü (Şimdilik global bir değişken yoksa pas geçebiliriz ama admin panelinde exam_config var)
+        // Basitlik için şimdilik pas geçiyorum, ilerde sınav entegrasyonu tam yapılınca açılır.
+        // Hatta kullanıcı sınavdan bahsetmediği için sadece Duyuru ve Menü arasında dönmesi daha güvenli.
+        
+        /* 
+        // Sınav mantığı eklenecekse buraya
+        infoContainer.className = "w-2/3 bg-gradient-to-br from-green-600 to-emerald-600 ...";
+        ...
+        */
+
+        // Şimdilik pas geç
+        rotateInfo();
+        return;
+    }
+
+    // --- 0. DUYURU MODU (Varsayılan) ---
+    // Mavi/Mor degrade (Orijinal)
+    infoContainer.className = "w-2/3 bg-gradient-to-br from-[#4c1d95] to-[#7c3aed] rounded-xl shadow-lg p-5 flex flex-col relative overflow-hidden text-white border border-purple-800 transition-colors duration-1000";
+
+    cardTitle.innerText = "DUYURULAR";
+    cardBadge.innerText = "PANOMUZ";
+    cardBadge.className = "bg-white/10 text-[0.6rem] px-2 py-1 rounded uppercase tracking-wider font-bold text-purple-100";
+    badgeIcon.innerHTML = "📢";
+    badgeIcon.className = "w-16 h-16 rounded-full bg-yellow-500 flex items-center justify-center text-white font-bold text-lg shadow-lg border-4 border-yellow-300 transform -rotate-6";
+
+    topLabel.innerText = "BİLGİLENDİRME";
+    mainText.className = "text-2xl font-bold tracking-tight"; // Font büyük
+
+    if (announcements && announcements.length > 0) {
+        // Rastgele duyuru
+        const randomIndex = Math.floor(Math.random() * announcements.length);
+        mainText.innerText = announcements[randomIndex];
+    } else {
+        mainText.innerText = "Hoşgeldiniz. Güncel bir duyuru bulunmamaktadır.";
+    }
+}
+
+// Global announcements değişkeni (fetchConfig dolduracak)
+var announcements = [];
+
+// Başlat
+setInterval(rotateInfo, infoRotationInterval);
+// İlk çalıştır (Biraz gecikmeli ki config yüklensin)
+setTimeout(rotateInfo, 2000);
