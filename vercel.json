@@ -13,6 +13,10 @@
             "destination": "/setup-db.html"
         },
         {
+            "source": "/super-admin",
+            "destination": "/super-admin.html"
+        },
+        {
             "source": "/login",
             "destination": "/login.html"
         },
