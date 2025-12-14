@@ -37,32 +37,62 @@ export default async function handler(request, response) {
         if (action === 'upsert') {
             const { slug, name, password, logo } = payload;
 
-            // Varsayılan config yapısı
-            const defaultConfig = {
-                institution_title: name,
-                institution_subtitle: 'DİJİTAL PANO SİSTEMİ',
-                institution_slogan1: 'Hoşgeldiniz',
-                institution_slogan2: 'Bilgi Ekranı',
-                institution_logo: logo || '',
-                // Diğerleri boş gelsin
-                announcements: [],
-                menu: []
-            };
-
-            // Önce mevcut var mı bak (Sadece config'i merge etmek isterseniz)
-            // Ama burada basitçe yeni oluşturuyoruz veya üzerine yazıyoruz.
-            const { data, error } = await supabase
+            // 1. Önce bu kurum var mı kontrol et
+            const { data: existing, error: fetchError } = await supabase
                 .from('institutions')
-                .upsert({
-                    slug,
-                    name,
-                    password,
-                    config: defaultConfig // Not: Bu işlem mevcut config'i sıfırlar! Dikkatli kullanım için UI uyarısı eklenmeli.
-                })
-                .select();
+                .select('*')
+                .eq('slug', slug)
+                .single();
 
-            if (error) throw error;
-            return response.status(200).json({ success: true, data });
+            let result;
+
+            if (existing) {
+                // --- GÜNCELLEME (UPDATE) ---
+                // Mevcut config'i koru, sadece logo ve başlık güncelle
+                const updatedConfig = existing.config || {};
+                updatedConfig.institution_title = name; // İsim değişirse başlık da değişsin
+                if (logo) updatedConfig.institution_logo = logo;
+
+                const { data, error } = await supabase
+                    .from('institutions')
+                    .update({
+                        name,
+                        password,
+                        config: updatedConfig
+                    })
+                    .eq('slug', slug)
+                    .select();
+
+                if (error) throw error;
+                result = data;
+
+            } else {
+                // --- YENİ KAYIT (INSERT) ---
+                const defaultConfig = {
+                    institution_title: name,
+                    institution_subtitle: 'DİJİTAL PANO SİSTEMİ',
+                    institution_slogan1: 'Hoşgeldiniz',
+                    institution_slogan2: 'Bilgi Ekranı',
+                    institution_logo: logo || '',
+                    announcements: [],
+                    menu: []
+                };
+
+                const { data, error } = await supabase
+                    .from('institutions')
+                    .insert({
+                        slug,
+                        name,
+                        password,
+                        config: defaultConfig
+                    })
+                    .select();
+
+                if (error) throw error;
+                result = data;
+            }
+
+            return response.status(200).json({ success: true, data: result });
         }
 
         // --- SİLME ---
