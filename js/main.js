@@ -49,11 +49,16 @@ async function fetchConfig() {
         const res = await fetch(`/api/get-config?slug=${slug}`);
 
         if (res.status === 404) {
+            let errInfo = {};
+            try { errInfo = await res.json(); } catch (e) { }
+
             document.body.innerHTML = `
                 <div class="flex flex-col items-center justify-center h-screen bg-slate-900 text-white">
                     <div class="text-6xl mb-4">⚠️</div>
                     <h1 class="text-3xl font-bold mb-2">Kurum Bulunamadı</h1>
-                    <p class="text-slate-400">"${slug}" adında bir sistem kaydı mevcut değil.</p>
+                    <p class="text-slate-400">Aranan: "${slug}"</p>
+                    <p class="text-slate-500 text-sm mt-2">Sunucuya Giden: "${errInfo.receivedSlug || '??'}"</p>
+                    ${errInfo.dbError ? `<p class="text-red-400 text-xs mt-2">DB Hatası: ${errInfo.dbError.message || JSON.stringify(errInfo.dbError)}</p>` : ''}
                 </div>`;
             return;
         }

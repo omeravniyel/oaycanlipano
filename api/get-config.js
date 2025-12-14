@@ -16,12 +16,14 @@ export default async function handler(request, response) {
         .from('institutions')
         .select('config')
         .eq('slug', slug)
-        .single();
+        .limit(1);
 
-    if (error || !data) {
-        return response.status(404).json({ error: 'Kurum bulunamadı' });
+    const record = (data && data.length > 0) ? data[0] : null;
+
+    if (error || !record) {
+        return response.status(404).json({ error: 'Kurum bulunamadı', receivedSlug: slug, dbError: error });
     }
 
     // Config JSON kolonunu direkt döndür
-    return response.status(200).json(data.config || {});
+    return response.status(200).json(record.config || {});
 }
