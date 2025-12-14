@@ -384,50 +384,41 @@ function rotateInfo() {
     }, 500);
 }
 
-// Yatakhane isim rotasyonu
+// Yatakhane isim rotasyonu (ARTIK ROTASYON YOK - HEPSİ GÖZÜKÜYOR)
 function startDormNameRotation() {
-    // Mevcut interval'i temizle
+    // Mevcut interval varsa temizle
     if (dormNameRotationInterval) {
         clearInterval(dormNameRotationInterval);
     }
-
-    // İlk gösterimi yap
+    // Tek sefer çalıştır
     updateDormNames();
-
-    // 5 saniyede bir güncelle
-    dormNameRotationInterval = setInterval(updateDormNames, 5000);
 }
 
 function updateDormNames() {
-    // Yatakhane 1 için
-    if (dorm1Names.length > 0) {
-        // Tüm slotları temizle
-        for (let i = 1; i <= 6; i++) {
-            document.getElementById(`dorm1-s${i}`).innerText = '---';
+    // Yatakhane 1
+    for (let i = 1; i <= 6; i++) {
+        const el = document.getElementById(`dorm1-s${i}`);
+        if (dorm1Names[i - 1]) {
+            el.innerText = dorm1Names[i - 1];
+            el.classList.remove('opacity-50'); // Varsa tam görünür
+        } else {
+            el.innerText = '---';
+            el.classList.add('opacity-50'); // Yoksa silik
         }
-
-        // Sadece mevcut ismi göster
-        const currentName = dorm1Names[dorm1NameIndex];
-        document.getElementById(`dorm1-s${(dorm1NameIndex % 6) + 1}`).innerText = currentName;
-
-        // İndeksi artır
-        dorm1NameIndex = (dorm1NameIndex + 1) % dorm1Names.length;
     }
 
-    // Yatakhane 2 için
-    if (dorm2Names.length > 0) {
-        // Tüm slotları temizle
-        for (let i = 1; i <= 6; i++) {
-            document.getElementById(`dorm2-s${i}`).innerText = '---';
+    // Yatakhane 2
+    for (let i = 1; i <= 6; i++) {
+        const el = document.getElementById(`dorm2-s${i}`);
+        if (dorm2Names[i - 1]) {
+            el.innerText = dorm2Names[i - 1];
+            el.classList.remove('opacity-50');
+        } else {
+            el.innerText = '---';
+            el.classList.add('opacity-50');
         }
-
-        // Sadece mevcut ismi göster
-        const currentName = dorm2Names[dorm2NameIndex];
-        document.getElementById(`dorm2-s${(dorm2NameIndex % 6) + 1}`).innerText = currentName;
-
-        // İndeksi artır
-        dorm2NameIndex = (dorm2NameIndex + 1) % dorm2Names.length;
     }
+}
 }
 
 // Başlangıçta verileri çek
