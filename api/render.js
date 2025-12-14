@@ -26,8 +26,20 @@ export default async function handler(request, response) {
             const config = data.config || {};
 
             // Logo varsa fallback, Cover varsa öncelikli
-            if (config.institution_logo) image = config.institution_logo;
-            if (config.institution_cover) image = config.institution_cover;
+            // NOT: WhatsApp için görselin arkasına "Lacivert" fon ekleyelim (images.weserv.nl servisi ile)
+
+            let rawImage = "https://kartaltepepano.com/logo.png";
+            if (config.institution_logo) rawImage = config.institution_logo;
+            if (config.institution_cover) rawImage = config.institution_cover;
+
+            // Proxy ile arkaplan ekle (1e1f35 = Header rengi)
+            // Sadece resim URL'si geçerliyse proxy yap
+            if (rawImage.startsWith('http')) {
+                image = `https://images.weserv.nl/?url=${encodeURIComponent(rawImage)}&bg=1e1f35&w=1200&h=630&fit=contain&output=png`;
+            } else {
+                image = rawImage;
+            }
+
             // Slogan varsa desc yap
             if (config.institution_title) desc = config.institution_title;
 
