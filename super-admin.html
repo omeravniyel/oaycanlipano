@@ -137,6 +137,7 @@
                              ${inst.config?.institution_logo ? `<img src="${inst.config.institution_logo}" class="w-full h-full object-cover">` : '<span class="text-2xl">🏫</span>'}
                         </div>
                         <div class="flex gap-2 opacity-100 lg:opacity-0 group-hover:opacity-100 transition">
+                            <button onclick='editInstitution(${JSON.stringify(inst).replace(/'/g, "&#39;")})' class="p-2 bg-slate-700 hover:bg-yellow-600 rounded text-xs text-white" title="Düzenle">✏️</button>
                             <a href="/${inst.slug}/admin" target="_blank" class="p-2 bg-slate-700 hover:bg-blue-600 rounded text-xs text-white" title="Yönet">⚙️</a>
                             <a href="/${inst.slug}" target="_blank" class="p-2 bg-slate-700 hover:bg-green-600 rounded text-xs text-white" title="Görüntüle">👁️</a>
                             <button onclick="deleteInstitution('${inst.slug}')" class="p-2 bg-slate-700 hover:bg-red-600 rounded text-xs text-white" title="Sil">🗑️</button>
@@ -152,9 +153,39 @@
             });
         }
 
-        // Ekleme
-        function showAddModal() { document.getElementById('add-modal').classList.remove('hidden'); document.getElementById('add-modal').classList.add('flex'); }
-        function closeAddModal() { document.getElementById('add-modal').classList.add('hidden'); document.getElementById('add-modal').classList.remove('flex'); }
+        // Modallar
+        const modal = document.getElementById('add-modal');
+        const modalTitle = modal.querySelector('h2');
+        const slugInput = document.getElementById('new-slug');
+
+        function showAddModal() {
+            document.getElementById('add-form').reset();
+            modalTitle.innerText = "Yeni Kurum Oluştur";
+            slugInput.disabled = false;
+            slugInput.classList.remove('opacity-50', 'cursor-not-allowed');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function editInstitution(inst) {
+            modalTitle.innerText = "Kurumu Düzenle";
+            document.getElementById('new-name').value = inst.name || "";
+            document.getElementById('new-slug').value = inst.slug || "";
+            document.getElementById('new-password').value = inst.password || "";
+            document.getElementById('new-logo').value = inst.config?.institution_logo || "";
+
+            // Slug düzenlenemez olsun (ID olduğu için)
+            slugInput.disabled = true;
+            slugInput.classList.add('opacity-50', 'cursor-not-allowed');
+
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeAddModal() {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
 
         document.getElementById('add-form').addEventListener('submit', async (e) => {
             e.preventDefault();
