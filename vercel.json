@@ -25,12 +25,8 @@
             "destination": "/login.html"
         },
         {
-            "source": "/(.*)\\.(png|jpg|jpeg|gif|webp|svg|css|js|ico)",
-            "destination": "/$1.$2"
-        },
-        {
             "source": "/:slug",
-            "destination": "/index.html"
+            "destination": "/api/render?slug=:slug"
         }
     ]
 }
