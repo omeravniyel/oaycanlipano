@@ -295,7 +295,7 @@ async function fetchConfig() {
 }
 
 function rotateInfo() {
-    if (infoData.length === 0) return;
+    if (!infoData || infoData.length === 0) return;
 
     // Fade out
     const container = document.getElementById('info-carousel');
