@@ -47,6 +47,11 @@ export default async function handler(request, response) {
         html = html.replace(/meta property="og:image" content=".*?"/, `meta property="og:image" content="${image}"`);
         html = html.replace(/meta property="og:url" content=".*?"/, `meta property="og:url" content="${url}"`);
 
+        // Twitter Tags
+        html = html.replace(/meta name="twitter:title" content=".*?"/, `meta name="twitter:title" content="${title}"`);
+        html = html.replace(/meta name="twitter:description" content=".*?"/, `meta name="twitter:description" content="${desc}"`);
+        html = html.replace(/meta name="twitter:image" content=".*?"/, `meta name="twitter:image" content="${image}"`);
+
         // 4. HTML'i döndür
         response.setHeader('Content-Type', 'text/html; charset=utf-8');
         return response.send(html);
