@@ -63,48 +63,77 @@ async function fetchConfig() {
         else document.getElementById('header-slogan2').innerText = 'buluştuğu yer';
 
         if (config.institution_logo) document.getElementById('header-logo').src = config.institution_logo;
-        // else default logo kalır
 
-        // --- 1. Galeri & Video Ayarla ---
-        // Önce resimleri çekelim (Eğer boşsa)
-        if (galleryImages.length === 0) await fetchGalleryImages();
+        // --- 1. Başlıklar ---
+        if (config.dorm_title) {
+            const el = document.getElementById('dorm-section-title');
+            if (el) el.innerText = config.dorm_title;
+        }
+
+        // --- 2. Galeri & Video ---
+        // Yeni Galeri Linkleri (Admin panelinden gelenler)
+        let adminGallery = [];
+        if (config.gallery_links) {
+            try {
+                const parsed = (typeof config.gallery_links === 'string') ? JSON.parse(config.gallery_links) : config.gallery_links;
+                if (Array.isArray(parsed) && parsed.length > 0) adminGallery = parsed;
+            } catch (e) { console.error('Galeri parse hatası', e); }
+        }
+
+        // Eğer admin galerisi varsa onu kullan, yoksa klasörden çek
+        if (adminGallery.length > 0) {
+            galleryImages = adminGallery;
+            console.log("Admin galerisi yüklendi:", galleryImages);
+        } else if (galleryImages.length === 0) {
+            await fetchGalleryImages();
+        }
 
         let newVideoId = config.video_url || null;
-        // ID parse
-        if (newVideoId) {
+        if (newVideoId && newVideoId.trim() !== '') {
             if (newVideoId.includes('v=')) newVideoId = newVideoId.split('v=')[1].split('&')[0];
             else if (newVideoId.includes('youtu.be/')) newVideoId = newVideoId.split('youtu.be/')[1];
             else if (newVideoId.includes('embed/')) newVideoId = newVideoId.split('embed/')[1];
+        } else {
+            newVideoId = null;
         }
 
-        // Değişim var mı?
+        // Video ID değiştiyse veya ilk açılışsa state güncelle
         if (newVideoId !== videoId) {
             videoId = newVideoId;
-            // State Yenile
             if (videoId) switchMedia('video');
-            else switchMedia('slide');
+            else switchMedia('slide'); // Video yoksa slayta dön
         } else if (currentMediaState === 'none') {
-            // İlk açılış
             if (videoId) switchMedia('video');
             else switchMedia('slide');
         }
 
-        // --- 3. Kazanan Yatakhaneler ---
+        // --- 3. Yemek Menüsü (Global) ---
+        window.lunchMenu = config.lunch_menu || "";
+        window.dinnerMenu = config.dinner_menu || "";
+
+        // --- 4. Günün Sözleri (Marquee) ---
+        let quotesText = "";
+        if (config.quotes) {
+            try {
+                const q = (typeof config.quotes === 'string') ? JSON.parse(config.quotes) : config.quotes;
+                if (Array.isArray(q)) quotesText = q.join(' &nbsp; <span class="text-yellow-400 text-2xl">★</span> &nbsp; ');
+            } catch (e) { }
+        }
+
+        if (!quotesText && config.quote_of_day) quotesText = config.quote_of_day; // Fallback
+
+        if (quotesText) {
+            const marquee = document.getElementById('marquee-content');
+            if (marquee) marquee.innerHTML = quotesText;
+        }
+
+        // --- 5. Kazanan Yatakhaneler ---
         // Yatakhane 1
         if (config.dorm1) {
             const d1 = (typeof config.dorm1 === 'string') ? JSON.parse(config.dorm1) : config.dorm1;
             document.getElementById('dorm1-name').innerText = d1.name || '---';
             document.getElementById('dorm1-count').innerText = d1.count ? (d1.count + '.KEZ') : '0.KEZ';
-
-            // İsimleri diziye kaydet
-            dorm1Names = [
-                d1.s1 || '---',
-                d1.s2 || '---',
-                d1.s3 || '---',
-                d1.s4 || '---',
-                d1.s5 || '---',
-                d1.s6 || '---'
-            ].filter(name => name !== '---'); // Boş olanları filtrele
+            dorm1Names = [d1.s1, d1.s2, d1.s3, d1.s4, d1.s5, d1.s6].filter(n => n && n !== '---');
         }
 
         // Yatakhane 2
@@ -112,24 +141,21 @@ async function fetchConfig() {
             const d2 = (typeof config.dorm2 === 'string') ? JSON.parse(config.dorm2) : config.dorm2;
             document.getElementById('dorm2-name').innerText = d2.name || '---';
             document.getElementById('dorm2-count').innerText = d2.count ? (d2.count + '.KEZ') : '0.KEZ';
-
-            // İsimleri diziye kaydet
-            dorm2Names = [
-                d2.s1 || '---',
-                d2.s2 || '---',
-                d2.s3 || '---',
-                d2.s4 || '---',
-                d2.s5 || '---',
-                d2.s6 || '---'
-            ].filter(name => name !== '---'); // Boş olanları filtrele
+            dorm2Names = [d2.s1, d2.s2, d2.s3, d2.s4, d2.s5, d2.s6].filter(n => n && n !== '---');
         }
 
         // İsim rotasyonunu başlat
         startDormNameRotation();
 
-        // --- 4. Hadis ---
+        // --- 6. Hadis ---
         if (config.hadith) {
             const h = (typeof config.hadith === 'string') ? JSON.parse(config.hadith) : config.hadith;
+
+            // Hafta Bilgisi
+            if (h.week) {
+                const weekEl = document.getElementById('hadith-week');
+                if (weekEl) weekEl.innerText = h.week;
+            }
 
             // Türkçe Metin
             document.getElementById('hadith-content').innerHTML = `
