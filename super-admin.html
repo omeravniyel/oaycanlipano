@@ -215,10 +215,28 @@
             document.getElementById('add-form').reset();
             modalTitle.innerText = "Yeni Kurum Oluştur";
             slugInput.disabled = false;
+            slugInput.placeholder = "Örn: omeravniyel (Sadece kısa isim)";
             slugInput.classList.remove('opacity-50', 'cursor-not-allowed');
             modal.classList.remove('hidden');
             modal.classList.add('flex');
         }
+
+        // Slug Input Otomatik Temizleme
+        slugInput.addEventListener('input', (e) => {
+            let val = e.target.value;
+            // Eğer tam link yapıştırılırsa temizle
+            if (val.includes('kartaltepepano.com/')) {
+                val = val.split('kartaltepepano.com/')[1];
+            }
+            // HTTP/S temizle
+            val = val.replace('http://', '').replace('https://', '');
+            // Slash ve boşluk temizle
+            val = val.replace(/\//g, '').trim();
+
+            if (val !== e.target.value) {
+                e.target.value = val;
+            }
+        });
 
         function editInstitution(inst) {
             modalTitle.innerText = "Kurumu Düzenle";
