@@ -9,40 +9,59 @@ if (!CURRENT_SLUG) {
     window.location.href = '/login.html';
 }
 
-// Duyuru ekleme
+// GENEL YARDIMCI FONKSİYONLAR
+function removeParent(btn) {
+    btn.parentElement.remove();
+}
+
+// DUYURULAR
 function addAnnouncement() {
     const container = document.getElementById('announcements-container');
     const div = document.createElement('div');
     div.className = 'flex gap-2';
     div.innerHTML = `
         <input type="text" class="announcement-input flex-1 px-4 py-2 border border-gray-300 rounded-lg" placeholder="Duyuru metni...">
-        <button type="button" onclick="removeAnnouncement(this)" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Sil</button>
+        <button type="button" onclick="removeParent(this)" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Sil</button>
     `;
     container.appendChild(div);
 }
 
-// Duyuru silme
-function removeAnnouncement(btn) {
-    btn.parentElement.remove();
+// GALERİ
+function addGalleryItem() {
+    const container = document.getElementById('gallery-container');
+    const div = document.createElement('div');
+    div.className = 'flex gap-2';
+    div.innerHTML = `
+        <input type="text" class="gallery-input flex-1 px-4 py-2 border border-gray-300 rounded-lg" placeholder="Resim URL (https://...)">
+        <button type="button" onclick="removeParent(this)" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Sil</button>
+    `;
+    container.appendChild(div);
 }
 
-// Sınav kazananı ekleme
+// GÜNÜN SÖZLERİ
+function addQuoteItem() {
+    const container = document.getElementById('quotes-container');
+    const div = document.createElement('div');
+    div.className = 'flex gap-2';
+    div.innerHTML = `
+        <input type="text" class="quote-input flex-1 px-4 py-2 border border-gray-300 rounded-lg" placeholder="Motivasyon sözü...">
+        <button type="button" onclick="removeParent(this)" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Sil</button>
+    `;
+    container.appendChild(div);
+}
+
+// Sınav kazananı ekleme (Aynı kaldı)
 function addExamWinner() {
     const container = document.getElementById('exam-winners-container');
     const div = document.createElement('div');
     div.className = 'flex gap-2 items-center';
     div.innerHTML = `
-        <input type="text" class="exam-class flex-1 px-3 py-2 border border-gray-300 rounded-lg" placeholder="Sınıf (örn: 7.Sınıf)">
-        <input type="text" class="exam-student flex-1 px-3 py-2 border border-gray-300 rounded-lg" placeholder="İsim Soyisim">
+        <input type="text" class="exam-class flex-1 px-3 py-2 border border-gray-300 rounded-lg" placeholder="Sınıf">
+        <input type="text" class="exam-student flex-1 px-3 py-2 border border-gray-300 rounded-lg" placeholder="İsim">
         <input type="number" class="exam-score w-32 px-3 py-2 border border-gray-300 rounded-lg" placeholder="Puan">
-        <button type="button" onclick="removeExamWinner(this)" class="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Sil</button>
+        <button type="button" onclick="removeParent(this)" class="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Sil</button>
     `;
     container.appendChild(div);
-}
-
-// Sınav kazananı silme
-function removeExamWinner(btn) {
-    btn.parentElement.remove();
 }
 
 // Mesaj gösterme
@@ -54,95 +73,87 @@ function showMessage(message, type = 'success') {
             <p class="font-semibold">${message}</p>
         </div>
     `;
-    setTimeout(() => {
-        container.innerHTML = '';
-    }, 3000);
+    setTimeout(() => { container.innerHTML = ''; }, 3000);
 }
 
-// Verileri yükle
+// VERİLERİ YÜKLE
 async function loadData() {
     try {
         const res = await fetch(`/api/get-config?slug=${CURRENT_SLUG}`);
         const config = await res.json();
 
-        // --- 0. Kurum Ayarları ---
-        if (config.institution_title) document.getElementById('institution-title').value = config.institution_title;
-        if (config.institution_subtitle) document.getElementById('institution-subtitle').value = config.institution_subtitle;
-        if (config.institution_slogan1) document.getElementById('institution-slogan1').value = config.institution_slogan1;
-        if (config.institution_slogan2) document.getElementById('institution-slogan2').value = config.institution_slogan2;
-        if (config.institution_logo) document.getElementById('institution-logo').value = config.institution_logo;
+        // Header
+        const fields = ['institution_title', 'institution_subtitle', 'institution_slogan1', 'institution_slogan2', 'institution_logo'];
+        fields.forEach(f => {
+            if (config[f]) document.getElementById(f.replace('_', '-')).value = config[f];
+        });
 
-        // Hadis
+        // Başlıklar
+        if (config.dorm_title) document.getElementById('dorm-title').value = config.dorm_title;
+
+        // Yemek Menüsü
+        if (config.lunch_menu) document.getElementById('lunch-menu').value = config.lunch_menu;
+        if (config.dinner_menu) document.getElementById('dinner-menu').value = config.dinner_menu;
+
+        // Hadis HTML'de sabit ama configde veri varsa (eski uyumluluk veya ileride değişirse) yine de value olarak basılabilir
+        // Ama kullanıcı readonly istediği için şimdilik ellemiyorum, HTML'deki default değer kalacak: 15-21 ARALIK
         if (config.hadith) {
             const hadith = typeof config.hadith === 'string' ? JSON.parse(config.hadith) : config.hadith;
-            document.getElementById('hadith-week').value = hadith.week || '';
             document.getElementById('hadith-arabic').value = hadith.arabic || '';
             document.getElementById('hadith-turkish').value = hadith.text || '';
         }
 
-        // Yatakhane 1
-        if (config.dorm1) {
-            const dorm1 = typeof config.dorm1 === 'string' ? JSON.parse(config.dorm1) : config.dorm1;
-            document.getElementById('dorm1-name').value = dorm1.name || '';
-            document.getElementById('dorm1-count').value = dorm1.count || '';
-            document.getElementById('dorm1-s1').value = dorm1.s1 || '';
-            document.getElementById('dorm1-s2').value = dorm1.s2 || '';
-            document.getElementById('dorm1-s3').value = dorm1.s3 || '';
-            document.getElementById('dorm1-s4').value = dorm1.s4 || '';
-            document.getElementById('dorm1-s5').value = dorm1.s5 || '';
-            document.getElementById('dorm1-s6').value = dorm1.s6 || '';
-        }
+        // Yatakhane 1 & 2 (Aynı kaldı)
+        ['dorm1', 'dorm2'].forEach(d => {
+            if (config[d]) {
+                const data = typeof config[d] === 'string' ? JSON.parse(config[d]) : config[d];
+                document.getElementById(`${d}-name`).value = data.name || '';
+                document.getElementById(`${d}-count`).value = data.count || '';
+                for (let i = 1; i <= 6; i++) document.getElementById(`${d}-s${i}`).value = data[`s${i}`] || '';
+            }
+        });
 
-        // Yatakhane 2
-        if (config.dorm2) {
-            const dorm2 = typeof config.dorm2 === 'string' ? JSON.parse(config.dorm2) : config.dorm2;
-            document.getElementById('dorm2-name').value = dorm2.name || '';
-            document.getElementById('dorm2-count').value = dorm2.count || '';
-            document.getElementById('dorm2-s1').value = dorm2.s1 || '';
-            document.getElementById('dorm2-s2').value = dorm2.s2 || '';
-            document.getElementById('dorm2-s3').value = dorm2.s3 || '';
-            document.getElementById('dorm2-s4').value = dorm2.s4 || '';
-            document.getElementById('dorm2-s5').value = dorm2.s5 || '';
-            document.getElementById('dorm2-s6').value = dorm2.s6 || '';
-        }
+        // Listeler: Duyurular, Galeri, Günün Sözleri
+        const loadList = (listKey, containerId, inputClass, btnFunction) => {
+            if (config[listKey]) {
+                const list = typeof config[listKey] === 'string' ? JSON.parse(config[listKey]) : config[listKey];
+                const container = document.getElementById(containerId);
+                container.innerHTML = '';
+                list.forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'flex gap-2';
+                    div.innerHTML = `
+                        <input type="text" class="${inputClass} flex-1 px-4 py-2 border border-gray-300 rounded-lg" value="${item}">
+                        <button type="button" onclick="removeParent(this)" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Sil</button>
+                    `;
+                    container.appendChild(div);
+                });
+            }
+        };
 
-        // Duyurular
-        if (config.announcements) {
-            const announcements = typeof config.announcements === 'string' ? JSON.parse(config.announcements) : config.announcements;
-            const container = document.getElementById('announcements-container');
-            container.innerHTML = '';
-            announcements.forEach(announcement => {
-                const div = document.createElement('div');
-                div.className = 'flex gap-2';
-                div.innerHTML = `
-                    <input type="text" class="announcement-input flex-1 px-4 py-2 border border-gray-300 rounded-lg" value="${announcement}" placeholder="Duyuru metni...">
-                    <button type="button" onclick="removeAnnouncement(this)" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Sil</button>
-                `;
-                container.appendChild(div);
-            });
-        }
+        loadList('announcements', 'announcements-container', 'announcement-input');
+        loadList('gallery_links', 'gallery-container', 'gallery-input');
+        loadList('quotes', 'quotes-container', 'quote-input');
 
-        // Sınav
+
+        // Sınav (Aynı kaldı)
         if (config.exam_config) {
             const exam = typeof config.exam_config === 'string' ? JSON.parse(config.exam_config) : config.exam_config;
             document.getElementById('exam-name').value = exam.name || '';
-
-            // Kazananları yükle
             if (exam.winners) {
                 const container = document.getElementById('exam-winners-container');
                 container.innerHTML = '';
                 const lines = exam.winners.split('\n').filter(l => l.trim() !== '');
-
                 lines.forEach(line => {
                     const parts = line.split(',');
                     if (parts.length >= 3) {
                         const div = document.createElement('div');
                         div.className = 'flex gap-2 items-center';
                         div.innerHTML = `
-                            <input type="text" class="exam-class flex-1 px-3 py-2 border border-gray-300 rounded-lg" value="${parts[0].trim()}" placeholder="Sınıf (örn: 7.Sınıf)">
-                            <input type="text" class="exam-student flex-1 px-3 py-2 border border-gray-300 rounded-lg" value="${parts[1].trim()}" placeholder="İsim Soyisim">
-                            <input type="number" class="exam-score w-32 px-3 py-2 border border-gray-300 rounded-lg" value="${parts[2].trim()}" placeholder="Puan">
-                            <button type="button" onclick="removeExamWinner(this)" class="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Sil</button>
+                            <input type="text" class="exam-class flex-1 px-3 py-2 border border-gray-300 rounded-lg" value="${parts[0].trim()}">
+                            <input type="text" class="exam-student flex-1 px-3 py-2 border border-gray-300 rounded-lg" value="${parts[1].trim()}">
+                            <input type="number" class="exam-score w-32 px-3 py-2 border border-gray-300 rounded-lg" value="${parts[2].trim()}">
+                            <button type="button" onclick="removeParent(this)" class="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Sil</button>
                         `;
                         container.appendChild(div);
                     }
@@ -150,15 +161,8 @@ async function loadData() {
             }
         }
 
-        // Günün Sözü
-        if (config.quote_of_day) {
-            document.getElementById('quote-of-day').value = config.quote_of_day;
-        }
-
         // Video URL
-        if (config.video_url) {
-            document.getElementById('video-url').value = config.video_url;
-        }
+        if (config.video_url) document.getElementById('video-url').value = config.video_url;
 
         console.log('Veriler yüklendi');
     } catch (error) {
@@ -167,51 +171,36 @@ async function loadData() {
     }
 }
 
-// Form submit
+// KAYDET
 document.getElementById('admin-form').addEventListener('submit', async (e) => {
     e.preventDefault();
-
     const saveBtn = document.getElementById('save-btn');
     saveBtn.disabled = true;
     saveBtn.innerHTML = '⏳ Kaydediliyor...';
 
     try {
-        // Hadis
+        // Form verilerini topla
+        const getListValues = (inputClass) =>
+            Array.from(document.querySelectorAll(`.${inputClass}`))
+                .map(input => input.value.trim())
+                .filter(val => val !== '');
+
         const hadith = {
             week: document.getElementById('hadith-week').value,
             arabic: document.getElementById('hadith-arabic').value,
             text: document.getElementById('hadith-turkish').value
         };
 
-        // Yatakhane 1
-        const dorm1 = {
-            name: document.getElementById('dorm1-name').value,
-            count: document.getElementById('dorm1-count').value,
-            s1: document.getElementById('dorm1-s1').value,
-            s2: document.getElementById('dorm1-s2').value,
-            s3: document.getElementById('dorm1-s3').value,
-            s4: document.getElementById('dorm1-s4').value,
-            s5: document.getElementById('dorm1-s5').value,
-            s6: document.getElementById('dorm1-s6').value
-        };
-
-        // Yatakhane 2
-        const dorm2 = {
-            name: document.getElementById('dorm2-name').value,
-            count: document.getElementById('dorm2-count').value,
-            s1: document.getElementById('dorm2-s1').value,
-            s2: document.getElementById('dorm2-s2').value,
-            s3: document.getElementById('dorm2-s3').value,
-            s4: document.getElementById('dorm2-s4').value,
-            s5: document.getElementById('dorm2-s5').value,
-            s6: document.getElementById('dorm2-s6').value
-        };
-
-        // Duyurular
-        const announcementInputs = document.querySelectorAll('.announcement-input');
-        const announcements = Array.from(announcementInputs)
-            .map(input => input.value.trim())
-            .filter(val => val !== '');
+        const getDorm = (id) => ({
+            name: document.getElementById(`${id}-name`).value,
+            count: document.getElementById(`${id}-count`).value,
+            s1: document.getElementById(`${id}-s1`).value,
+            s2: document.getElementById(`${id}-s2`).value,
+            s3: document.getElementById(`${id}-s3`).value,
+            s4: document.getElementById(`${id}-s4`).value,
+            s5: document.getElementById(`${id}-s5`).value,
+            s6: document.getElementById(`${id}-s6`).value
+        });
 
         // Sınav
         const examWinnerRows = document.querySelectorAll('#exam-winners-container > div');
@@ -220,53 +209,40 @@ document.getElementById('admin-form').addEventListener('submit', async (e) => {
             const classInput = row.querySelector('.exam-class');
             const studentInput = row.querySelector('.exam-student');
             const scoreInput = row.querySelector('.exam-score');
-
-            if (classInput && studentInput && scoreInput) {
-                const classVal = classInput.value.trim();
-                const studentVal = studentInput.value.trim();
-                const scoreVal = scoreInput.value.trim();
-
-                if (classVal && studentVal && scoreVal) {
-                    examWinners.push(`${classVal},${studentVal},${scoreVal}`);
-                }
+            if (classInput && studentInput && scoreInput && classInput.value && studentInput.value && scoreInput.value) {
+                examWinners.push(`${classInput.value.trim()},${studentInput.value.trim()},${scoreInput.value.trim()}`);
             }
         });
 
-        const exam_config = {
-            name: document.getElementById('exam-name').value,
-            winners: examWinners.join('\n')
-        };
-
-        // Günün Sözü
-        const quote_of_day = document.getElementById('quote-of-day').value;
-
-        // Video URL
-        const video_url = document.getElementById('video-url').value;
-
-        // Kurum Ayarları
-        const institution_title = document.getElementById('institution-title').value;
-        const institution_subtitle = document.getElementById('institution-subtitle').value;
-        const institution_slogan1 = document.getElementById('institution-slogan1').value;
-        const institution_slogan2 = document.getElementById('institution-slogan2').value;
-        const institution_logo = document.getElementById('institution-logo').value;
-
-        // Tüm verileri tek bir objede topla (Yeni sistem)
+        // Yeni Yapı
         const newConfig = {
+            // Header
+            institution_title: document.getElementById('institution-title').value,
+            institution_subtitle: document.getElementById('institution-subtitle').value,
+            institution_slogan1: document.getElementById('institution-slogan1').value,
+            institution_slogan2: document.getElementById('institution-slogan2').value,
+            institution_logo: document.getElementById('institution-logo').value,
+
+            // Ayarlar
+            dorm_title: document.getElementById('dorm-title').value,
+            lunch_menu: document.getElementById('lunch-menu').value,
+            dinner_menu: document.getElementById('dinner-menu').value,
+            video_url: document.getElementById('video-url').value,
+
+            // Listeler & Objeler
             hadith: JSON.stringify(hadith),
-            dorm1: JSON.stringify(dorm1),
-            dorm2: JSON.stringify(dorm2),
-            announcements: JSON.stringify(announcements),
-            exam_config: JSON.stringify(exam_config),
-            quote_of_day,
-            video_url,
-            institution_title,
-            institution_subtitle,
-            institution_slogan1,
-            institution_slogan2,
-            institution_logo
+            dorm1: JSON.stringify(getDorm('dorm1')),
+            dorm2: JSON.stringify(getDorm('dorm2')),
+            announcements: JSON.stringify(getListValues('announcement-input')),
+            gallery_links: JSON.stringify(getListValues('gallery-input')),
+            quotes: JSON.stringify(getListValues('quote-input')),
+            exam_config: JSON.stringify({
+                name: document.getElementById('exam-name').value,
+                winners: examWinners.join('\n')
+            })
         };
 
-        // Kaydet (Tek seferde)
+        // API'ye Gönder
         await fetch('/api/save-config', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
