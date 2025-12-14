@@ -366,13 +366,13 @@ function rotateInfo() {
         const mainText = document.getElementById('info-main-text');
         mainText.innerText = item.content;
 
-        // Menü ise fontu küçült, sığsın
+        // Menü ise fontu küçült ve 2 sütuna böl
         if (item.type === 'menu') {
-            mainText.classList.remove('text-2xl');
-            mainText.classList.add('text-sm', 'leading-relaxed', 'whitespace-pre-wrap');
+            mainText.classList.remove('text-2xl', 'text-center');
+            mainText.classList.add('text-sm', 'leading-snug', 'whitespace-pre-wrap', 'columns-2', 'gap-4', 'text-left');
         } else {
-            mainText.classList.add('text-2xl');
-            mainText.classList.remove('text-sm', 'leading-relaxed', 'whitespace-pre-wrap');
+            mainText.classList.add('text-2xl', 'text-center');
+            mainText.classList.remove('text-sm', 'leading-snug', 'whitespace-pre-wrap', 'columns-2', 'gap-4', 'text-left');
         }
 
         // Fade in
