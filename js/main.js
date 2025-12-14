@@ -128,19 +128,28 @@ async function fetchConfig() {
         window.dinnerMenu = config.dinner_menu || "";
 
         // --- 4. Günün Sözleri (Marquee) ---
+        // --- 4. Günün Sözleri (Marquee) ---
         let quotesText = "";
+
+        // A) Array Formatı (Yeni)
         if (config.quotes) {
             try {
                 const q = (typeof config.quotes === 'string') ? JSON.parse(config.quotes) : config.quotes;
-                if (Array.isArray(q)) quotesText = q.join(' &nbsp; <span class="text-yellow-400 text-2xl">★</span> &nbsp; ');
+                if (Array.isArray(q) && q.length > 0) {
+                    quotesText = q.join(' &nbsp; <span class="text-yellow-400 text-2xl">★</span> &nbsp; ');
+                }
             } catch (e) { }
         }
 
-        if (!quotesText && config.quote_of_day) quotesText = config.quote_of_day; // Fallback
+        // B) String Formatı (Eski / Fallback)
+        if (!quotesText && config.quote_of_day) {
+            quotesText = `★ ${config.quote_of_day} ★`;
+        }
 
-        if (quotesText) {
-            const marquee = document.getElementById('marquee-content');
-            if (marquee) marquee.innerHTML = quotesText;
+        // C) Ekrana Bas
+        const marquee = document.getElementById('marquee-text');
+        if (marquee && quotesText) {
+            marquee.innerHTML = quotesText;
         }
 
         // --- 5. Kazanan Yatakhaneler ---
@@ -277,11 +286,7 @@ async function fetchConfig() {
         }
 
         // --- 6. Günün Sözü (Footer Marquee) ---
-        if (config.quote_of_day) {
-            // Virgüllerle ayrılmış sözleri yıldızlarla ayır
-            const quotes = config.quote_of_day.split(',').map(q => q.trim()).filter(q => q);
-            document.getElementById('marquee-text').innerText = quotes.map(q => `★ ${q} ★`).join(' ');
-        }
+        // (Daha önce yukarıda işlendi)
 
         // Eski interval'i temizle
         if (infoRotationInterval) {
