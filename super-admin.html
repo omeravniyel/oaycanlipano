@@ -106,6 +106,20 @@
                     </div>
                 </div>
 
+                <div>
+                    <label class="block text-sm font-medium text-slate-400 mb-1">Link Önizleme Resmi (Opsiyonel)</label>
+                    <div class="flex gap-2">
+                        <input type="file" id="cover-upload" class="hidden" accept="image/*"
+                            onchange="uploadFile(this, 'new-cover')">
+                        <button type="button" onclick="document.getElementById('cover-upload').click()"
+                            class="bg-gray-600 hover:bg-gray-500 px-3 py-2 rounded text-sm whitespace-nowrap">Resim
+                            Yükle</button>
+                        <input type="text" id="new-cover"
+                            class="flex-1 bg-slate-700 border border-slate-600 rounded p-2 text-sm"
+                            placeholder="WhatsApp'ta görünecek resim">
+                    </div>
+                </div>
+
                 <button type="submit" id="submit-btn"
                     class="w-full bg-blue-600 hover:bg-blue-500 py-3 rounded font-bold mt-4">KAYDET</button>
             </form>
@@ -250,6 +264,7 @@
             document.getElementById('new-slogan2').value = inst.config?.institution_slogan2 || "";
 
             document.getElementById('new-logo').value = inst.config?.institution_logo || "";
+            document.getElementById('new-cover').value = inst.config?.institution_cover || ""; // Populate Cover
 
             slugInput.disabled = true;
             slugInput.classList.add('opacity-50', 'cursor-not-allowed');
@@ -274,6 +289,7 @@
                 slug: document.getElementById('new-slug').value.trim(),
                 password: document.getElementById('new-password').value,
                 logo: document.getElementById('new-logo').value,
+                cover: document.getElementById('new-cover').value, // Send Cover
                 subtitle: document.getElementById('new-subtitle').value,
                 slogan1: document.getElementById('new-slogan1').value,
                 slogan2: document.getElementById('new-slogan2').value

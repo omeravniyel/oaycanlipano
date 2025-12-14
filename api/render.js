@@ -25,8 +25,9 @@ export default async function handler(request, response) {
             title = data.name || title;
             const config = data.config || {};
 
-            // Logo varsa
+            // Logo varsa fallback, Cover varsa öncelikli
             if (config.institution_logo) image = config.institution_logo;
+            if (config.institution_cover) image = config.institution_cover;
             // Slogan varsa desc yap
             if (config.institution_title) desc = config.institution_title;
 

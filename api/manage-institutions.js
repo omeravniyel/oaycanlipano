@@ -35,7 +35,7 @@ export default async function handler(request, response) {
 
         // --- EKLEME / GÜNCELLEME ---
         if (action === 'upsert') {
-            let { slug, name, password, logo, subtitle, slogan1, slogan2 } = payload;
+            let { slug, name, password, logo, subtitle, slogan1, slogan2, cover } = payload;
             slug = slug.trim(); // Boşlukları temizle
 
             // 1. Önce bu kurum var mı kontrol et
@@ -58,6 +58,7 @@ export default async function handler(request, response) {
                 if (subtitle) updatedConfig.institution_subtitle = subtitle;
                 if (slogan1) updatedConfig.institution_slogan1 = slogan1;
                 if (slogan2) updatedConfig.institution_slogan2 = slogan2;
+                if (cover) updatedConfig.institution_cover = cover;
 
                 const { data, error } = await supabase
                     .from('institutions')
