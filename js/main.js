@@ -362,7 +362,18 @@ function rotateInfo() {
         }
 
         document.getElementById('info-top-label').innerText = item.topLabel; // "BİRİNCİSİ"
-        document.getElementById('info-main-text').innerText = item.content; // Name or Message
+
+        const mainText = document.getElementById('info-main-text');
+        mainText.innerText = item.content;
+
+        // Menü ise fontu küçült, sığsın
+        if (item.type === 'menu') {
+            mainText.classList.remove('text-2xl');
+            mainText.classList.add('text-sm', 'leading-relaxed', 'whitespace-pre-wrap');
+        } else {
+            mainText.classList.add('text-2xl');
+            mainText.classList.remove('text-sm', 'leading-relaxed', 'whitespace-pre-wrap');
+        }
 
         // Fade in
         container.style.opacity = '1';
