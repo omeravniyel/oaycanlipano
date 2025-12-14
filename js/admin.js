@@ -27,16 +27,60 @@ function addAnnouncement() {
 }
 
 // GALERİ
-function addGalleryItem() {
+function addGalleryItem(url = '') {
     const container = document.getElementById('gallery-container');
     const div = document.createElement('div');
-    div.className = 'flex gap-2';
+    div.className = 'flex gap-2 items-center';
     div.innerHTML = `
-        <input type="text" class="gallery-input flex-1 px-4 py-2 border border-gray-300 rounded-lg" placeholder="Resim URL (https://...)">
+        <div class="relative flex-1 group">
+            <input type="text" class="gallery-input w-full px-4 py-2 border border-gray-300 rounded-lg" value="${url}" placeholder="Resim URL (https://...)">
+            ${url ? `<img src="${url}" class="absolute right-2 top-1 h-8 w-8 object-cover rounded border bg-white group-hover:scale-150 transition z-10">` : ''}
+        </div>
         <button type="button" onclick="removeParent(this)" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Sil</button>
     `;
     container.appendChild(div);
 }
+
+// GALERİ RESİM YÜKLEME
+async function uploadGalleryImage(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    const btn = document.getElementById('gallery-upload-btn');
+    const originalText = btn.innerText;
+    btn.innerText = "⏳ Yükleniyor...";
+    btn.disabled = true;
+
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = async () => {
+        const base64 = reader.result.split(',')[1];
+        try {
+            const res = await fetch('/api/upload', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    filename: file.name,
+                    fileBase64: base64,
+                    contentType: file.type
+                })
+            });
+            const data = await res.json();
+            if (data.error) throw new Error(data.error);
+
+            // Başarılı olursa listeye ekle
+            addGalleryItem(data.url);
+            showMessage("Resim yüklendi ve eklendi!", "success");
+
+        } catch (err) {
+            alert("Yükleme Hatası: " + err.message + "\nSupabase 'images' bucket'ının açık olduğundan emin olun.");
+        } finally {
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
+    };
+}
+function startUpload() { document.getElementById('gallery-file-input').click(); }
 
 // GÜNÜN SÖZLERİ
 function addQuoteItem() {

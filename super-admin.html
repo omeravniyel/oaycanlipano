@@ -54,9 +54,9 @@
             <button onclick="closeAddModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">✕</button>
             <h2 class="text-2xl font-bold mb-6">Yeni Kurum Oluştur</h2>
 
-            <form id="add-form" class="space-y-4">
+            <form id="add-form" class="space-y-4 max-h-[70vh] overflow-y-auto px-1">
                 <div>
-                    <label class="block text-sm font-medium text-slate-400 mb-1">Kurum Adı</label>
+                    <label class="block text-sm font-medium text-slate-400 mb-1">Kurum Adı (Başlık)</label>
                     <input type="text" id="new-name" class="w-full bg-slate-700 border border-slate-600 rounded p-2"
                         placeholder="Örn: Yeni Doğan Koleji" required>
                 </div>
@@ -67,17 +67,46 @@
                     <p class="text-xs text-slate-500 mt-1">Link: kartaltepepano.com/<b>yenidogan</b></p>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-400 mb-1">Kurum Şifresi</label>
+                    <label class="block text-sm font-medium text-slate-400 mb-1">Kurum Şifresi (Admin)</label>
                     <input type="text" id="new-password" class="w-full bg-slate-700 border border-slate-600 rounded p-2"
                         placeholder="1234" required>
                 </div>
-                <div>
-                    <label class="block text-sm font-medium text-slate-400 mb-1">Logo URL (Opsiyonel)</label>
-                    <input type="text" id="new-logo" class="w-full bg-slate-700 border border-slate-600 rounded p-2"
-                        placeholder="https://...">
+
+                <!-- Detaylar -->
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-400 mb-1">Alt Başlık</label>
+                        <input type="text" id="new-subtitle"
+                            class="w-full bg-slate-700 border border-slate-600 rounded p-2" placeholder="Öğrenci Yurdu">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-400 mb-1">Slogan 1</label>
+                        <input type="text" id="new-slogan1"
+                            class="w-full bg-slate-700 border border-slate-600 rounded p-2" placeholder="İlgiyle...">
+                    </div>
+                    <div class="col-span-2">
+                        <label class="block text-sm font-medium text-slate-400 mb-1">Slogan 2</label>
+                        <input type="text" id="new-slogan2"
+                            class="w-full bg-slate-700 border border-slate-600 rounded p-2"
+                            placeholder="...Bilginin Buluştuğu Yer">
+                    </div>
                 </div>
 
-                <button type="submit"
+                <div>
+                    <label class="block text-sm font-medium text-slate-400 mb-1">Logo</label>
+                    <div class="flex gap-2">
+                        <input type="file" id="logo-upload" class="hidden" accept="image/*"
+                            onchange="uploadFile(this, 'new-logo')">
+                        <button type="button" onclick="document.getElementById('logo-upload').click()"
+                            class="bg-gray-600 hover:bg-gray-500 px-3 py-2 rounded text-sm whitespace-nowrap">Resim
+                            Yükle</button>
+                        <input type="text" id="new-logo"
+                            class="flex-1 bg-slate-700 border border-slate-600 rounded p-2 text-sm"
+                            placeholder="URL otomatik gelir veya elle girin">
+                    </div>
+                </div>
+
+                <button type="submit" id="submit-btn"
                     class="w-full bg-blue-600 hover:bg-blue-500 py-3 rounded font-bold mt-4">KAYDET</button>
             </form>
         </div>
@@ -86,7 +115,7 @@
     <script>
         let MASTER_PASSWORD = "";
 
-        // Giriş
+        // ... LOGIN ve LISTELEME kodları aynı ... 
         function login() {
             const pwd = document.getElementById('master-password-input').value;
             if (!pwd) return alert("Şifre giriniz");
@@ -94,7 +123,6 @@
             loadInstitutions();
         }
 
-        // Verileri Getir
         async function loadInstitutions() {
             try {
                 const res = await fetch('/api/manage-institutions', {
@@ -102,32 +130,19 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'list', master_password: MASTER_PASSWORD })
                 });
-
                 const data = await res.json();
-
-                if (res.status === 401) {
-                    alert("Yanlış Şifre!");
-                    return;
-                }
-
+                if (res.status === 401) { alert("Yanlış Şifre!"); return; }
                 if (data.error) throw new Error(data.error);
 
-                // Giriş başarılı, ekranı aç
                 document.getElementById('login-overlay').classList.add('hidden');
                 document.getElementById('main-content').classList.remove('hidden');
-
                 renderGrid(data.institutions);
-
-            } catch (err) {
-                console.error(err);
-                alert("Hata: " + err.message);
-            }
+            } catch (err) { alert(err.message); }
         }
 
         function renderGrid(list) {
             const grid = document.getElementById('institutions-grid');
             grid.innerHTML = '';
-
             list.forEach(inst => {
                 const card = document.createElement('div');
                 card.className = 'bg-slate-800 rounded-xl p-6 border border-slate-700 hover:border-blue-500/50 transition group';
@@ -153,6 +168,44 @@
             });
         }
 
+        // GÖRSEL YÜKLEME HELPER
+        async function uploadFile(input, targetId) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const btn = input.nextElementSibling; // Button
+            const originalText = btn.innerText;
+            btn.innerText = "⏳";
+            btn.disabled = true;
+
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = async () => {
+                const base64 = reader.result.split(',')[1];
+                try {
+                    const res = await fetch('/api/upload', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            filename: file.name,
+                            fileBase64: base64,
+                            contentType: file.type
+                        })
+                    });
+                    const data = await res.json();
+                    if (data.error) throw new Error(data.error);
+
+                    document.getElementById(targetId).value = data.url;
+                    btn.innerText = "✅";
+                } catch (err) {
+                    alert("Yükleme Hatası: " + err.message + "\\nLütfen Supabase 'images' bucket'ını oluşturduğunuzdan ve public olduğundan emin olun.");
+                    btn.innerText = "❌";
+                } finally {
+                    setTimeout(() => { btn.innerText = originalText; btn.disabled = false; }, 2000);
+                }
+            };
+        }
+
         // Modallar
         const modal = document.getElementById('add-modal');
         const modalTitle = modal.querySelector('h2');
@@ -172,9 +225,14 @@
             document.getElementById('new-name').value = inst.name || "";
             document.getElementById('new-slug').value = inst.slug || "";
             document.getElementById('new-password').value = inst.password || "";
+
+            // Yeni Alanlar
+            document.getElementById('new-subtitle').value = inst.config?.institution_subtitle || "";
+            document.getElementById('new-slogan1').value = inst.config?.institution_slogan1 || "";
+            document.getElementById('new-slogan2').value = inst.config?.institution_slogan2 || "";
+
             document.getElementById('new-logo').value = inst.config?.institution_logo || "";
 
-            // Slug düzenlenemez olsun (ID olduğu için)
             slugInput.disabled = true;
             slugInput.classList.add('opacity-50', 'cursor-not-allowed');
 
@@ -189,32 +247,39 @@
 
         document.getElementById('add-form').addEventListener('submit', async (e) => {
             e.preventDefault();
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerText = "⏳ İşleniyor...";
 
             const payload = {
                 name: document.getElementById('new-name').value,
                 slug: document.getElementById('new-slug').value,
                 password: document.getElementById('new-password').value,
-                logo: document.getElementById('new-logo').value
+                logo: document.getElementById('new-logo').value,
+                subtitle: document.getElementById('new-subtitle').value,
+                slogan1: document.getElementById('new-slogan1').value,
+                slogan2: document.getElementById('new-slogan2').value
             };
 
-            if (confirm(`"${payload.name}" kurumunu oluşturmak istediğinize emin misiniz?`)) {
-                try {
-                    const res = await fetch('/api/manage-institutions', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ action: 'upsert', master_password: MASTER_PASSWORD, payload })
-                    });
-                    const data = await res.json();
-                    if (data.error) throw new Error(data.error);
+            try {
+                const res = await fetch('/api/manage-institutions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'upsert', master_password: MASTER_PASSWORD, payload })
+                });
+                const data = await res.json();
+                if (data.error) throw new Error(data.error);
 
-                    alert("✅ Kurum başarıyla oluşturuldu!");
-                    closeAddModal();
-                    loadInstitutions();
-                    e.target.reset();
+                alert("✅ İşlem Başarılı!");
+                closeAddModal();
+                loadInstitutions();
+                e.target.reset();
 
-                } catch (err) {
-                    alert("Hata: " + err.message);
-                }
+            } catch (err) {
+                alert("Hata: " + err.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerText = "KAYDET";
             }
         });
 

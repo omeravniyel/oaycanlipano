@@ -240,15 +240,22 @@
                     <span>🖼️</span> Galeri Görselleri
                 </h2>
                 <div id="gallery-container" class="space-y-3">
-                    <div class="flex gap-2">
-                        <input type="text" class="gallery-input flex-1 px-4 py-2 border border-gray-300 rounded-lg"
-                            placeholder="Resim URL (https://...)">
-                        <button type="button" onclick="removeParent(this)"
-                            class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Sil</button>
-                    </div>
+                    <!-- Dinamik olarak dolar -->
                 </div>
-                <button type="button" onclick="addGalleryItem()"
-                    class="mt-3 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">+ Resim Ekle</button>
+                <div class="mt-3 flex flex-wrap gap-2">
+                    <button type="button" onclick="addGalleryItem()"
+                        class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 flex items-center gap-1">
+                        <span>+</span> Link Ekle
+                    </button>
+
+                    <input type="file" id="gallery-file-input" class="hidden" accept="image/*"
+                        onchange="uploadGalleryImage(this)">
+                    <button type="button" id="gallery-upload-btn" onclick="startUpload()"
+                        class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center gap-1">
+                        <span>☁️</span> Bilgisayardan Yükle
+                    </button>
+                </div>
+                class="mt-3 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">+ Resim Ekle</button>
                 <p class="text-xs text-gray-500 mt-2">Buraya eklenen resimler sağ taraftaki alanda dönecektir. Video URL
                     girilirse video oynatılır.</p>
             </div>
