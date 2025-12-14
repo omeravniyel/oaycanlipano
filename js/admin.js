@@ -160,23 +160,24 @@ async function loadData() {
         // Listeler: Duyurular, Galeri, Günün Sözleri
         const loadList = (listKey, containerId, inputClass) => {
             if (config[listKey]) {
-                const list = typeof config[listKey] === 'string' ? JSON.parse(config[listKey]) : config[listKey];
-                const container = document.getElementById(containerId);
-                container.innerHTML = '';
-                // Galeri ise özel fonksiyon kullan
-                if (containerId === 'gallery-container') {
-                    list.forEach(item => addGalleryItem(item));
-                } else {
-                    list.forEach(item => {
-                        const div = document.createElement('div');
-                        div.className = 'flex gap-2';
-                        div.innerHTML = `
-                            <input type="text" class="${inputClass} flex-1 px-4 py-2 border border-gray-300 rounded-lg" value="${item}">
-                            <button type="button" onclick="removeParent(this)" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Sil</button>
-                        `;
-                        container.appendChild(div);
-                    });
-                }
+                try {
+                    const list = typeof config[listKey] === 'string' ? JSON.parse(config[listKey]) : config[listKey];
+                    const container = document.getElementById(containerId);
+                    container.innerHTML = '';
+                    if (containerId === 'gallery-container') {
+                        list.forEach(item => addGalleryItem(item));
+                    } else {
+                        list.forEach(item => {
+                            const div = document.createElement('div');
+                            div.className = 'flex gap-2';
+                            div.innerHTML = `
+                                <input type="text" class="${inputClass} flex-1 px-4 py-2 border border-gray-300 rounded-lg" value="${item}">
+                                <button type="button" onclick="removeParent(this)" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Sil</button>
+                            `;
+                            container.appendChild(div);
+                        });
+                    }
+                } catch (e) { console.error(e); }
             }
         };
 
@@ -192,65 +193,39 @@ async function loadData() {
         }
         document.title = `${instName} - Admin Paneli`;
 
-    } catch (error) {
-        console.error("Veri yüklenemedi:", error);
-    }
-}
-const loadList = (listKey, containerId, inputClass, btnFunction) => {
-    if (config[listKey]) {
-        const list = typeof config[listKey] === 'string' ? JSON.parse(config[listKey]) : config[listKey];
-        const container = document.getElementById(containerId);
-        container.innerHTML = '';
-        list.forEach(item => {
-            const div = document.createElement('div');
-            div.className = 'flex gap-2';
-            div.innerHTML = `
-                        <input type="text" class="${inputClass} flex-1 px-4 py-2 border border-gray-300 rounded-lg" value="${item}">
-                        <button type="button" onclick="removeParent(this)" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Sil</button>
-                    `;
-            container.appendChild(div);
-        });
-    }
-};
-
-loadList('announcements', 'announcements-container', 'announcement-input');
-loadList('gallery_links', 'gallery-container', 'gallery-input');
-loadList('quotes', 'quotes-container', 'quote-input');
-
-
-// Sınav (Aynı kaldı)
-if (config.exam_config) {
-    const exam = typeof config.exam_config === 'string' ? JSON.parse(config.exam_config) : config.exam_config;
-    document.getElementById('exam-name').value = exam.name || '';
-    if (exam.winners) {
-        const container = document.getElementById('exam-winners-container');
-        container.innerHTML = '';
-        const lines = exam.winners.split('\n').filter(l => l.trim() !== '');
-        lines.forEach(line => {
-            const parts = line.split(',');
-            if (parts.length >= 3) {
-                const div = document.createElement('div');
-                div.className = 'flex gap-2 items-center';
-                div.innerHTML = `
+        // Sınav (Eski Koddan Kurtarılan)
+        if (config.exam_config) {
+            const exam = typeof config.exam_config === 'string' ? JSON.parse(config.exam_config) : config.exam_config;
+            document.getElementById('exam-name').value = exam.name || '';
+            if (exam.winners) {
+                const container = document.getElementById('exam-winners-container');
+                container.innerHTML = '';
+                const lines = exam.winners.split('\n').filter(l => l.trim() !== '');
+                lines.forEach(line => {
+                    const parts = line.split(',');
+                    if (parts.length >= 3) {
+                        const div = document.createElement('div');
+                        div.className = 'flex gap-2 items-center';
+                        div.innerHTML = `
                             <input type="text" class="exam-class flex-1 px-3 py-2 border border-gray-300 rounded-lg" value="${parts[0].trim()}">
                             <input type="text" class="exam-student flex-1 px-3 py-2 border border-gray-300 rounded-lg" value="${parts[1].trim()}">
                             <input type="number" class="exam-score w-32 px-3 py-2 border border-gray-300 rounded-lg" value="${parts[2].trim()}">
                             <button type="button" onclick="removeParent(this)" class="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Sil</button>
                         `;
-                container.appendChild(div);
+                        container.appendChild(div);
+                    }
+                });
             }
-        });
-    }
-}
+        }
 
-// Video URL
-if (config.video_url) document.getElementById('video-url').value = config.video_url;
+        // Video URL
+        if (config.video_url) document.getElementById('video-url').value = config.video_url;
 
-console.log('Veriler yüklendi');
+        console.log('Veriler yüklendi');
     } catch (error) {
-    console.error('Veri yükleme hatası:', error);
-    showMessage('Veriler yüklenirken hata oluştu! Girdiğiniz link yanlış olabilir mi?', 'error');
-}
+        console.error('Veri yükleme hatası:', error);
+        showMessage('Veriler yüklenirken hata oluştu! Girdiğiniz link yanlış olabilir mi?', 'error');
+    }
 }
 
 // KAYDET
