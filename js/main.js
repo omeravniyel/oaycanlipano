@@ -47,6 +47,17 @@ async function fetchConfig() {
         const slug = path.split('/')[1] || ''; // Boşsa varsayılanı API halleder
 
         const res = await fetch(`/api/get-config?slug=${slug}`);
+
+        if (res.status === 404) {
+            document.body.innerHTML = `
+                <div class="flex flex-col items-center justify-center h-screen bg-slate-900 text-white">
+                    <div class="text-6xl mb-4">⚠️</div>
+                    <h1 class="text-3xl font-bold mb-2">Kurum Bulunamadı</h1>
+                    <p class="text-slate-400">"${slug}" adında bir sistem kaydı mevcut değil.</p>
+                </div>`;
+            return;
+        }
+
         const config = await res.json();
 
         // --- 0. Header Bilgileri ---
