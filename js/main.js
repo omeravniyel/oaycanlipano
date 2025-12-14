@@ -272,12 +272,27 @@ async function fetchConfig() {
             }
         }
 
-        // C) Yemek Menüsü
-        let menu = config.menu || [];
-        if (typeof menu === 'string') menu = JSON.parse(menu);
-        if (Array.isArray(menu) && menu.length > 0) {
-            const menuText = menu.join(" • ");
-            infoData.push({ type: 'menu', title: 'YEMEK MENÜSÜ', badge: 'AFİYET OLSUN', circle: '🍽️', topLabel: 'GÜNÜN MENÜSÜ', content: menuText });
+        // C) Yemek Menüsü (Öğle ve Akşam)
+        if (config.lunch_menu) {
+            infoData.push({
+                type: 'menu',
+                title: 'ÖĞLE YEMEĞİ',
+                badge: 'AFİYET OLSUN',
+                circle: '☀️',
+                topLabel: 'GÜNÜN MENÜSÜ',
+                content: config.lunch_menu
+            });
+        }
+
+        if (config.dinner_menu) {
+            infoData.push({
+                type: 'menu',
+                title: 'AKŞAM YEMEĞİ',
+                badge: 'AFİYET OLSUN',
+                circle: '🌙',
+                topLabel: 'GÜNÜN MENÜSÜ',
+                content: config.dinner_menu
+            });
         }
 
         // Veri yoksa
