@@ -419,7 +419,6 @@ function updateDormNames() {
         }
     }
 }
-}
 
 // Başlangıçta verileri çek
 fetchConfig();
