@@ -846,7 +846,11 @@
                 },
                 // Dashboard Config
                 module_dorm_active: document.getElementById('module-dorm-check').checked,
-                module_bottom_right_type: document.getElementById('module-bottom-select').value
+                module_bottom_right_type: document.getElementById('module-bottom-select').value,
+
+                // Logo & Lock
+                institution_logo: document.getElementById('new-logo').value,
+                logo_locked: !!document.getElementById('new-logo').value
             };
 
             // ... Rest of the submit logic remains similar but uses new payload ...

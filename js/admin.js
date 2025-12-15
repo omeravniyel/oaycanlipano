@@ -44,6 +44,22 @@ async function loadData() {
         setVal('institution-slogan2', config.institution_slogan2);
         setVal('institution-logo', config.institution_logo);
 
+        // Logo Kilit Kontrolü
+        if (config.logo_locked) {
+            const logoInput = document.getElementById('institution-logo');
+            if (logoInput) {
+                // Input'un olduğu container'ı bulup gizle
+                // Genelde label + input + button bir div içindedir.
+                // En garantisi: parentElement'i gizle (eğer structure admin.html'de uygunsa)
+                // admin.html'de bu input: <div> <label>Logo URL</label> ... </div> içinde.
+                const container = logoInput.closest('div');
+                if (container) {
+                    container.style.display = 'none';
+                    // Kullanıcıya bilgi ver (Opsiyonel, şimdilik gizliyoruz)
+                }
+            }
+        }
+
         // 2. Yatakhane Ayarları
         setVal('dorm-title', config.dorm_title);
 
