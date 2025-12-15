@@ -35,7 +35,7 @@ export default async function handler(request, response) {
 
         // --- EKLEME / GÜNCELLEME ---
         if (action === 'upsert') {
-            let { slug, name, password, type, logo, subtitle, slogan1, slogan2, cover, city, district, weekly_hadiths } = payload;
+            let { slug, name, password, type, logo, subtitle, slogan1, slogan2, cover, city, district, weekly_hadiths, admin_contact } = payload;
             slug = slug.trim(); // Boşlukları temizle
 
             // 1. Önce bu kurum var mı kontrol et
@@ -66,6 +66,9 @@ export default async function handler(request, response) {
                 // Haftalık Hadis (Global)
                 if (weekly_hadiths) updatedConfig.weekly_hadiths = weekly_hadiths;
 
+                // İletişim Bilgileri (YENİ)
+                if (admin_contact) updatedConfig.admin_contact = admin_contact;
+
                 const { data, error } = await supabase
                     .from('institutions')
                     .update({ name, password, config: updatedConfig })
@@ -73,7 +76,7 @@ export default async function handler(request, response) {
                     .select();
 
                 if (error) throw error;
-                result = data;
+                result = data[0];
 
             } else {
                 // --- YENİ KAYIT (INSERT) ---
@@ -81,13 +84,27 @@ export default async function handler(request, response) {
                     institution_name: name,
                     institution_title: name,
                     institution_type: type || 'Daimi',
-                    institution_subtitle: subtitle || 'ÖĞRENCİ YURDU',
-                    institution_slogan1: slogan1 || 'ilgiyle bilginin',
-                    institution_slogan2: slogan2 || 'buluştuğu yer',
-                    institution_logo: logo || 'https://kartaltepepano.com/logo.png',
-                    city: city || 'Istanbul',
-                    district: district || 'Uskudar',
-                    cover_image: cover || 'https://via.placeholder.com/300?text=Logo' // Varsayılan kapak
+                    // Default values
+                    institution_logo: logo || '',
+                    institution_subtitle: subtitle || 'Canlı Pano Sistemi',
+                    institution_slogan1: slogan1 || 'Hoş Geldiniz',
+                    institution_slogan2: slogan2 || '',
+                    institution_cover: cover || '',
+                    city: city || '',
+                    district: district || '',
+
+                    // Arrays
+                    dorm1_names: [],
+                    dorm2_names: [],
+                    announcements: [],
+                    video_urls: [],
+                    gallery_links: [],
+                    left_gallery_links: [],
+                    exam_winners: [],
+
+                    // Objects
+                    weekly_hadiths: payload.weekly_hadiths || {},
+                    admin_contact: admin_contact || {}
                 };
 
                 const { data, error } = await supabase
