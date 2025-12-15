@@ -14,26 +14,27 @@ function removeParent(btn) {
     btn.parentElement.remove();
 }
 
-// GÖRSEL YÜKLEME HELPER (Optimize Edilmiş)
+// GÖRSEL YÜKLEME HELPER (Optimize Edilmiş - Beyaz & Şeffaf)
 async function uploadFile(input, targetId) {
     const file = input.files[0];
     if (!file) return;
 
-    // Dosya boyutu kontrolü (Maks 10MB baştan reddet, ama biz sıkıştıracağız)
+    // Dosya boyutu kontrolü (Maks 10MB)
     if (file.size > 10 * 1024 * 1024) {
         alert("Dosya çok büyük! Lütfen 10MB'dan küçük bir resim seçin.");
-        input.value = ""; // Reset
+        input.value = "";
         return;
     }
 
     const btn = input.nextElementSibling; // Button
     const originalText = btn.innerText;
-    btn.innerText = "⏳ Sıkıştırılıyor...";
+    btn.innerText = "⏳ İşleniyor...";
     btn.disabled = true;
 
     try {
-        // 1. Resmi Sıkıştır
-        const compressedBase64 = await compressImage(file, 800, 0.8); // Max 800px genişlik, %80 kalite
+        // 1. Resmi İşle (Sıkıştır + Beyaza Boya + PNG yap)
+        // Logo için şeffaflık önemli -> PNG
+        const processedBase64 = await processLogo(file, 800);
 
         btn.innerText = "⏳ Yükleniyor...";
 
@@ -42,20 +43,16 @@ async function uploadFile(input, targetId) {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                filename: file.name,
-                fileBase64: compressedBase64.split(',')[1], // Header'ı at
-                contentType: 'image/jpeg' // Her zaman JPEG'e çeviriyoruz
+                filename: 'logo-' + Date.now() + '.png', // Adını değiştir
+                fileBase64: processedBase64.split(',')[1],
+                contentType: 'image/png' // Her zaman PNG
             })
         });
 
-        // Hata kontrolü (HTML dönerse diye text olarak alıp parse edelim)
         const text = await res.text();
         let data;
-        try {
-            data = JSON.parse(text);
-        } catch (e) {
-            throw new Error("Sunucu Hatası: " + (text.substring(0, 100) + "..."));
-        }
+        try { data = JSON.parse(text); }
+        catch (e) { throw new Error("Sunucu Hatası: " + (text.substring(0, 100) + "...")); }
 
         if (data.error) throw new Error(data.error);
 
@@ -70,8 +67,8 @@ async function uploadFile(input, targetId) {
     }
 }
 
-// Resim Sıkıştırma Yardımcısı
-function compressImage(file, maxWidth, quality) {
+// Logo İşleme (Beyaz yap + Şeffaf koru)
+function processLogo(file, maxWidth) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
@@ -92,10 +89,18 @@ function compressImage(file, maxWidth, quality) {
                 canvas.height = height;
 
                 const ctx = canvas.getContext('2d');
+
+                // 1. Resmi Çiz
                 ctx.drawImage(img, 0, 0, width, height);
 
-                // JPEG olarak sıkıştır
-                const dataUrl = canvas.toDataURL('image/jpeg', quality);
+                // 2. İçeriği Beyaza Boya (Source-In tekniği)
+                // Mevcut piksellerin üzerine beyaz çizer, şeffaf yerlere dokunmaz
+                ctx.globalCompositeOperation = 'source-in';
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(0, 0, width, height);
+
+                // PNG olarak al (Şeffaflık korunur)
+                const dataUrl = canvas.toDataURL('image/png');
                 resolve(dataUrl);
             };
             img.onerror = (err) => reject(err);
