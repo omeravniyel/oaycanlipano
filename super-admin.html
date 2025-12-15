@@ -16,15 +16,62 @@
 
 <body class="bg-slate-900 text-slate-100 min-h-screen p-8">
 
-    <!-- Login Modal (Basit Overlay) -->
-    <div id="login-overlay" class="fixed inset-0 bg-slate-900 z-50 flex items-center justify-center">
-        <div class="bg-slate-800 p-8 rounded-xl shadow-2xl max-w-sm w-full border border-slate-700">
-            <h2 class="text-2xl font-bold mb-4 text-center">Ana Yönetici Girişi</h2>
+    <!-- Login Overlay (Elektrik Temalı) -->
+    <div id="login-wrapper" class="fixed inset-0 z-50 flex items-center justify-center bg-[#0B0E14] overflow-hidden">
+
+        <!-- CSS (Inline) -->
+        <style>
+            @keyframes move-background {
+                0% {
+                    background-position: 0 0;
+                }
+
+                100% {
+                    background-position: 100% 100%;
+                }
+            }
+
+            .electric-bg {
+                position: absolute;
+                inset: 0;
+                background-color: #0B0E14;
+                background-image:
+                    linear-gradient(rgba(0, 255, 255, 0.05) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(0, 255, 255, 0.05) 1px, transparent 1px);
+                background-size: 50px 50px;
+                animation: move-background 60s linear infinite;
+            }
+
+            .glass-panel {
+                background: rgba(11, 14, 20, 0.8);
+                backdrop-filter: blur(12px);
+                border: 1px solid rgba(0, 210, 255, 0.2);
+                box-shadow: 0 0 50px rgba(0, 0, 0, 0.8);
+            }
+        </style>
+
+        <div class="electric-bg"></div>
+        <div class="absolute inset-0 bg-radial-gradient from-purple-900/20 to-transparent pointer-events-none"></div>
+
+        <div class="glass-panel p-10 rounded-2xl w-full max-w-sm text-center relative z-10 animate-fade-in mx-4">
+            <div class="mb-6">
+                <div
+                    class="w-20 h-20 mx-auto bg-purple-600/20 rounded-full flex items-center justify-center mb-4 border border-purple-500/30 shadow-[0_0_20px_rgba(168,85,247,0.4)]">
+                    <span class="text-4xl text-purple-400">⚡</span>
+                </div>
+                <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-purple-200">
+                    Süper Admin</h1>
+                <p class="text-slate-400 text-xs mt-2 uppercase tracking-widest">Sistem Yönetimi</p>
+            </div>
+
             <input type="password" id="master-password-input"
-                class="w-full bg-slate-700 border border-slate-600 rounded p-3 mb-4 text-white" placeholder="Ana Şifre">
+                class="w-full bg-slate-900/80 border border-slate-700 rounded-lg px-4 py-3 mb-4 text-white text-center tracking-widest placeholder-slate-600 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 focus:outline-none transition"
+                placeholder="ANA ŞİFRE">
+
             <button onclick="login()"
-                class="w-full bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 rounded transition">Giriş
-                Yap</button>
+                class="w-full bg-purple-600 hover:bg-purple-500 text-white font-bold py-3 rounded-lg shadow-lg hover:shadow-purple-500/30 transition duration-300 transform hover:scale-[1.02]">
+                GİRİŞ YAP
+            </button>
         </div>
     </div>
 

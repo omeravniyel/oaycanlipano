@@ -14,39 +14,164 @@
     </style>
 </head>
 
-<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
+<body
+    class="bg-[#0B0E14] text-white flex items-center justify-center min-h-screen relative overflow-hidden font-sans selection:bg-cyan-500 selection:text-white">
 
-    <div class="w-full max-w-md bg-gray-800 rounded-2xl shadow-xl p-8 border border-gray-700">
-        <div class="text-center mb-8">
-            <h1 class="text-3xl font-bold text-white mb-2">Yönetim Paneli</h1>
-            <p class="text-gray-400">Kurum bilgilerinizi giriniz</p>
+    <style>
+        @keyframes move-background {
+            0% {
+                background-position: 0 0;
+            }
+
+            100% {
+                background-position: 100% 100%;
+            }
+        }
+
+        @keyframes pulse-glow {
+
+            0%,
+            100% {
+                opacity: 0.3;
+            }
+
+            50% {
+                opacity: 0.6;
+            }
+        }
+
+        .electric-bg {
+            position: absolute;
+            inset: 0;
+            background-color: #0B0E14;
+            background-image:
+                linear-gradient(rgba(0, 255, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(rgba(0, 255, 255, 0.03) 2px, transparent 2px),
+                linear-gradient(90deg, rgba(0, 255, 255, 0.03) 2px, transparent 2px);
+            background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+            animation: move-background 60s linear infinite;
+            z-index: 0;
+        }
+
+        .circuit-line {
+            position: absolute;
+            background: linear-gradient(90deg, transparent, #00d2ff, transparent);
+            height: 2px;
+            width: 100%;
+            opacity: 0;
+            animation: circuit-flow 4s ease-in-out infinite;
+        }
+
+        @keyframes circuit-flow {
+            0% {
+                transform: translateX(-100%);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 1;
+            }
+
+            90% {
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+        }
+
+        .glass-panel {
+            background: rgba(11, 14, 20, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 210, 255, 0.1);
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(0, 210, 255, 0.05);
+        }
+    </style>
+
+    <!-- Background Elements -->
+    <div class="electric-bg"></div>
+    <div class="absolute top-1/4 left-0 w-full opacity-20 pointer-events-none">
+        <div class="circuit-line" style="animation-delay: 0s;"></div>
+    </div>
+    <div class="absolute top-3/4 left-0 w-full opacity-20 pointer-events-none">
+        <div class="circuit-line" style="animation-duration: 7s; animation-delay: 2s;"></div>
+    </div>
+    <div class="absolute inset-0 bg-radial-gradient from-blue-900/20 to-transparent pointer-events-none z-0"></div>
+
+    <div class="w-full max-w-md glass-panel rounded-2xl p-8 relative z-10 mx-4 animate-fade-in group">
+        <!-- Glow Effect on Hover -->
+        <div
+            class="absolute -inset-0.5 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-2xl opacity-20 group-hover:opacity-40 blur transition duration-500 -z-10">
+        </div>
+
+        <div class="text-center mb-8 relative">
+            <div class="w-24 h-24 mx-auto mb-4 relative">
+                <div class="absolute inset-0 bg-blue-500/30 blur-xl rounded-full animate-pulse-glow"></div>
+                <img src="logo.png"
+                    class="w-full h-full object-contain brightness-0 invert drop-shadow-[0_0_10px_rgba(0,210,255,0.5)]">
+            </div>
+            <h1
+                class="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white to-cyan-200 tracking-tight">
+                Yönetim Paneli</h1>
+            <p class="text-cyan-400/60 text-xs uppercase tracking-[0.2em] mt-2">Kurumsal Giriş Ekranı</p>
         </div>
 
         <form id="login-form" class="space-y-6">
-            <div>
-                <label for="slug" class="block text-sm font-medium text-gray-300 mb-2">Kurum Linki (Slug)</label>
-                <input type="text" id="slug" name="slug" placeholder="ornekin-omeravniyel"
-                    class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                    required>
-                <p class="text-xs text-gray-500 mt-1">Örn: kartaltepepano.com/<b>omeravniyel</b></p>
+            <div class="group/input">
+                <label for="slug" class="block text-xs font-bold text-cyan-500/80 mb-2 uppercase tracking-wider">Kurum
+                    Linki</label>
+                <div class="relative">
+                    <input type="text" id="slug" name="slug" placeholder="ornekin-omeravniyel"
+                        class="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all duration-300"
+                        required>
+                    <div
+                        class="absolute right-3 top-3 text-slate-600 group-focus-within/input:text-cyan-500 transition">
+                        🔗</div>
+                </div>
             </div>
 
-            <div>
-                <label for="password" class="block text-sm font-medium text-gray-300 mb-2">Şifre</label>
-                <input type="password" id="password" name="password" placeholder="••••••••"
-                    class="w-full bg-gray-700 border border-gray-600 rounded-lg px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                    required>
+            <div class="group/input">
+                <label for="password"
+                    class="block text-xs font-bold text-cyan-500/80 mb-2 uppercase tracking-wider">Şifre</label>
+                <div class="relative">
+                    <input type="password" id="password" name="password" placeholder="••••••••"
+                        class="w-full bg-slate-900/50 border border-slate-700 rounded-lg px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all duration-300"
+                        required>
+                    <div
+                        class="absolute right-3 top-3 text-slate-600 group-focus-within/input:text-cyan-500 transition">
+                        🔒</div>
+                </div>
             </div>
 
             <button type="submit"
-                class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg transition duration-200 transform hover:scale-[1.02]">
-                Giriş Yap
+                class="w-full relative overflow-hidden bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-4 rounded-lg transition-all duration-300 transform hover:translate-y-[-2px] hover:shadow-[0_0_20px_rgba(6,182,212,0.4)] group/btn">
+                <span class="relative z-10 flex items-center justify-center gap-2">
+                    GİRİŞ YAP
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                        class="h-4 w-4 transition-transform duration-300 group-hover/btn:translate-x-1" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
+                </span>
             </button>
         </form>
 
         <div id="error-msg"
-            class="hidden mt-4 bg-red-500/10 border border-red-500/50 text-red-200 p-3 rounded-lg text-sm text-center">
-            Hatalı kurum linki veya şifre!
+            class="hidden mt-6 bg-red-900/30 border border-red-500/30 text-red-200 p-4 rounded-lg text-sm flex items-center gap-3 animate-shake">
+            <svg class="w-5 h-5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <span>Hatalı kurum linki veya şifre!</span>
+        </div>
+
+        <div class="mt-8 pt-6 border-t border-slate-800 text-center">
+            <a href="/" class="text-xs text-slate-500 hover:text-cyan-400 transition uppercase tracking-widest">Ana
+                Sayfaya Dön</a>
         </div>
     </div>
 
@@ -56,25 +181,26 @@
             const slug = document.getElementById('slug').value.trim();
             const password = document.getElementById('password').value.trim();
             const errorMsg = document.getElementById('error-msg');
-
-            // Basit doğrulama (Geçici olarak API öncesi)
-            // İleride burası /api/login endpointsine gidecek
-            // Şimdilik sadece yönlendirme mantığını kuralım
+            const btn = e.target.querySelector('button');
+            const originalBtnText = btn.innerHTML;
 
             try {
-                // API'ye soracağız (henüz yok, simüle ediyoruz veya direkt admin.html?slug=... yapıyoruz)
-                // Güvenlik için token sistemi lazım ama şimdilik basic auth benzeri ilerleyelim
+                btn.innerHTML = '<span class="animate-pulse">KONTROL EDİLİYOR...</span>';
+                btn.disabled = true;
 
-                // localStorage'a kaydet
+                // Simüle edilmiş gecikme (Premium hissi için)
+                await new Promise(r => setTimeout(r, 800));
+
                 localStorage.setItem('admin_slug', slug);
-                localStorage.setItem('admin_password', password); // NOT: Normalde token tutulur!
+                localStorage.setItem('admin_password', password);
 
-                // Admin paneline yönlendir
                 window.location.href = `/admin.html`;
 
             } catch (err) {
                 console.error(err);
                 errorMsg.classList.remove('hidden');
+                btn.innerHTML = originalBtnText;
+                btn.disabled = false;
             }
         });
     </script>
