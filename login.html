@@ -190,17 +190,31 @@
                 btn.innerHTML = '<span class="animate-pulse">KONTROL EDİLİYOR...</span>';
                 btn.disabled = true;
 
-                // Simüle edilmiş gecikme (Premium hissi için)
-                await new Promise(r => setTimeout(r, 800));
+                // API Kontrolü
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ slug, password })
+                });
 
+                const data = await res.json();
+
+                if (!res.ok || data.error) throw new Error(data.error || 'Giriş başarısız');
+
+                // Başarılı
                 localStorage.setItem('admin_slug', slug);
                 localStorage.setItem('admin_password', password);
+                localStorage.setItem('admin_name', data.name); // Kurum adını da sakla
 
-                window.location.href = `/admin.html`;
+                btn.innerHTML = '✅ GİRİŞ BAŞARILI';
+                setTimeout(() => {
+                    window.location.href = '/admin.html';
+                }, 500);
 
             } catch (err) {
                 console.error(err);
                 errorMsg.classList.remove('hidden');
+                errorMsg.querySelector('span').innerText = "Hatalı Kurum Linki veya Şifre!";
                 btn.innerHTML = originalBtnText;
                 btn.disabled = false;
             }
