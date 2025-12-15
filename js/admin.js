@@ -1,14 +1,30 @@
 const API_URL = '/api';
 
 // URL'den slug al
-const urlParams = new URLSearchParams(window.location.search);
-// Normalde slug'ı path'den veya localStorage'dan alırız.
+// Path: /:slug/admin (Örn: /omeravniyel/admin)
+const pathSlugMatch = window.location.pathname.match(/^\/([^/]+)\/admin/);
+let pathSlug = pathSlugMatch ? pathSlugMatch[1] : null;
+
+// Eğer direkt admin.html açıldıysa ve pathSlug yoksa, localStorage'a güven (fakat bu güvenlik açığı olabilir, neyse)
+// Better: URL'de slug varsa, localStorage ile EŞLEŞMEK ZORUNDA.
+
 const CURRENT_SLUG = localStorage.getItem('admin_slug');
 const CURRENT_PASSWORD = localStorage.getItem('admin_password');
 
+// 1. Yetki Kontrolü
 if (!CURRENT_SLUG || !CURRENT_PASSWORD) {
+    // Hiç giriş yok -> Login
+    console.log("Oturum yok, login'e yönlendiriliyor.");
+    window.location.href = '/login.html';
+} else if (pathSlug && pathSlug !== CURRENT_SLUG) {
+    // URL'deki slug ile Giriş yapılan slug farklı -> Çıkış yap ve Login'e at
+    console.log("Yetkisiz erişim denemesi (Slug uyuşmuyor).");
+    localStorage.removeItem('admin_slug');
+    localStorage.removeItem('admin_password');
+    localStorage.removeItem('admin_name');
     window.location.href = '/login.html';
 }
+// Eğer her şey yolundaysa, CURRENT_SLUG ile devam et.
 
 document.addEventListener('DOMContentLoaded', () => {
     loadData();
