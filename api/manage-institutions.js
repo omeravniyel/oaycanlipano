@@ -35,10 +35,14 @@ export default async function handler(request, response) {
 
         // --- EKLEME / GÜNCELLEME ---
         if (action === 'upsert') {
-            let { slug, name, password, type, institution_logo, logo_locked, subtitle, slogan1, slogan2, cover, city, district, weekly_hadiths, admin_contact, module_dorm_active, module_bottom_right_type } = payload;
+            let { slug, name, password, type, institution_logo, logo_locked, institution_subtitle, institution_slogan1, institution_slogan2, cover, city, district, weekly_hadiths, admin_contact, module_dorm_active, module_bottom_right_type } = payload;
             slug = slug.trim(); // Boşlukları temizle
 
-            // Legacy support (bazı yerlerde 'logo' olarak gelebilir)
+            // Legacy support (eski payload uyumluluğu - frontend düzeltildi ama yine de kalsın)
+            const finalSubtitle = institution_subtitle || payload.subtitle;
+            const finalSlogan1 = institution_slogan1 || payload.slogan1;
+            const finalSlogan2 = institution_slogan2 || payload.slogan2;
+
             const finalLogo = institution_logo || payload.logo;
 
             // 1. Önce bu kurum var mı kontrol et
@@ -61,11 +65,13 @@ export default async function handler(request, response) {
                 if (logo_locked !== undefined) updatedConfig.logo_locked = logo_locked;
 
                 // Opsiyonel alanlar
-                if (subtitle) updatedConfig.institution_subtitle = subtitle;
-                if (slogan1) updatedConfig.institution_slogan1 = slogan1;
+                if (finalSubtitle) updatedConfig.institution_subtitle = finalSubtitle;
+                if (finalSlogan1) updatedConfig.institution_slogan1 = finalSlogan1;
+                if (finalSlogan2) updatedConfig.institution_slogan2 = finalSlogan2;
+
                 if (city) updatedConfig.city = city;
                 if (district) updatedConfig.district = district;
-                if (slogan2) updatedConfig.institution_slogan2 = slogan2;
+
                 if (cover) updatedConfig.institution_cover = cover;
 
                 // Haftalık Hadis (Global)

@@ -840,6 +840,14 @@
 
             const payload = {
                 slug, name, password, type, cover,
+
+                // Header Info
+                institution_subtitle: document.getElementById('new-subtitle').value,
+                institution_slogan1: document.getElementById('new-slogan1').value,
+                institution_slogan2: document.getElementById('new-slogan2').value,
+                city: document.getElementById('new-city').value,
+                district: document.getElementById('new-district').value,
+
                 admin_contact: {
                     name: adminName,
                     phone: adminPhone,
