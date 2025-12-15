@@ -518,9 +518,7 @@ window.uploadFile = async function (input, targetId, previewId = null) {
         alert('Yükleme hatası: ' + e.message);
     }
 }
-setTimeout(() => { btn.innerText = originalText; btn.disabled = false; }, 2000);
-    }
-}
+
 
 // Basit Image Resize
 function resizeImage(file, maxWidth) {
