@@ -801,7 +801,7 @@
                 if (result.error) throw new Error(result.error);
 
                 // Başarılı
-                closeModal();
+                closeAddModal();
                 loadInstitutions(); // Refresh grid
             } catch (err) {
                 alert("Hata: " + err.message);
