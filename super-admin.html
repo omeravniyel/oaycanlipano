@@ -634,7 +634,7 @@
                         <div class="w-14 h-14 bg-slate-700 rounded-2xl flex items-center justify-center overflow-hidden border border-slate-600 shadow-lg">
                              ${config.institution_logo ? `<img src="${config.institution_logo}" class="w-full h-full object-cover">` : '<span class="text-2xl">🏫</span>'}
                         </div>
-                        <div class="flex gap-1 opacity-100 lg:opacity-0 group-hover:opacity-100 transition bg-slate-900/80 rounded-lg p-1 backdrop-blur-sm border border-slate-700">
+                        <div class="flex gap-1 bg-slate-900/80 rounded-lg p-1 backdrop-blur-sm border border-slate-700">
                             <button onclick='editInstitution(${JSON.stringify(inst).replace(/'/g, "&#39;")})' class="p-2 hover:bg-yellow-600 rounded text-xs text-white transition" title="Düzenle">✏️</button>
                             <a href="/${inst.slug}/admin" target="_blank" class="p-2 hover:bg-blue-600 rounded text-xs text-white transition" title="Yönet">⚙️</a>
                             <a href="/${inst.slug}" target="_blank" class="p-2 hover:bg-green-600 rounded text-xs text-white transition" title="Görüntüle">👁️</a>
@@ -750,6 +750,7 @@
             slugInput.classList.add('opacity-50', 'cursor-not-allowed');
 
             if (inst.config) {
+                const contact = inst.config.admin_contact || {}; // Define contact here
                 setVal('type-select', inst.config.institution_type);
                 setVal('new-subtitle', inst.config.institution_subtitle);
                 setVal('new-slogan1', inst.config.institution_slogan1);
