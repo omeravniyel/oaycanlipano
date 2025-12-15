@@ -674,6 +674,11 @@
             document.getElementById('add-modal').classList.add('flex');
         }
 
+        function closeAddModal() {
+            document.getElementById('add-modal').classList.remove('flex');
+            document.getElementById('add-modal').classList.add('hidden');
+        }
+
         function editInstitution(inst) {
             document.getElementById('modal-title').innerText = "Kurumu Düzenle";
             document.getElementById('edit-slug').value = inst.slug;
