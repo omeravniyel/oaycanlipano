@@ -399,11 +399,40 @@
                             placeholder="WhatsApp'ta görünecek resim">
                     </div>
                 </div>
-
-                <button type="submit" id="submit-btn"
-                    class="w-full bg-blue-600 hover:bg-blue-500 py-3 rounded font-bold mt-4">KAYDET</button>
-            </form>
         </div>
+
+        <!-- Dashboard Yapılandırması (YENİ) -->
+        <div class="mb-4 bg-slate-700/30 p-4 rounded-lg border border-slate-600/50">
+            <h3
+                class="text-sm uppercase tracking-wider text-indigo-400 font-bold mb-3 border-b border-indigo-500/20 pb-1">
+                Dashboard Ayarları</h3>
+
+            <!-- Yurt Modülü -->
+            <div class="flex items-center justify-between mb-4">
+                <label class="text-sm font-medium text-slate-300">Yurt Kazananı Modülü</label>
+                <div class="flex items-center">
+                    <input type="checkbox" id="module-dorm-check"
+                        class="w-5 h-5 text-indigo-600 bg-slate-700 border-slate-500 rounded focus:ring-indigo-500 focus:ring-2">
+                    <span class="ml-2 text-xs text-slate-400">(İşaretli ise gösterilir)</span>
+                </div>
+            </div>
+
+            <!-- Sağ Alt Modül -->
+            <div>
+                <label class="block text-sm font-medium text-slate-300 mb-1">Sağ Alt Bölüm İçeriği</label>
+                <select id="module-bottom-select"
+                    class="w-full bg-slate-800 border border-slate-600 rounded p-2 text-white text-sm">
+                    <option value="auto">Otomatik (Hepsini Dönüşümlü Göster)</option>
+                    <option value="exam">Sadece Sınav Şampiyonları</option>
+                    <option value="announcement">Sadece Duyurular</option>
+                </select>
+            </div>
+        </div>
+
+        <button type="submit" id="submit-btn"
+            class="w-full bg-blue-600 hover:bg-blue-500 py-3 rounded font-bold mt-4">KAYDET</button>
+        </form>
+    </div>
     </div>
 
     <script>
@@ -665,6 +694,10 @@
             document.getElementById('institution-form').reset();
             document.getElementById('edit-slug').value = ""; // Reset hidden slug
 
+            // Default Configs for New
+            document.getElementById('module-dorm-check').checked = true;
+            document.getElementById('module-bottom-select').value = "auto";
+
             // Enable Slug for New
             const slugInput = document.getElementById('slug-input');
             slugInput.disabled = false;
@@ -703,11 +736,14 @@
                 setVal('new-city', inst.config.city);
                 setVal('new-district', inst.config.district);
 
-                // Contact
-                const contact = inst.config.admin_contact || {};
                 setVal('admin-name-input', contact.name);
                 setVal('admin-phone-input', contact.phone);
                 setVal('admin-email-input', contact.email);
+
+                // Dashboard Config
+                const isDormActive = (inst.config.module_dorm_active !== undefined) ? inst.config.module_dorm_active : true;
+                document.getElementById('module-dorm-check').checked = isDormActive;
+                setVal('module-bottom-select', inst.config.module_bottom_right_type || 'auto');
             }
 
             document.getElementById('add-modal').classList.remove('hidden');
@@ -746,7 +782,10 @@
                     name: adminName,
                     phone: adminPhone,
                     email: adminEmail
-                }
+                },
+                // Dashboard Config
+                module_dorm_active: document.getElementById('module-dorm-check').checked,
+                module_bottom_right_type: document.getElementById('module-bottom-select').value
             };
 
             // ... Rest of the submit logic remains similar but uses new payload ...

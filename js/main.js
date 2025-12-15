@@ -459,6 +459,38 @@ async function fetchConfig() {
         // Periyodik yenileme (Opsiyonel: 5 dk'da bir config yenile)
         // setInterval(fetchConfig, 5 * 60 * 1000);
 
+        // --- 9. MODULE CONFIGURATION (YENİ) ---
+
+        // A) Dorm Layout
+        const dormActive = (config.module_dorm_active !== undefined) ? config.module_dorm_active : true;
+        const dormCard = document.getElementById('dorm-card');
+        const hadithCard = document.getElementById('hadith-card');
+
+        if (!dormActive) {
+            if (dormCard) dormCard.style.display = 'none';
+            if (hadithCard) {
+                // Remove flex-[4] and make it full
+                hadithCard.classList.remove('flex-[4]');
+                hadithCard.classList.add('flex-1'); // Full height
+            }
+        } else {
+            if (dormCard) dormCard.style.display = 'flex';
+            if (hadithCard) {
+                hadithCard.classList.add('flex-[4]');
+                hadithCard.classList.remove('flex-1');
+            }
+        }
+
+        // B) Filter Info Data (Bottom Right)
+        const bottomType = config.module_bottom_right_type || 'auto'; // 'auto', 'exam', 'announcement'
+
+        if (bottomType === 'exam') {
+            infoData = infoData.filter(item => item.type === 'exam');
+        } else if (bottomType === 'announcement') {
+            infoData = infoData.filter(item => item.type === 'duyuru');
+        }
+        // 'auto' does nothing (keeps all)
+
     } catch (error) {
         console.error("Config error:", error);
     }

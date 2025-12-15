@@ -35,7 +35,7 @@ export default async function handler(request, response) {
 
         // --- EKLEME / GÜNCELLEME ---
         if (action === 'upsert') {
-            let { slug, name, password, type, logo, subtitle, slogan1, slogan2, cover, city, district, weekly_hadiths, admin_contact } = payload;
+            let { slug, name, password, type, logo, subtitle, slogan1, slogan2, cover, city, district, weekly_hadiths, admin_contact, module_dorm_active, module_bottom_right_type } = payload;
             slug = slug.trim(); // Boşlukları temizle
 
             // 1. Önce bu kurum var mı kontrol et
@@ -68,6 +68,10 @@ export default async function handler(request, response) {
 
                 // İletişim Bilgileri (YENİ)
                 if (admin_contact) updatedConfig.admin_contact = admin_contact;
+
+                // Dashboard Config (YENİ)
+                if (module_dorm_active !== undefined) updatedConfig.module_dorm_active = module_dorm_active;
+                if (module_bottom_right_type) updatedConfig.module_bottom_right_type = module_bottom_right_type;
 
                 const { data, error } = await supabase
                     .from('institutions')
@@ -104,7 +108,11 @@ export default async function handler(request, response) {
 
                     // Objects
                     weekly_hadiths: payload.weekly_hadiths || {},
-                    admin_contact: admin_contact || {}
+                    admin_contact: admin_contact || {},
+
+                    // Dashboard Config
+                    module_dorm_active: (module_dorm_active !== undefined) ? module_dorm_active : true,
+                    module_bottom_right_type: module_bottom_right_type || 'auto'
                 };
 
                 const { data, error } = await supabase

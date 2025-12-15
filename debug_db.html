@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Debug DB</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/js/supabase.js"></script>
+</head>
+
+<body>
+    <h1>Debug Config for omeravniyel</h1>
+    <pre id="output">Loading...</pre>
+    <script>
+        // js/supabase.js defines 'supabase' client globally usually?
+        // Let's check js/supabase.js content again.
+        // It likely exports or assigns to window.
+        // Assuming window.supabaseClient or similar.
+        // Re-reading js/supabase.js showed:
+        // const supabaseUrl = '...'; const supabaseKey = '...'; const supabase = supabase.createClient...
+
+        async function run() {
+            try {
+                const { data, error } = await supabase
+                    .from('institutions')
+                    .select('config')
+                    .eq('slug', 'omeravniyel')
+                    .single();
+
+                if (error) {
+                    document.getElementById('output').innerText = "Error: " + JSON.stringify(error, null, 2);
+                } else {
+                    document.getElementById('output').innerText = JSON.stringify(data.config, null, 2);
+                }
+            } catch (e) {
+                document.getElementById('output').innerText = "Exception: " + e.toString();
+            }
+        }
+
+        // Wait for supabase.js to load
+        setTimeout(run, 1000);
+    </script>
+</body>
+
+</html>
