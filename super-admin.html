@@ -273,21 +273,22 @@
             <button onclick="closeAddModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">✕</button>
             <h2 class="text-2xl font-bold mb-6">Yeni Kurum Oluştur</h2>
 
-            <form id="add-form" class="space-y-4 max-h-[70vh] overflow-y-auto px-1">
+            <form id="institution-form" class="space-y-4 max-h-[70vh] overflow-y-auto px-1">
+                <input type="hidden" id="edit-slug">
                 <div>
                     <label class="block text-sm font-medium text-slate-400 mb-1">Kurum Adı (Başlık)</label>
-                    <input type="text" id="new-name" class="w-full bg-slate-700 border border-slate-600 rounded p-2"
+                    <input type="text" id="name-input" class="w-full bg-slate-700 border border-slate-600 rounded p-2"
                         placeholder="Örn: Yeni Doğan Koleji" required>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-400 mb-1">Link (Slug)</label>
-                    <input type="text" id="new-slug" class="w-full bg-slate-700 border border-slate-600 rounded p-2"
+                    <input type="text" id="slug-input" class="w-full bg-slate-700 border border-slate-600 rounded p-2"
                         placeholder="yenidogan" required>
                     <p class="text-xs text-slate-500 mt-1">Link: kartaltepepano.com/<b>yenidogan</b></p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-slate-400 mb-1">Şifre</label>
-                    <input type="text" id="new-password"
+                    <input type="text" id="password-input"
                         class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-white"
                         placeholder="Yönetici şifresi">
                 </div>
@@ -309,7 +310,7 @@
 
                 <div>
                     <label class="block text-sm font-medium text-slate-400 mb-1">Kurum Nevi</label>
-                    <select id="new-type" class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-white">
+                    <select id="type-select" class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-white">
                         <option value="">Seçiniz...</option>
                         <option value="Anaokulu">Anaokulu</option>
                         <option value="Ortaokul">Ortaokul</option>
@@ -502,106 +503,9 @@
             };
         }
 
-        // Modallar
-        const modal = document.getElementById('add-modal');
-        const modalTitle = modal.querySelector('h2');
-        const slugInput = document.getElementById('new-slug');
+        // --- LEGACY SCRIPT REMOVED ---
+        // New script handles editInstitution and form submission.
 
-        function showAddModal() {
-            document.getElementById('add-form').reset();
-            modalTitle.innerText = "Yeni Kurum Oluştur";
-            slugInput.disabled = false;
-            slugInput.placeholder = "Örn: omeravniyel (Sadece kısa isim)";
-            slugInput.classList.remove('opacity-50', 'cursor-not-allowed');
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
-
-        // Slug Input Otomatik Temizleme
-        slugInput.addEventListener('input', (e) => {
-            let val = e.target.value;
-            // Eğer tam link yapıştırılırsa temizle
-            if (val.includes('kartaltepepano.com/')) {
-                val = val.split('kartaltepepano.com/')[1];
-            }
-            // HTTP/S temizle
-            val = val.replace('http://', '').replace('https://', '');
-            // Slash ve boşluk temizle
-            val = val.replace(/\//g, '').trim();
-
-            if (val !== e.target.value) {
-                e.target.value = val;
-            }
-        });
-
-        function editInstitution(inst) {
-            modalTitle.innerText = "Kurumu Düzenle";
-            document.getElementById('new-name').value = inst.name || "";
-            document.getElementById('new-slug').value = inst.slug || "";
-            document.getElementById('new-password').value = inst.password || "";
-            document.getElementById('new-type').value = inst.config?.institution_type || "";
-
-            // Yeni Alanlar
-            document.getElementById('new-subtitle').value = inst.config?.institution_subtitle || "";
-            document.getElementById('new-slogan1').value = inst.config?.institution_slogan1 || "";
-            document.getElementById('new-slogan2').value = inst.config?.institution_slogan2 || "";
-
-            document.getElementById('new-logo').value = inst.config?.institution_logo || "";
-            document.getElementById('new-cover').value = inst.config?.institution_cover || ""; // Populate Cover
-            document.getElementById('new-city').value = inst.config?.city || "";
-            document.getElementById('new-district').value = inst.config?.district || "";
-
-            slugInput.disabled = true;
-            slugInput.classList.add('opacity-50', 'cursor-not-allowed');
-
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-        }
-
-        function closeAddModal() {
-            modal.classList.add('hidden');
-            modal.classList.remove('flex');
-        }
-
-        document.getElementById('add-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const submitBtn = document.getElementById('submit-btn');
-            submitBtn.disabled = true;
-            submitBtn.innerText = "⏳ İşleniyor...";
-
-            const payload = {
-                name: document.getElementById('new-name').value.trim(),
-                slug: document.getElementById('new-slug').value.trim(),
-                password: document.getElementById('new-password').value,
-                type: document.getElementById('new-type').value,
-                logo: document.getElementById('new-logo').value,
-                cover: document.getElementById('new-cover').value, // Send Cover
-                subtitle: document.getElementById('new-subtitle').value,
-                slogan1: document.getElementById('new-slogan1').value,
-                slogan2: document.getElementById('new-slogan2').value
-            };
-
-            try {
-                const res = await fetch('/api/manage-institutions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'upsert', master_password: MASTER_PASSWORD, payload })
-                });
-                const data = await res.json();
-                if (data.error) throw new Error(data.error);
-
-                alert("✅ İşlem Başarılı!");
-                closeAddModal();
-                loadInstitutions();
-                e.target.reset();
-
-            } catch (err) {
-                alert("Hata: " + err.message);
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.innerText = "KAYDET";
-            }
-        });
 
         // Silme
         async function deleteInstitution(slug) {
