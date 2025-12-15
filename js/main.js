@@ -53,42 +53,87 @@ async function fetchConfig() {
 
         if (!slug) {
             // --- ANA SAYFA (Landing Page) ---
+            // --- ANA SAYFA (Landing Page - Electric Theme) ---
             document.body.innerHTML = `
-                <div class="h-screen w-full bg-slate-900 flex flex-col items-center justify-center relative overflow-hidden">
-                    <!-- Arkaplan Efekti -->
-                    <div class="absolute inset-0 bg-[url('https://source.unsplash.com/random/1920x1080/?technology,abstract')] bg-cover bg-center opacity-10"></div>
-                    <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/80 to-transparent"></div>
+                <style>
+                    @keyframes move-background {
+                        0% { background-position: 0 0; }
+                        100% { background-position: 100% 100%; }
+                    }
+                    @keyframes pulse-glow {
+                        0%, 100% { opacity: 0.3; }
+                        50% { opacity: 0.6; }
+                    }
+                    .electric-bg {
+                        background-color: #0B0E14;
+                        background-image: 
+                            linear-gradient(rgba(0, 255, 255, 0.05) 1px, transparent 1px),
+                            linear-gradient(90deg, rgba(0, 255, 255, 0.05) 1px, transparent 1px),
+                            linear-gradient(rgba(0, 255, 255, 0.03) 2px, transparent 2px),
+                            linear-gradient(90deg, rgba(0, 255, 255, 0.03) 2px, transparent 2px);
+                        background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+                        animation: move-background 60s linear infinite;
+                    }
+                    .circuit-line {
+                        position: absolute;
+                        background: linear-gradient(90deg, transparent, #00d2ff, transparent);
+                        height: 2px;
+                        width: 100%;
+                        opacity: 0;
+                        animation: circuit-flow 4s ease-in-out infinite;
+                    }
+                    @keyframes circuit-flow {
+                        0% { transform: translateX(-100%); opacity: 0; }
+                        10% { opacity: 1; }
+                        90% { opacity: 1; }
+                        100% { transform: translateX(100%); opacity: 0; }
+                    }
+                </style>
+
+                <div class="h-screen w-full electric-bg flex flex-col items-center justify-center relative overflow-hidden text-white font-sans selection:bg-cyan-500 selection:text-white">
+                    
+                    <!-- Elektrik Hatları (Dekoratif) -->
+                    <div class="absolute top-1/4 left-0 w-full opacity-20"><div class="circuit-line" style="animation-delay: 0s;"></div></div>
+                    <div class="absolute top-3/4 left-0 w-full opacity-20"><div class="circuit-line" style="animation-duration: 7s; animation-delay: 2s;"></div></div>
+                    <div class="absolute bottom-10 left-0 w-full opacity-10"><div class="circuit-line" style="animation-duration: 5s;"></div></div>
+                    
+                    <!-- Merkez Işık -->
+                    <div class="absolute inset-0 bg-radial-gradient from-blue-900/40 to-transparent pointer-events-none"></div>
 
                     <!-- İçerik -->
-                    <div class="z-10 flex flex-col items-center gap-8 animate-fade-in text-center p-4">
-                        <div class="w-48 h-48 lg:w-64 lg:h-64 mb-4 relative drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
-                            <img src="logo.png" class="w-full h-full object-contain brightness-0 invert opacity-90 hover:scale-105 transition duration-700">
+                    <div class="z-10 flex flex-col items-center gap-6 animate-fade-in text-center p-4 relative">
+                        
+                        <!-- Logo -->
+                        <div class="w-48 h-48 lg:w-64 lg:h-64 mb-6 relative group">
+                            <div class="absolute inset-0 bg-blue-500/20 blur-3xl rounded-full animate-pulse-glow"></div>
+                            <img src="logo.png" class="relative w-full h-full object-contain brightness-0 invert drop-shadow-[0_0_20px_rgba(0,210,255,0.5)] transition duration-500 group-hover:scale-105 group-hover:drop-shadow-[0_0_30px_rgba(0,210,255,0.8)]">
                         </div>
                         
-                        <div class="space-y-2">
-                            <h1 class="text-4xl lg:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-200 via-white to-blue-200 tracking-tight font-serif-tr">
-                                DİJİTAL PANO SİSTEMİ
+                        <!-- Başlık -->
+                        <div class="space-y-4">
+                            <h1 class="text-5xl lg:text-7xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-white to-cyan-400 drop-shadow-sm font-serif-tr">
+                                DİJİTAL PANO
                             </h1>
-                            <p class="text-slate-400 text-lg lg:text-xl tracking-[0.3em] font-light uppercase">
-                                Yeni Nesil Kurumsal Ekran Yönetimi
+                            <p class="text-cyan-200/60 text-lg lg:text-xl tracking-[0.4em] font-light uppercase border-t border-cyan-900/50 pt-4">
+                                Profesyonel Ekran Yönetimi
                             </p>
                         </div>
 
-                        <div class="mt-8 flex gap-4">
-                            <a href="/login.html" class="group relative px-8 py-3 bg-white/5 border border-white/10 rounded-full overflow-hidden hover:bg-white/10 transition backdrop-blur-sm">
-                                <span class="relative z-10 text-white font-medium tracking-wide flex items-center gap-2">
+                        <!-- Buton -->
+                        <div class="mt-10">
+                            <a href="/login.html" class="relative inline-flex items-center justify-center px-10 py-4 overflow-hidden font-bold text-white transition-all duration-300 bg-transparent border border-cyan-500/30 rounded-full group hover:bg-cyan-500/10 hover:border-cyan-400 hover:shadow-[0_0_20px_rgba(6,182,212,0.4)]">
+                                <span class="absolute w-0 h-0 transition-all duration-500 ease-out bg-cyan-500 rounded-full group-hover:w-56 group-hover:h-56 opacity-10"></span>
+                                <span class="relative flex items-center gap-3">
                                     YÖNETİM PANELİ
-                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transform group-hover:translate-x-1 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
-                                    </svg>
+                                    <svg class="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
                                 </span>
                             </a>
                         </div>
                     </div>
 
                     <!-- Footer -->
-                    <div class="absolute bottom-8 text-slate-600 text-xs tracking-widest uppercase">
-                        Kartaltepe Pano Sistemleri &copy; ${new Date().getFullYear()}
+                    <div class="absolute bottom-6 text-cyan-900/50 text-[10px] tracking-[0.5em] uppercase font-bold mix-blend-plus-lighter">
+                        Kartaltepe &copy; ${new Date().getFullYear()}
                     </div>
                 </div>
             `;
