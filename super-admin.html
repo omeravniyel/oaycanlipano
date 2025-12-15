@@ -225,10 +225,13 @@
                 if (res.status === 401) { alert("Yanlış Şifre!"); return; }
                 if (data.error) throw new Error(data.error);
 
-                document.getElementById('login-overlay').classList.add('hidden');
+                document.getElementById('login-overlay').classList.add('hidden'); // Giriş başarılıysa overlay'i gizle
                 document.getElementById('main-content').classList.remove('hidden');
                 renderGrid(data.institutions);
-            } catch (err) { alert(err.message); }
+            } catch (err) {
+                alert(err.message);
+                // Yanlış şifre durumunda wrapper açık kalır
+            }
         }
 
         function renderGrid(list) {
