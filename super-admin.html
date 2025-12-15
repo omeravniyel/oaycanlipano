@@ -665,26 +665,38 @@
             document.getElementById('institution-form').reset();
             document.getElementById('edit-slug').value = ""; // Reset hidden slug
 
-            // Varsayılan boş değerler
-            document.getElementById('admin-name-input').value = "";
-            document.getElementById('admin-phone-input').value = "";
-            document.getElementById('admin-email-input').value = "";
+            // Enable Slug for New
+            const slugInput = document.getElementById('slug-input');
+            slugInput.disabled = false;
+            slugInput.classList.remove('opacity-50', 'cursor-not-allowed');
 
             document.getElementById('add-modal').classList.remove('hidden');
             document.getElementById('add-modal').classList.add('flex');
         }
 
         function editInstitution(inst) {
-            document.getElementById('modal-title').innerText = "Kurum Düzenle";
+            document.getElementById('modal-title').innerText = "Kurumu Düzenle";
             document.getElementById('edit-slug').value = inst.slug;
 
             setVal('slug-input', inst.slug);
             setVal('name-input', inst.name);
             setVal('password-input', inst.password);
-            setVal('cover-input', inst.config?.institution_cover);
+
+            // Disable Slug for Edit (Prevent accidental duplicates)
+            const slugInput = document.getElementById('slug-input');
+            slugInput.disabled = true;
+            slugInput.classList.add('opacity-50', 'cursor-not-allowed');
 
             if (inst.config) {
                 setVal('type-select', inst.config.institution_type);
+                setVal('new-subtitle', inst.config.institution_subtitle);
+                setVal('new-slogan1', inst.config.institution_slogan1);
+                setVal('new-slogan2', inst.config.institution_slogan2);
+
+                setVal('new-logo', inst.config.institution_logo); // Added Logo
+                setVal('new-cover', inst.config.institution_cover); // Fixed ID input
+                setVal('new-city', inst.config.city);
+                setVal('new-district', inst.config.district);
 
                 // Contact
                 const contact = inst.config.admin_contact || {};
