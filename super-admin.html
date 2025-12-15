@@ -67,9 +67,25 @@
                     <p class="text-xs text-slate-500 mt-1">Link: kartaltepepano.com/<b>yenidogan</b></p>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-slate-400 mb-1">Kurum Şifresi (Admin)</label>
-                    <input type="text" id="new-password" class="w-full bg-slate-700 border border-slate-600 rounded p-2"
-                        placeholder="1234" required>
+                    <label class="block text-sm font-medium text-slate-400 mb-1">Şifre</label>
+                    <input type="text" id="new-password"
+                        class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-white"
+                        placeholder="Yönetici şifresi">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-slate-400 mb-1">İl (Şehir)</label>
+                        <input type="text" id="new-city"
+                            class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-white"
+                            placeholder="Örn: Istanbul">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-slate-400 mb-1">İlçe</label>
+                        <input type="text" id="new-district"
+                            class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-white"
+                            placeholder="Örn: Uskudar">
+                    </div>
                 </div>
 
                 <div>
@@ -280,6 +296,8 @@
 
             document.getElementById('new-logo').value = inst.config?.institution_logo || "";
             document.getElementById('new-cover').value = inst.config?.institution_cover || ""; // Populate Cover
+            document.getElementById('new-city').value = inst.config?.city || "";
+            document.getElementById('new-district').value = inst.config?.district || "";
 
             slugInput.disabled = true;
             slugInput.classList.add('opacity-50', 'cursor-not-allowed');

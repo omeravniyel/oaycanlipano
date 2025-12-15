@@ -153,6 +153,14 @@ async function fetchConfig() {
 
         const config = await res.json();
 
+        // Hava durumu için konumu global'e at
+        window.configLocation = {
+            city: config.city || 'Istanbul',
+            district: config.district || 'Uskudar'
+        };
+        // Hemen hava durumunu güncelle
+        fetchWeather();
+
         // --- 0. Header Bilgileri ---
         if (config.institution_title) document.getElementById('header-title').innerText = config.institution_title;
         else document.getElementById('header-title').innerText = 'ÖMER AVNİ YEL';
@@ -695,30 +703,35 @@ function switchMedia(mode) {
 async function fetchWeather() {
     try {
         // Zeytinburnu Coordinats: 40.99, 28.90
-        const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=40.99&longitude=28.90&current_weather=true');
+        // Config'den şehir/ilçe al varsa
+        // fetchConfig fonksiyonu globalCity ve globalDistrict'i güncelleyecek şekilde revize edilecek
+        // Ancak burada DOM'dan okuyamayız çünkü config infoData'da tutuluyor, global değişkene atmamız lazım.
+        // Hızlı çözüm: fetchConfig içinde window.configLocation atayalım, burada kullanalım.
+        const city = window.configLocation?.city || 'Istanbul';
+        const district = window.configLocation?.district || 'Uskudar';
+
+        const res = await fetch(`https://wttr.in/${district},${city}?format=j1`);
         const data = await res.json();
+        const current = data.current_condition[0];
 
-        if (data.current_weather) {
-            const temp = Math.round(data.current_weather.temperature);
-            const code = data.current_weather.weathercode;
+        const temp = current.temp_C;
+        const desc = current.lang_tr ? current.lang_tr[0].value : current.weatherDesc[0].value;
 
-            // WMO Weather Codes to Text/Icon
-            let desc = "AÇIK";
-            let icon = "☀️";
+        // Basit ikon eşleşmesi
+        let icon = '☀️';
+        const d = desc.toLowerCase();
+        if (d.includes('bulut')) icon = '☁️';
+        if (d.includes('yağmur') || d.includes('rain')) icon = '🌧️';
+        if (d.includes('kar') || d.includes('snow')) icon = '❄️';
+        if (d.includes('gök') || d.includes('thunder')) icon = '⛈️';
+        if (d.includes('sis') || d.includes('fog')) icon = '🌫️';
 
-            // Simple mapping
-            if (code >= 1 && code <= 3) { desc = "PARÇALI BULUTLU"; icon = "⛅"; }
-            else if (code >= 45 && code <= 48) { desc = "SİSLİ"; icon = "🌫️"; }
-            else if (code >= 51 && code <= 67) { desc = "YAĞMURLU"; icon = "🌧️"; }
-            else if (code >= 71 && code <= 77) { desc = "KARLI"; icon = "❄️"; }
-            else if (code >= 80 && code <= 82) { desc = "SAĞANAK"; icon = "🌦️"; }
-            else if (code >= 95) { desc = "FIRTINA"; icon = "⛈️"; }
-
-            // DOM'da elementler varsa güncelle
-            if (document.getElementById('weather-temp')) document.getElementById('weather-temp').innerText = `${temp}°`;
-            if (document.getElementById('weather-desc')) document.getElementById('weather-desc').innerText = desc;
-            if (document.getElementById('weather-icon')) document.getElementById('weather-icon').innerText = icon;
+        if (document.getElementById('weather-temp')) {
+            document.getElementById('weather-temp').innerHTML = `${icon} ${Math.round(temp)}°C`;
+            document.getElementById('weather-desc').innerText = district.toUpperCase(); // İlçe adını göster
         }
+        if (document.getElementById('weather-icon')) document.getElementById('weather-icon').innerText = icon;
+
     } catch (e) {
         console.error("Hava durumu hatası:", e);
     }

@@ -35,7 +35,7 @@ export default async function handler(request, response) {
 
         // --- EKLEME / GÜNCELLEME ---
         if (action === 'upsert') {
-            let { slug, name, password, type, logo, subtitle, slogan1, slogan2, cover } = payload;
+            let { slug, name, password, type, logo, subtitle, slogan1, slogan2, cover, city, district } = payload;
             slug = slug.trim(); // Boşlukları temizle
 
             // 1. Önce bu kurum var mı kontrol et
@@ -58,6 +58,8 @@ export default async function handler(request, response) {
                 // Opsiyonel alanlar
                 if (subtitle) updatedConfig.institution_subtitle = subtitle;
                 if (slogan1) updatedConfig.institution_slogan1 = slogan1;
+                if (city) updatedConfig.city = city;
+                if (district) updatedConfig.district = district;
                 if (slogan2) updatedConfig.institution_slogan2 = slogan2;
                 if (cover) updatedConfig.institution_cover = cover;
 
@@ -72,20 +74,22 @@ export default async function handler(request, response) {
 
             } else {
                 // --- YENİ KAYIT (INSERT) ---
-                const defaultConfig = {
+                const newConfig = {
+                    institution_name: name,
                     institution_title: name,
-                    institution_type: type || '',
-                    institution_subtitle: subtitle || 'DİJİTAL PANO SİSTEMİ',
-                    institution_slogan1: slogan1 || 'Hoşgeldiniz',
-                    institution_slogan2: slogan2 || 'Bilgi Ekranı',
-                    institution_logo: logo || '',
-                    announcements: [],
-                    menu: []
+                    institution_type: type || 'Daimi',
+                    institution_subtitle: subtitle || 'ÖĞRENCİ YURDU',
+                    institution_slogan1: slogan1 || 'ilgiyle bilginin',
+                    institution_slogan2: slogan2 || 'buluştuğu yer',
+                    institution_logo: logo || 'https://kartaltepepano.com/logo.png',
+                    city: city || 'Istanbul',
+                    district: district || 'Uskudar',
+                    cover_image: cover || 'https://via.placeholder.com/300?text=Logo' // Varsayılan kapak
                 };
 
                 const { data, error } = await supabase
                     .from('institutions')
-                    .insert({ slug, name, password, config: defaultConfig })
+                    .insert({ slug, name, password, config: newConfig })
                     .select();
 
                 if (error) throw error;
