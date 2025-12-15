@@ -49,7 +49,12 @@ async function fetchConfig() {
     try {
         // URL'den slug'ı al (örn: kartaltepe.com/omeravniyel -> slug: omeravniyel)
         const path = window.location.pathname;
-        const slug = path.split('/')[1] || ''; // Boşsa varsayılanı API halleder
+        let slug = path.split('/')[1] || ''; // Boşsa varsayılanı API halleder
+
+        // "index.html" veya "index" gelirse ana sayfa kabul et
+        if (slug.toLowerCase() === 'index.html' || slug.toLowerCase() === 'index') {
+            slug = '';
+        }
 
         if (!slug) {
             // --- ANA SAYFA (Landing Page) ---
