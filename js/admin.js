@@ -14,42 +14,94 @@ function removeParent(btn) {
     btn.parentElement.remove();
 }
 
-// GÖRSEL YÜKLEME HELPER (Super Admin'den alındı)
+// GÖRSEL YÜKLEME HELPER (Optimize Edilmiş)
 async function uploadFile(input, targetId) {
     const file = input.files[0];
     if (!file) return;
 
+    // Dosya boyutu kontrolü (Maks 10MB baştan reddet, ama biz sıkıştıracağız)
+    if (file.size > 10 * 1024 * 1024) {
+        alert("Dosya çok büyük! Lütfen 10MB'dan küçük bir resim seçin.");
+        input.value = ""; // Reset
+        return;
+    }
+
     const btn = input.nextElementSibling; // Button
     const originalText = btn.innerText;
-    btn.innerText = "⏳";
+    btn.innerText = "⏳ Sıkıştırılıyor...";
     btn.disabled = true;
 
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = async () => {
-        const base64 = reader.result.split(',')[1];
-        try {
-            const res = await fetch('/api/upload', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    filename: file.name,
-                    fileBase64: base64,
-                    contentType: file.type
-                })
-            });
-            const data = await res.json();
-            if (data.error) throw new Error(data.error);
+    try {
+        // 1. Resmi Sıkıştır
+        const compressedBase64 = await compressImage(file, 800, 0.8); // Max 800px genişlik, %80 kalite
 
-            document.getElementById(targetId).value = data.url;
-            btn.innerText = "✅";
-        } catch (err) {
-            alert("Yükleme Hatası: " + err.message);
-            btn.innerText = "❌";
-        } finally {
-            setTimeout(() => { btn.innerText = originalText; btn.disabled = false; }, 2000);
+        btn.innerText = "⏳ Yükleniyor...";
+
+        // 2. Sunucuya Gönder
+        const res = await fetch('/api/upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                filename: file.name,
+                fileBase64: compressedBase64.split(',')[1], // Header'ı at
+                contentType: 'image/jpeg' // Her zaman JPEG'e çeviriyoruz
+            })
+        });
+
+        // Hata kontrolü (HTML dönerse diye text olarak alıp parse edelim)
+        const text = await res.text();
+        let data;
+        try {
+            data = JSON.parse(text);
+        } catch (e) {
+            throw new Error("Sunucu Hatası: " + (text.substring(0, 100) + "..."));
         }
-    };
+
+        if (data.error) throw new Error(data.error);
+
+        document.getElementById(targetId).value = data.url;
+        btn.innerText = "✅";
+
+    } catch (err) {
+        alert("Hata: " + err.message);
+        btn.innerText = "❌";
+    } finally {
+        setTimeout(() => { btn.innerText = originalText; btn.disabled = false; }, 2000);
+    }
+}
+
+// Resim Sıkıştırma Yardımcısı
+function compressImage(file, maxWidth, quality) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+
+                if (width > maxWidth) {
+                    height *= maxWidth / width;
+                    width = maxWidth;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                // JPEG olarak sıkıştır
+                const dataUrl = canvas.toDataURL('image/jpeg', quality);
+                resolve(dataUrl);
+            };
+            img.onerror = (err) => reject(err);
+        };
+        reader.onerror = (err) => reject(err);
+    });
 }
 
 function clearContainer(id) {
