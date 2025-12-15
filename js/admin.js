@@ -35,7 +35,8 @@ async function loadData() {
 
         // Admin Panel Başlığını Güncelle
         if (config.institution_title) {
-            document.getElementById('admin-header-title').innerText = `🎛️ Admin Panel - ${config.institution_title}`;
+            const headerTitleEl = document.getElementById('admin-header-title');
+            if (headerTitleEl) headerTitleEl.innerText = `🎛️ Admin Panel - ${config.institution_title}`;
         }
 
         setVal('institution-subtitle', config.institution_subtitle);
