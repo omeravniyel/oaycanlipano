@@ -552,3 +552,24 @@ document.getElementById('admin-form').addEventListener('submit', async (e) => {
 
 // Sayfa yÃ¼klendiÄŸinde verileri yÃ¼kle
 window.addEventListener('DOMContentLoaded', loadData);
+f u n c t i o n   g e t L i s t V a l u e s ( c l a s s N a m e )   {  
+         r e t u r n   A r r a y . f r o m ( d o c u m e n t . g e t E l e m e n t s B y C l a s s N a m e ( c l a s s N a m e ) )  
+                 . m a p ( e l   = >   e l . v a l u e . t r i m ( ) )  
+                 . f i l t e r ( v a l   = >   v a l   ! = =   ' ' ) ;  
+ }  
+  
+ f u n c t i o n   g e t D o r m ( p r e f i x )   {  
+         c o n s t   n a m e s   =   [ ] ;  
+         f o r   ( l e t   i   =   1 ;   i   < =   6 ;   i + + )   {  
+                 c o n s t   v a l   =   d o c u m e n t . g e t E l e m e n t B y I d ( ` $ { p r e f i x } - s $ { i } ` ) . v a l u e . t r i m ( ) ;  
+                 n a m e s . p u s h ( v a l ) ;   / /   B o Å x  o l s a   b i l e   p u s h ' l u y o r u z   k i   i n d e x   b o z u l m a s Ä ± n ,   v e y a   f i l t e r   y a p a b i l i r i z   a m a   m a i n . j s ' d e   i n d e x   Ã ¶ n e m l i .  
+                 / /   m a i n . j s ' d e :   i f   ( d o r m 1 N a m e s [ i - 1 ] )   . . .  
+                 / /   A d m i n   p a n e l i n d e   b o Å x  s t r i n g   g i d e b i l i r .  
+         }  
+         r e t u r n   {  
+                 n a m e :   d o c u m e n t . g e t E l e m e n t B y I d ( ` $ { p r e f i x } - n a m e ` ) . v a l u e . t r i m ( ) ,  
+                 c o u n t :   d o c u m e n t . g e t E l e m e n t B y I d ( ` $ { p r e f i x } - c o u n t ` ) . v a l u e . t r i m ( ) ,  
+                 s t u d e n t s :   n a m e s  
+         } ;  
+ }  
+ 
