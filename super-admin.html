@@ -212,13 +212,7 @@
                                             placeholder="Hadis metnini buraya giriniz..."></textarea>
                                     </div>
 
-                                    <div class="mb-6">
-                                        <label class="block text-sm font-medium text-indigo-200 mb-2">Kaynak
-                                            (Ravi)</label>
-                                        <input type="text" id="global-hadith-source"
-                                            class="w-full bg-slate-800 border border-slate-600 rounded-lg p-3 text-white placeholder-slate-500 focus:ring-2 focus:ring-indigo-500 transition"
-                                            placeholder="Örn: Buhârî, İman 1">
-                                    </div>
+                                    <!-- Kaynak (Ravi) - KALDIRILDI -->
 
                                     <button onclick="saveGlobalHadith()"
                                         class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg shadow-lg hover:shadow-indigo-500/50 transition duration-300">
@@ -852,10 +846,10 @@
 
         function loadGlobalHadithForType() {
             const type = document.getElementById('global-type-select').value;
-            const data = globalConfig.weekly_hadiths[type] || { content: '', source: '' };
+            const data = globalConfig.weekly_hadiths[type] || { content: '' };
 
             document.getElementById('global-hadith-content').value = data.content || '';
-            document.getElementById('global-hadith-source').value = data.source || '';
+            // Source kaldırıldı
         }
 
         async function saveGlobalHadith() {
@@ -867,11 +861,11 @@
 
             const type = document.getElementById('global-type-select').value;
             const content = document.getElementById('global-hadith-content').value;
-            const source = document.getElementById('global-hadith-source').value;
+            // Source kaldırıldı
 
             // Objeyi güncelle
             if (!globalConfig.weekly_hadiths) globalConfig.weekly_hadiths = {};
-            globalConfig.weekly_hadiths[type] = { content, source };
+            globalConfig.weekly_hadiths[type] = { content };
 
             // API'ye kaydet (system_globals slug'ı ile)
             try {

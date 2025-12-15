@@ -45,8 +45,7 @@ export default async function handler(request, response) {
                 if (globalHadiths[type] && globalHadiths[type].content) {
                     // Mevcut hadith yapısını ez (veya oluştur)
                     config.hadith = {
-                        content: globalHadiths[type].content,
-                        source: globalHadiths[type].source || ''
+                        text: globalHadiths[type].content
                     };
                 }
             }

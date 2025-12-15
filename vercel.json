@@ -1,32 +1,14 @@
 {
+    "crons": [
+        {
+            "path": "/api/cron-reminder",
+            "schedule": "0 17 * * 0"
+        }
+    ],
     "rewrites": [
         {
-            "source": "/api/:match*",
-            "destination": "/api/:match*"
-        },
-        {
-            "source": "/admin",
-            "destination": "/login.html"
-        },
-        {
-            "source": "/setup-db",
-            "destination": "/setup-db.html"
-        },
-        {
-            "source": "/super-admin",
-            "destination": "/super-admin.html"
-        },
-        {
-            "source": "/:slug/admin",
-            "destination": "/login.html"
-        },
-        {
-            "source": "/login",
-            "destination": "/login.html"
-        },
-        {
-            "source": "/:slug",
-            "destination": "/api/render?slug=:slug"
+            "source": "/api/(.*)",
+            "destination": "/api/$1"
         }
     ]
 }
