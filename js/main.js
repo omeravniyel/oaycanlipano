@@ -617,24 +617,90 @@ function onPlayerStateChange(event) {
     }
 }
 
-// Eski switchMedia silindi, yukarıda güncellendi.        // --- DÖNGÜ MANTIĞI ---
-// Eğer video tanımlıysa, slaytların hepsi bitince videoya dön.
-if (videoId) {
-    const slideDuration = 10000; // 10sn
-    const totalTime = galleryImages.length * slideDuration;
-
-    console.log(`Slayt başladı. ${galleryImages.length} resim var. ${totalTime / 1000} saniye sonra videoya geçilecek.`);
-
-    slideIntervalHandle = setTimeout(() => {
-        switchMedia('video');
-    }, totalTime);
+// Helper: Youtube ID
+function extractVideoID(url) {
+    const regExp = /^.*((youtu.be\/)|(v\/)|(\/u\/\w\/)|(embed\/)|(watch\?))\??v?=?([^#&?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[7].length == 11) ? match[7] : false;
 }
 
-    } else {
-    // Fallback (Video yok, Resim yok -> ya da biri var)
-    if (videoId) switchMedia('video');
-    else if (galleryImages.length > 0) switchMedia('slide');
-}
+// Medya Döngü Kontrolü
+function switchMedia(mode) {
+    const playerEl = document.getElementById('player');
+    const swiperEl = document.querySelector('.mySwiper');
+    const playerContainer = document.getElementById('video-container');
+
+    // Temizle
+    if (slideIntervalHandle) {
+        clearTimeout(slideIntervalHandle);
+        slideIntervalHandle = null;
+    }
+
+    if (mode === 'video' && videoPlaylist.length > 0) {
+        // --- 1. VIDEO MODU ---
+        currentMediaState = 'video';
+
+        // UI Güncelle
+        if (swiperEl) swiperEl.classList.add('hidden');
+        if (playerContainer) playerContainer.classList.remove('hidden');
+        if (playerEl) playerEl.style.display = 'block';
+
+        // İlk videoyu oynat (veya kaldığı yerden)
+        if (player && typeof player.loadVideoById === 'function') {
+            const vid = extractVideoID(videoPlaylist[currentVideoIndex]);
+            if (vid) {
+                player.loadVideoById(vid);
+                player.playVideo();
+            } else {
+                // Hatalı link ise galeriye geç
+                switchMedia('slide');
+            }
+        }
+
+    } else if (mode === 'slide') {
+        // --- 2. SLAYT MODU ---
+        currentMediaState = 'slide';
+
+        // UI Güncelle
+        if (swiperEl) swiperEl.classList.remove('hidden');
+        if (playerContainer) playerContainer.classList.add('hidden');
+        if (playerEl) playerEl.style.display = 'none';
+
+        if (player && typeof player.stopVideo === 'function') player.stopVideo();
+
+        // Swiper Init
+        if (!window.mySwiperInstance) {
+            window.mySwiperInstance = new Swiper(".mySwiper", {
+                spaceBetween: 30,
+                effect: "fade",
+                centeredSlides: true,
+                autoplay: {
+                    delay: 10000,
+                    disableOnInteraction: false,
+                },
+                loop: false, // Loop false yapıyoruz ki sona gelince yakalayalım
+                speed: 1000,
+                on: {
+                    reachEnd: function () {
+                        // Slayt bitti -> Videoya geç (Eğer video varsa)
+                        if (videoPlaylist.length > 0) {
+                            setTimeout(() => {
+                                switchMedia('video');
+                            }, 5000); // 5 sn bekle
+                        } else {
+                            // Video yoksa başa sar
+                            this.slideTo(0);
+                            this.autoplay.start();
+                        }
+                    }
+                }
+            });
+        } else {
+            window.mySwiperInstance.update();
+            window.mySwiperInstance.slideTo(0);
+            window.mySwiperInstance.autoplay.start();
+        }
+    }
 }
 
 
