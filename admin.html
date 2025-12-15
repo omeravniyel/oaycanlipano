@@ -30,312 +30,303 @@
         <!-- Success/Error Messages -->
         <div id="message-container" class="mb-6"></div>
 
-        <form id="admin-form" class="space-y-8">
+        <!-- TAB NAVIGATION -->
+        <div class="flex flex-wrap gap-2 mb-8 bg-white p-2 rounded-xl shadow-sm border border-gray-100">
+            <button onclick="openTab('settings')" id="tab-btn-settings"
+                class="tab-btn flex-1 py-3 px-4 rounded-lg font-medium text-sm flex items-center justify-center gap-2 transition hover:bg-gray-50 text-indigo-600 bg-indigo-50 border border-indigo-100">
+                <span>⚙️</span> Genel Ayarlar
+            </button>
+            <button onclick="openTab('content')" id="tab-btn-content"
+                class="tab-btn flex-1 py-3 px-4 rounded-lg font-medium text-sm flex items-center justify-center gap-2 transition hover:bg-gray-50 text-gray-500">
+                <span>📝</span> İçerik Yönetimi
+            </button>
+            <button onclick="openTab('students')" id="tab-btn-students"
+                class="tab-btn flex-1 py-3 px-4 rounded-lg font-medium text-sm flex items-center justify-center gap-2 transition hover:bg-gray-50 text-gray-500">
+                <span>👥</span> Öğrenci & Yurt
+            </button>
+            <button onclick="openTab('media')" id="tab-btn-media"
+                class="tab-btn flex-1 py-3 px-4 rounded-lg font-medium text-sm flex items-center justify-center gap-2 transition hover:bg-gray-50 text-gray-500">
+                <span>🍽️</span> Yemek & Galeri
+            </button>
+        </div>
 
-            <!-- Kurum Ayarları / Header -->
-            <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                    <span>🏫</span> Kurum Ayarları
-                </h2>
-                <div class="grid md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Kurum Adı (Başlık)</label>
-                        <input type="text" id="institution-title"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg" placeholder="ÖMER AVNİ YEL">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Alt Başlık</label>
-                        <input type="text" id="institution-subtitle"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                            placeholder="ÖĞRENCİ YURDU - DİJİTAL PANO">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Slogan 1. Satır</label>
-                        <input type="text" id="institution-slogan1"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg" placeholder="ilgiyle bilginin">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Slogan 2. Satır</label>
-                        <input type="text" id="institution-slogan2"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg" placeholder="buluştuğu yer">
-                    </div>
-                    <div class="md:col-span-2">
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Logo</label>
-                        <div class="flex gap-2">
-                            <input type="file" id="logo-upload" class="hidden" accept="image/png, image/jpeg"
-                                onchange="uploadFile(this, 'institution-logo')">
-                            <button type="button" onclick="document.getElementById('logo-upload').click()"
-                                class="bg-gray-600 hover:bg-gray-500 text-white px-3 py-2 rounded text-sm whitespace-nowrap transition">Resim
-                                Yükle</button>
-                            <input type="text" id="institution-logo"
-                                class="flex-1 px-4 py-2 border border-gray-300 rounded-lg"
-                                placeholder="https://.../logo.png (veya yükleyin)">
+        <form id="admin-form">
+
+            <!-- TAB 1: GENEL AYARLAR -->
+            <div id="tab-settings" class="tab-content block space-y-6 animate-fade-in">
+                <!-- Kurum Ayarları -->
+                <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+                    <h2
+                        class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2 border-b border-gray-100 pb-2">
+                        <span>⚙️</span> Temel Kurum Bilgileri
+                    </h2>
+                    <div class="grid md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Kurum Adı (Başlık)</label>
+                            <input type="text" id="institution-title"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                                placeholder="ÖMER AVNİ YEL">
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Hadis Bölümü -->
-            <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                    <span>📖</span> Haftanın Hadis-i Şerifi
-                </h2>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Hafta Bilgisi (Sabit)</label>
-                        <input type="text" id="hadith-week" readonly
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 text-gray-500 cursor-not-allowed"
-                            value="15-21 ARALIK - 15. HAFTA">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Arapça Metin</label>
-                        <textarea id="hadith-arabic" rows="3"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                            placeholder="Arapça hadis metni..."></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Türkçe Meali</label>
-                        <textarea id="hadith-turkish" rows="3"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                            placeholder="Türkçe meal..."></textarea>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Yatakhane Kazananları -->
-            <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                    <span>🏆</span> Günün Kazanan Yatakhaneleri
-                </h2>
-
-                <div class="grid md:grid-cols-2 gap-6">
-                    <!-- Yatakhane 1 -->
-                    <div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                        <h3 class="font-bold text-lg text-gray-800 mb-3">Yatakhane 1</h3>
-                        <div class="space-y-3">
-                            <input type="text" id="dorm1-name"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                                placeholder="Yatakhane Adı (örn: 101)">
-                            <input type="number" id="dorm1-count"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="Kaçıncı Kez">
-                            <input type="text" id="dorm1-s1" class="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                                placeholder="Öğrenci 1">
-                            <input type="text" id="dorm1-s2" class="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                                placeholder="Öğrenci 2">
-                            <input type="text" id="dorm1-s3" class="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                                placeholder="Öğrenci 3">
-                            <input type="text" id="dorm1-s4" class="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                                placeholder="Öğrenci 4">
-                            <input type="text" id="dorm1-s5" class="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                                placeholder="Öğrenci 5">
-                            <input type="text" id="dorm1-s6" class="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                                placeholder="Öğrenci 6">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Alt Başlık</label>
+                            <input type="text" id="institution-subtitle"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500"
+                                placeholder="ÖĞRENCİ YURDU">
                         </div>
-                    </div>
-
-                    <!-- Yatakhane 2 -->
-                    <div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                        <h3 class="font-bold text-lg text-gray-800 mb-3">Yatakhane 2</h3>
-                        <div class="space-y-3">
-                            <input type="text" id="dorm2-name"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                                placeholder="Yatakhane Adı (örn: 102)">
-                            <input type="number" id="dorm2-count"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg" placeholder="Kaçıncı Kez">
-                            <input type="text" id="dorm2-s1" class="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                                placeholder="Öğrenci 1">
-                            <input type="text" id="dorm2-s2" class="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                                placeholder="Öğrenci 2">
-                            <input type="text" id="dorm2-s3" class="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                                placeholder="Öğrenci 3">
-                            <input type="text" id="dorm2-s4" class="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                                placeholder="Öğrenci 4">
-                            <input type="text" id="dorm2-s5" class="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                                placeholder="Öğrenci 5">
-                            <input type="text" id="dorm2-s6" class="w-full px-3 py-2 border border-gray-300 rounded-lg"
-                                placeholder="Öğrenci 6">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Slogan 1. Satır</label>
+                            <input type="text" id="institution-slogan1"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                                placeholder="ilgiyle bilginin">
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Duyurular -->
-            <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                    <span>📢</span> Duyurular
-                </h2>
-                <div id="announcements-container" class="space-y-3">
-                    <div class="flex gap-2">
-                        <input type="text" class="announcement-input flex-1 px-4 py-2 border border-gray-300 rounded-lg"
-                            placeholder="Duyuru metni...">
-                        <button type="button" onclick="removeAnnouncement(this)"
-                            class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Sil</button>
-                    </div>
-                </div>
-                <button type="button" onclick="addAnnouncement()"
-                    class="mt-3 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">+ Duyuru Ekle</button>
-            </div>
-
-            <!-- Sınav Sonuçları -->
-            <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                    <span>🎯</span> Sınav Sonuçları
-                </h2>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Sınav Adı</label>
-                        <input type="text" id="exam-name" class="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                            placeholder="örn: KDU DENEME SINAVI">
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-3">Kazananlar</label>
-                        <div id="exam-winners-container" class="space-y-3">
-                            <div class="flex gap-2 items-center">
-                                <input type="text" class="exam-class flex-1 px-3 py-2 border border-gray-300 rounded-lg"
-                                    placeholder="Sınıf (örn: 7.Sınıf)">
-                                <input type="text"
-                                    class="exam-student flex-1 px-3 py-2 border border-gray-300 rounded-lg"
-                                    placeholder="İsim Soyisim">
-                                <input type="number" class="exam-score w-32 px-3 py-2 border border-gray-300 rounded-lg"
-                                    placeholder="Puan">
-                                <button type="button" onclick="removeExamWinner(this)"
-                                    class="px-3 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Sil</button>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Slogan 2. Satır</label>
+                            <input type="text" id="institution-slogan2"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg" placeholder="buluştuğu yer">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">Logo</label>
+                            <div class="flex gap-2">
+                                <input type="file" id="logo-upload" class="hidden" accept="image/png, image/jpeg"
+                                    onchange="uploadFile(this, 'institution-logo')">
+                                <button type="button" onclick="document.getElementById('logo-upload').click()"
+                                    class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm transition border border-gray-300">Dosya
+                                    Seç</button>
+                                <input type="text" id="institution-logo"
+                                    class="flex-1 px-4 py-2 border border-gray-300 rounded-lg bg-gray-50"
+                                    placeholder="Logo Linki" readonly>
                             </div>
                         </div>
-                        <button type="button" onclick="addExamWinner()"
-                            class="mt-3 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">+ Kazanan
-                            Ekle</button>
+                    </div>
+                </div>
+
+                <!-- Bölüm Başlıkları -->
+                <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+                    <h2 class="text-xl font-bold text-gray-800 mb-4 border-b border-gray-100 pb-2">Başlık Özelleştirme
+                    </h2>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Yatakhane/Sınıf Bölümü
+                            Başlığı</label>
+                        <input type="text" id="dorm-title" class="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                            placeholder="Günün Kazanan Yatakhaneleri">
                     </div>
                 </div>
             </div>
 
-            <!-- Bölüm Başlıkları ve Ayarlar -->
-            <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                    <span>⚙️</span> Bölüm Başlıkları
-                </h2>
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Yatakhane/Sınıf Bölümü Başlığı</label>
-                    <input type="text" id="dorm-title" class="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                        placeholder="Günün Kazanan Yatakhaneleri (Varsayılan)">
-                    <p class="text-xs text-gray-500 mt-1">Örn: "Haftanın En Temiz Sınıfları" veya "Etüt Birincileri"</p>
+            <!-- TAB 2: İÇERİK YÖNETİMİ -->
+            <div id="tab-content" class="tab-content hidden space-y-6 animate-fade-in">
+
+                <!-- Duyurular -->
+                <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+                    <h2
+                        class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2 border-b border-gray-100 pb-2">
+                        <span>📢</span> Duyurular
+                    </h2>
+                    <div id="announcements-container" class="space-y-3 mb-4"></div>
+                    <button type="button" onclick="addAnnouncement()"
+                        class="w-full py-2 bg-green-50 hover:bg-green-100 text-green-600 rounded-lg font-semibold border border-green-200 transition">+
+                        Yeni Duyuru Ekle</button>
+                </div>
+
+                <!-- Hadis -->
+                <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+                    <h2
+                        class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2 border-b border-gray-100 pb-2">
+                        <span>📖</span> Haftanın Hadisi
+                    </h2>
+                    <div
+                        class="p-4 bg-orange-50 border border-orange-100 rounded-lg mb-4 text-sm text-orange-800 flex items-start gap-2">
+                        <span>ℹ️</span>
+                        <p>Buraya girdiğiniz hadis, merkezi sistemden gelen hadisi ezer. Boş bırakırsanız Süper Admin'in
+                            belirlediği hadis görünür.</p>
+                    </div>
+                    <div class="space-y-4">
+                        <textarea id="hadith-arabic" rows="2"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg font-serif text-right"
+                            placeholder="Arapça Metin (Opsiyonel)"></textarea>
+                        <textarea id="hadith-turkish" rows="3"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                            placeholder="Türkçe Meal"></textarea>
+                    </div>
+                </div>
+
+                <!-- Günün Sözü -->
+                <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+                    <h2
+                        class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2 border-b border-gray-100 pb-2">
+                        <span>💬</span> Günün Sözü
+                    </h2>
+                    <input type="text" id="quote-content" class="w-full px-4 py-2 border border-gray-300 rounded-lg"
+                        placeholder="Kayan yazıda görünecek kısa söz...">
                 </div>
             </div>
 
-            <!-- Yemek Menüsü -->
-            <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                    <span>🍽️</span> Yemek Menüsü
-                </h2>
-                <div class="mb-4 flex items-center">
-                    <input type="checkbox" id="menu-enabled"
-                        class="w-5 h-5 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500">
-                    <label for="menu-enabled" class="ml-2 text-sm font-bold text-gray-700">Menüyü Panoda Göster</label>
+            <!-- TAB 3: ÖĞRENCİ & YURT -->
+            <div id="tab-students" class="tab-content hidden space-y-6 animate-fade-in">
+                <!-- Yatakhane -->
+                <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+                    <h2
+                        class="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2 border-b border-gray-100 pb-2">
+                        <span>🏆</span> Kazanan Yatakhaneler
+                    </h2>
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <!-- Yurt 1 -->
+                        <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                            <h3 class="font-bold text-gray-700 mb-3 text-center border-b border-gray-200 pb-2">1. Grup
+                            </h3>
+                            <div class="space-y-3">
+                                <input type="text" id="dorm1-name"
+                                    class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md"
+                                    placeholder="Grup Adı (Örn: 101)">
+                                <input type="number" id="dorm1-count"
+                                    class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md"
+                                    placeholder="Kaçıncı Kez?">
+                                <hr class="border-dashed border-gray-300">
+                                <div class="grid grid-cols-2 gap-2">
+                                    <input type="text" id="dorm1-s1" class="text-sm px-2 py-1 border rounded"
+                                        placeholder="Öğrenci 1">
+                                    <input type="text" id="dorm1-s2" class="text-sm px-2 py-1 border rounded"
+                                        placeholder="Öğrenci 2">
+                                    <input type="text" id="dorm1-s3" class="text-sm px-2 py-1 border rounded"
+                                        placeholder="Öğrenci 3">
+                                    <input type="text" id="dorm1-s4" class="text-sm px-2 py-1 border rounded"
+                                        placeholder="Öğrenci 4">
+                                    <input type="text" id="dorm1-s5" class="text-sm px-2 py-1 border rounded"
+                                        placeholder="Öğrenci 5">
+                                    <input type="text" id="dorm1-s6" class="text-sm px-2 py-1 border rounded"
+                                        placeholder="Öğrenci 6">
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Yurt 2 -->
+                        <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                            <h3 class="font-bold text-gray-700 mb-3 text-center border-b border-gray-200 pb-2">2. Grup
+                            </h3>
+                            <div class="space-y-3">
+                                <input type="text" id="dorm2-name"
+                                    class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md"
+                                    placeholder="Grup Adı (Örn: 102)">
+                                <input type="number" id="dorm2-count"
+                                    class="w-full px-3 py-2 bg-white border border-gray-300 rounded-md"
+                                    placeholder="Kaçıncı Kez?">
+                                <hr class="border-dashed border-gray-300">
+                                <div class="grid grid-cols-2 gap-2">
+                                    <input type="text" id="dorm2-s1" class="text-sm px-2 py-1 border rounded"
+                                        placeholder="Öğrenci 1">
+                                    <input type="text" id="dorm2-s2" class="text-sm px-2 py-1 border rounded"
+                                        placeholder="Öğrenci 2">
+                                    <input type="text" id="dorm2-s3" class="text-sm px-2 py-1 border rounded"
+                                        placeholder="Öğrenci 3">
+                                    <input type="text" id="dorm2-s4" class="text-sm px-2 py-1 border rounded"
+                                        placeholder="Öğrenci 4">
+                                    <input type="text" id="dorm2-s5" class="text-sm px-2 py-1 border rounded"
+                                        placeholder="Öğrenci 5">
+                                    <input type="text" id="dorm2-s6" class="text-sm px-2 py-1 border rounded"
+                                        placeholder="Öğrenci 6">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="grid md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Öğle Yemeği</label>
+
+                <!-- Sınavlar -->
+                <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+                    <h2
+                        class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2 border-b border-gray-100 pb-2">
+                        <span>🎯</span> Sınav Sonuçları
+                    </h2>
+                    <div id="exam-winners-container" class="space-y-3 mb-4"></div>
+                    <button type="button" onclick="addExamWinner()"
+                        class="w-full py-2 bg-green-50 hover:bg-green-100 text-green-600 rounded-lg font-semibold border border-green-200 transition">+
+                        Yeni Sonuç Ekle</button>
+                </div>
+            </div>
+
+            <!-- TAB 4: YEMEK & GALERİ -->
+            <div id="tab-media" class="tab-content hidden space-y-6 animate-fade-in">
+                <!-- Yemek -->
+                <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+                    <h2
+                        class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2 border-b border-gray-100 pb-2">
+                        <span>🍽️</span> Yemek Menüsü
+                    </h2>
+                    <div class="flex items-center mb-4 bg-yellow-50 p-3 rounded-lg border border-yellow-100">
+                        <input type="checkbox" id="menu-enabled"
+                            class="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500">
+                        <label for="menu-enabled" class="ml-2 text-sm font-semibold text-gray-700">Yemek Menüsü
+                            Gösterilsin</label>
+                    </div>
+                    <div class="grid md:grid-cols-2 gap-4">
                         <textarea id="lunch-menu" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                            placeholder="Çorba&#10;Ana Yemek&#10;Pilav&#10;Tatlı"></textarea>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">Akşam Yemeği</label>
+                            placeholder="Öğle Yemeği..."></textarea>
                         <textarea id="dinner-menu" rows="4" class="w-full px-4 py-2 border border-gray-300 rounded-lg"
-                            placeholder="Çorba&#10;Sebze Yemeği&#10;Yoğurt&#10;Meyve"></textarea>
+                            placeholder="Akşam Yemeği..."></textarea>
                     </div>
                 </div>
-            </div>
 
-            <!-- Galeri Yönetimi -->
-            <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                    <span>🖼️</span> Galeri Görselleri
-                </h2>
-                <div id="gallery-container" class="space-y-3">
-                    <!-- Dinamik olarak dolar -->
+                <!-- Video Playlist -->
+                <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+                    <h2
+                        class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2 border-b border-gray-100 pb-2">
+                        <span>📺</span> Video Listesi (Youtube)
+                    </h2>
+                    <div id="video-playlist-container" class="space-y-3 mb-4"></div>
+                    <button type="button" onclick="addVideoItem()"
+                        class="w-full py-2 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg font-semibold border border-red-200 transition">+
+                        Video Ekle</button>
                 </div>
-                <div class="mt-3 flex flex-wrap gap-2">
-                    <button type="button" onclick="addGalleryItem()"
-                        class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 flex items-center gap-1">
-                        <span>+</span> Link Ekle
-                    </button>
 
-                    <input type="file" id="gallery-file-input" class="hidden" accept="image/*"
-                        onchange="uploadGalleryImage(this)">
-                    <button type="button" id="gallery-upload-btn" onclick="startUpload()"
-                        class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center gap-1">
-                        <span>☁️</span> Bilgisayardan Yükle
-                    </button>
-                    <button type="button" onclick="clearContainer('gallery-container')"
-                        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center gap-1">
-                        <span>🗑️</span> Tümünü Temizle
-                    </button>
-                </div>
-                <p class="text-xs text-gray-500 mt-2">Buraya eklenen resimler sağ taraftaki alanda dönecektir. Video URL
-                    girilirse video oynatılır.</p>
-            </div>
+                <!-- Galeri -->
+                <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+                    <h2
+                        class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2 border-b border-gray-100 pb-2">
+                        <span>🖼️</span> Ana Galeri (Slayt)
+                    </h2>
+                    <div id="gallery-container" class="space-y-3 mb-4"></div>
 
-            <!-- Sol Galeri Yönetimi -->
-            <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                    <span>🖼️</span> Sol Galeri Görselleri (Dikey)
-                </h2>
-                <div id="left-gallery-container" class="space-y-3">
-                    <!-- Dinamik olarak dolar -->
+                    <div class="flex gap-2">
+                        <button type="button" onclick="addGalleryItem()"
+                            class="flex-1 py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 rounded-lg font-semibold border border-blue-200 transition">+
+                            Link</button>
+                        <input type="file" id="gallery-file-input" class="hidden" accept="image/*"
+                            onchange="uploadFile(this, 'gallery')">
+                        <button type="button" onclick="document.getElementById('gallery-file-input').click()"
+                            class="flex-1 py-2 bg-gray-50 hover:bg-gray-100 text-gray-600 rounded-lg font-semibold border border-gray-200 transition">☁️
+                            Yükle</button>
+                    </div>
                 </div>
-                <div class="mt-3 flex flex-wrap gap-2">
+
+                <!-- Sol Galeri -->
+                <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+                    <h2
+                        class="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2 border-b border-gray-100 pb-2">
+                        <span>🖼️</span> Sol Dikey Galeri
+                    </h2>
+                    <div id="left-gallery-container" class="space-y-3 mb-4"></div>
                     <button type="button" onclick="addLeftGalleryItem()"
-                        class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 flex items-center gap-1">
-                        <span>+</span> Link Ekle
-                    </button>
+                        class="mt-3 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">+ Video
+                        Ekle</button>
+                </div>
 
-                    <input type="file" id="left-gallery-file-input" class="hidden" accept="image/*"
-                        onchange="uploadLeftGalleryImage(this)">
-                    <button type="button" id="left-gallery-upload-btn" onclick="startLeftUpload()"
-                        class="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 flex items-center gap-1">
-                        <span>☁️</span> Bilgisayardan Yükle
-                    </button>
-                    <button type="button" onclick="clearContainer('left-gallery-container')"
-                        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center gap-1">
-                        <span>🗑️</span> Tümünü Temizle
+                <!-- Günün Sözü (Çoklu) -->
+                <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <span>💬</span> Günün Sözleri (Footer)
+                    </h2>
+                    <div id="quotes-container" class="space-y-3">
+                        <!-- JS ile dolacak -->
+                    </div>
+                    <button type="button" onclick="addQuoteItem()"
+                        class="mt-3 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">+ Söz Ekle</button>
+                </div>
+
+                <!-- Save Button -->
+                <div class="flex justify-end">
+                    <button type="submit" id="save-btn"
+                        class="px-8 py-3 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 shadow-lg transition-all">
+                        💾 Kaydet
                     </button>
                 </div>
-                <!-- Düzeltildi: Buton metni hatası giderildi ve açıklama eklendi -->
-                <p class="text-xs text-gray-500 mt-2">Buraya eklenen resimler sol taraftaki dikey alanda Hadis/Yurt
-                    bilgilerinin yerine sırayla gösterilir.</p>
-            </div>
-
-            <!-- Video Playlist -->
-            <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                    <span>🎬</span> Video Listesi (Youtube)
-                </h2>
-                <div id="video-playlist-container" class="space-y-3">
-                    <!-- Dinamik olarak doldurulacak -->
-                </div>
-                <button type="button" onclick="addVideoItem()"
-                    class="mt-3 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">+ Video Ekle</button>
-            </div>
-
-            <!-- Günün Sözü (Çoklu) -->
-            <div class="bg-white rounded-xl shadow-md p-6 border border-gray-200">
-                <h2 class="text-2xl font-bold text-gray-800 mb-4 flex items-center gap-2">
-                    <span>💬</span> Günün Sözleri (Footer)
-                </h2>
-                <div id="quotes-container" class="space-y-3">
-                    <!-- JS ile dolacak -->
-                </div>
-                <button type="button" onclick="addQuoteItem()"
-                    class="mt-3 px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600">+ Söz Ekle</button>
-            </div>
-
-            <!-- Save Button -->
-            <div class="flex justify-end">
-                <button type="submit" id="save-btn"
-                    class="px-8 py-3 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 shadow-lg transition-all">
-                    💾 Kaydet
-                </button>
-            </div>
 
         </form>
     </div>

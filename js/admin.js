@@ -211,7 +211,81 @@ async function saveData() {
     }
 }
 
-// --- HELPER FUNCTIONS ---
+// --- TABS ---
+window.openTab = function (tabName) {
+    // Hide all
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('.tab-btn').forEach(el => {
+        el.classList.remove('text-indigo-600', 'bg-indigo-50', 'border-indigo-100');
+        el.classList.add('text-gray-500');
+    });
+
+    // Show target
+    document.getElementById('tab-' + tabName).classList.remove('hidden');
+
+    // Highlight btn
+    const btn = document.getElementById('tab-btn-' + tabName);
+    if (btn) {
+        btn.classList.add('text-indigo-600', 'bg-indigo-50', 'border-indigo-100');
+        btn.classList.remove('text-gray-500');
+    }
+}
+
+// --- AI CHATBOT ---
+window.toggleChat = function () {
+    const chat = document.getElementById('ai-chat-window');
+    chat.classList.toggle('hidden');
+}
+
+window.handleChat = function (e) {
+    e.preventDefault();
+    const input = document.getElementById('chat-input');
+    const msg = input.value.trim().toLowerCase();
+    if (!msg) return;
+
+    addMsg(input.value, 'user');
+    input.value = '';
+
+    // Logic
+    setTimeout(() => {
+        let response = "Bunu tam anlayamadım, ama menülerden yardımcı olabilirim.";
+        let action = null;
+
+        if (msg.includes('logo') || msg.includes('isim') || msg.includes('başlık')) {
+            response = "Genel Ayarlar sekmesinden kurum ismini, logosunu ve sloganları değiştirebilirsiniz. Sizi oraya götürüyorum.";
+            action = () => openTab('settings');
+        } else if (msg.includes('yemek') || msg.includes('menü')) {
+            response = "Yemek menüsü 'Yemek & Galeri' sekmesinde. Orayı açıyorum.";
+            action = () => openTab('media');
+        } else if (msg.includes('video') || msg.includes('galeri') || msg.includes('resim')) {
+            response = "Resim ve Videoları 'Yemek & Galeri' sekmesinden yönetebilirsiniz.";
+            action = () => openTab('media');
+        } else if (msg.includes('hadis') || msg.includes('duyuru') || msg.includes('söz')) {
+            response = "Duyurular ve Hadis girişleri 'İçerik Yönetimi' sekmesinde.";
+            action = () => openTab('content');
+        } else if (msg.includes('öğrenci') || msg.includes('yurt') || msg.includes('sınav') || msg.includes('kazanan')) {
+            response = "Öğrenci listeleri ve sınav sonuçları 'Öğrenci & Yurt' sekmesinde.";
+            action = () => openTab('students');
+        } else if (msg.includes('merhaba') || msg.includes('selam')) {
+            response = "Merhaba! Size nasıl yardımcı olabilirim? Menüleri bulamazsanız bana sorun.";
+        }
+
+        addMsg(response, 'bot');
+        if (action) action();
+
+    }, 600);
+}
+
+function addMsg(text, sender) {
+    const container = document.getElementById('chat-messages');
+    const div = document.createElement('div');
+    div.className = sender === 'user'
+        ? 'bg-indigo-600 text-white p-3 rounded-tl-xl rounded-tr-xl rounded-bl-xl shadow-md ml-auto w-fit max-w-[80%]'
+        : 'bg-white text-gray-700 p-3 rounded-tr-xl rounded-bl-xl rounded-br-xl shadow-sm border border-gray-100 w-fit max-w-[80%]';
+    div.innerText = text;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+}
 
 function setVal(id, val) {
     const el = document.getElementById(id);
