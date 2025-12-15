@@ -395,31 +395,61 @@
                 </div>
         </div>
 
-        <!-- Dashboard Yapılandırması (YENİ) -->
-        <div class="mb-4 bg-slate-700/30 p-4 rounded-lg border border-slate-600/50">
-            <h3
-                class="text-sm uppercase tracking-wider text-indigo-400 font-bold mb-3 border-b border-indigo-500/20 pb-1">
-                Dashboard Ayarları</h3>
+        <!-- Dashboard Yapılandırması (GELİŞMİŞ) -->
+        <div
+            class="mb-6 bg-gradient-to-br from-slate-800 to-slate-900 p-5 rounded-2xl border border-slate-700/50 shadow-inner">
+            <h3 class="text-xs uppercase tracking-widest text-indigo-400 font-bold mb-4 flex items-center gap-2">
+                <span>⚙️</span> Dashboard Ayarları
+            </h3>
 
-            <!-- Yurt Modülü -->
-            <div class="flex items-center justify-between mb-4">
-                <label class="text-sm font-medium text-slate-300">Yurt Kazananı Modülü</label>
-                <div class="flex items-center">
-                    <input type="checkbox" id="module-dorm-check"
-                        class="w-5 h-5 text-indigo-600 bg-slate-700 border-slate-500 rounded focus:ring-indigo-500 focus:ring-2">
-                    <span class="ml-2 text-xs text-slate-400">(İşaretli ise gösterilir)</span>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+                <!-- Yurt Modülü (Switch Style) -->
+                <div
+                    class="bg-slate-700/30 p-3 rounded-xl border border-slate-600/50 flex flex-col justify-between group hover:border-indigo-500/30 transition">
+                    <div class="mb-2">
+                        <label class="block text-sm font-semibold text-slate-200 cursor-pointer"
+                            for="module-dorm-check">Yurt Kazananı Modülü</label>
+                        <p class="text-[0.65rem] text-slate-400 leading-tight mt-1">Aktif ise "Günün Kazananı" kartı
+                            görünür, pasif ise Hadis kartı genişler.</p>
+                    </div>
+                    <div class="flex items-center justify-end mt-2">
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="module-dorm-check" class="sr-only peer">
+                            <div
+                                class="w-11 h-6 bg-slate-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-indigo-500 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500">
+                            </div>
+                            <span
+                                class="ml-2 text-xs font-bold text-slate-300 peer-checked:text-green-400 transition-colors"
+                                id="dorm-status-text">AÇIK</span>
+                        </label>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Sağ Alt Modül -->
-            <div>
-                <label class="block text-sm font-medium text-slate-300 mb-1">Sağ Alt Bölüm İçeriği</label>
-                <select id="module-bottom-select"
-                    class="w-full bg-slate-800 border border-slate-600 rounded p-2 text-white text-sm">
-                    <option value="auto">Otomatik (Hepsini Dönüşümlü Göster)</option>
-                    <option value="exam">Sadece Sınav Şampiyonları</option>
-                    <option value="announcement">Sadece Duyurular</option>
-                </select>
+                <!-- Sağ Alt Modül (Select Card) -->
+                <div
+                    class="bg-slate-700/30 p-3 rounded-xl border border-slate-600/50 flex flex-col justify-between group hover:border-indigo-500/30 transition">
+                    <div class="mb-2">
+                        <label class="block text-sm font-semibold text-slate-200 mb-1">Sağ Alt Bölüm İçeriği</label>
+                        <p class="text-[0.65rem] text-slate-400 leading-tight">Dönen kart içeriğini sabitleyebilirsiniz.
+                        </p>
+                    </div>
+                    <div class="relative mt-2">
+                        <select id="module-bottom-select"
+                            class="w-full appearance-none bg-slate-800 border border-slate-600 text-white text-sm rounded-lg p-2.5 pr-8 focus:ring-indigo-500 focus:border-indigo-500 block">
+                            <option value="auto">🔄 Otomatik (Dönüşümlü)</option>
+                            <option value="exam">🏆 Sadece Sınav Sonuçları</option>
+                            <option value="announcement">📢 Sadece Duyurular</option>
+                        </select>
+                        <div
+                            class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-slate-400">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -736,7 +766,21 @@
 
                 // Dashboard Config
                 const isDormActive = (inst.config.module_dorm_active !== undefined) ? inst.config.module_dorm_active : true;
-                document.getElementById('module-dorm-check').checked = isDormActive;
+                const dormCheck = document.getElementById('module-dorm-check');
+                dormCheck.checked = isDormActive;
+
+                // Update Text state manually
+                const textLabel = document.getElementById('dorm-status-text');
+                if (isDormActive) {
+                    textLabel.innerText = "AÇIK";
+                    textLabel.classList.remove('text-slate-500');
+                    textLabel.classList.add('text-green-400');
+                } else {
+                    textLabel.innerText = "KAPALI";
+                    textLabel.classList.remove('text-green-400');
+                    textLabel.classList.add('text-slate-500');
+                }
+
                 setVal('module-bottom-select', inst.config.module_bottom_right_type || 'auto');
             }
 
@@ -748,6 +792,20 @@
         function setVal(id, val) {
             if (document.getElementById(id)) document.getElementById(id).value = val || '';
         }
+
+        // --- UI HELPERS ---
+        document.getElementById('module-dorm-check').addEventListener('change', function () {
+            const textLabel = document.getElementById('dorm-status-text');
+            if (this.checked) {
+                textLabel.innerText = "AÇIK";
+                textLabel.classList.remove('text-slate-500');
+                textLabel.classList.add('text-green-400');
+            } else {
+                textLabel.innerText = "KAPALI";
+                textLabel.classList.remove('text-green-400');
+                textLabel.classList.add('text-slate-500');
+            }
+        });
 
         document.getElementById('institution-form').addEventListener('submit', async (e) => {
             e.preventDefault();
