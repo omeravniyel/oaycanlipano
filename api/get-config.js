@@ -25,5 +25,36 @@ export default async function handler(request, response) {
     }
 
     // Config JSON kolonunu direkt döndür
-    return response.status(200).json(record.config || {});
+    let config = record.config || {};
+
+    // --- GLOBAL MERGE LOGIC ---
+    // Eğer bu bir 'System' kaydı değilse ve 'institution_type' varsa global veriyi merge et
+    if (slug !== 'system_globals' && config.institution_type) {
+        try {
+            const { data: globalData } = await supabase
+                .from('institutions')
+                .select('config')
+                .eq('slug', 'system_globals')
+                .single();
+
+            if (globalData && globalData.config && globalData.config.weekly_hadiths) {
+                const globalHadiths = globalData.config.weekly_hadiths;
+                const type = config.institution_type; // 'Ortaokul', 'Lise', etc.
+
+                // Eğer bu tip için tanımlı bir hadis varsa, local config'in üzerine yaz
+                if (globalHadiths[type] && globalHadiths[type].content) {
+                    // Mevcut hadith yapısını ez (veya oluştur)
+                    config.hadith = {
+                        content: globalHadiths[type].content,
+                        source: globalHadiths[type].source || ''
+                    };
+                }
+            }
+        } catch (mergeError) {
+            console.error("Global merge error:", mergeError);
+            // Hata olsa bile normal config dönsün, akışı bozma
+        }
+    }
+
+    return response.status(200).json(config);
 }

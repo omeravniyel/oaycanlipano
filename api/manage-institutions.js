@@ -35,7 +35,7 @@ export default async function handler(request, response) {
 
         // --- EKLEME / GÜNCELLEME ---
         if (action === 'upsert') {
-            let { slug, name, password, type, logo, subtitle, slogan1, slogan2, cover, city, district } = payload;
+            let { slug, name, password, type, logo, subtitle, slogan1, slogan2, cover, city, district, weekly_hadiths } = payload;
             slug = slug.trim(); // Boşlukları temizle
 
             // 1. Önce bu kurum var mı kontrol et
@@ -62,6 +62,9 @@ export default async function handler(request, response) {
                 if (district) updatedConfig.district = district;
                 if (slogan2) updatedConfig.institution_slogan2 = slogan2;
                 if (cover) updatedConfig.institution_cover = cover;
+
+                // Haftalık Hadis (Global)
+                if (weekly_hadiths) updatedConfig.weekly_hadiths = weekly_hadiths;
 
                 const { data, error } = await supabase
                     .from('institutions')

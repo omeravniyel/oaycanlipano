@@ -76,6 +76,74 @@
     </div>
 
     <div class="max-w-6xl mx-auto hidden" id="main-content">
+        <!-- HAFTALIK MERKEZİ VERİLER -->
+        <div
+            class="bg-gradient-to-br from-indigo-900 to-purple-900 rounded-xl p-8 mb-10 shadow-2xl border border-indigo-500/30 relative overflow-hidden group">
+            <div
+                class="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-20 user-select-none pointer-events-none">
+            </div>
+
+            <div class="relative z-10">
+                <h2 class="text-2xl font-bold mb-6 flex items-center gap-3 text-white">
+                    <span class="bg-indigo-500 p-2 rounded-lg shadow-lg">📅</span> Haftalık Merkezi İçerik
+                </h2>
+
+                <div class="grid md:grid-cols-2 gap-8">
+                    <!-- Sol: Form -->
+                    <div class="bg-white/5 p-6 rounded-xl border border-white/10 backdrop-blur-sm">
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-indigo-200 mb-2">Kurum Türü Seçin</label>
+                            <select id="global-type-select" onchange="loadGlobalHadithForType()"
+                                class="w-full bg-slate-800 border border-slate-600 rounded-lg p-3 text-white focus:ring-2 focus:ring-indigo-500 transition">
+                                <option value="Ortaokul">Ortaokul</option>
+                                <option value="Lise">Lise</option>
+                                <option value="İlkokul">İlkokul</option>
+                                <option value="Daimi">Daimi (Yurt)</option>
+                                <option value="Kurs">Kurs</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-indigo-200 mb-2">Haftanın Hadisi
+                                (Arapça/Türkçe)</label>
+                            <textarea id="global-hadith-content" rows="4"
+                                class="w-full bg-slate-800 border border-slate-600 rounded-lg p-3 text-white placeholder-slate-500 focus:ring-2 focus:ring-indigo-500 transition"
+                                placeholder="Hadis metnini buraya giriniz..."></textarea>
+                        </div>
+
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-indigo-200 mb-2">Kaynak (Ravi)</label>
+                            <input type="text" id="global-hadith-source"
+                                class="w-full bg-slate-800 border border-slate-600 rounded-lg p-3 text-white placeholder-slate-500 focus:ring-2 focus:ring-indigo-500 transition"
+                                placeholder="Örn: Buhârî, İman 1">
+                        </div>
+
+                        <button onclick="saveGlobalHadith()"
+                            class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-lg shadow-lg hover:shadow-indigo-500/50 transition duration-300">
+                            💾 Bu Tür İçin Kaydet
+                        </button>
+                    </div>
+
+                    <!-- Sağ: Bilgilendirme -->
+                    <div class="flex flex-col justify-center text-indigo-200 space-y-4">
+                        <div class="bg-white/5 p-4 rounded-lg flex items-start gap-4">
+                            <span class="text-2xl">ℹ️</span>
+                            <p class="text-sm leading-relaxed">Buradan girdiğiniz Hadis-i Şerifler, seçtiğiniz türdeki
+                                <strong>tüm kurumların</strong> panolarında "Haftanın Hadisi" bölümünde otomatik olarak
+                                görünecektir.
+                            </p>
+                        </div>
+                        <div class="bg-white/5 p-4 rounded-lg flex items-start gap-4">
+                            <span class="text-2xl">⚠️</span>
+                            <p class="text-sm leading-relaxed">Eğer kurum admini kendi panelinden özel bir hadis
+                                girdiyse, buradaki merkezi veri onu ezer (veya tam tersi, şu anki plan: <strong>Merkezi
+                                    Veri Önceliklidir</strong>).</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="flex justify-between items-center mb-8">
             <div>
                 <h1
@@ -421,6 +489,105 @@
                 } catch (err) {
                     alert("Hata: " + err.message);
                 }
+            }
+        }
+
+        // Initialize
+        loadInstitutions();
+        setTimeout(loadGlobalData, 1000); // UI yüklendikten sonra çek
+
+        // --- GLOBAL DATA MANAGEMENT ---
+        let globalConfig = { weekly_hadiths: {} };
+
+        async function loadGlobalData() {
+            try {
+                // system_globals adında bir 'kurum' var mı bakacağız, yoksa oluşturacağız (API halleder upsert ile)
+                // Ancak listelemek yerine direkt get-config'den çekebiliriz veya manage'dan alabiliriz.
+                // manage-institutions list'i sadece basic info dönüyor. 
+                // GET ile config çekelim.
+
+                // system_globals'i okumak için public API kullanabiliriz fakat password korumalı değil.
+                // En temizi: manage-institutions'a action='upsert' atarken okuma da yapabilirdik ama...
+                // Basit yol: createClient ile okumak (ama burada client yok, API var).
+                // API hack: get-config normalde public. system_globals'i de public okuyabiliriz.
+
+                const res = await fetch('/api/get-config?slug=system_globals');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.weekly_hadiths) {
+                        globalConfig.weekly_hadiths = data.weekly_hadiths;
+                    }
+                }
+
+                // İlk yüklemede seçili olan (Ortaokul) verisini doldur
+                loadGlobalHadithForType();
+
+            } catch (e) {
+                console.error("Global veri çekilemedi (Henüz yok olabilir):", e);
+            }
+        }
+
+        function loadGlobalHadithForType() {
+            const type = document.getElementById('global-type-select').value;
+            const data = globalConfig.weekly_hadiths[type] || { content: '', source: '' };
+
+            document.getElementById('global-hadith-content').value = data.content || '';
+            document.getElementById('global-hadith-source').value = data.source || '';
+        }
+
+        async function saveGlobalHadith() {
+            const password = document.getElementById('master-password-input').value;
+            if (!password) {
+                alert("Lütfen önce giriş yapınız (Şifre gerekli).");
+                return;
+            }
+
+            const type = document.getElementById('global-type-select').value;
+            const content = document.getElementById('global-hadith-content').value;
+            const source = document.getElementById('global-hadith-source').value;
+
+            // Objeyi güncelle
+            if (!globalConfig.weekly_hadiths) globalConfig.weekly_hadiths = {};
+            globalConfig.weekly_hadiths[type] = { content, source };
+
+            // API'ye kaydet (system_globals slug'ı ile)
+            try {
+                const res = await fetch('/api/manage-institutions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'upsert',
+                        master_password: password,
+                        payload: {
+                            slug: 'system_globals',
+                            name: 'Sistem Ayarları',
+                            type: 'System',
+                            logo: 'https://kartaltepepano.com/logo.png', // Dummy
+
+                            // ÖNEMLİ: Mevcut config yapısını koruyarak sadece needed alanları update etmek isterdik
+                            // Ama upsert mantığımızda config merge var.
+                            // manage-institutions.js upsert'i "updatedConfig.institution_title = name" gibi çalışıyor.
+                            // Bizim "weekly_hadiths"i oraya eklememiz lazım.
+                            // AMAN DİKKAT: manage-institutions.js "weekly_hadiths"i payload'dan alıp config'e koymuyor olabilir.
+                            // manage-institutions.js'yi güncellememiz gerekecek!
+
+                            // Geçici çözüm: manage-institutions.js'ye extra_config support eklemek veya API'yi güncellemek.
+                            // Şimdilik payload'a 'weekly_hadiths' ekleyip API'de onu yakalayacağım.
+                            weekly_hadiths: globalConfig.weekly_hadiths
+                        }
+                    })
+                });
+
+                const result = await res.json();
+                if (res.ok) {
+                    alert(`✅ ${type} için hadis kaydedildi!`);
+                } else {
+                    alert("Hata: " + result.error);
+                }
+
+            } catch (e) {
+                console.error(e);
+                alert("Kaydetme sırasında hata oluştu.");
             }
         }
     </script>
