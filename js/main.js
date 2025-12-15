@@ -119,21 +119,16 @@ async function fetchConfig() {
                             </p>
                         </div>
 
-                        <!-- Buton -->
-                        <div class="mt-10">
-                            <a href="/login.html" class="relative inline-flex items-center justify-center px-10 py-4 overflow-hidden font-bold text-white transition-all duration-300 bg-transparent border border-cyan-500/30 rounded-full group hover:bg-cyan-500/10 hover:border-cyan-400 hover:shadow-[0_0_20px_rgba(6,182,212,0.4)]">
-                                <span class="absolute w-0 h-0 transition-all duration-500 ease-out bg-cyan-500 rounded-full group-hover:w-56 group-hover:h-56 opacity-10"></span>
-                                <span class="relative flex items-center gap-3">
-                                    YÖNETİM PANELİ
-                                    <svg class="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
-                                </span>
-                            </a>
-                        </div>
+                        <!-- Buton Kaldırıldı -->
+                        
                     </div>
 
                     <!-- Footer -->
-                    <div class="absolute bottom-6 text-cyan-900/50 text-[10px] tracking-[0.5em] uppercase font-bold mix-blend-plus-lighter">
-                        Kartaltepe &copy; ${new Date().getFullYear()}
+                    <div class="absolute bottom-6 flex flex-col items-center gap-2 text-cyan-900/50 text-[10px] tracking-[0.2em] uppercase font-bold mix-blend-plus-lighter z-20">
+                        <span>Created by Buğra Çopur</span>
+                        <a href="mailto:bugracopur@gmail.com" class="hover:text-cyan-400 transition hover:underline decoration-cyan-500/30 underline-offset-4">
+                            bugracopur@gmail.com
+                        </a>
                     </div>
                 </div>
             `;
