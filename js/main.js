@@ -507,55 +507,77 @@ function onPlayerStateChange(event) {
 function switchMedia(mode) {
     const playerEl = document.getElementById('player');
     const swiperEl = document.querySelector('.mySwiper');
+    const playerContainer = document.getElementById('video-container'); // Video container varsa
 
     // Temizle
-    if (slideIntervalHandle) clearInterval(slideIntervalHandle);
+    if (slideIntervalHandle) {
+        clearTimeout(slideIntervalHandle);
+        slideIntervalHandle = null;
+    }
 
     if (mode === 'video' && videoId) {
-        // Video Modu
+        // --- 1. VIDEO MODU ---
         currentMediaState = 'video';
-        swiperEl.classList.add('hidden');
-        // playerEl görünürlüğü YouTube iframe tarafından yönetilir ama wrapper row/col
-        // Youtube API'sini resetle play
+
+        // UI Güncelle
+        if (swiperEl) swiperEl.classList.add('hidden');
+        if (playerContainer) playerContainer.classList.remove('hidden');
+        if (playerEl) playerEl.style.display = 'block';
+
+        // Video Başlat
         if (player && typeof player.playVideo === 'function') {
             player.loadVideoById(videoId);
             player.playVideo();
         }
 
     } else if (mode === 'slide' && galleryImages.length > 0) {
-        // Slayt Modu
+        // --- 2. SLAYT MODU ---
         currentMediaState = 'slide';
-        swiperEl.classList.remove('hidden');
+
+        // UI Güncelle
+        if (swiperEl) swiperEl.classList.remove('hidden');
+        // Videoyu gizle (ama yok etme, arka planda dursun)
+        if (playerContainer) playerContainer.classList.add('hidden');
+        if (playerEl) playerEl.style.display = 'none';
+
         if (player && typeof player.stopVideo === 'function') player.stopVideo();
 
-        // Swiper Init (Eğer yoksa)
+        // Swiper Init (Eğer yoksa veya güncellendiyse)
+        // Not: Her seferinde yeniden başlatmak yerine, instance varsa update etmek daha performanslıdır
+        // Ama basitlik için mevcut mantığı koruyoruz.
+
         if (!window.mySwiperInstance) {
             window.mySwiperInstance = new Swiper(".mySwiper", {
                 spaceBetween: 30,
                 effect: "fade",
                 centeredSlides: true,
                 autoplay: {
-                    delay: 12000, // 12 Saniye
+                    delay: 10000, // 10 Saniye (Her resim)
                     disableOnInteraction: false,
                 },
-                loop: true, // Sonsuz döngü
+                loop: true,
+                speed: 1000
             });
-
-            // Swiper sonuna gelince videoya dön (Eğer video varsa)
-            window.mySwiperInstance.on('reachBeginning', () => {
-                // Loop modunda reachEnd tetiklenmeyebilir, realIndex takibi gerekebilir
-                // Basitlik için: Autoplay döngüsü yerine, bir tur bitince videoya dönmeye çalışalım
-            });
-
-            // Manuel süre kontrolü daha güvenli
+        } else {
+            window.mySwiperInstance.update();
+            window.mySwiperInstance.autoplay.start();
         }
 
-        // Video bitince galeri sürekli döner, videoya geri dönmez
-        // Sadece video varsa ve kullanıcı manuel olarak değiştirmek isterse video tekrar oynar
+        // --- DÖNGÜ MANTIĞI ---
+        // Eğer video tanımlıysa, slaytların hepsi bitince videoya dön.
+        if (videoId) {
+            const slideDuration = 10000; // 10sn
+            const totalTime = galleryImages.length * slideDuration;
 
+            console.log(`Slayt başladı. ${galleryImages.length} resim var. ${totalTime / 1000} saniye sonra videoya geçilecek.`);
+
+            slideIntervalHandle = setTimeout(() => {
+                switchMedia('video');
+            }, totalTime);
+        }
 
     } else {
-        // Fallback
+        // Fallback (Video yok, Resim yok -> ya da biri var)
         if (videoId) switchMedia('video');
         else if (galleryImages.length > 0) switchMedia('slide');
     }
