@@ -32,6 +32,12 @@ async function loadData() {
 
         // 1. Header Bilgileri
         setVal('institution-title', config.institution_title);
+
+        // Admin Panel Başlığını Güncelle
+        if (config.institution_title) {
+            document.getElementById('admin-header-title').innerText = `🎛️ Admin Panel - ${config.institution_title}`;
+        }
+
         setVal('institution-subtitle', config.institution_subtitle);
         setVal('institution-slogan1', config.institution_slogan1);
         setVal('institution-slogan2', config.institution_slogan2);
