@@ -460,8 +460,20 @@ async function fetchConfig() {
         // setInterval(fetchConfig, 5 * 60 * 1000);
 
     } catch (error) {
+        console.error("Config error:", error);
+    }
+}
 
-        // DOM Elements
+function rotateInfo() {
+    if (!infoData || infoData.length === 0) return;
+
+    // Fade out
+    const container = document.getElementById('info-carousel');
+    container.style.opacity = '0';
+    container.style.transform = 'translateY(10px)';
+
+    setTimeout(() => {
+        const item = infoData[infoIndex];
         document.getElementById('info-title').innerText = item.title;
         document.getElementById('info-badge').innerText = item.badge;
         document.getElementById('info-circle-badge').innerText = item.circle;
