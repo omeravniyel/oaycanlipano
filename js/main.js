@@ -301,411 +301,407 @@ async function fetchConfig() {
         }
 
         // C) Yemek Menüsü (Öğle ve Akşam)
-        if (config.lunch_menu) {
-            infoData.push({
-                type: 'menu',
-                title: 'ÖĞLE YEMEĞİ',
-                badge: 'AFİYET OLSUN',
-                circle: '☀️',
-                topLabel: 'GÜNÜN MENÜSÜ',
-                content: config.lunch_menu
-            });
+        if (config.menu_enabled) {
+            if (config.lunch_menu) {
+                infoData.push({
+                    type: 'menu',
+                    title: 'ÖĞLE YEMEĞİ',
+                    badge: 'AFİYET OLSUN',
+                    circle: '☀️',
+                    topLabel: 'GÜNÜN MENÜSÜ',
+                    content: config.lunch_menu
+                });
+            }
+
+            if (config.dinner_menu) {
+                infoData.push({
+                    type: 'menu',
+                    title: 'AKŞAM YEMEĞİ',
+                    badge: 'AFİYET OLSUN',
+                    circle: '🌙',
+                    topLabel: 'GÜNÜN MENÜSÜ',
+                    content: config.dinner_menu
+                });
+            }
+
+            // --- 6. Günün Sözü (Footer Marquee) ---
+            // (Daha önce yukarıda işlendi)
+
+            // Eski interval'i temizle
+            if (infoRotationInterval) {
+                clearInterval(infoRotationInterval);
+            }
+
+            // İlk rotasyonu başlat
+            rotateInfo();
+
+            // 7 saniyede bir döndür
+            infoRotationInterval = setInterval(rotateInfo, 7000);
+
+        } catch (error) {
+            console.error("Veri çekme hatası:", error);
         }
-
-        if (config.dinner_menu) {
-            infoData.push({
-                type: 'menu',
-                title: 'AKŞAM YEMEĞİ',
-                badge: 'AFİYET OLSUN',
-                circle: '🌙',
-                topLabel: 'GÜNÜN MENÜSÜ',
-                content: config.dinner_menu
-            });
-        }
-
-        // Veri yoksa
-        if (infoData.length === 0) {
-            infoData.push({ type: 'duyuru', title: 'Hoşgeldiniz', badge: 'Sistem', circle: '👋', topLabel: 'DURUM', content: "Veri bekleniyor..." });
-        }
-
-        // --- 6. Günün Sözü (Footer Marquee) ---
-        // (Daha önce yukarıda işlendi)
-
-        // Eski interval'i temizle
-        if (infoRotationInterval) {
-            clearInterval(infoRotationInterval);
-        }
-
-        // İlk rotasyonu başlat
-        rotateInfo();
-
-        // 7 saniyede bir döndür
-        infoRotationInterval = setInterval(rotateInfo, 7000);
-
-    } catch (error) {
-        console.error("Veri çekme hatası:", error);
     }
-}
 
 function rotateInfo() {
-    if (!infoData || infoData.length === 0) return;
+        if (!infoData || infoData.length === 0) return;
 
-    // Fade out
-    const container = document.getElementById('info-carousel');
-    container.style.opacity = '0';
-    container.style.transform = 'translateY(10px)';
+        // Fade out
+        const container = document.getElementById('info-carousel');
+        container.style.opacity = '0';
+        container.style.transform = 'translateY(10px)';
 
-    setTimeout(() => {
-        const item = infoData[infoIndex];
+        setTimeout(() => {
+            const item = infoData[infoIndex];
 
-        // DOM Elements
-        document.getElementById('info-title').innerText = item.title;
-        document.getElementById('info-badge').innerText = item.badge;
-        document.getElementById('info-circle-badge').innerText = item.circle;
+            // DOM Elements
+            document.getElementById('info-title').innerText = item.title;
+            document.getElementById('info-badge').innerText = item.badge;
+            document.getElementById('info-circle-badge').innerText = item.circle;
 
-        // Kart arkaplan rengini değiştir (yemek için özel)
-        const cardContainer = container.parentElement;
-        if (item.type === 'menu') {
-            // Yemek menüsü için özel gradient
-            cardContainer.className = 'w-2/3 bg-gradient-to-br from-orange-500 via-red-500 to-pink-500 rounded-xl shadow-lg p-5 flex flex-col relative overflow-hidden text-white border border-orange-700';
-        } else {
-            // Diğerleri için mor gradient
-            cardContainer.className = 'w-2/3 bg-gradient-to-br from-[#4c1d95] to-[#7c3aed] rounded-xl shadow-lg p-5 flex flex-col relative overflow-hidden text-white border border-purple-800';
-        }
+            // Kart arkaplan rengini değiştir (yemek için özel)
+            const cardContainer = container.parentElement;
+            if (item.type === 'menu') {
+                // Yemek menüsü için özel gradient
+                cardContainer.className = 'w-2/3 bg-gradient-to-br from-orange-500 via-red-500 to-pink-500 rounded-xl shadow-lg p-5 flex flex-col relative overflow-hidden text-white border border-orange-700';
+            } else {
+                // Diğerleri için mor gradient
+                cardContainer.className = 'w-2/3 bg-gradient-to-br from-[#4c1d95] to-[#7c3aed] rounded-xl shadow-lg p-5 flex flex-col relative overflow-hidden text-white border border-purple-800';
+            }
 
-        // Circle Style & Text Adjustments based on Type
-        const circle = document.getElementById('info-circle-badge');
-        if (item.type === 'exam') {
-            circle.style.fontSize = '0.9rem'; // Smaller for text like "7.Sınıf"
-            circle.classList.remove('bg-blue-500', 'bg-green-500', 'bg-orange-500');
-            circle.classList.add('bg-yellow-500');
-        } else if (item.type === 'menu') {
-            circle.style.fontSize = '1.8rem'; // Bigger emoji for menu
-            circle.classList.remove('bg-yellow-500', 'bg-blue-500');
-            circle.classList.add('bg-orange-500');
-        } else {
-            circle.style.fontSize = '1.5rem'; // Emoji size
-            circle.classList.remove('bg-yellow-500', 'bg-orange-500');
-            circle.classList.add('bg-blue-500');
-        }
+            // Circle Style & Text Adjustments based on Type
+            const circle = document.getElementById('info-circle-badge');
+            if (item.type === 'exam') {
+                circle.style.fontSize = '0.9rem'; // Smaller for text like "7.Sınıf"
+                circle.classList.remove('bg-blue-500', 'bg-green-500', 'bg-orange-500');
+                circle.classList.add('bg-yellow-500');
+            } else if (item.type === 'menu') {
+                circle.style.fontSize = '1.8rem'; // Bigger emoji for menu
+                circle.classList.remove('bg-yellow-500', 'bg-blue-500');
+                circle.classList.add('bg-orange-500');
+            } else {
+                circle.style.fontSize = '1.5rem'; // Emoji size
+                circle.classList.remove('bg-yellow-500', 'bg-orange-500');
+                circle.classList.add('bg-blue-500');
+            }
 
-        document.getElementById('info-top-label').innerText = item.topLabel; // "BİRİNCİSİ"
+            document.getElementById('info-top-label').innerText = item.topLabel; // "BİRİNCİSİ"
 
-        const mainText = document.getElementById('info-main-text');
-        mainText.innerText = item.content;
+            const mainText = document.getElementById('info-main-text');
+            mainText.innerText = item.content;
 
-        // Menü ise fontu küçült ve 2 sütuna böl
-        if (item.type === 'menu') {
-            mainText.classList.remove('text-2xl', 'text-center');
-            mainText.classList.add('text-sm', 'leading-snug', 'whitespace-pre-wrap', 'columns-2', 'gap-4', 'text-left');
-        } else {
-            mainText.classList.add('text-2xl', 'text-center');
-            mainText.classList.remove('text-sm', 'leading-snug', 'whitespace-pre-wrap', 'columns-2', 'gap-4', 'text-left');
-        }
+            // Menü ise fontu küçült ve 2 sütuna böl
+            if (item.type === 'menu') {
+                mainText.classList.remove('text-2xl', 'text-center');
+                mainText.classList.add('text-sm', 'leading-snug', 'whitespace-pre-wrap', 'columns-2', 'gap-4', 'text-left');
+            } else {
+                mainText.classList.add('text-2xl', 'text-center');
+                mainText.classList.remove('text-sm', 'leading-snug', 'whitespace-pre-wrap', 'columns-2', 'gap-4', 'text-left');
+            }
 
-        // Fade in
-        container.style.opacity = '1';
-        container.style.transform = 'translateY(0)';
+            // Fade in
+            container.style.opacity = '1';
+            container.style.transform = 'translateY(0)';
 
-        infoIndex = (infoIndex + 1) % infoData.length;
+            infoIndex = (infoIndex + 1) % infoData.length;
 
-    }, 500);
-}
-
-// Yatakhane isim rotasyonu (ARTIK ROTASYON YOK - HEPSİ GÖZÜKÜYOR)
-function startDormNameRotation() {
-    // Mevcut interval varsa temizle
-    if (dormNameRotationInterval) {
-        clearInterval(dormNameRotationInterval);
-    }
-    // Tek sefer çalıştır
-    updateDormNames();
-}
-
-function updateDormNames() {
-    // Yatakhane 1
-    for (let i = 1; i <= 6; i++) {
-        const el = document.getElementById(`dorm1-s${i}`);
-        if (dorm1Names[i - 1]) {
-            el.innerText = dorm1Names[i - 1];
-            el.classList.remove('opacity-50'); // Varsa tam görünür
-        } else {
-            el.innerText = '---';
-            el.classList.add('opacity-50'); // Yoksa silik
-        }
+        }, 500);
     }
 
-    // Yatakhane 2
-    for (let i = 1; i <= 6; i++) {
-        const el = document.getElementById(`dorm2-s${i}`);
-        if (dorm2Names[i - 1]) {
-            el.innerText = dorm2Names[i - 1];
-            el.classList.remove('opacity-50');
-        } else {
-            el.innerText = '---';
-            el.classList.add('opacity-50');
+    // Yatakhane isim rotasyonu (ARTIK ROTASYON YOK - HEPSİ GÖZÜKÜYOR)
+    function startDormNameRotation() {
+        // Mevcut interval varsa temizle
+        if (dormNameRotationInterval) {
+            clearInterval(dormNameRotationInterval);
         }
-    }
-}
-
-// Başlangıçta verileri çek
-fetchConfig();
-
-
-// --- YOUTUBE API ---
-// --- YOUTUBE & HYBRID LOOP ---
-var player;
-var galleryImages = [];
-var currentMediaState = 'none'; // 'video', 'slide'
-var videoId = null;
-var slideIntervalHandle = null;
-
-// Galeriyi Çek (Yerel klasörden)
-async function fetchGalleryImages() {
-    try {
-        const res = await fetch('/api/get-gallery');
-        const data = await res.json();
-        galleryImages = data.images || [];
-
-        // Swiper Wrapper Güncelle
-        const wrapper = document.getElementById('slide-wrapper');
-        wrapper.innerHTML = '';
-        galleryImages.forEach(url => {
-            const slide = document.createElement('div');
-            slide.className = 'swiper-slide flex items-center justify-center bg-gradient-to-br from-orange-400 via-red-400 to-pink-400';
-            slide.innerHTML = `<img src="${url}" class="w-full h-full object-contain" />`;
-            wrapper.appendChild(slide);
-        });
-
-        console.log('Galeri görselleri yüklendi:', galleryImages.length);
-
-    } catch (e) {
-        console.error("Galeri hatası", e);
-    }
-}
-
-function onYouTubeIframeAPIReady() {
-    player = new YT.Player('player', {
-        height: '100%',
-        width: '100%',
-        videoId: '',
-        playerVars: {
-            'autoplay': 1,
-            'controls': 0,
-            'rel': 0,            // İlgili videoları gizle
-            'showinfo': 0,       // Başlığı gizle
-            'mute': 1            // Tarayıcıların otomatik oynatması için Mute şarttır
-        },
-        events: {
-            'onReady': onPlayerReady,
-            'onStateChange': onPlayerStateChange
-        }
-    });
-}
-
-function onPlayerReady(event) {
-    // Player hazır olur olmaz videoyu başlat (Eğer videoId set edilmişse)
-    if (videoId) {
-        event.target.loadVideoById(videoId);
-        event.target.playVideo();
-    }
-}
-
-function onPlayerStateChange(event) {
-    if (event.data == YT.PlayerState.ENDED) {
-        // Video bitti, Slider'a geç
-        switchMedia('slide');
-    }
-}
-
-// Medya Döngü Kontrolü
-function switchMedia(mode) {
-    const playerEl = document.getElementById('player');
-    const swiperEl = document.querySelector('.mySwiper');
-    const playerContainer = document.getElementById('video-container'); // Video container varsa
-
-    // Temizle
-    if (slideIntervalHandle) {
-        clearTimeout(slideIntervalHandle);
-        slideIntervalHandle = null;
+        // Tek sefer çalıştır
+        updateDormNames();
     }
 
-    if (mode === 'video' && videoId) {
-        // --- 1. VIDEO MODU ---
-        currentMediaState = 'video';
-
-        // UI Güncelle
-        if (swiperEl) swiperEl.classList.add('hidden');
-        if (playerContainer) playerContainer.classList.remove('hidden');
-        if (playerEl) playerEl.style.display = 'block';
-
-        // Video Başlat
-        if (player && typeof player.playVideo === 'function') {
-            player.loadVideoById(videoId);
-            player.playVideo();
+    function updateDormNames() {
+        // Yatakhane 1
+        for (let i = 1; i <= 6; i++) {
+            const el = document.getElementById(`dorm1-s${i}`);
+            if (dorm1Names[i - 1]) {
+                el.innerText = dorm1Names[i - 1];
+                el.classList.remove('opacity-50'); // Varsa tam görünür
+            } else {
+                el.innerText = '---';
+                el.classList.add('opacity-50'); // Yoksa silik
+            }
         }
 
-    } else if (mode === 'slide' && galleryImages.length > 0) {
-        // --- 2. SLAYT MODU ---
-        currentMediaState = 'slide';
+        // Yatakhane 2
+        for (let i = 1; i <= 6; i++) {
+            const el = document.getElementById(`dorm2-s${i}`);
+            if (dorm2Names[i - 1]) {
+                el.innerText = dorm2Names[i - 1];
+                el.classList.remove('opacity-50');
+            } else {
+                el.innerText = '---';
+                el.classList.add('opacity-50');
+            }
+        }
+    }
 
-        // UI Güncelle
-        if (swiperEl) swiperEl.classList.remove('hidden');
-        // Videoyu gizle (ama yok etme, arka planda dursun)
-        if (playerContainer) playerContainer.classList.add('hidden');
-        if (playerEl) playerEl.style.display = 'none';
+    // Başlangıçta verileri çek
+    fetchConfig();
 
-        if (player && typeof player.stopVideo === 'function') player.stopVideo();
 
-        // Swiper Init (Eğer yoksa veya güncellendiyse)
-        // Not: Her seferinde yeniden başlatmak yerine, instance varsa update etmek daha performanslıdır
-        // Ama basitlik için mevcut mantığı koruyoruz.
+    // --- YOUTUBE API ---
+    // --- YOUTUBE & HYBRID LOOP ---
+    var player;
+    var galleryImages = [];
+    var currentMediaState = 'none'; // 'video', 'slide'
+    var videoId = null;
+    var slideIntervalHandle = null;
 
-        if (!window.mySwiperInstance) {
-            window.mySwiperInstance = new Swiper(".mySwiper", {
-                spaceBetween: 30,
-                effect: "fade",
-                centeredSlides: true,
-                autoplay: {
-                    delay: 10000, // 10 Saniye (Her resim)
-                    disableOnInteraction: false,
-                },
-                loop: true,
-                speed: 1000
+    // Galeriyi Çek (Yerel klasörden)
+    async function fetchGalleryImages() {
+        try {
+            const res = await fetch('/api/get-gallery');
+            const data = await res.json();
+            galleryImages = data.images || [];
+
+            // Swiper Wrapper Güncelle
+            const wrapper = document.getElementById('slide-wrapper');
+            wrapper.innerHTML = '';
+            galleryImages.forEach(url => {
+                const slide = document.createElement('div');
+                slide.className = 'swiper-slide flex items-center justify-center bg-gradient-to-br from-orange-400 via-red-400 to-pink-400';
+                slide.innerHTML = `<img src="${url}" class="w-full h-full object-contain" />`;
+                wrapper.appendChild(slide);
             });
-        } else {
-            window.mySwiperInstance.update();
-            window.mySwiperInstance.autoplay.start();
-        }
 
-        // --- DÖNGÜ MANTIĞI ---
-        // Eğer video tanımlıysa, slaytların hepsi bitince videoya dön.
+            console.log('Galeri görselleri yüklendi:', galleryImages.length);
+
+        } catch (e) {
+            console.error("Galeri hatası", e);
+        }
+    }
+
+    function onYouTubeIframeAPIReady() {
+        player = new YT.Player('player', {
+            height: '100%',
+            width: '100%',
+            videoId: '',
+            playerVars: {
+                'autoplay': 1,
+                'controls': 0,
+                'rel': 0,            // İlgili videoları gizle
+                'showinfo': 0,       // Başlığı gizle
+                'mute': 1            // Tarayıcıların otomatik oynatması için Mute şarttır
+            },
+            events: {
+                'onReady': onPlayerReady,
+                'onStateChange': onPlayerStateChange
+            }
+        });
+    }
+
+    function onPlayerReady(event) {
+        // Player hazır olur olmaz videoyu başlat (Eğer videoId set edilmişse)
         if (videoId) {
-            const slideDuration = 10000; // 10sn
-            const totalTime = galleryImages.length * slideDuration;
+            event.target.loadVideoById(videoId);
+            event.target.playVideo();
+        }
+    }
 
-            console.log(`Slayt başladı. ${galleryImages.length} resim var. ${totalTime / 1000} saniye sonra videoya geçilecek.`);
+    function onPlayerStateChange(event) {
+        if (event.data == YT.PlayerState.ENDED) {
+            // Video bitti, Slider'a geç
+            switchMedia('slide');
+        }
+    }
 
-            slideIntervalHandle = setTimeout(() => {
-                switchMedia('video');
-            }, totalTime);
+    // Medya Döngü Kontrolü
+    function switchMedia(mode) {
+        const playerEl = document.getElementById('player');
+        const swiperEl = document.querySelector('.mySwiper');
+        const playerContainer = document.getElementById('video-container'); // Video container varsa
+
+        // Temizle
+        if (slideIntervalHandle) {
+            clearTimeout(slideIntervalHandle);
+            slideIntervalHandle = null;
         }
 
-    } else {
-        // Fallback (Video yok, Resim yok -> ya da biri var)
-        if (videoId) switchMedia('video');
-        else if (galleryImages.length > 0) switchMedia('slide');
-    }
-}
+        if (mode === 'video' && videoId) {
+            // --- 1. VIDEO MODU ---
+            currentMediaState = 'video';
 
+            // UI Güncelle
+            if (swiperEl) swiperEl.classList.add('hidden');
+            if (playerContainer) playerContainer.classList.remove('hidden');
+            if (playerEl) playerEl.style.display = 'block';
 
-// --- WEATHER API (Open-Meteo) ---
-async function fetchWeather() {
-    try {
-        // Zeytinburnu Coordinats: 40.99, 28.90
-        const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=40.99&longitude=28.90&current_weather=true');
-        const data = await res.json();
+            // Video Başlat
+            if (player && typeof player.playVideo === 'function') {
+                player.loadVideoById(videoId);
+                player.playVideo();
+            }
 
-        if (data.current_weather) {
-            const temp = Math.round(data.current_weather.temperature);
-            const code = data.current_weather.weathercode;
+        } else if (mode === 'slide' && galleryImages.length > 0) {
+            // --- 2. SLAYT MODU ---
+            currentMediaState = 'slide';
 
-            // WMO Weather Codes to Text/Icon
-            let desc = "AÇIK";
-            let icon = "☀️";
+            // UI Güncelle
+            if (swiperEl) swiperEl.classList.remove('hidden');
+            // Videoyu gizle (ama yok etme, arka planda dursun)
+            if (playerContainer) playerContainer.classList.add('hidden');
+            if (playerEl) playerEl.style.display = 'none';
 
-            // Simple mapping
-            if (code >= 1 && code <= 3) { desc = "PARÇALI BULUTLU"; icon = "⛅"; }
-            else if (code >= 45 && code <= 48) { desc = "SİSLİ"; icon = "🌫️"; }
-            else if (code >= 51 && code <= 67) { desc = "YAĞMURLU"; icon = "🌧️"; }
-            else if (code >= 71 && code <= 77) { desc = "KARLI"; icon = "❄️"; }
-            else if (code >= 80 && code <= 82) { desc = "SAĞANAK"; icon = "🌦️"; }
-            else if (code >= 95) { desc = "FIRTINA"; icon = "⛈️"; }
+            if (player && typeof player.stopVideo === 'function') player.stopVideo();
 
-            // DOM'da elementler varsa güncelle
-            if (document.getElementById('weather-temp')) document.getElementById('weather-temp').innerText = `${temp}°`;
-            if (document.getElementById('weather-desc')) document.getElementById('weather-desc').innerText = desc;
-            if (document.getElementById('weather-icon')) document.getElementById('weather-icon').innerText = icon;
+            // Swiper Init (Eğer yoksa veya güncellendiyse)
+            // Not: Her seferinde yeniden başlatmak yerine, instance varsa update etmek daha performanslıdır
+            // Ama basitlik için mevcut mantığı koruyoruz.
+
+            if (!window.mySwiperInstance) {
+                window.mySwiperInstance = new Swiper(".mySwiper", {
+                    spaceBetween: 30,
+                    effect: "fade",
+                    centeredSlides: true,
+                    autoplay: {
+                        delay: 10000, // 10 Saniye (Her resim)
+                        disableOnInteraction: false,
+                    },
+                    loop: true,
+                    speed: 1000
+                });
+            } else {
+                window.mySwiperInstance.update();
+                window.mySwiperInstance.autoplay.start();
+            }
+
+            // --- DÖNGÜ MANTIĞI ---
+            // Eğer video tanımlıysa, slaytların hepsi bitince videoya dön.
+            if (videoId) {
+                const slideDuration = 10000; // 10sn
+                const totalTime = galleryImages.length * slideDuration;
+
+                console.log(`Slayt başladı. ${galleryImages.length} resim var. ${totalTime / 1000} saniye sonra videoya geçilecek.`);
+
+                slideIntervalHandle = setTimeout(() => {
+                    switchMedia('video');
+                }, totalTime);
+            }
+
+        } else {
+            // Fallback (Video yok, Resim yok -> ya da biri var)
+            if (videoId) switchMedia('video');
+            else if (galleryImages.length > 0) switchMedia('slide');
         }
-    } catch (e) {
-        console.error("Hava durumu hatası:", e);
     }
-}
 
-// Initial Fetch and Interval
-fetchWeather();
-setInterval(fetchWeather, 30 * 60 * 1000); // 30 Mins
 
-// --- SOL GALERİ ROTASYONU ---
-// (Değişkenler yukarı taşındı)
+    // --- WEATHER API (Open-Meteo) ---
+    async function fetchWeather() {
+        try {
+            // Zeytinburnu Coordinats: 40.99, 28.90
+            const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=40.99&longitude=28.90&current_weather=true');
+            const data = await res.json();
 
-// Sol galeri görsellerini yükle
-async function fetchLeftGalleryImages() {
-    // Eğer admin'den dolu geldiyse tekrar çekme
-    if (leftGalleryImages.length > 0) return;
+            if (data.current_weather) {
+                const temp = Math.round(data.current_weather.temperature);
+                const code = data.current_weather.weathercode;
 
-    try {
-        const res = await fetch('/api/get-left-gallery');
-        const data = await res.json();
-        leftGalleryImages = data.images || [];
+                // WMO Weather Codes to Text/Icon
+                let desc = "AÇIK";
+                let icon = "☀️";
 
-        // Eğer görseller varsa rotasyonu başlat
-        if (leftGalleryImages.length > 0) {
-            startLeftGalleryRotation();
+                // Simple mapping
+                if (code >= 1 && code <= 3) { desc = "PARÇALI BULUTLU"; icon = "⛅"; }
+                else if (code >= 45 && code <= 48) { desc = "SİSLİ"; icon = "🌫️"; }
+                else if (code >= 51 && code <= 67) { desc = "YAĞMURLU"; icon = "🌧️"; }
+                else if (code >= 71 && code <= 77) { desc = "KARLI"; icon = "❄️"; }
+                else if (code >= 80 && code <= 82) { desc = "SAĞANAK"; icon = "🌦️"; }
+                else if (code >= 95) { desc = "FIRTINA"; icon = "⛈️"; }
+
+                // DOM'da elementler varsa güncelle
+                if (document.getElementById('weather-temp')) document.getElementById('weather-temp').innerText = `${temp}°`;
+                if (document.getElementById('weather-desc')) document.getElementById('weather-desc').innerText = desc;
+                if (document.getElementById('weather-icon')) document.getElementById('weather-icon').innerText = icon;
+            }
+        } catch (e) {
+            console.error("Hava durumu hatası:", e);
         }
-    } catch (error) {
-        console.error('Sol galeri yükleme hatası:', error);
     }
-}
 
-// Sol galeri rotasyonunu başlat
-function startLeftGalleryRotation() {
-    if (leftGalleryImages.length === 0) return;
+    // Initial Fetch and Interval
+    fetchWeather();
+    setInterval(fetchWeather, 30 * 60 * 1000); // 30 Mins
 
-    // Mevcut timeout'u temizle
-    if (leftGalleryTimeout) clearTimeout(leftGalleryTimeout);
+    // --- SOL GALERİ ROTASYONU ---
+    // (Değişkenler yukarı taşındı)
 
-    // Görseli göster
-    showLeftGalleryImage();
-}
+    // Sol galeri görsellerini yükle
+    async function fetchLeftGalleryImages() {
+        // Eğer admin'den dolu geldiyse tekrar çekme
+        if (leftGalleryImages.length > 0) return;
 
-// Görseli göster (Tek kutu)
-function showLeftGalleryImage() {
-    const galleryContainer = document.getElementById('left-gallery-container');
-    const galleryImage = document.getElementById('left-gallery-image');
-    const normalContent = document.getElementById('left-normal-content');
+        try {
+            const res = await fetch('/api/get-left-gallery');
+            const data = await res.json();
+            leftGalleryImages = data.images || [];
 
-    // Mevcut görseli al
-    const currentImage = leftGalleryImages[leftGalleryIndex];
+            // Eğer görseller varsa rotasyonu başlat
+            if (leftGalleryImages.length > 0) {
+                startLeftGalleryRotation();
+            }
+        } catch (error) {
+            console.error('Sol galeri yükleme hatası:', error);
+        }
+    }
 
-    // Görseli ayarla
-    galleryImage.src = currentImage;
+    // Sol galeri rotasyonunu başlat
+    function startLeftGalleryRotation() {
+        if (leftGalleryImages.length === 0) return;
 
-    // Galeri container'ını göster, normal içeriği gizle
-    galleryContainer.classList.remove('hidden');
-    normalContent.classList.add('hidden');
+        // Mevcut timeout'u temizle
+        if (leftGalleryTimeout) clearTimeout(leftGalleryTimeout);
 
-    // Sonraki görsele geç
-    leftGalleryIndex++;
+        // Görseli göster
+        showLeftGalleryImage();
+    }
 
-    // Eğer tüm görseller gösterildiyse
-    if (leftGalleryIndex >= leftGalleryImages.length) {
-        // 10 saniye sonra galeriyi gizle
-        leftGalleryTimeout = setTimeout(() => {
-            galleryContainer.classList.add('hidden');
-            normalContent.classList.remove('hidden');
+    // Görseli göster (Tek kutu)
+    function showLeftGalleryImage() {
+        const galleryContainer = document.getElementById('left-gallery-container');
+        const galleryImage = document.getElementById('left-gallery-image');
+        const normalContent = document.getElementById('left-normal-content');
 
-            // 20 saniye bekle, sonra tekrar başla
+        // Mevcut görseli al
+        const currentImage = leftGalleryImages[leftGalleryIndex];
+
+        // Görseli ayarla
+        galleryImage.src = currentImage;
+
+        // Galeri container'ını göster, normal içeriği gizle
+        galleryContainer.classList.remove('hidden');
+        normalContent.classList.add('hidden');
+
+        // Sonraki görsele geç
+        leftGalleryIndex++;
+
+        // Eğer tüm görseller gösterildiyse
+        if (leftGalleryIndex >= leftGalleryImages.length) {
+            // 10 saniye sonra galeriyi gizle
             leftGalleryTimeout = setTimeout(() => {
-                leftGalleryIndex = 0;
-                showLeftGalleryImage();
-            }, 20000); // 20 saniye bekleme
-        }, 10000); // Son görseli 10 saniye göster
-    } else {
-        // 10 saniye sonra bir sonraki görseli göster
-        leftGalleryTimeout = setTimeout(showLeftGalleryImage, 10000);
+                galleryContainer.classList.add('hidden');
+                normalContent.classList.remove('hidden');
+
+                // 20 saniye bekle, sonra tekrar başla
+                leftGalleryTimeout = setTimeout(() => {
+                    leftGalleryIndex = 0;
+                    showLeftGalleryImage();
+                }, 20000); // 20 saniye bekleme
+            }, 10000); // Son görseli 10 saniye göster
+        } else {
+            // 10 saniye sonra bir sonraki görseli göster
+            leftGalleryTimeout = setTimeout(showLeftGalleryImage, 10000);
+        }
     }
-}
 
 // Sayfa yüklendiğinde sol galeriyi başlat
 // Sayfa yüklendiğinde sol galeriyi başlat (fetchConfig içinde çağrılıyor artık)

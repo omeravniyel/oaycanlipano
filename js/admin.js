@@ -238,6 +238,7 @@ async function loadData() {
         if (config.dorm_title) document.getElementById('dorm-title').value = config.dorm_title;
 
         // Yemek Menüsü
+        if (config.menu_enabled !== undefined) document.getElementById('menu-enabled').checked = config.menu_enabled;
         if (config.lunch_menu) document.getElementById('lunch-menu').value = config.lunch_menu;
         if (config.dinner_menu) document.getElementById('dinner-menu').value = config.dinner_menu;
 
@@ -397,6 +398,7 @@ document.getElementById('admin-form').addEventListener('submit', async (e) => {
 
             // Ayarlar
             dorm_title: document.getElementById('dorm-title').value,
+            menu_enabled: document.getElementById('menu-enabled').checked,
             lunch_menu: document.getElementById('lunch-menu').value,
             dinner_menu: document.getElementById('dinner-menu').value,
             video_url: document.getElementById('video-url').value,
