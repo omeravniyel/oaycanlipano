@@ -489,11 +489,26 @@ function onYouTubeIframeAPIReady() {
         height: '100%',
         width: '100%',
         videoId: '',
-        playerVars: { 'autoplay': 0, 'controls': 0, 'mute': 0 },
+        playerVars: {
+            'autoplay': 1,
+            'controls': 0,
+            'rel': 0,            // İlgili videoları gizle
+            'showinfo': 0,       // Başlığı gizle
+            'mute': 1            // Tarayıcıların otomatik oynatması için Mute şarttır
+        },
         events: {
+            'onReady': onPlayerReady,
             'onStateChange': onPlayerStateChange
         }
     });
+}
+
+function onPlayerReady(event) {
+    // Player hazır olur olmaz videoyu başlat (Eğer videoId set edilmişse)
+    if (videoId) {
+        event.target.loadVideoById(videoId);
+        event.target.playVideo();
+    }
 }
 
 function onPlayerStateChange(event) {
