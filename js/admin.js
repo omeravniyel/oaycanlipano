@@ -62,6 +62,36 @@ function addLeftGalleryItem(url = '') {
     container.appendChild(div);
 }
 
+// RESİM BOYUTLANDIRMA (Payload hatasını önlemek için)
+function resizeImage(file, maxWidth = 800, quality = 0.7) {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (event) => {
+            const img = new Image();
+            img.src = event.target.result;
+            img.onload = () => {
+                const canvas = document.createElement('canvas');
+                let width = img.width;
+                let height = img.height;
+
+                if (width > maxWidth) {
+                    height *= maxWidth / width;
+                    width = maxWidth;
+                }
+
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(img, 0, 0, width, height);
+
+                // Base64 (JPEG formatında, kalite düşürülmüş)
+                resolve(canvas.toDataURL('image/jpeg', quality));
+            };
+        };
+    });
+}
+
 // GALERİ RESİM YÜKLEME
 async function uploadGalleryImage(input) {
     const file = input.files[0];
@@ -69,38 +99,42 @@ async function uploadGalleryImage(input) {
 
     const btn = document.getElementById('gallery-upload-btn');
     const originalText = btn.innerText;
-    btn.innerText = "⏳ Yükleniyor...";
+    btn.innerText = "⏳ Küçültülüyor...";
     btn.disabled = true;
 
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = async () => {
-        const base64 = reader.result.split(',')[1];
-        try {
-            const res = await fetch('/api/upload', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    filename: file.name,
-                    fileBase64: base64,
-                    contentType: file.type,
-                    slug: CURRENT_SLUG
-                })
-            });
-            const data = await res.json();
-            if (data.error) throw new Error(data.error);
+    try {
+        // 1. Resmi Küçült
+        const resizedBase64 = await resizeImage(file);
+        const base64Content = resizedBase64.split(',')[1];
 
-            // Başarılı olursa listeye ekle
-            addGalleryItem(data.url);
-            showMessage("Resim yüklendi ve eklendi!", "success");
+        btn.innerText = "⏳ Yükleniyor...";
 
-        } catch (err) {
-            alert("Yükleme Hatası: " + err.message + "\nSupabase 'images' bucket'ının açık olduğundan emin olun.");
-        } finally {
-            btn.innerText = originalText;
-            btn.disabled = false;
-        }
-    };
+        // 2. Yükle
+        const res = await fetch('/api/upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                filename: file.name.replace(/\.[^/.]+$/, "") + ".jpg", // Uzantıyı jpg yap
+                fileBase64: base64Content,
+                contentType: 'image/jpeg',
+                slug: CURRENT_SLUG
+            })
+        });
+
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+
+        // Başarılı olursa listeye ekle
+        addGalleryItem(data.url);
+        showMessage("Resim yüklendi ve eklendi!", "success");
+
+    } catch (err) {
+        alert("Yükleme Hatası: " + err.message);
+    } finally {
+        btn.innerText = originalText;
+        btn.disabled = false;
+        input.value = ''; // Inputu temizle
+    }
 }
 function startUpload() { document.getElementById('gallery-file-input').click(); }
 
@@ -111,38 +145,42 @@ async function uploadLeftGalleryImage(input) {
 
     const btn = document.getElementById('left-gallery-upload-btn');
     const originalText = btn.innerText;
-    btn.innerText = "⏳ Yükleniyor...";
+    btn.innerText = "⏳ Küçültülüyor...";
     btn.disabled = true;
 
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = async () => {
-        const base64 = reader.result.split(',')[1];
-        try {
-            const res = await fetch('/api/upload', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    filename: file.name,
-                    fileBase64: base64,
-                    contentType: file.type,
-                    slug: CURRENT_SLUG
-                })
-            });
-            const data = await res.json();
-            if (data.error) throw new Error(data.error);
+    try {
+        // 1. Resmi Küçült
+        const resizedBase64 = await resizeImage(file);
+        const base64Content = resizedBase64.split(',')[1];
 
-            // Başarılı olursa listeye ekle
-            addLeftGalleryItem(data.url);
-            showMessage("Sol galeriye resim eklendi!", "success");
+        btn.innerText = "⏳ Yükleniyor...";
 
-        } catch (err) {
-            alert("Yükleme Hatası: " + err.message);
-        } finally {
-            btn.innerText = originalText;
-            btn.disabled = false;
-        }
-    };
+        // 2. Yükle
+        const res = await fetch('/api/upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                filename: file.name.replace(/\.[^/.]+$/, "") + ".jpg",
+                fileBase64: base64Content,
+                contentType: 'image/jpeg',
+                slug: CURRENT_SLUG
+            })
+        });
+
+        const data = await res.json();
+        if (data.error) throw new Error(data.error);
+
+        // Başarılı olursa listeye ekle
+        addLeftGalleryItem(data.url);
+        showMessage("Sol galeriye resim eklendi!", "success");
+
+    } catch (err) {
+        alert("Yükleme Hatası: " + err.message);
+    } finally {
+        btn.innerText = originalText;
+        btn.disabled = false;
+        input.value = '';
+    }
 }
 function startLeftUpload() { document.getElementById('left-gallery-file-input').click(); }
 
