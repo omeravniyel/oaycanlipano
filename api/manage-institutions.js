@@ -35,7 +35,7 @@ export default async function handler(request, response) {
 
         // --- EKLEME / GÜNCELLEME ---
         if (action === 'upsert') {
-            let { slug, name, password, logo, subtitle, slogan1, slogan2, cover } = payload;
+            let { slug, name, password, type, logo, subtitle, slogan1, slogan2, cover } = payload;
             slug = slug.trim(); // Boşlukları temizle
 
             // 1. Önce bu kurum var mı kontrol et
@@ -53,6 +53,7 @@ export default async function handler(request, response) {
 
                 // Gelen değerleri güncelle
                 updatedConfig.institution_title = name;
+                if (type) updatedConfig.institution_type = type;
                 if (logo) updatedConfig.institution_logo = logo;
                 // Opsiyonel alanlar
                 if (subtitle) updatedConfig.institution_subtitle = subtitle;
@@ -73,6 +74,7 @@ export default async function handler(request, response) {
                 // --- YENİ KAYIT (INSERT) ---
                 const defaultConfig = {
                     institution_title: name,
+                    institution_type: type || '',
                     institution_subtitle: subtitle || 'DİJİTAL PANO SİSTEMİ',
                     institution_slogan1: slogan1 || 'Hoşgeldiniz',
                     institution_slogan2: slogan2 || 'Bilgi Ekranı',

@@ -72,6 +72,20 @@
                         placeholder="1234" required>
                 </div>
 
+                <div>
+                    <label class="block text-sm font-medium text-slate-400 mb-1">Kurum Nevi</label>
+                    <select id="new-type" class="w-full bg-slate-700 border border-slate-600 rounded p-2 text-white">
+                        <option value="">Seçiniz...</option>
+                        <option value="Anaokulu">Anaokulu</option>
+                        <option value="Ortaokul">Ortaokul</option>
+                        <option value="Lise">Lise</option>
+                        <option value="Daimi">Daimi</option>
+                        <option value="Üniversite Hazırlık">Üniversite Hazırlık</option>
+                        <option value="Üniversite">Üniversite</option>
+                        <option value="Tekamül">Tekamül</option>
+                    </select>
+                </div>
+
                 <!-- Detaylar -->
                 <div class="grid grid-cols-2 gap-2">
                     <div>
@@ -257,6 +271,7 @@
             document.getElementById('new-name').value = inst.name || "";
             document.getElementById('new-slug').value = inst.slug || "";
             document.getElementById('new-password').value = inst.password || "";
+            document.getElementById('new-type').value = inst.config?.institution_type || "";
 
             // Yeni Alanlar
             document.getElementById('new-subtitle').value = inst.config?.institution_subtitle || "";
@@ -288,6 +303,7 @@
                 name: document.getElementById('new-name').value.trim(),
                 slug: document.getElementById('new-slug').value.trim(),
                 password: document.getElementById('new-password').value,
+                type: document.getElementById('new-type').value,
                 logo: document.getElementById('new-logo').value,
                 cover: document.getElementById('new-cover').value, // Send Cover
                 subtitle: document.getElementById('new-subtitle').value,
