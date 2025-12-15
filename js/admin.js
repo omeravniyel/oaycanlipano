@@ -14,6 +14,44 @@ function removeParent(btn) {
     btn.parentElement.remove();
 }
 
+// GÖRSEL YÜKLEME HELPER (Super Admin'den alındı)
+async function uploadFile(input, targetId) {
+    const file = input.files[0];
+    if (!file) return;
+
+    const btn = input.nextElementSibling; // Button
+    const originalText = btn.innerText;
+    btn.innerText = "⏳";
+    btn.disabled = true;
+
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = async () => {
+        const base64 = reader.result.split(',')[1];
+        try {
+            const res = await fetch('/api/upload', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    filename: file.name,
+                    fileBase64: base64,
+                    contentType: file.type
+                })
+            });
+            const data = await res.json();
+            if (data.error) throw new Error(data.error);
+
+            document.getElementById(targetId).value = data.url;
+            btn.innerText = "✅";
+        } catch (err) {
+            alert("Yükleme Hatası: " + err.message);
+            btn.innerText = "❌";
+        } finally {
+            setTimeout(() => { btn.innerText = originalText; btn.disabled = false; }, 2000);
+        }
+    };
+}
+
 function clearContainer(id) {
     if (confirm('Bu listedeki TÜM maddeleri silmek istediğinize emin misiniz? (İşlem "Kaydet" butonuna basana kadar kalıcı olmaz)')) {
         document.getElementById(id).innerHTML = '';
