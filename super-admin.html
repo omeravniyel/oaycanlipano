@@ -635,10 +635,10 @@
                              ${config.institution_logo ? `<img src="${config.institution_logo}" class="w-full h-full object-cover">` : '<span class="text-2xl">🏫</span>'}
                         </div>
                         <div class="flex gap-1 bg-slate-900/80 rounded-lg p-1 backdrop-blur-sm border border-slate-700">
-                            <button onclick='editInstitution(${JSON.stringify(inst).replace(/'/g, "&#39;")})' class="p-2 hover:bg-yellow-600 rounded text-xs text-white transition" title="Düzenle">✏️</button>
+                            <button class="btn-edit p-2 hover:bg-yellow-600 rounded text-xs text-white transition" title="Düzenle">✏️</button>
                             <a href="/${inst.slug}/admin" target="_blank" class="p-2 hover:bg-blue-600 rounded text-xs text-white transition" title="Yönet">⚙️</a>
                             <a href="/${inst.slug}" target="_blank" class="p-2 hover:bg-green-600 rounded text-xs text-white transition" title="Görüntüle">👁️</a>
-                            <button onclick="deleteInstitution('${inst.slug}')" class="p-2 hover:bg-red-600 rounded text-xs text-white transition" title="Sil">🗑️</button>
+                            <button class="btn-delete p-2 hover:bg-red-600 rounded text-xs text-white transition" title="Sil">🗑️</button>
                         </div>
                     </div>
                     
@@ -662,6 +662,14 @@
                         </div>
                     </div>
                 `;
+
+                // Add Event Listeners
+                const editBtn = card.querySelector('.btn-edit');
+                if (editBtn) editBtn.addEventListener('click', () => editInstitution(inst));
+
+                const delBtn = card.querySelector('.btn-delete');
+                if (delBtn) delBtn.addEventListener('click', () => deleteInstitution(inst.slug));
+
                 grid.appendChild(card);
             });
         }
