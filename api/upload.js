@@ -13,7 +13,7 @@ export default async function handler(request, response) {
     }
 
     try {
-        const { filename, fileBase64, contentType } = request.body;
+        const { filename, fileBase64, contentType, slug } = request.body;
 
         if (!filename || !fileBase64) {
             return response.status(400).json({ error: 'Dosya verisi eksik' });
@@ -22,14 +22,17 @@ export default async function handler(request, response) {
         // Base64 -> Buffer
         const buffer = Buffer.from(fileBase64, 'base64');
 
-        // Benzersiz dosya ismi (Overwrite olmasın diye timestamp ekleyelim)
+        // Benzersiz dosya ismi
         const uniqueName = `${Date.now()}_${filename}`;
+
+        // Son dosya yolu (Klasörleme: slug/dosya_adi)
+        const filePath = slug ? `${slug}/${uniqueName}` : uniqueName;
 
         // Supabase Storage Upload
         const { data, error } = await supabase
             .storage
             .from('images') // Kullanıcının oluşturması gereken bucket
-            .upload(uniqueName, buffer, {
+            .upload(filePath, buffer, {
                 contentType: contentType || 'image/png',
                 upsert: false
             });
@@ -43,7 +46,7 @@ export default async function handler(request, response) {
         const { data: publicUrlData } = supabase
             .storage
             .from('images')
-            .getPublicUrl(uniqueName);
+            .getPublicUrl(filePath);
 
         return response.status(200).json({
             success: true,

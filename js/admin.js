@@ -14,6 +14,12 @@ function removeParent(btn) {
     btn.parentElement.remove();
 }
 
+function clearContainer(id) {
+    if (confirm('Bu listedeki TÜM maddeleri silmek istediğinize emin misiniz? (İşlem "Kaydet" butonuna basana kadar kalıcı olmaz)')) {
+        document.getElementById(id).innerHTML = '';
+    }
+}
+
 // DUYURULAR
 function addAnnouncement() {
     const container = document.getElementById('announcements-container');
@@ -34,6 +40,21 @@ function addGalleryItem(url = '') {
     div.innerHTML = `
         <div class="relative flex-1 group">
             <input type="text" class="gallery-input w-full px-4 py-2 border border-gray-300 rounded-lg" value="${url}" placeholder="Resim URL (https://...)">
+            ${url ? `<img src="${url}" class="absolute right-2 top-1 h-8 w-8 object-cover rounded border bg-white group-hover:scale-150 transition z-10">` : ''}
+        </div>
+        <button type="button" onclick="removeParent(this)" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Sil</button>
+    `;
+    container.appendChild(div);
+}
+
+// SOL GALERİ (Dikey)
+function addLeftGalleryItem(url = '') {
+    const container = document.getElementById('left-gallery-container');
+    const div = document.createElement('div');
+    div.className = 'flex gap-2 items-center';
+    div.innerHTML = `
+        <div class="relative flex-1 group">
+            <input type="text" class="left-gallery-input w-full px-4 py-2 border border-gray-300 rounded-lg" value="${url}" placeholder="Resim URL">
             ${url ? `<img src="${url}" class="absolute right-2 top-1 h-8 w-8 object-cover rounded border bg-white group-hover:scale-150 transition z-10">` : ''}
         </div>
         <button type="button" onclick="removeParent(this)" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Sil</button>
@@ -62,7 +83,8 @@ async function uploadGalleryImage(input) {
                 body: JSON.stringify({
                     filename: file.name,
                     fileBase64: base64,
-                    contentType: file.type
+                    contentType: file.type,
+                    slug: CURRENT_SLUG
                 })
             });
             const data = await res.json();
@@ -81,6 +103,48 @@ async function uploadGalleryImage(input) {
     };
 }
 function startUpload() { document.getElementById('gallery-file-input').click(); }
+
+// SOL GALERİ RESİM YÜKLEME
+async function uploadLeftGalleryImage(input) {
+    const file = input.files[0];
+    if (!file) return;
+
+    const btn = document.getElementById('left-gallery-upload-btn');
+    const originalText = btn.innerText;
+    btn.innerText = "⏳ Yükleniyor...";
+    btn.disabled = true;
+
+    const reader = new FileReader();
+    reader.readAsDataURL(file);
+    reader.onload = async () => {
+        const base64 = reader.result.split(',')[1];
+        try {
+            const res = await fetch('/api/upload', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    filename: file.name,
+                    fileBase64: base64,
+                    contentType: file.type,
+                    slug: CURRENT_SLUG
+                })
+            });
+            const data = await res.json();
+            if (data.error) throw new Error(data.error);
+
+            // Başarılı olursa listeye ekle
+            addLeftGalleryItem(data.url);
+            showMessage("Sol galeriye resim eklendi!", "success");
+
+        } catch (err) {
+            alert("Yükleme Hatası: " + err.message);
+        } finally {
+            btn.innerText = originalText;
+            btn.disabled = false;
+        }
+    };
+}
+function startLeftUpload() { document.getElementById('left-gallery-file-input').click(); }
 
 // GÜNÜN SÖZLERİ
 function addQuoteItem() {
@@ -183,6 +247,19 @@ async function loadData() {
 
         loadList('announcements', 'announcements-container', 'announcement-input');
         loadList('gallery_links', 'gallery-container', 'gallery-input');
+
+        // Sol Galeri Yükleme
+        if (config.left_gallery_links) {
+            try {
+                const list = typeof config.left_gallery_links === 'string' ? JSON.parse(config.left_gallery_links) : config.left_gallery_links;
+                const container = document.getElementById('left-gallery-container');
+                container.innerHTML = '';
+                list.forEach(item => addLeftGalleryItem(item));
+            } catch (e) {
+                console.error('Left gallery load error', e);
+            }
+        }
+
         loadList('quotes', 'quotes-container', 'quote-input');
 
         // BAŞLIĞI GÜNCELLE
@@ -291,8 +368,11 @@ document.getElementById('admin-form').addEventListener('submit', async (e) => {
             dorm1: JSON.stringify(getDorm('dorm1')),
             dorm2: JSON.stringify(getDorm('dorm2')),
             announcements: JSON.stringify(getListValues('announcement-input')),
+
             gallery_links: JSON.stringify(getListValues('gallery-input')),
+            left_gallery_links: JSON.stringify(getListValues('left-gallery-input')),
             quotes: JSON.stringify(getListValues('quote-input')),
+
             exam_config: JSON.stringify({
                 name: document.getElementById('exam-name').value,
                 winners: examWinners.join('\n')

@@ -39,6 +39,11 @@ let dorm1NameIndex = 0;
 let dorm2NameIndex = 0;
 let dormNameRotationInterval = null;
 
+// --- SOL GALERİ DEĞİŞKENLERİ ---
+let leftGalleryImages = [];
+let leftGalleryIndex = 0;
+let leftGalleryTimeout = null;
+
 // Verileri API'den Çek
 async function fetchConfig() {
     try {
@@ -100,9 +105,32 @@ async function fetchConfig() {
         if (adminGallery.length > 0) {
             galleryImages = adminGallery;
             console.log("Admin galerisi yüklendi:", galleryImages);
-        } else if (galleryImages.length === 0) {
-            await fetchGalleryImages();
         }
+        // User Request: Stop pulling from local folder
+        // else if (galleryImages.length === 0) {
+        //    await fetchGalleryImages();
+        // }
+
+        // --- 2.1 Sol Galeri (Admin Panelinden) ---
+        let adminLeftGallery = [];
+        if (config.left_gallery_links) {
+            try {
+                const parsed = (typeof config.left_gallery_links === 'string') ? JSON.parse(config.left_gallery_links) : config.left_gallery_links;
+                if (Array.isArray(parsed) && parsed.length > 0) adminLeftGallery = parsed;
+            } catch (e) { console.error('Sol Galeri parse hatası', e); }
+        }
+
+        if (adminLeftGallery.length > 0) {
+            leftGalleryImages = adminLeftGallery;
+            console.log("Admin sol galerisi yüklendi:", leftGalleryImages);
+            // Rotasyonu başlat (mevcut varsa durdurup yeniden başlat)
+            startLeftGalleryRotation();
+        }
+        // User Request: Stop pulling from local folder
+        // else {
+        //    // Admin boşsa yerelden çek (Fallback)
+        //     await fetchLeftGalleryImages();
+        // }
 
         let newVideoId = config.video_url || null;
         if (newVideoId && newVideoId.trim() !== '') {
@@ -572,12 +600,13 @@ fetchWeather();
 setInterval(fetchWeather, 30 * 60 * 1000); // 30 Mins
 
 // --- SOL GALERİ ROTASYONU ---
-let leftGalleryImages = [];
-let leftGalleryIndex = 0;
-let leftGalleryTimeout = null;
+// (Değişkenler yukarı taşındı)
 
 // Sol galeri görsellerini yükle
 async function fetchLeftGalleryImages() {
+    // Eğer admin'den dolu geldiyse tekrar çekme
+    if (leftGalleryImages.length > 0) return;
+
     try {
         const res = await fetch('/api/get-left-gallery');
         const data = await res.json();
@@ -642,4 +671,5 @@ function showLeftGalleryImage() {
 }
 
 // Sayfa yüklendiğinde sol galeriyi başlat
-fetchLeftGalleryImages();
+// Sayfa yüklendiğinde sol galeriyi başlat (fetchConfig içinde çağrılıyor artık)
+// fetchLeftGalleryImages();
