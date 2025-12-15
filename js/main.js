@@ -51,6 +51,50 @@ async function fetchConfig() {
         const path = window.location.pathname;
         const slug = path.split('/')[1] || ''; // Boşsa varsayılanı API halleder
 
+        if (!slug) {
+            // --- ANA SAYFA (Landing Page) ---
+            document.body.innerHTML = `
+                <div class="h-screen w-full bg-slate-900 flex flex-col items-center justify-center relative overflow-hidden">
+                    <!-- Arkaplan Efekti -->
+                    <div class="absolute inset-0 bg-[url('https://source.unsplash.com/random/1920x1080/?technology,abstract')] bg-cover bg-center opacity-10"></div>
+                    <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/80 to-transparent"></div>
+
+                    <!-- İçerik -->
+                    <div class="z-10 flex flex-col items-center gap-8 animate-fade-in text-center p-4">
+                        <div class="w-48 h-48 lg:w-64 lg:h-64 mb-4 relative drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
+                            <img src="logo.png" class="w-full h-full object-contain brightness-0 invert opacity-90 hover:scale-105 transition duration-700">
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <h1 class="text-4xl lg:text-6xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-200 via-white to-blue-200 tracking-tight font-serif-tr">
+                                DİJİTAL PANO SİSTEMİ
+                            </h1>
+                            <p class="text-slate-400 text-lg lg:text-xl tracking-[0.3em] font-light uppercase">
+                                Yeni Nesil Kurumsal Ekran Yönetimi
+                            </p>
+                        </div>
+
+                        <div class="mt-8 flex gap-4">
+                            <a href="/login.html" class="group relative px-8 py-3 bg-white/5 border border-white/10 rounded-full overflow-hidden hover:bg-white/10 transition backdrop-blur-sm">
+                                <span class="relative z-10 text-white font-medium tracking-wide flex items-center gap-2">
+                                    YÖNETİM PANELİ
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transform group-hover:translate-x-1 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                                    </svg>
+                                </span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="absolute bottom-8 text-slate-600 text-xs tracking-widest uppercase">
+                        Kartaltepe Pano Sistemleri &copy; ${new Date().getFullYear()}
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
         const res = await fetch(`/api/get-config?slug=${slug}`);
 
         if (res.status === 404) {
@@ -58,12 +102,11 @@ async function fetchConfig() {
             try { errInfo = await res.json(); } catch (e) { }
 
             document.body.innerHTML = `
-                <div class="flex flex-col items-center justify-center h-screen bg-slate-900 text-white">
-                    <div class="text-6xl mb-4">⚠️</div>
+                <div class="flex flex-col items-center justify-center h-screen bg-slate-900 text-white font-sans">
+                    <div class="text-6xl mb-4 animate-bounce">⚠️</div>
                     <h1 class="text-3xl font-bold mb-2">Kurum Bulunamadı</h1>
-                    <p class="text-slate-400">Aranan: "${slug}"</p>
-                    <p class="text-slate-500 text-sm mt-2">Sunucuya Giden: "${errInfo.receivedSlug || '??'}"</p>
-                    ${errInfo.dbError ? `<p class="text-red-400 text-xs mt-2">DB Hatası: ${errInfo.dbError.message || JSON.stringify(errInfo.dbError)}</p>` : ''}
+                    <p class="text-slate-400">Aradığınız <b>/${slug}</b> adresine ait bir kayıt bulunamadı.</p>
+                    <a href="/" class="mt-6 px-6 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-white transition">Ana Sayfaya Dön</a>
                 </div>`;
             return;
         }
