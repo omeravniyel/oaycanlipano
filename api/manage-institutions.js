@@ -35,8 +35,11 @@ export default async function handler(request, response) {
 
         // --- EKLEME / GÜNCELLEME ---
         if (action === 'upsert') {
-            let { slug, name, password, type, logo, subtitle, slogan1, slogan2, cover, city, district, weekly_hadiths, admin_contact, module_dorm_active, module_bottom_right_type } = payload;
+            let { slug, name, password, type, institution_logo, logo_locked, subtitle, slogan1, slogan2, cover, city, district, weekly_hadiths, admin_contact, module_dorm_active, module_bottom_right_type } = payload;
             slug = slug.trim(); // Boşlukları temizle
+
+            // Legacy support (bazı yerlerde 'logo' olarak gelebilir)
+            const finalLogo = institution_logo || payload.logo;
 
             // 1. Önce bu kurum var mı kontrol et
             const { data: existing, error: fetchError } = await supabase
@@ -54,7 +57,9 @@ export default async function handler(request, response) {
                 // Gelen değerleri güncelle
                 updatedConfig.institution_title = name;
                 if (type) updatedConfig.institution_type = type;
-                if (logo) updatedConfig.institution_logo = logo;
+                if (finalLogo) updatedConfig.institution_logo = finalLogo;
+                if (logo_locked !== undefined) updatedConfig.logo_locked = logo_locked;
+
                 // Opsiyonel alanlar
                 if (subtitle) updatedConfig.institution_subtitle = subtitle;
                 if (slogan1) updatedConfig.institution_slogan1 = slogan1;
@@ -87,15 +92,16 @@ export default async function handler(request, response) {
                 const newConfig = {
                     institution_name: name,
                     institution_title: name,
-                    institution_type: type || 'Daimi',
+                    institution_type: type || 'Ortaokul',
                     // Default values
-                    institution_logo: logo || '',
-                    institution_subtitle: subtitle || 'Canlı Pano Sistemi',
-                    institution_slogan1: slogan1 || 'Hoş Geldiniz',
-                    institution_slogan2: slogan2 || '',
+                    institution_logo: finalLogo || '',
+                    logo_locked: logo_locked || false, // Varsayılan kilitli değil
+                    institution_subtitle: subtitle || 'Dijital Pano Sistemi',
+                    institution_slogan1: slogan1 || 'İlgiyle bilginin',
+                    institution_slogan2: slogan2 || 'buluştuğu yer',
                     institution_cover: cover || '',
-                    city: city || '',
-                    district: district || '',
+                    city: city || 'İstanbul',
+                    district: district || 'Üsküdar',
 
                     // Arrays
                     dorm1_names: [],
@@ -107,21 +113,21 @@ export default async function handler(request, response) {
                     exam_winners: [],
 
                     // Objects
-                    weekly_hadiths: payload.weekly_hadiths || {},
-                    admin_contact: admin_contact || {},
+                    weekly_hadiths: weekly_hadiths || {},
+                    admin_contact: admin_contact || { name: '', phone: '', email: '' }, // Varsayılan boş obje
 
                     // Dashboard Config
-                    module_dorm_active: (module_dorm_active !== undefined) ? module_dorm_active : true,
+                    module_dorm_active: (module_dorm_active !== undefined) ? module_dorm_active : true, // Varsayılan açık
                     module_bottom_right_type: module_bottom_right_type || 'auto'
                 };
 
                 const { data, error } = await supabase
                     .from('institutions')
-                    .insert({ slug, name, password, config: newConfig })
+                    .insert([{ slug, name, password, config: newConfig }])
                     .select();
 
                 if (error) throw error;
-                result = data;
+                result = data[0];
             }
 
             return response.status(200).json({ success: true, data: result });
