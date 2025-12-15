@@ -61,9 +61,10 @@ async function loadData() {
         }
 
         // 2. Yatakhane Ayarları
-        setVal('dorm-title', config.dorm_title);
+        setVal('dorm-title', config.dorm_title); // Custom Title
 
         // Yatakhane 1
+        setVal('dorm1-custom-title', config.dorm1_custom_title);
         if (config.dorm1_name) setVal('dorm1-name', config.dorm1_name);
         if (config.dorm1_count) setVal('dorm1-count', config.dorm1_count);
         if (config.dorm1_names && Array.isArray(config.dorm1_names)) {
@@ -74,6 +75,7 @@ async function loadData() {
         }
 
         // Yatakhane 2
+        setVal('dorm2-custom-title', config.dorm2_custom_title);
         if (config.dorm2_name) setVal('dorm2-name', config.dorm2_name);
         if (config.dorm2_count) setVal('dorm2-count', config.dorm2_count);
         if (config.dorm2_names && Array.isArray(config.dorm2_names)) {
@@ -83,7 +85,47 @@ async function loadData() {
             });
         }
 
-        // 3. Duyurular
+        // 3. Sağ Alt Widget
+        const wType = config.bottom_widget_type || 'exam';
+        setVal('bottom-widget-type', wType);
+
+        // Widget Data Loading
+        // A. Exam
+        const winnerContainer = document.getElementById('exam-winners-container');
+        if (winnerContainer) {
+            winnerContainer.innerHTML = '';
+            const winners = config.exam_winners || [];
+            if (winners.length > 0) winners.forEach(w => addExamWinner(w));
+            else addExamWinner(); // Empty slot
+        }
+
+        // B. Student of Week
+        if (config.student_of_week) {
+            setVal('student-name', config.student_of_week.name);
+            setVal('student-class', config.student_of_week.class);
+            setVal('student-message', config.student_of_week.message);
+            setVal('student-image', config.student_of_week.image);
+            if (config.student_of_week.image) {
+                const img = document.getElementById('student-preview');
+                img.src = config.student_of_week.image;
+                img.classList.remove('hidden');
+            }
+        }
+
+        // C. Most Improved
+        const improvedContainer = document.getElementById('improved-list-container');
+        if (improvedContainer) {
+            improvedContainer.innerHTML = '';
+            const improved = config.most_improved_list || [];
+            if (improved.length > 0) improved.forEach(s => addImprovedStudent(s));
+            else addImprovedStudent();
+        }
+
+        // Trigger UI update
+        if (window.toggleBottomWidget) toggleBottomWidget();
+
+
+        // 4. Duyurular
         const annContainer = document.getElementById('announcements-container');
         annContainer.innerHTML = '';
         if (config.announcements && Array.isArray(config.announcements)) {
@@ -92,7 +134,7 @@ async function loadData() {
             addAnnouncement(); // Boş bir tane
         }
 
-        // 4. Video Liste
+        // 5. Video Liste
         const vidContainer = document.getElementById('video-playlist-container');
         vidContainer.innerHTML = '';
         let vList = config.video_urls || [];
@@ -107,22 +149,15 @@ async function loadData() {
             addVideoItem();
         }
 
-        // 5. Menü
+        // 6. Menü
         if (config.lunch_menu) setVal('lunch-menu', config.lunch_menu);
         if (config.dinner_menu) setVal('dinner-menu', config.dinner_menu);
         if (document.getElementById('menu-enabled')) {
             document.getElementById('menu-enabled').checked = (config.menu_enabled !== false);
         }
 
-        // 6. Günün Sözü 
+        // 7. Günün Sözü 
         if (config.quote_content) setVal('quote-content', config.quote_content);
-
-        // 7. Sınav Sonuçları (Varsa)
-        const winnerContainer = document.getElementById('winners-container');
-        if (winnerContainer && config.exam_winners && Array.isArray(config.exam_winners)) {
-            winnerContainer.innerHTML = '';
-            config.exam_winners.forEach(w => addWinnerItem(w));
-        }
 
         // 8. Galeri (Main)
         const galleryContainer = document.getElementById('gallery-container');
@@ -172,15 +207,36 @@ async function saveData() {
             institution_slogan2: getVal('institution-slogan2'),
             institution_logo: getVal('institution-logo'),
 
+            // Yatakhane
             dorm_title: getVal('dorm-title'),
+            dorm1_custom_title: getVal('dorm1-custom-title'),
             dorm1_name: getVal('dorm1-name'),
             dorm1_count: getVal('dorm1-count'),
             dorm1_names: dorm1,
 
+            dorm2_custom_title: getVal('dorm2-custom-title'),
             dorm2_name: getVal('dorm2-name'),
             dorm2_count: getVal('dorm2-count'),
             dorm2_names: dorm2,
 
+            // Sağ Alt Widget
+            bottom_widget_type: getVal('bottom-widget-type'),
+
+            // A. Exam
+            exam_winners: getList('winner-input'),
+
+            // B. Student of Week
+            student_of_week: {
+                name: getVal('student-name'),
+                class: getVal('student-class'),
+                message: getVal('student-message'),
+                image: getVal('student-image')
+            },
+
+            // C. Most Improved
+            most_improved_list: getList('improved-input'),
+
+            // Diğer
             announcements: getList('announcement-input'),
 
             // Video Playlist
@@ -193,9 +249,6 @@ async function saveData() {
 
             // Quote
             quote_content: getVal('quote-content'),
-
-            // Sınav (Winner)
-            exam_winners: getList('winner-input'),
 
             // Galeri
             gallery_links: getList('gallery-input'),
@@ -373,9 +426,21 @@ function addLeftGalleryItem(url = '') {
     container.appendChild(div);
 }
 
-// Winners
-function addWinnerItem(text = '') {
-    const container = document.getElementById('winners-container');
+// --- HELPER FUNCTIONS ---
+
+window.toggleBottomWidget = function () {
+    const val = document.getElementById('bottom-widget-type').value;
+    document.querySelectorAll('.widget-panel').forEach(el => el.classList.add('hidden'));
+
+    if (val === 'exam') document.getElementById('widget-exam-panel').classList.remove('hidden');
+    else if (val === 'student_of_week') document.getElementById('widget-student-panel').classList.remove('hidden');
+    else if (val === 'most_improved') document.getElementById('widget-improved-panel').classList.remove('hidden');
+    else if (val === 'menu') document.getElementById('widget-menu-panel').classList.remove('hidden');
+}
+
+// Exam Winners
+window.addExamWinner = function (text = '') {
+    const container = document.getElementById('exam-winners-container');
     if (!container) return;
 
     const div = document.createElement('div');
@@ -387,15 +452,32 @@ function addWinnerItem(text = '') {
     container.appendChild(div);
 }
 
-// Upload Helper (Logo)
-async function uploadFile(input, targetId) {
+// Improved Students
+window.addImprovedStudent = function (text = '') {
+    const container = document.getElementById('improved-list-container');
+    if (!container) return;
+
+    const div = document.createElement('div');
+    div.className = 'flex gap-2';
+    div.innerHTML = `
+        <input type="text" class="improved-input flex-1 px-4 py-2 border border-blue-300 rounded-lg" value="${text}" placeholder="Öğrenci Adı - Artış Miktarı">
+        <button type="button" onclick="removeParent(this)" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Sil</button>
+    `;
+    container.appendChild(div);
+}
+
+// Upload Helper (Updated for Preview)
+window.uploadFile = async function (input, targetId, previewId = null) {
     const file = input.files[0];
     if (!file) return;
 
-    const btn = input.nextElementSibling;
-    const originalText = btn.innerText;
-    btn.innerText = "⏳";
-    btn.disabled = true;
+    // Loading State
+    const wrapper = input.parentElement; // Usually container
+    // We can't easily find a button if the structure varies.
+    // Assuming button is next sibling if plain input, OR if hidden input context
+
+    // For student preview, input is absolute over a div.
+    // Let's just use simple visual feedback if possible.
 
     try {
         const resized = await resizeImage(file, 800);
@@ -416,14 +498,27 @@ async function uploadFile(input, targetId) {
             if (data.error) throw new Error(data.error);
 
             document.getElementById(targetId).value = data.url;
-            btn.innerText = "✅";
+
+            // Preview
+            if (previewId) {
+                const img = document.getElementById(previewId);
+                img.src = data.url;
+                img.classList.remove('hidden');
+            } else {
+                // Fallback for button inside plain file inputs
+                const btn = input.nextElementSibling;
+                if (btn && btn.tagName === 'BUTTON') {
+                    btn.innerText = "✅";
+                    setTimeout(() => btn.innerText = "Dosya Seç", 2000);
+                }
+            }
         };
     } catch (e) {
         console.error(e);
-        alert('Yükleme hatası');
-        btn.innerText = "❌";
-    } finally {
-        setTimeout(() => { btn.innerText = originalText; btn.disabled = false; }, 2000);
+        alert('Yükleme hatası: ' + e.message);
+    }
+}
+setTimeout(() => { btn.innerText = originalText; btn.disabled = false; }, 2000);
     }
 }
 

@@ -350,11 +350,12 @@ async function fetchConfig() {
         // --- 5. Bilgi Kartı Rotasyonu İçin Veri Hazırla ---
         infoData = [];
 
-        // A) Duyurular
-        let announcements = config.announcements || [];
-        if (typeof announcements === 'string') announcements = JSON.parse(announcements);
-        if (Array.isArray(announcements)) {
-            announcements.forEach(a => infoData.push({
+        // 1. Veri Kaynaklarını Hazırla
+        const rawAnnouncements = [];
+        let annList = config.announcements || [];
+        if (typeof annList === 'string') annList = JSON.parse(annList);
+        if (Array.isArray(annList)) {
+            annList.forEach(a => rawAnnouncements.push({
                 type: 'duyuru',
                 title: 'DUYURULAR',
                 badge: 'GÜNCEL',
@@ -364,89 +365,100 @@ async function fetchConfig() {
             }));
         }
 
-        // B) Sınav Sonuçları
-        if (config.exam_config) {
-            let ec = config.exam_config;
-            if (typeof ec === 'string') ec = JSON.parse(ec);
-
-            const examName = ec.name || 'DENEME SINAVI';
-            const winnersRaw = ec.winners || '';
-
-            // Satır satır ayır
-            const lines = winnersRaw.split('\n').filter(l => l.trim() !== '');
-
-            lines.forEach(line => {
-                // Beklenen: "7.Sınıf, Ahmet Yılmaz, 463"
-                const parts = line.split(',');
-                if (parts.length >= 3) {
-                    infoData.push({
-                        type: 'exam',
-                        title: examName,
-                        badge: `${parts[2].trim()} PUAN`, // Puan Badge'de
-                        circle: parts[0].trim(), // Sınıf Dairede
-                        topLabel: 'SINIF BİRİNCİSİ',
-                        content: parts[1].trim() // İsim Ana Metinde
-                    });
-                }
+        const rawExams = [];
+        if (config.exam_winners && Array.isArray(config.exam_winners)) {
+            config.exam_winners.forEach(w => {
+                // Format: "Name - Puan" or just "Name"
+                const parts = w.split('-');
+                const name = parts[0].trim();
+                const score = parts[1] ? parts[1].trim() : '';
+                rawExams.push({
+                    type: 'exam',
+                    title: 'SINAV ŞAMPİYONLARI',
+                    badge: score ? `${score} PUAN` : '🏆',
+                    circle: '🥇', // Sıra numarası eklenebilir
+                    topLabel: 'TEBRİK EDERİZ',
+                    content: name
+                });
             });
         }
-        // Geriye dönük uyumluluk (Eski tek satır veri)
-        else if (config.exam_results) {
-            let examData = config.exam_results;
-            if (examData.includes(',')) {
-                const parts = examData.split(',');
-                if (parts.length >= 3) {
-                    infoData.push({
-                        type: 'exam',
-                        title: 'KDU SONUÇLARI',
-                        badge: parts[2].trim() + ' Puan',
-                        circle: parts[0].trim(),
-                        topLabel: 'BİRİNCİSİ',
-                        content: parts[1].trim()
-                    });
-                }
-            }
-        }
+        // Legacy Support (exam_config / exam_results) removed for cleanliness as Admin Panel overrides it now.
 
-        // C) Yemek Menüsü (Öğle ve Akşam)
+        const rawMenus = [];
         if (config.menu_enabled) {
-            if (config.lunch_menu) {
-                infoData.push({
-                    type: 'menu',
-                    title: 'ÖĞLE YEMEĞİ',
-                    badge: 'AFİYET OLSUN',
-                    circle: '☀️',
-                    topLabel: 'GÜNÜN MENÜSÜ',
-                    content: config.lunch_menu
-                });
-            }
-
-            if (config.dinner_menu) {
-                infoData.push({
-                    type: 'menu',
-                    title: 'AKŞAM YEMEĞİ',
-                    badge: 'AFİYET OLSUN',
-                    circle: '🌙',
-                    topLabel: 'GÜNÜN MENÜSÜ',
-                    content: config.dinner_menu
-                });
-            }
+            if (config.lunch_menu) rawMenus.push({ type: 'menu', title: 'ÖĞLE YEMEĞİ', badge: 'AFİYET OLSUN', circle: '☀️', topLabel: 'GÜNÜN MENÜSÜ', content: config.lunch_menu });
+            if (config.dinner_menu) rawMenus.push({ type: 'menu', title: 'AKŞAM YEMEĞİ', badge: 'AFİYET OLSUN', circle: '🌙', topLabel: 'GÜNÜN MENÜSÜ', content: config.dinner_menu });
         }
+
+        const rawStudent = [];
+        if (config.student_of_week && config.student_of_week.name) {
+            rawStudent.push({
+                type: 'student',
+                title: 'HAFTANIN TALEBESİ',
+                badge: config.student_of_week.class || 'BAŞARI',
+                circle: '⭐', // Image handled in rotation
+                topLabel: 'GURUR TABLOMUZ',
+                content: `${config.student_of_week.name}\n${config.student_of_week.message || ''}`,
+                image: config.student_of_week.image
+            });
+        }
+
+        const rawImproved = [];
+        if (config.most_improved_list && Array.isArray(config.most_improved_list)) {
+            config.most_improved_list.forEach(item => {
+                const parts = item.split('-');
+                const name = parts[0].trim();
+                const score = parts[1] ? parts[1].trim() : '📈';
+                rawImproved.push({
+                    type: 'improved',
+                    title: 'EN ÇOK GELİŞENLER',
+                    badge: score,
+                    circle: '🚀',
+                    topLabel: 'AZİM VE GAYRET',
+                    content: name
+                });
+            });
+        }
+
+        // 2. Mod Seçimine Göre infoData'yı Doldur
+        // Super Admin ve Admin ayarlarını birleştiriyoruz.
+        // Super Admin 'module_bottom_right_type' kullanıyor (auto, exam, announcement).
+        // Regular Admin 'bottom_widget_type' kullanıyor (exam, student_of_week, most_improved, menu).
+        // Öncelik: Regular Admin ayarı varsa onu kullan (User Request). Yoksa Super Admin.
+
+        let selectedType = config.bottom_widget_type;
+        if (!selectedType && config.module_bottom_right_type) selectedType = config.module_bottom_right_type;
+        if (!selectedType) selectedType = 'auto'; // Default
+
+        if (selectedType === 'exam') {
+            infoData = rawExams;
+        } else if (selectedType === 'student_of_week') {
+            infoData = rawStudent;
+        } else if (selectedType === 'most_improved') {
+            infoData = rawImproved;
+        } else if (selectedType === 'menu') {
+            infoData = rawMenus;
+        } else if (selectedType === 'announcement') {
+            infoData = rawAnnouncements;
+        } else {
+            // AUTO: Mix appropriate content
+            infoData = [...rawAnnouncements, ...rawExams, ...rawMenus];
+        }
+
+        // Eğer seçilen tipte veri yoksa boş kalmaması için duyuruları veya menüyü ekle (Fallback)
+        if (infoData.length === 0 && selectedType !== 'auto') {
+            infoData = [...rawAnnouncements, ...rawMenus];
+        }
+
 
         // 7. Video Listesi (Playlist)
         if (config.video_urls && Array.isArray(config.video_urls) && config.video_urls.length > 0) {
             videoPlaylist = config.video_urls;
         } else if (config.video_url) {
-            // Geriye dönük uyumluluk (Tek video)
             videoPlaylist = [config.video_url];
         }
 
         // --- 8. BAŞLAT ---
-        // Eğer hiç galeri yoksa ve video varsa -> Sadece video döndür
-        // Eğer hem galeri hem video varsa -> Loop
-        // Eğer sadece galeri varsa -> Slider
-
-        // Başlangıç modunu belirle
         if (videoPlaylist.length > 0) {
             currentVideoIndex = 0;
             switchMedia('video');
@@ -454,10 +466,7 @@ async function fetchConfig() {
             switchMedia('slide');
         }
 
-        startDormNameRotation(); // İsimleri listele
-
-        // Periyodik yenileme (Opsiyonel: 5 dk'da bir config yenile)
-        // setInterval(fetchConfig, 5 * 60 * 1000);
+        startDormNameRotation();
 
         // --- 9. MODULE CONFIGURATION (YENİ) ---
 
@@ -465,6 +474,14 @@ async function fetchConfig() {
         const dormActive = (config.module_dorm_active !== undefined) ? config.module_dorm_active : true;
         const dormCard = document.getElementById('dorm-card');
         const hadithCard = document.getElementById('hadith-card');
+
+        // Update Dorm Custom Titles
+        if (document.getElementById('dorm1-custom-title')) {
+            document.getElementById('dorm1-custom-title').innerText = config.dorm1_custom_title || "1. GRUP";
+        }
+        if (document.getElementById('dorm2-custom-title')) {
+            document.getElementById('dorm2-custom-title').innerText = config.dorm2_custom_title || "2. GRUP";
+        }
 
         if (!dormActive) {
             if (dormCard) dormCard.style.display = 'none';
@@ -481,15 +498,8 @@ async function fetchConfig() {
             }
         }
 
-        // B) Filter Info Data (Bottom Right)
-        const bottomType = config.module_bottom_right_type || 'auto'; // 'auto', 'exam', 'announcement'
+        // B) Filter Info Data (Already handled above)
 
-        if (bottomType === 'exam') {
-            infoData = infoData.filter(item => item.type === 'exam');
-        } else if (bottomType === 'announcement') {
-            infoData = infoData.filter(item => item.type === 'duyuru');
-        }
-        // 'auto' does nothing (keeps all)
 
     } catch (error) {
         console.error("Config error:", error);
@@ -522,17 +532,40 @@ function rotateInfo() {
 
         // Circle Style & Text Adjustments based on Type
         const circle = document.getElementById('info-circle-badge');
+
+        // Reset Logic
+        circle.innerHTML = '';
+        if (item.image) {
+            circle.innerHTML = `<img src="${item.image}" class="w-full h-full object-cover rounded-full">`;
+            circle.classList.remove('bg-yellow-500', 'bg-blue-500', 'bg-orange-500', 'bg-green-500');
+            circle.style.border = '2px solid white';
+        } else {
+            circle.innerText = item.circle;
+            circle.style.border = ''; // Reset border
+        }
+
+        // Color & Size Logic
+        // Classes to remove
+        circle.classList.remove('bg-yellow-500', 'bg-green-500', 'bg-orange-500', 'bg-blue-500', 'bg-purple-500', 'bg-pink-500');
+
         if (item.type === 'exam') {
-            circle.style.fontSize = '0.9rem'; // Smaller for text like "7.Sınıf"
-            circle.classList.remove('bg-blue-500', 'bg-green-500', 'bg-orange-500');
+            circle.style.fontSize = '0.9rem';
             circle.classList.add('bg-yellow-500');
         } else if (item.type === 'menu') {
-            circle.style.fontSize = '1.8rem'; // Bigger emoji for menu
-            circle.classList.remove('bg-yellow-500', 'bg-blue-500');
+            circle.style.fontSize = '1.8rem';
             circle.classList.add('bg-orange-500');
+        } else if (item.type === 'student') {
+            // If no image, maybe specific color
+            if (!item.image) {
+                circle.style.fontSize = '1.5rem';
+                circle.classList.add('bg-pink-500');
+            }
+        } else if (item.type === 'improved') {
+            circle.style.fontSize = '1.5rem';
+            circle.classList.add('bg-green-500');
         } else {
-            circle.style.fontSize = '1.5rem'; // Emoji size
-            circle.classList.remove('bg-yellow-500', 'bg-orange-500');
+            // Default (e.g. Announcement)
+            circle.style.fontSize = '1.5rem';
             circle.classList.add('bg-blue-500');
         }
 
