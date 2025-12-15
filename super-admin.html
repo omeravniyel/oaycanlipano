@@ -293,7 +293,7 @@
                 if (res.status === 401) { alert("Yanlış Şifre!"); return; }
                 if (data.error) throw new Error(data.error);
 
-                document.getElementById('login-overlay').classList.add('hidden'); // Giriş başarılıysa overlay'i gizle
+                document.getElementById('login-wrapper').classList.add('hidden'); // Giriş başarılıysa overlay'i gizle
                 document.getElementById('main-content').classList.remove('hidden');
                 renderGrid(data.institutions);
             } catch (err) {
