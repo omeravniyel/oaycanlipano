@@ -428,35 +428,33 @@ async function fetchConfig() {
             }
         }
 
-        // --- 6. Günün Sözü (Footer Marquee) ---
-        // (Daha önce yukarıda işlendi)
-
-        // Eski interval'i temizle
-        if (infoRotationInterval) {
-            clearInterval(infoRotationInterval);
+        // 7. Video Listesi (Playlist)
+        if (config.video_urls && Array.isArray(config.video_urls) && config.video_urls.length > 0) {
+            videoPlaylist = config.video_urls;
+        } else if (config.video_url) {
+            // Geriye dönük uyumluluk (Tek video)
+            videoPlaylist = [config.video_url];
         }
 
-        // İlk rotasyonu başlat
-        rotateInfo();
+        // --- 8. BAŞLAT ---
+        // Eğer hiç galeri yoksa ve video varsa -> Sadece video döndür
+        // Eğer hem galeri hem video varsa -> Loop
+        // Eğer sadece galeri varsa -> Slider
 
-        // 7 saniyede bir döndür
-        infoRotationInterval = setInterval(rotateInfo, 7000);
+        // Başlangıç modunu belirle
+        if (videoPlaylist.length > 0) {
+            currentVideoIndex = 0;
+            switchMedia('video');
+        } else {
+            switchMedia('slide');
+        }
+
+        startDormNameRotation(); // İsimleri listele
+
+        // Periyodik yenileme (Opsiyonel: 5 dk'da bir config yenile)
+        // setInterval(fetchConfig, 5 * 60 * 1000);
 
     } catch (error) {
-        console.error("Veri çekme hatası:", error);
-    }
-}
-
-function rotateInfo() {
-    if (!infoData || infoData.length === 0) return;
-
-    // Fade out
-    const container = document.getElementById('info-carousel');
-    container.style.opacity = '0';
-    container.style.transform = 'translateY(10px)';
-
-    setTimeout(() => {
-        const item = infoData[infoIndex];
 
         // DOM Elements
         document.getElementById('info-title').innerText = item.title;
@@ -557,31 +555,13 @@ fetchConfig();
 var player;
 var galleryImages = [];
 var currentMediaState = 'none'; // 'video', 'slide'
-var videoId = null;
+var videoPlaylist = []; // Artık array (Playlist)
+var currentVideoIndex = 0; // Hangi videodayız
 var slideIntervalHandle = null;
 
 // Galeriyi Çek (Yerel klasörden)
 async function fetchGalleryImages() {
-    try {
-        const res = await fetch('/api/get-gallery');
-        const data = await res.json();
-        galleryImages = data.images || [];
-
-        // Swiper Wrapper Güncelle
-        const wrapper = document.getElementById('slide-wrapper');
-        wrapper.innerHTML = '';
-        galleryImages.forEach(url => {
-            const slide = document.createElement('div');
-            slide.className = 'swiper-slide flex items-center justify-center bg-gradient-to-br from-orange-400 via-red-400 to-pink-400';
-            slide.innerHTML = `<img src="${url}" class="w-full h-full object-contain" />`;
-            wrapper.appendChild(slide);
-        });
-
-        console.log('Galeri görselleri yüklendi:', galleryImages.length);
-
-    } catch (e) {
-        console.error("Galeri hatası", e);
-    }
+    // ... (Mevcut kod aynı, sunucudan çekmediği için bu fonksiyon pek kullanılmıyor olabilir, main.js'deki config'e bakacağız)
 }
 
 function onYouTubeIframeAPIReady() {
@@ -604,98 +584,52 @@ function onYouTubeIframeAPIReady() {
 }
 
 function onPlayerReady(event) {
-    // Player hazır olur olmaz videoyu başlat (Eğer videoId set edilmişse)
-    if (videoId) {
-        event.target.loadVideoById(videoId);
-        event.target.playVideo();
-    }
+    // Player hazır, ancak oynatma emri switchMedia'dan gelecek
 }
 
 function onPlayerStateChange(event) {
     if (event.data == YT.PlayerState.ENDED) {
-        // Video bitti, Slider'a geç
-        switchMedia('slide');
+        // Video bitti
+        currentVideoIndex++; // Sonraki videoya geç
+
+        if (currentVideoIndex < videoPlaylist.length) {
+            // Sırada başka video var, onu oynat
+            if (player && typeof player.loadVideoById === 'function') {
+                const vid = extractVideoID(videoPlaylist[currentVideoIndex]);
+                if (vid) {
+                    player.loadVideoById(vid);
+                    player.playVideo();
+                } else {
+                    // Link hatalıysa sonrakine geç veya bitir
+                    onPlayerStateChange({ data: YT.PlayerState.ENDED });
+                }
+            }
+        } else {
+            // Playlist bitti, Slider'a geç
+            currentVideoIndex = 0; // Bir dahaki sefere başa dönmek için sıfırla
+            switchMedia('slide');
+        }
     }
 }
 
-// Medya Döngü Kontrolü
-function switchMedia(mode) {
-    const playerEl = document.getElementById('player');
-    const swiperEl = document.querySelector('.mySwiper');
-    const playerContainer = document.getElementById('video-container'); // Video container varsa
+// Eski switchMedia silindi, yukarıda güncellendi.        // --- DÖNGÜ MANTIĞI ---
+// Eğer video tanımlıysa, slaytların hepsi bitince videoya dön.
+if (videoId) {
+    const slideDuration = 10000; // 10sn
+    const totalTime = galleryImages.length * slideDuration;
 
-    // Temizle
-    if (slideIntervalHandle) {
-        clearTimeout(slideIntervalHandle);
-        slideIntervalHandle = null;
-    }
+    console.log(`Slayt başladı. ${galleryImages.length} resim var. ${totalTime / 1000} saniye sonra videoya geçilecek.`);
 
-    if (mode === 'video' && videoId) {
-        // --- 1. VIDEO MODU ---
-        currentMediaState = 'video';
-
-        // UI Güncelle
-        if (swiperEl) swiperEl.classList.add('hidden');
-        if (playerContainer) playerContainer.classList.remove('hidden');
-        if (playerEl) playerEl.style.display = 'block';
-
-        // Video Başlat
-        if (player && typeof player.playVideo === 'function') {
-            player.loadVideoById(videoId);
-            player.playVideo();
-        }
-
-    } else if (mode === 'slide' && galleryImages.length > 0) {
-        // --- 2. SLAYT MODU ---
-        currentMediaState = 'slide';
-
-        // UI Güncelle
-        if (swiperEl) swiperEl.classList.remove('hidden');
-        // Videoyu gizle (ama yok etme, arka planda dursun)
-        if (playerContainer) playerContainer.classList.add('hidden');
-        if (playerEl) playerEl.style.display = 'none';
-
-        if (player && typeof player.stopVideo === 'function') player.stopVideo();
-
-        // Swiper Init (Eğer yoksa veya güncellendiyse)
-        // Not: Her seferinde yeniden başlatmak yerine, instance varsa update etmek daha performanslıdır
-        // Ama basitlik için mevcut mantığı koruyoruz.
-
-        if (!window.mySwiperInstance) {
-            window.mySwiperInstance = new Swiper(".mySwiper", {
-                spaceBetween: 30,
-                effect: "fade",
-                centeredSlides: true,
-                autoplay: {
-                    delay: 10000, // 10 Saniye (Her resim)
-                    disableOnInteraction: false,
-                },
-                loop: true,
-                speed: 1000
-            });
-        } else {
-            window.mySwiperInstance.update();
-            window.mySwiperInstance.autoplay.start();
-        }
-
-        // --- DÖNGÜ MANTIĞI ---
-        // Eğer video tanımlıysa, slaytların hepsi bitince videoya dön.
-        if (videoId) {
-            const slideDuration = 10000; // 10sn
-            const totalTime = galleryImages.length * slideDuration;
-
-            console.log(`Slayt başladı. ${galleryImages.length} resim var. ${totalTime / 1000} saniye sonra videoya geçilecek.`);
-
-            slideIntervalHandle = setTimeout(() => {
-                switchMedia('video');
-            }, totalTime);
-        }
+    slideIntervalHandle = setTimeout(() => {
+        switchMedia('video');
+    }, totalTime);
+}
 
     } else {
-        // Fallback (Video yok, Resim yok -> ya da biri var)
-        if (videoId) switchMedia('video');
-        else if (galleryImages.length > 0) switchMedia('slide');
-    }
+    // Fallback (Video yok, Resim yok -> ya da biri var)
+    if (videoId) switchMedia('video');
+    else if (galleryImages.length > 0) switchMedia('slide');
+}
 }
 
 

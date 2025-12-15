@@ -157,6 +157,20 @@ function addLeftGalleryItem(url = '') {
     container.appendChild(div);
 }
 
+// VIDEO PLAYLIST (Youtube)
+function addVideoItem(url = '') {
+    const container = document.getElementById('video-playlist-container');
+    const div = document.createElement('div');
+    div.className = 'flex gap-2 items-center';
+    div.innerHTML = `
+        <div class="flex-1">
+            <input type="text" class="video-item-input w-full px-4 py-2 border border-gray-300 rounded-lg" value="${url}" placeholder="Youtube Linki (https://...)">
+        </div>
+        <button type="button" onclick="removeParent(this)" class="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600">Sil</button>
+    `;
+    container.appendChild(div);
+}
+
 // RESİM BOYUTLANDIRMA (Payload hatasını önlemek için)
 function resizeImage(file, maxWidth = 800, quality = 0.7) {
     return new Promise((resolve) => {
@@ -496,7 +510,7 @@ document.getElementById('admin-form').addEventListener('submit', async (e) => {
             menu_enabled: document.getElementById('menu-enabled').checked,
             lunch_menu: document.getElementById('lunch-menu').value,
             dinner_menu: document.getElementById('dinner-menu').value,
-            video_url: document.getElementById('video-url').value,
+            video_urls: getListValues('video-item-input'), // YENİ: Array olarak kaydediyoruz
 
             // Listeler & Objeler
             hadith: JSON.stringify(hadith),
