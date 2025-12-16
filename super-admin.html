@@ -5,9 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Süper Yönetici Paneli</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -16,133 +18,126 @@
     </style>
 </head>
 
-<body class="min-h-screen flex flex-col">
+<body class="text-gray-800">
 
     <!-- LOGIN MODAL -->
-    <div id="login-modal"
-        class="fixed inset-0 bg-gray-900 bg-opacity-90 z-50 flex items-center justify-center backdrop-blur-sm">
-        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md transform transition-all scale-100">
-            <div class="text-center mb-8">
-                <div class="bg-indigo-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <i class="fas fa-user-shield text-3xl text-indigo-600"></i>
-                </div>
-                <h2 class="text-2xl font-bold text-gray-800">Süper Yönetici Girişi</h2>
-                <p class="text-gray-500 text-sm mt-2">Devam etmek için ana şifreyi giriniz.</p>
+    <div id="login-modal" class="fixed inset-0 bg-gray-900 bg-opacity-90 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-8 text-center">
+            <div
+                class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
+                <i class="fas fa-shield-alt"></i>
             </div>
-            <form id="login-form" class="space-y-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Ana Şifre</label>
-                    <input type="password" id="master-password"
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
-                        placeholder="••••••••" required>
-                </div>
+            <h2 class="text-2xl font-bold mb-2 text-gray-800">Süper Yönetici</h2>
+            <p class="text-gray-500 mb-6 text-sm">Devam etmek için master şifreyi giriniz.</p>
+            <form id="login-form">
+                <input type="password" id="master-password"
+                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all mb-4 text-center tracking-widest"
+                    placeholder="••••••••">
                 <button type="submit"
-                    class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5">
-                    Giriş Yap
-                </button>
+                    class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg transition-colors shadow-lg hover:shadow-xl transform active:scale-95 duration-200">Giriş
+                    Yap</button>
             </form>
         </div>
     </div>
 
-    <!-- MAIN CONTENT (Hidden by default) -->
-    <div id="main-content" class="hidden flex-1 flex flex-col">
-
-        <!-- Navbar -->
-        <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-30">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between h-16">
-                    <div class="flex items-center gap-3">
-                        <i class="fas fa-shield-alt text-indigo-600 text-2xl"></i>
-                        <h1 class="text-xl font-bold text-gray-900 tracking-tight">Süper Yönetici Paneli</h1>
-                    </div>
-                    <div class="flex items-center gap-4">
-                        <span class="text-sm text-gray-500 hidden sm:block">Hoşgeldiniz, <span
-                                class="font-bold text-gray-800">Admin</span></span>
-                        <button onclick="logout()"
-                            class="text-gray-500 hover:text-red-600 transition-colors bg-gray-50 hover:bg-red-50 p-2 rounded-lg">
-                            <i class="fas fa-sign-out-alt"></i>
-                        </button>
-                    </div>
+    <!-- MAIN DASHBOARD -->
+    <div id="main-content" class="hidden min-h-screen pb-20">
+        <!-- Header -->
+        <header class="bg-white border-b border-gray-200 sticky top-0 z-30">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-shield-alt text-indigo-600 text-xl"></i>
+                    <h1 class="text-lg font-bold text-gray-800">Süper Yönetici Paneli</h1>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="text-sm text-gray-500 hidden sm:block">Hoşgeldiniz, <b>Admin</b></span>
+                    <button onclick="logout()" class="p-2 text-gray-400 hover:text-red-600 transition-colors"
+                        title="Çıkış Yap">
+                        <i class="fas fa-sign-out-alt"></i>
+                    </button>
                 </div>
             </div>
-        </nav>
+        </header>
 
-        <div class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
             <!-- Actions Bar -->
-            <div class="flex justify-between items-center mb-8">
+            <div class="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
                 <div>
                     <h2 class="text-2xl font-bold text-gray-800">Kurumlar</h2>
                     <p class="text-gray-500 text-sm mt-1">Sistemde kayıtlı olan tüm panoları buradan yönetebilirsiniz.
                     </p>
                 </div>
-                <button onclick="openModal()"
-                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg shadow-md hover:shadow-lg transition-all flex items-center gap-2 font-medium">
-                    <i class="fas fa-plus"></i> Yeni Kurum Ekle
-                </button>
-            </div>
-
-            <!-- Loader -->
-            <div id="loader" class="hidden flex justify-center py-12">
-                <i class="fas fa-circle-notch fa-spin text-4xl text-indigo-500"></i>
+                <div class="flex gap-3">
+                    <button onclick="openHadithModal()"
+                        class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-lg shadow-md hover:shadow-lg transition-all flex items-center gap-2 font-medium">
+                        <i class="fas fa-book-open"></i> Hadis Yönetimi
+                    </button>
+                    <button onclick="openModal()"
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg shadow-md hover:shadow-lg transition-all flex items-center gap-2 font-medium">
+                        <i class="fas fa-plus"></i> Yeni Kurum Ekle
+                    </button>
+                </div>
             </div>
 
             <!-- Institutions Grid -->
-            <div id="institutions-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Items will be populated here -->
+            <div id="loader" class="hidden text-center py-20">
+                <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+                <p class="text-gray-500">Kurumlar yükleniyor...</p>
             </div>
 
+            <div id="institutions-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Cards injected here -->
+            </div>
         </div>
     </div>
 
-    <!-- EDIT/ADD MODAL -->
+    <!-- EDIT/CREATE MODAL -->
     <div id="edit-modal"
-        class="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-            <div class="border-b border-gray-100 px-6 py-4 flex justify-between items-center bg-gray-50 rounded-t-2xl">
-                <h3 id="modal-title" class="text-lg font-bold text-gray-800">Yeni Kurum Ekle</h3>
+        class="fixed inset-0 bg-gray-900 bg-opacity-75 z-40 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div class="p-6 border-b border-gray-100 flex justify-between items-center">
+                <h3 class="text-xl font-bold text-gray-800" id="modal-title">Kurumu Düzenle</h3>
                 <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
                     <i class="fas fa-times text-xl"></i>
                 </button>
             </div>
 
             <form id="institution-form" class="p-6 space-y-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- Slug (ID) -->
-                    <div class="col-span-2">
+                <!-- Slug & Name -->
+                <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                    <div class="mb-4">
                         <label class="block text-sm font-semibold text-gray-700 mb-1">Kurum URL Yolu (Slug)</label>
                         <div class="relative">
-                            <span class="absolute left-3 top-3 text-gray-400 text-sm">/</span>
+                            <span class="absolute left-3 top-2 text-gray-400">/</span>
                             <input type="text" id="form-slug"
-                                class="pl-6 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                class="w-full pl-6 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                                 placeholder="ornek-koleji" required>
                         </div>
                         <p class="text-xs text-gray-500 mt-1">Bu alan kurumun panele erişim adresini belirler (örn:
                             super-pano.com/<b>ornek-koleji</b>)</p>
                     </div>
 
-                    <!-- Name -->
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Kurum Adı</label>
-                        <input type="text" id="form-name"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                            placeholder="Örnek Koleji" required>
-                    </div>
-
-                    <!-- Password -->
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Yönetici Şifresi</label>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Kurum Adı</label>
+                            <input type="text" id="form-name"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                placeholder="Örnek Koleji" required>
+                        </div>
                         <div class="relative">
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Yönetici Şifresi</label>
                             <input type="text" id="form-password"
                                 class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                                placeholder="Şifre123" required>
-                            <button type="button" onclick="generatePassword()"
-                                class="absolute right-2 top-1.5 text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 px-2 py-1 rounded transition-colors">Oluştur</button>
+                                placeholder="Şifre" required>
+                            <button type="button"
+                                onclick="document.getElementById('form-password').value = Math.random().toString(36).slice(-8)"
+                                class="absolute right-2 top-0 text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 px-2 py-1 rounded transition-colors"
+                                style="top: 28px;">Oluştur</button>
                         </div>
                     </div>
 
-                    <!-- Type -->
-                    <div>
+                    <div class="mt-4">
                         <label class="block text-sm font-semibold text-gray-700 mb-1">Kurum Tipi</label>
                         <select id="form-type"
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
@@ -152,88 +147,85 @@
                             <option value="Kurs">Kurs</option>
                         </select>
                     </div>
-
-                    <!-- Contact Info -->
-                    <div class="col-span-2 bg-white p-4 rounded-xl border border-gray-200">
-                        <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Kurum Yöneticisi</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-1">Adı Soyadı</label>
-                                <input type="text" id="form-contact-name"
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"
-                                    placeholder="Ad Soyad">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-1">Telefon</label>
-                                <input type="text" id="form-contact-phone"
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"
-                                    placeholder="0555...">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-1">E-Posta</label>
-                                <input type="email" id="form-contact-email"
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"
-                                    placeholder="ornek@mail.com">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Logo/Type Settings -->
-                    <div class="col-span-2 bg-gray-50 p-4 rounded-xl border border-gray-200">
-                        <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Gelişmiş Ayarlar</h4>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <!-- Logo Lock -->
-                            <div
-                                class="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-200">
-                                <span class="text-sm font-medium text-gray-700">Logo Değişikliği Kilitli</span>
-                                <label class="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" id="form-logo-locked" class="sr-only peer">
-                                    <div
-                                        class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-500">
-                                    </div>
-                                </label>
-                            </div>
-
-                            <!-- Dorm Module Active -->
-                            <div
-                                class="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-200">
-                                <span class="text-sm font-medium text-gray-700">Yurt Yarışma Modülü</span>
-                                <label class="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" id="form-dorm-active" class="sr-only peer" checked>
-                                    <div
-                                        class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500">
-                                    </div>
-                                </label>
-                            </div>
-                        </div>
-
-                        <!-- Logo URL Override with Upload -->
-                        <div class="mt-4">
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">Kurum Logosu</label>
-                            <div class="flex gap-2">
-                                <input type="text" id="form-logo"
-                                    class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50"
-                                    placeholder="Resim linki veya Yükle butonunu kullanın..." readonly>
-                                <input type="file" id="upload-logo-input" class="hidden" accept="image/png, image/jpeg">
-
-                                <button type="button" onclick="document.getElementById('upload-logo-input').click()"
-                                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
-                                    <i class="fas fa-upload mr-1"></i> Yükle
-                                </button>
-                                <button type="button" onclick="document.getElementById('form-logo').value = ''"
-                                    class="bg-red-100 hover:bg-red-200 text-red-600 px-3 py-2 rounded-lg text-sm font-medium transition-colors">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                            <p class="text-xs text-gray-500 mt-1">Logo yükleyerek veya doğrudan link girerek
-                                belirleyebilirsiniz. PNG veya JPG formatı önerilir.</p>
-                        </div>
-                    </div>
-
                 </div>
 
-                <div class="pt-4 flex justify-end gap-3 border-t border-gray-100 mt-6">
+                <!-- Contact Info -->
+                <div class="bg-white p-4 rounded-xl border border-gray-200">
+                    <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Kurum Yöneticisi</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Adı Soyadı</label>
+                            <input type="text" id="form-contact-name"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"
+                                placeholder="Ad Soyad">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Telefon</label>
+                            <input type="text" id="form-contact-phone"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"
+                                placeholder="0555...">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">E-Posta</label>
+                            <input type="email" id="form-contact-email"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"
+                                placeholder="ornek@mail.com">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Logo/Type Settings -->
+                <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+                    <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Gelişmiş Ayarlar</h4>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Logo Lock -->
+                        <div class="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-200">
+                            <span class="text-sm font-medium text-gray-700">Logo Değişikliği Kilitli</span>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="form-logo-locked" class="sr-only peer">
+                                <div
+                                    class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-500">
+                                </div>
+                            </label>
+                        </div>
+
+                        <!-- Dorm Module Active -->
+                        <div class="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-200">
+                            <span class="text-sm font-medium text-gray-700">Yurt Yarışma Modülü</span>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="form-dorm-active" class="sr-only peer" checked>
+                                <div
+                                    class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500">
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Logo URL Override with Upload -->
+                    <div class="mt-4">
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Kurum Logosu</label>
+                        <div class="flex gap-2">
+                            <input type="text" id="form-logo"
+                                class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50"
+                                placeholder="Resim linki veya Yükle butonunu kullanın..." readonly>
+                            <input type="file" id="upload-logo-input" class="hidden" accept="image/png, image/jpeg">
+
+                            <button type="button" onclick="document.getElementById('upload-logo-input').click()"
+                                class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
+                                <i class="fas fa-upload mr-1"></i> Yükle
+                            </button>
+                            <button type="button" onclick="document.getElementById('form-logo').value = ''"
+                                class="bg-red-100 hover:bg-red-200 text-red-600 px-3 py-2 rounded-lg text-sm font-medium transition-colors">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Logo yükleyerek veya doğrudan link girerek
+                            belirleyebilirsiniz. PNG veya JPG formatı önerilir.</p>
+                    </div>
+                </div>
+
+                <div class="pt-4 flex justify-end gap-3 border-t border-gray-100">
                     <button type="button" onclick="closeModal()"
                         class="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors">İptal</button>
                     <button type="submit"
@@ -243,84 +235,87 @@
         </div>
     </div>
 
+    <!-- HADITH MANAGEMENT MODAL -->
+    <div id="hadith-modal"
+        class="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col h-[90vh]">
+            <!-- Header -->
+            <div
+                class="border-b border-gray-100 px-6 py-4 flex justify-between items-center bg-gray-50 rounded-t-2xl flex-shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="bg-emerald-100 p-2 rounded-lg">
+                        <i class="fas fa-book-open text-emerald-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-800">Merkezi Hadis Yönetimi</h3>
+                        <p class="text-xs text-gray-500">Seçilen tipteki tüm kurumlara haftalık hadisleri topluca
+                            dağıtır.</p>
+                    </div>
+                </div>
+                <button onclick="closeHadithModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <!-- Body -->
+            <div class="p-6 overflow-y-auto flex-1 bg-gray-50/50">
+
+                <!-- Filters -->
+                <div
+                    class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm mb-6 flex flex-col md:flex-row gap-4 items-end">
+                    <div class="flex-1 w-full">
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Hangi Kurum Tipi İçin Düzenleme
+                            Yapılacak?</label>
+                        <select id="hadith-target-type" onchange="loadLocalHadiths()"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                            <option value="Ortaokul">Ortaokul</option>
+                            <option value="Lise">Lise</option>
+                            <option value="Yurt">Yurt</option>
+                            <option value="Kurs">Kurs</option>
+                        </select>
+                    </div>
+                    <div class="flex-1 w-full">
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Otomatik Tarih Hesapla
+                            (Başlangıç)</label>
+                        <input type="date" id="semester-start-date"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"
+                            onchange="recalculateWeekLabels()">
+                    </div>
+                </div>
+
+                <!-- Weeks Container -->
+                <div id="weeks-container" class="space-y-6">
+                    <!-- Weeks will be generated here -->
+                </div>
+
+                <!-- Add Week Button -->
+                <div class="mt-6 text-center">
+                    <button onclick="addNewWeek()"
+                        class="bg-white border-2 border-dashed border-gray-300 text-gray-500 px-6 py-3 rounded-xl hover:border-emerald-400 hover:text-emerald-600 hover:bg-emerald-50 transition-all font-medium w-full">
+                        <i class="fas fa-plus-circle mr-2"></i> Yeni Hafta Ekle
+                    </button>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div
+                class="border-t border-gray-100 px-6 py-4 bg-white rounded-b-2xl flex justify-between items-center flex-shrink-0">
+                <span class="text-xs text-gray-400">
+                    <i class="fas fa-info-circle mr-1"></i> Değişiklikler tarayıcınızda otomatik hatırlanır.
+                </span>
+                <div class="flex gap-3">
+                    <button onclick="closeHadithModal()"
+                        class="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors">Vazgeç</button>
+                    <button onclick="saveAndDistributeHadiths()"
+                        class="px-6 py-2.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 shadow-md hover:shadow-lg font-medium transition-all flex items-center gap-2">
+                        <i class="fas fa-paper-plane"></i> Kaydet ve Dağıt
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
-        // --- FILE UPLOAD LOGIC ---
-        async function handleLogoUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            // Slug checks for folder organization
-            const slug = document.getElementById('form-slug').value || 'common';
-
-            // Better: Swal loading
-            Swal.fire({
-                title: 'Yükleniyor...',
-                text: 'Logo sunucuya yükleniyor, lütfen bekleyin.',
-                allowOutsideClick: false,
-                didOpen: () => { Swal.showLoading() }
-            });
-
-            try {
-                // Convert to Base64
-                const reader = new FileReader();
-
-                reader.onerror = () => {
-                    Swal.fire('Hata', 'Dosya okunamadı.', 'error');
-                };
-
-                reader.onload = async (e) => {
-                    try {
-                        const base64Data = e.target.result.split(',')[1];
-                        // Safe filename
-                        const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-                        const filename = `logo-${Date.now()}-${safeName}`;
-
-                        // Upload via API
-                        const res = await fetch('/api/upload', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                filename: filename,
-                                fileBase64: base64Data,
-                                contentType: file.type,
-                                slug: slug
-                            })
-                        });
-
-                        const data = await res.json();
-
-                        if (!res.ok) {
-                            throw new Error(data.error || 'Yükleme başarısız');
-                        }
-
-                        // Set URL to input
-                        document.getElementById('form-logo').value = data.url;
-
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Yüklendi!',
-                            text: 'Logo başarıyla yüklendi.',
-                            timer: 1500,
-                            showConfirmButton: false
-                        });
-
-                    } catch (uploadError) {
-                        console.error("Upload error details:", uploadError);
-                        Swal.fire('Hata', 'Yükleme sırasında hata oluştu: ' + uploadError.message, 'error');
-                    }
-                };
-
-                reader.readAsDataURL(file);
-
-            } catch (error) {
-                console.error(error);
-                Swal.fire('Hata', 'Dosya işlenirken bir sorun oluştu.', 'error');
-            } finally {
-                event.target.value = ''; // Reset input to allow re-selection
-            }
-        }
-
-
         // --- AUTH ---
         let MASTER_PASSWORD = localStorage.getItem('super_admin_pass') || "";
 
@@ -328,7 +323,6 @@
             if (MASTER_PASSWORD) {
                 verifyLogin(MASTER_PASSWORD);
             }
-
             // File Upload Listener
             const uploadInput = document.getElementById('upload-logo-input');
             if (uploadInput) uploadInput.addEventListener('change', handleLogoUpload);
@@ -499,8 +493,8 @@
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
                 cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Evet, Sil',
-                cancelButtonText: 'İptal'
+                confirmButtonText: 'Evet, Sil!',
+                cancelButtonText: 'Vazgeç'
             });
 
             if (result.isConfirmed) {
@@ -508,7 +502,7 @@
                     const res = await fetch('/api/manage-institutions', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ action: 'delete', master_password: MASTER_PASSWORD, payload: { slug } })
+                        body: JSON.stringify({ action: 'delete', master_password: MASTER_PASSWORD, slug: slug })
                     });
 
                     if (res.ok) {
@@ -547,112 +541,287 @@
                 const res = await fetch('/api/manage-institutions', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'upsert', master_password: MASTER_PASSWORD, payload })
+                    body: JSON.stringify({
+                        action: 'upsert',
+                        master_password: MASTER_PASSWORD,
+                        ...payload
+                    })
                 });
 
                 if (res.ok) {
-                    Swal.fire('Başarılı', 'İşlem tamamlandı.', 'success');
+                    Swal.fire('Başarılı', 'Kurum kaydedildi.', 'success');
                     closeModal();
                     fetchInstitutions();
                 } else {
-                    const d = await res.json();
-                    Swal.fire('Hata', d.error || 'Kaydetme başarısız.', 'error');
+                    const data = await res.json();
+                    Swal.fire('Hata', data.error || 'Kaydedilemedi', 'error');
                 }
             } catch (e) {
-                console.error(e);
-                Swal.fire('Hata', 'Sunucu hatası.', 'error');
+                Swal.fire('Hata', 'Sunucu hatası', 'error');
             }
         });
 
-        function generatePassword() {
-            const chars = 'abcdefghjkmnpqrstuvwxyz23456789';
-            let pass = '';
-            for (let i = 0; i < 6; i++) {
-                pass += chars.charAt(Math.floor(Math.random() * chars.length));
+        // --- FILE UPLOAD LOGIC ---
+        async function handleLogoUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Slug checks for folder organization
+            const slug = document.getElementById('form-slug').value || 'common';
+
+            // Better: Swal loading
+            Swal.fire({
+                title: 'Yükleniyor...',
+                text: 'Logo sunucuya yükleniyor, lütfen bekleyin.',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading() }
+            });
+
+            try {
+                // Convert to Base64
+                const reader = new FileReader();
+
+                reader.onerror = () => {
+                    Swal.fire('Hata', 'Dosya okunamadı.', 'error');
+                };
+
+                reader.onload = async (e) => {
+                    try {
+                        const base64Data = e.target.result.split(',')[1];
+                        // Safe filename
+                        const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+                        const filename = `logo-${Date.now()}-${safeName}`;
+
+                        // Upload via API
+                        const res = await fetch('/api/upload', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                filename: filename,
+                                fileBase64: base64Data,
+                                contentType: file.type,
+                                slug: slug
+                            })
+                        });
+
+                        const data = await res.json();
+
+                        if (!res.ok) {
+                            throw new Error(data.error || 'Yükleme başarısız');
+                        }
+
+                        // Set URL to input
+                        document.getElementById('form-logo').value = data.url;
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Yüklendi!',
+                            text: 'Logo başarıyla yüklendi.',
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+
+                    } catch (uploadError) {
+                        console.error("Upload error details:", uploadError);
+                        Swal.fire('Hata', 'Yükleme sırasında hata oluştu: ' + uploadError.message, 'error');
+                    }
+                };
+
+                reader.readAsDataURL(file);
+
+            } catch (error) {
+                console.error(error);
+                Swal.fire('Hata', 'Dosya işlenirken bir sorun oluştu.', 'error');
+            } finally {
+                event.target.value = ''; // Reset input to allow re-selection
             }
-            document.getElementById('form-password').value = pass;
         }
 
+        // --- HADITH MANAGEMENT LOGIC ---
+        let hadithWeeks = [];
+        const DEFAULT_START_DATE = '2025-09-15'; // Örnek eğitim yılı başlangıcı
+
+        function openHadithModal() {
+            document.getElementById('hadith-modal').classList.remove('hidden');
+            loadLocalHadiths();
+        }
+
+        function closeHadithModal() {
+            document.getElementById('hadith-modal').classList.add('hidden');
+        }
+
+        function loadLocalHadiths() {
+            const type = document.getElementById('hadith-target-type').value;
+            const storageKey = `super_admin_hadiths_${type}`;
+            const stored = localStorage.getItem(storageKey);
+
+            const container = document.getElementById('weeks-container');
+            container.innerHTML = '';
+            hadithWeeks = [];
+
+            if (stored) {
+                try {
+                    const parsed = JSON.parse(stored);
+                    if (Array.isArray(parsed)) {
+                        parsed.forEach(w => addNewWeek(w));
+                    }
+                } catch (e) { console.error(e); }
+            } else {
+                addNewWeek();
+            }
+
+            // Tarih ayarını yükle
+            const dateKey = `super_admin_start_date_${type}`;
+            const savedDate = localStorage.getItem(dateKey);
+            document.getElementById('semester-start-date').value = savedDate || new Date().toISOString().split('T')[0];
+
+            recalculateWeekLabels();
+        }
+
+        function addNewWeek(data = null) {
+            const index = hadithWeeks.length;
+            const weekNum = index + 1;
+
+            const div = document.createElement('div');
+            div.className = 'bg-white p-5 rounded-xl border border-gray-200 shadow-sm relative group transition-all hover:shadow-md hover:border-emerald-200';
+            div.id = `week-card-${index}`;
+
+            const weekData = data || {
+                week: `${weekNum}. HAFTA`,
+                text: '',
+                arabic: ''
+            };
+
+            div.innerHTML = `
+                <div class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button onclick="removeWeek(${index})" class="text-red-400 hover:text-red-600 p-2" title="Haftayı Sil">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                    <!-- Week Info -->
+                    <div class="md:col-span-3">
+                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Hafta Başlığı</label>
+                        <input type="text" value="${weekData.week || ''}" oninput="updateWeekData(${index}, 'week', this.value)" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-bold text-emerald-800 placeholder-gray-300 focus:ring-2 focus:ring-emerald-500" placeholder="1. HAFTA">
+                        <div class="mt-2 text-[10px] text-gray-400 font-mono bg-gray-50 p-1.5 rounded border border-gray-100" id="week-date-label-${index}">
+                            Tarih: Hesaplanıyor...
+                        </div>
+                    </div>
+                    
+                    <!-- Content -->
+                    <div class="md:col-span-9 space-y-3">
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Arapça Metin</label>
+                            <textarea oninput="updateWeekData(${index}, 'arabic', this.value)" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-lg font-serif text-right" dir="rtl" placeholder="Hadis-i Şerif Arapça metni...">${weekData.arabic || ''}</textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Türkçe Meal</label>
+                            <textarea oninput="updateWeekData(${index}, 'text', this.value)" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Türkçe anlamı...">${weekData.text || ''}</textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="absolute left-0 top-6 w-1 h-12 bg-emerald-500 rounded-r"></div>
+            `;
+
+            document.getElementById('weeks-container').appendChild(div);
+            hadithWeeks.push(weekData);
+            recalculateWeekLabels();
+        }
+
+        function updateWeekData(index, key, value) {
+            if (hadithWeeks[index]) {
+                hadithWeeks[index][key] = value;
+                // Auto-save to localstorage silently
+                const type = document.getElementById('hadith-target-type').value;
+                localStorage.setItem(`super_admin_hadiths_${type}`, JSON.stringify(hadithWeeks));
+            }
+        }
+
+        function removeWeek(index) {
+            hadithWeeks.splice(index, 1);
+            const type = document.getElementById('hadith-target-type').value;
+            localStorage.setItem(`super_admin_hadiths_${type}`, JSON.stringify(hadithWeeks));
+            loadLocalHadiths();
+        }
+
+        function recalculateWeekLabels() {
+            const startDateVal = document.getElementById('semester-start-date').value;
+            if (!startDateVal) return;
+
+            // Save date selection
+            const type = document.getElementById('hadith-target-type').value;
+            localStorage.setItem(`super_admin_start_date_${type}`, startDateVal);
+
+            const start = new Date(startDateVal);
+
+            hadithWeeks.forEach((w, i) => {
+                const label = document.getElementById(`week-date-label-${i}`);
+                if (label) {
+                    const weekStart = new Date(start);
+                    weekStart.setDate(start.getDate() + (i * 7));
+
+                    const weekEnd = new Date(weekStart);
+                    weekEnd.setDate(weekStart.getDate() + 6);
+
+                    // Format: 15-21 Eylül
+                    const options = { day: 'numeric', month: 'long' };
+                    const sStr = weekStart.toLocaleDateString('tr-TR', options);
+                    const eStr = weekEnd.toLocaleDateString('tr-TR', options);
+
+                    label.innerHTML = `Otomatik Tarih: <span class="font-bold text-gray-600">${sStr} - ${eStr}</span>`;
+                }
+            });
+        }
+
+        async function saveAndDistributeHadiths() {
+            const type = document.getElementById('hadith-target-type').value;
+
+            // Validate
+            if (hadithWeeks.length === 0) {
+                Swal.fire('Uyarı', 'En az bir hadis girmelisiniz.', 'warning');
+                return;
+            }
+
+            Swal.fire({
+                title: 'Dağıtım Yapılıyor...',
+                text: `${type} türündeki tüm kurumlar güncelleniyor.`,
+                didOpen: () => Swal.showLoading()
+            });
+
+            try {
+                // Prepare payload with start date to help client calculation if needed
+                const payload = {
+                    startDate: document.getElementById('semester-start-date').value,
+                    weeks: hadithWeeks
+                };
+
+                const res = await fetch('/api/manage-institutions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'distribute_hadiths',
+                        master_password: MASTER_PASSWORD,
+                        payload: {
+                            type: type,
+                            hadiths: payload // Save the whole object
+                        }
+                    })
+                });
+
+                if (res.ok) {
+                    const d = await res.json();
+                    Swal.fire('Başarılı', `${d.count} adet kurum güncellendi.`, 'success');
+                    closeHadithModal();
+                } else {
+                    throw new Error('API Error');
+                }
+            } catch (e) {
+                console.error(e);
+                Swal.fire('Hata', 'Dağıtım sırasında hata oluştu.', 'error');
+            }
+        }
     </script>
 </body>
 
-</html>< ! - -   H A D I T H   M A N A G E M E N T   M O D A L   - - >  
- < d i v   i d = " h a d i t h - m o d a l "  
-         c l a s s = " f i x e d   i n s e t - 0   b g - g r a y - 9 0 0   b g - o p a c i t y - 7 5   z - 5 0   h i d d e n   f l e x   i t e m s - c e n t e r   j u s t i f y - c e n t e r   p - 4   b a c k d r o p - b l u r - s m " >  
-         < d i v   c l a s s = " b g - w h i t e   r o u n d e d - 2 x l   s h a d o w - 2 x l   w - f u l l   m a x - w - 4 x l   m a x - h - [ 9 0 v h ]   f l e x   f l e x - c o l " >  
-                 < ! - -   H e a d e r   - - >  
-                 < d i v  
-                         c l a s s = " b o r d e r - b   b o r d e r - g r a y - 1 0 0   p x - 6   p y - 4   f l e x   j u s t i f y - b e t w e e n   i t e m s - c e n t e r   b g - g r a y - 5 0   r o u n d e d - t - 2 x l   f l e x - s h r i n k - 0 " >  
-                         < d i v   c l a s s = " f l e x   i t e m s - c e n t e r   g a p - 3 " >  
-                                 < d i v   c l a s s = " b g - e m e r a l d - 1 0 0   p - 2   r o u n d e d - l g " >  
-                                         < i   c l a s s = " f a s   f a - b o o k - o p e n   t e x t - e m e r a l d - 6 0 0   t e x t - x l " > < / i >  
-                                 < / d i v >  
-                                 < d i v >  
-                                         < h 3   c l a s s = " t e x t - l g   f o n t - b o l d   t e x t - g r a y - 8 0 0 " > M e r k e z i   H a d i s   Y � � n e t i m i < / h 3 >  
-                                         < p   c l a s s = " t e x t - x s   t e x t - g r a y - 5 0 0 " > S e � � i l e n   t i p t e k i   t � � m   k u r u m l a r a   h a f t a l � � k   h a d i s l e r i   t o p l u c a   d a � x� � t � � r .  
-                                         < / p >  
-                                 < / d i v >  
-                         < / d i v >  
-                         < b u t t o n   o n c l i c k = " c l o s e H a d i t h M o d a l ( ) "   c l a s s = " t e x t - g r a y - 4 0 0   h o v e r : t e x t - g r a y - 6 0 0   t r a n s i t i o n - c o l o r s " >  
-                                 < i   c l a s s = " f a s   f a - t i m e s   t e x t - x l " > < / i >  
-                         < / b u t t o n >  
-                 < / d i v >  
-  
-                 < ! - -   B o d y   - - >  
-                 < d i v   c l a s s = " p - 6   o v e r f l o w - y - a u t o   f l e x - 1   b g - g r a y - 5 0 / 5 0 " >  
-  
-                         < ! - -   F i l t e r s   - - >  
-                         < d i v  
-                                 c l a s s = " b g - w h i t e   p - 4   r o u n d e d - x l   b o r d e r   b o r d e r - g r a y - 2 0 0   s h a d o w - s m   m b - 6   f l e x   f l e x - c o l   m d : f l e x - r o w   g a p - 4   i t e m s - e n d " >  
-                                 < d i v   c l a s s = " f l e x - 1   w - f u l l " >  
-                                         < l a b e l   c l a s s = " b l o c k   t e x t - s m   f o n t - s e m i b o l d   t e x t - g r a y - 7 0 0   m b - 1 " > H a n g i   K u r u m   T i p i   � � � � i n   D � � z e n l e m e  
-                                                 Y a p � � l a c a k ? < / l a b e l >  
-                                         < s e l e c t   i d = " h a d i t h - t a r g e t - t y p e "   o n c h a n g e = " l o a d L o c a l H a d i t h s ( ) "  
-                                                 c l a s s = " w - f u l l   p x - 4   p y - 2   b o r d e r   b o r d e r - g r a y - 3 0 0   r o u n d e d - l g   f o c u s : r i n g - 2   f o c u s : r i n g - e m e r a l d - 5 0 0   f o c u s : b o r d e r - e m e r a l d - 5 0 0 " >  
-                                                 < o p t i o n   v a l u e = " O r t a o k u l " > O r t a o k u l < / o p t i o n >  
-                                                 < o p t i o n   v a l u e = " L i s e " > L i s e < / o p t i o n >  
-                                                 < o p t i o n   v a l u e = " Y u r t " > Y u r t < / o p t i o n >  
-                                                 < o p t i o n   v a l u e = " K u r s " > K u r s < / o p t i o n >  
-                                         < / s e l e c t >  
-                                 < / d i v >  
-                                 < d i v   c l a s s = " f l e x - 1   w - f u l l " >  
-                                         < l a b e l   c l a s s = " b l o c k   t e x t - s m   f o n t - s e m i b o l d   t e x t - g r a y - 7 0 0   m b - 1 " > O t o m a t i k   T a r i h   H e s a p l a  
-                                                 ( B a � xl a n g � � � � ) < / l a b e l >  
-                                         < i n p u t   t y p e = " d a t e "   i d = " s e m e s t e r - s t a r t - d a t e "  
-                                                 c l a s s = " w - f u l l   p x - 4   p y - 2   b o r d e r   b o r d e r - g r a y - 3 0 0   r o u n d e d - l g   t e x t - s m "  
-                                                 o n c h a n g e = " r e c a l c u l a t e W e e k L a b e l s ( ) " >  
-                                 < / d i v >  
-                         < / d i v >  
-  
-                         < ! - -   W e e k s   C o n t a i n e r   - - >  
-                         < d i v   i d = " w e e k s - c o n t a i n e r "   c l a s s = " s p a c e - y - 6 " >  
-                                 < ! - -   W e e k s   w i l l   b e   g e n e r a t e d   h e r e   - - >  
-                         < / d i v >  
-  
-                         < ! - -   A d d   W e e k   B u t t o n   - - >  
-                         < d i v   c l a s s = " m t - 6   t e x t - c e n t e r " >  
-                                 < b u t t o n   o n c l i c k = " a d d N e w W e e k ( ) "  
-                                         c l a s s = " b g - w h i t e   b o r d e r - 2   b o r d e r - d a s h e d   b o r d e r - g r a y - 3 0 0   t e x t - g r a y - 5 0 0   p x - 6   p y - 3   r o u n d e d - x l   h o v e r : b o r d e r - e m e r a l d - 4 0 0   h o v e r : t e x t - e m e r a l d - 6 0 0   h o v e r : b g - e m e r a l d - 5 0   t r a n s i t i o n - a l l   f o n t - m e d i u m   w - f u l l " >  
-                                         < i   c l a s s = " f a s   f a - p l u s - c i r c l e   m r - 2 " > < / i >   Y e n i   H a f t a   E k l e  
-                                 < / b u t t o n >  
-                         < / d i v >  
-                 < / d i v >  
-  
-                 < ! - -   F o o t e r   - - >  
-                 < d i v  
-                         c l a s s = " b o r d e r - t   b o r d e r - g r a y - 1 0 0   p x - 6   p y - 4   b g - w h i t e   r o u n d e d - b - 2 x l   f l e x   j u s t i f y - b e t w e e n   i t e m s - c e n t e r   f l e x - s h r i n k - 0 " >  
-                         < s p a n   c l a s s = " t e x t - x s   t e x t - g r a y - 4 0 0 " >  
-                                 < i   c l a s s = " f a s   f a - i n f o - c i r c l e   m r - 1 " > < / i >   D e � xi � xi k l i k l e r   t a r a y � � c � � n � � z d a   o t o m a t i k   h a t � � r l a n � � r .  
-                         < / s p a n >  
-                         < d i v   c l a s s = " f l e x   g a p - 3 " >  
-                                 < b u t t o n   o n c l i c k = " c l o s e H a d i t h M o d a l ( ) "  
-                                         c l a s s = " p x - 5   p y - 2 . 5   b g - w h i t e   b o r d e r   b o r d e r - g r a y - 3 0 0   t e x t - g r a y - 7 0 0   r o u n d e d - l g   h o v e r : b g - g r a y - 5 0   f o n t - m e d i u m   t r a n s i t i o n - c o l o r s " > V a z g e � � < / b u t t o n >  
-                                 < b u t t o n   o n c l i c k = " s a v e A n d D i s t r i b u t e H a d i t h s ( ) "  
-                                         c l a s s = " p x - 6   p y - 2 . 5   b g - e m e r a l d - 6 0 0   t e x t - w h i t e   r o u n d e d - l g   h o v e r : b g - e m e r a l d - 7 0 0   s h a d o w - m d   h o v e r : s h a d o w - l g   f o n t - m e d i u m   t r a n s i t i o n - a l l   f l e x   i t e m s - c e n t e r   g a p - 2 " >  
-                                         < i   c l a s s = " f a s   f a - p a p e r - p l a n e " > < / i >   K a y d e t   v e   D a � x� � t  
-                                 < / b u t t o n >  
-                         < / d i v >  
-                 < / d i v >  
-         < / d i v >  
- < / d i v >  
- 
+</html>
