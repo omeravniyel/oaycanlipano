@@ -492,35 +492,7 @@ async function fetchConfig() {
 
         startDormNameRotation();
 
-        // --- 9. MODULE CONFIGURATION (YENİ) ---
 
-        // A) Dorm Layout
-        const dormActive = (config.module_dorm_active !== undefined) ? config.module_dorm_active : true;
-        const dormCard = document.getElementById('dorm-card');
-        const hadithCard = document.getElementById('hadith-card');
-
-        // Update Dorm Custom Titles
-        if (document.getElementById('dorm1-custom-title')) {
-            document.getElementById('dorm1-custom-title').innerText = config.dorm1_custom_title || "1. GRUP";
-        }
-        if (document.getElementById('dorm2-custom-title')) {
-            document.getElementById('dorm2-custom-title').innerText = config.dorm2_custom_title || "2. GRUP";
-        }
-
-        if (!dormActive) {
-            if (dormCard) dormCard.style.display = 'none';
-            if (hadithCard) {
-                // Remove flex-[4] and make it full
-                hadithCard.classList.remove('flex-[4]');
-                hadithCard.classList.add('flex-1'); // Full height
-            }
-        } else {
-            if (dormCard) dormCard.style.display = 'flex';
-            if (hadithCard) {
-                hadithCard.classList.add('flex-[4]');
-                hadithCard.classList.remove('flex-1');
-            }
-        }
 
         // B) Filter Info Data (Already handled above)
 
