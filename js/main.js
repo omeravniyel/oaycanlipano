@@ -477,10 +477,9 @@ async function fetchConfig() {
         }
 
         const rawMenus = [];
-        if (config.menu_enabled) {
-            if (config.lunch_menu) rawMenus.push({ type: 'menu', title: 'ÖĞLE YEMEĞİ', badge: 'AFİYET OLSUN', circle: '☀️', topLabel: 'GÜNÜN MENÜSÜ', content: config.lunch_menu });
-            if (config.dinner_menu) rawMenus.push({ type: 'menu', title: 'AKŞAM YEMEĞİ', badge: 'AFİYET OLSUN', circle: '🌙', topLabel: 'GÜNÜN MENÜSÜ', content: config.dinner_menu });
-        }
+        // Yemek menüsü varsa ekle (menu_enabled kontrolüne gerek yok, içerik varsa gösterilsin)
+        if (config.lunch_menu) rawMenus.push({ type: 'menu', title: 'ÖĞLE YEMEĞİ', badge: 'AFİYET OLSUN', circle: '☀️', topLabel: 'GÜNÜN MENÜSÜ', content: config.lunch_menu });
+        if (config.dinner_menu) rawMenus.push({ type: 'menu', title: 'AKŞAM YEMEĞİ', badge: 'AFİYET OLSUN', circle: '🌙', topLabel: 'GÜNÜN MENÜSÜ', content: config.dinner_menu });
 
         const rawStudent = [];
         if (config.student_of_week && config.student_of_week.name) {
@@ -528,13 +527,14 @@ async function fetchConfig() {
         } else if (selectedType === 'announcement') {
             infoData = rawAnnouncements;
         } else {
-            // AUTO: Mix appropriate content
-            infoData = [...rawAnnouncements, ...rawExams, ...rawMenus];
+            // AUTO: Sadece DOLU olanları listeye ekle
+            infoData = [...rawAnnouncements, ...rawExams, ...rawMenus, ...rawStudent, ...rawImproved];
         }
 
-        // Eğer seçilen tipte veri yoksa boş kalmaması için duyuruları veya menüyü ekle (Fallback)
+        // Eğer seçilen tipte veri yoksa (veya auto seçilip hepsi boşsa) boş dizide kalır.
+        // Fallback: Seçilen tip boşsa, otomatik moda düşerek dolu olan diğerlerini göster.
         if (infoData.length === 0 && selectedType !== 'auto') {
-            infoData = [...rawAnnouncements, ...rawMenus];
+            infoData = [...rawAnnouncements, ...rawExams, ...rawMenus, ...rawStudent, ...rawImproved];
         }
 
         // 7. Video Listesi (Playlist)
