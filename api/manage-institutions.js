@@ -102,9 +102,9 @@ export default async function handler(request, response) {
                     // Default values
                     institution_logo: finalLogo || '',
                     logo_locked: logo_locked || false, // Varsayılan kilitli değil
-                    institution_subtitle: subtitle || 'Dijital Pano Sistemi',
-                    institution_slogan1: slogan1 || 'İlgiyle bilginin',
-                    institution_slogan2: slogan2 || 'buluştuğu yer',
+                    institution_subtitle: finalSubtitle || 'Dijital Pano Sistemi',
+                    institution_slogan1: finalSlogan1 || 'İlgiyle bilginin',
+                    institution_slogan2: finalSlogan2 || 'buluştuğu yer',
                     institution_cover: cover || '',
                     city: city || 'İstanbul',
                     district: district || 'Üsküdar',
