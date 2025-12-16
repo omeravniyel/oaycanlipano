@@ -142,26 +142,34 @@
 
                         <!-- Main Content Container -->
                         <div
-                            class="w-full h-full bg-white/60 backdrop-blur-sm rounded-lg flex flex-col items-center justify-between p-4 relative z-0">
+                            class="w-full h-full bg-white/60 backdrop-blur-sm rounded-lg flex flex-col items-center justify-start p-0 relative z-0 overflow-hidden">
 
-                            <!-- Top: Date & Title -->
-                            <div class="w-full flex flex-col items-center border-b border-emerald-100 pb-2">
+                            <!-- Top: Header Group -->
+                            <div
+                                class="w-full flex flex-col items-center border-b border-emerald-200/60 pb-3 bg-emerald-50/80 pt-4 px-4 shadow-sm">
+                                <!-- Static Title -->
                                 <span
-                                    class="bg-emerald-600 text-white px-5 py-1 rounded-full text-xs font-bold shadow-sm tracking-wider mb-2"
-                                    id="hijri-date">
-                                    Hicri Takvim Yükleniyor...
+                                    class="text-[0.65rem] font-black text-emerald-400/90 uppercase tracking-[0.25em] mb-1">
+                                    HAFTANIN HADİS-İ ŞERİFİ
                                 </span>
-                                <div class="flex items-center gap-2 text-emerald-800 opacity-80">
-                                    <span class="text-xs">❖</span>
-                                    <h2 class="font-serif-tr font-bold text-sm tracking-widest uppercase">Haftanın
-                                        Hadis-i Şerifi</h2>
-                                    <span class="text-xs">❖</span>
+
+                                <!-- Dynamic Week Info (Prominent) -->
+                                <div id="hadith-week"
+                                    class="text-xl md:text-2xl text-emerald-900 font-bold font-serif-tr tracking-wide mb-2 drop-shadow-sm">
+                                    Hafta Bilgisi Yükleniyor...
                                 </div>
+
+                                <!-- Hijri Date (Badge) -->
+                                <span
+                                    class="bg-gradient-to-r from-emerald-600 to-emerald-500 text-white px-4 py-0.5 rounded-full text-[0.7rem] font-bold shadow flex items-center gap-2"
+                                    id="hijri-date">
+                                    <span>📅</span> ---
+                                </span>
                             </div>
 
                             <!-- Middle: Hadith Content -->
                             <div
-                                class="flex flex-col items-center justify-center flex-grow w-full text-center py-2 relative">
+                                class="flex flex-col items-center justify-center flex-grow w-full text-center py-4 px-2 relative space-y-4">
 
                                 <!-- Background Calligraphy Decoration (Optional) -->
                                 <div
@@ -172,35 +180,28 @@
                                     </svg>
                                 </div>
 
-                                <!-- Arabic Text -->
+                                <!-- Arabic Text (ALWAYS TOP) -->
                                 <div id="hadith-arabic"
-                                    class="text-[2.5rem] lg:text-[3rem] font-arabic text-emerald-900 leading-[1.6] drop-shadow-sm w-full px-4 mb-4"
+                                    class="text-[2.5rem] lg:text-[2.8rem] font-arabic text-emerald-900 leading-[1.8] drop-shadow-sm w-full px-4"
                                     dir="rtl">
                                     <!-- JS Content -->
                                 </div>
 
-                                <!-- Turkish Text -->
+                                <!-- Turkish Text (ALWAYS BOTTOM) -->
                                 <div id="hadith-content"
-                                    class="text-xl lg:text-2xl font-serif-tr text-slate-800 leading-normal relative px-8 italic font-medium">
+                                    class="text-lg lg:text-xl font-serif-tr text-slate-700 leading-relaxed relative px-8 italic font-medium max-w-[90%]">
                                     <span
-                                        class="absolute top-0 left-0 text-4xl text-emerald-300 font-serif opacity-60">"</span>
+                                        class="absolute top-0 left-0 text-4xl text-emerald-400 font-serif opacity-40">"</span>
                                     Yükleniyor...
                                     <span
-                                        class="absolute bottom-0 right-0 text-4xl text-emerald-300 font-serif opacity-60">"</span>
+                                        class="absolute bottom-0 right-0 text-4xl text-emerald-400 font-serif opacity-40">"</span>
                                 </div>
 
                                 <img id="hadith-image" src=""
                                     class="hidden max-h-48 mt-2 object-contain rounded-lg shadow-lg border-2 border-white" />
                             </div>
 
-                            <!-- Bottom: Week Info -->
-                            <div class="border-t border-emerald-100 pt-2 w-full flex justify-center">
-                                <div id="hadith-week"
-                                    class="text-emerald-600 text-[0.65rem] font-bold tracking-[0.2em] uppercase bg-emerald-50 px-4 py-1.5 rounded border border-emerald-100/50">
-                                    <!-- JS Content -->
-                                </div>
-                            </div>
-
+                            <!-- Bottom Footer Removed -->
                         </div>
                     </div>
 
