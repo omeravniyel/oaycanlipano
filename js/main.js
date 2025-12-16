@@ -393,6 +393,25 @@ async function fetchConfig() {
                 document.getElementById('hadith-week').innerText = h.week;
             }
 
+            // Tarih Aralığı Hesapla (Miladi)
+            if (config.weekly_hadiths && config.weekly_hadiths.startDate) {
+                const start = new Date(config.weekly_hadiths.startDate);
+                // Mevcut hafta başlangıcı
+                const currentWeekStart = new Date(start);
+                currentWeekStart.setDate(start.getDate() + (weekIndex * 7));
+
+                // Mevcut hafta bitişi
+                const currentWeekEnd = new Date(currentWeekStart);
+                currentWeekEnd.setDate(currentWeekStart.getDate() + 6);
+
+                const options = { day: 'numeric', month: 'long' };
+                const sStr = currentWeekStart.toLocaleDateString('tr-TR', options);
+                const eStr = currentWeekEnd.toLocaleDateString('tr-TR', options);
+
+                const rangeEl = document.getElementById('week-date-range');
+                if (rangeEl) rangeEl.innerText = `${sStr} - ${eStr}`;
+            }
+
             document.getElementById('hadith-content').innerHTML = `
                 <i class="fas fa-quote-left absolute -top-6 left-0 text-3xl text-emerald-200/50"></i>
                 <span class="relative z-10 block py-2">${h.text || ''}</span>
