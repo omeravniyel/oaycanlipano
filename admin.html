@@ -372,6 +372,11 @@
                         <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
                             <h4 class="font-bold text-sm text-slate-700 mb-3 flex items-center gap-2"><i
                                     class="fa-solid fa-graduation-cap text-purple-500"></i> Sınav Şampiyonları</h4>
+                            <label class="block text-xs font-bold text-slate-500 mb-1">Sınav Adı</label>
+                            <input type="text" id="config-exam_name"
+                                class="w-full p-2 bg-white border border-slate-200 rounded-lg text-sm mb-3"
+                                placeholder="LGS Deneme - 1">
+
                             <label class="block text-xs font-bold text-slate-500 mb-1">Liste (Format: Ad Soyad -
                                 Puan)</label>
                             <textarea id="raw-exam-winners" rows="4"
@@ -599,6 +604,8 @@
                 s2.forEach((inp, i) => inp.value = data.dorm2_names[i] || '');
             }
 
+            setVal('config-exam_name', data.exam_name);
+
             // Arrays (TextArea parsing)
             if (data.announcements) document.getElementById('raw-announcements').value = data.announcements.join('\n');
             if (data.exam_winners) document.getElementById('raw-exam-winners').value = data.exam_winners.join('\n');
@@ -626,6 +633,7 @@
             // Menus & Dorms
             data.lunch_menu = getVal('config-lunch_menu');
             data.dinner_menu = getVal('config-dinner_menu');
+            data.exam_name = getVal('config-exam_name'); // Sınav Adı
             data.module_dorm_active = document.getElementById('config-module_dorm_active').checked;
 
 

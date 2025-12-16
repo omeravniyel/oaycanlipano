@@ -467,7 +467,7 @@ async function fetchConfig() {
                 const score = parts[1] ? parts[1].trim() : '';
                 rawExams.push({
                     type: 'exam',
-                    title: 'SINAV ŞAMPİYONLARI',
+                    title: config.exam_name || 'SINAV ŞAMPİYONLARI',
                     badge: score ? `${score} PUAN` : '🏆',
                     circle: '🥇', // Sıra numarası eklenebilir
                     topLabel: 'TEBRİK EDERİZ',
