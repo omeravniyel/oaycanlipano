@@ -390,10 +390,17 @@
                     <div class="mb-6">
                         <div class="flex justify-between items-end mb-1">
                             <label class="block text-xs font-bold text-slate-500">Ana Galeri Resimleri</label>
-                            <button type="button" onclick="document.getElementById('upload-gallery-input').click()"
-                                class="text-xs bg-pink-100 text-pink-600 px-2 py-1 rounded hover:bg-pink-200 transition font-bold">
-                                <i class="fa-solid fa-cloud-arrow-up"></i> Toplu Yükle
-                            </button>
+                            <div class="flex gap-2">
+                                <button type="button" onclick="openCleaner('raw-gallery-links')"
+                                    class="text-xs bg-red-100 text-red-600 px-2 py-1 rounded hover:bg-red-200 transition font-bold"
+                                    title="Seçilenleri Sil">
+                                    <i class="fa-solid fa-trash"></i> Düzenle
+                                </button>
+                                <button type="button" onclick="document.getElementById('upload-gallery-input').click()"
+                                    class="text-xs bg-pink-100 text-pink-600 px-2 py-1 rounded hover:bg-pink-200 transition font-bold">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i> Toplu Yükle
+                                </button>
+                            </div>
                             <input type="file" id="upload-gallery-input" multiple
                                 accept="image/png, image/jpeg, image/jpg" class="hidden">
                         </div>
@@ -405,10 +412,18 @@
                     <div>
                         <div class="flex justify-between items-end mb-1">
                             <label class="block text-xs font-bold text-slate-500">Sol Galeri Resimleri</label>
-                            <button type="button" onclick="document.getElementById('upload-left-gallery-input').click()"
-                                class="text-xs bg-pink-100 text-pink-600 px-2 py-1 rounded hover:bg-pink-200 transition font-bold">
-                                <i class="fa-solid fa-cloud-arrow-up"></i> Toplu Yükle
-                            </button>
+                            <div class="flex gap-2">
+                                <button type="button" onclick="openCleaner('raw-left-gallery-links')"
+                                    class="text-xs bg-red-100 text-red-600 px-2 py-1 rounded hover:bg-red-200 transition font-bold"
+                                    title="Seçilenleri Sil">
+                                    <i class="fa-solid fa-trash"></i> Düzenle
+                                </button>
+                                <button type="button"
+                                    onclick="document.getElementById('upload-left-gallery-input').click()"
+                                    class="text-xs bg-pink-100 text-pink-600 px-2 py-1 rounded hover:bg-pink-200 transition font-bold">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i> Toplu Yükle
+                                </button>
+                            </div>
                             <input type="file" id="upload-left-gallery-input" multiple
                                 accept="image/png, image/jpeg, image/jpg" class="hidden">
                         </div>
@@ -766,12 +781,113 @@
         });
 
         // Event Listeners
-        document.getElementById('upload-gallery-input').addEventListener('change', (e) => {
-            handleUpload(e.target.files, 'raw-gallery-links');
-        });
         document.getElementById('upload-left-gallery-input').addEventListener('change', (e) => {
             handleUpload(e.target.files, 'raw-left-gallery-links');
         });
+
+        // --- CLEANER LOGIC ---
+        async function openCleaner(targetId) {
+            const textarea = document.getElementById(targetId);
+            const lines = textarea.value.split('\n').map(l => l.trim()).filter(l => l);
+
+            if (lines.length === 0) {
+                Swal.fire('Bilgi', 'Listede düzenlenecek link yok.', 'info');
+                return;
+            }
+
+            // Create HTML for checklist
+            let html = '<div class="text-left text-sm max-h-60 overflow-y-auto border p-2 rounded bg-slate-50">';
+            lines.forEach((line, idx) => {
+                // Try to show preview if image
+                const isImg = line.match(/\.(jpeg|jpg|png|gif)/i);
+                html += `
+                    <div class="flex items-center gap-2 mb-2 p-2 border-b last:border-0 hover:bg-white transition">
+                        <input type="checkbox" id="del-chk-${idx}" class="w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500 del-checkbox" data-idx="${idx}">
+                        <label for="del-chk-${idx}" class="flex-1 truncate cursor-pointer text-slate-600 select-none">
+                            ${isImg ? `<img src="${line}" class="h-8 w-8 object-cover inline-block mr-2 rounded border">` : '<i class="fa-solid fa-link mr-2"></i>'}
+                            ${line.substring(0, 40)}${line.length > 40 ? '...' : ''}
+                        </label>
+                    </div>
+                `;
+            });
+            html += '</div><p class="text-xs text-red-500 mt-2">* Silmek istediklerinizi seçin</p>';
+
+            const { isConfirmed } = await Swal.fire({
+                title: 'Resim/Link Yönetimi',
+                html: html,
+                showCancelButton: true,
+                confirmButtonText: 'Seçilenleri Sil',
+                cancelButtonText: 'İptal',
+                confirmButtonColor: '#ef4444',
+                focusConfirm: false,
+                preConfirm: () => {
+                    const checkboxes = document.querySelectorAll('.del-checkbox');
+                    const indexesToDelete = [];
+                    checkboxes.forEach(cb => {
+                        if (cb.checked) indexesToDelete.push(parseInt(cb.dataset.idx));
+                    });
+                    return indexesToDelete;
+                }
+            });
+
+            if (isConfirmed && Swal.getPopup().querySelector('.swal2-confirm').value) {
+                // value is returned from preConfirm? actually SweetAlert returns result.value
+                // Let's rely on the result we get
+            }
+        }
+
+        // Fix for SweetAlert preConfirm return handling manually if needed, 
+        // but easier way is to use the result.value
+
+        // Re-implementing cleaner logic to use result correctly
+        // (Overwriting the function properly below in the full script context replacement if needed, 
+        // but here injecting distinct function)
+
+        window.openCleaner = async function (targetId) {
+            const textarea = document.getElementById(targetId);
+            const lines = textarea.value.split('\n').map(l => l.trim()).filter(l => l);
+
+            if (lines.length === 0) {
+                Swal.fire('Bilgi', 'Listede düzenlenecek link yok.', 'info');
+                return;
+            }
+
+            let html = '<div class="text-left text-sm max-h-60 overflow-y-auto border p-2 rounded bg-slate-50 space-y-2">';
+            lines.forEach((line, idx) => {
+                const isImg = line.match(/\.(jpeg|jpg|png|gif|webp)/i);
+                html += `
+                     <label class="flex items-center gap-3 p-2 border border-slate-200 rounded hover:bg-white cursor-pointer transition">
+                         <input type="checkbox" class="del-chk w-5 h-5 text-red-600 rounded focus:ring-red-500" value="${idx}">
+                         ${isImg ? `<img src="${line}" class="w-10 h-10 object-cover rounded bg-slate-200">` : '<div class="w-10 h-10 flex items-center justify-center bg-slate-200 rounded"><i class="fa-solid fa-link text-slate-400"></i></div>'}
+                         <span class="flex-1 truncate text-xs font-mono text-slate-500" title="${line}">${line.split('/').pop()}</span>
+                         <span class="text-red-500 text-xs font-bold">SİL</span>
+                     </label>
+                 `;
+            });
+            html += '</div>';
+
+            const result = await Swal.fire({
+                title: 'Linkleri Düzenle',
+                html: html,
+                showCancelButton: true,
+                confirmButtonText: '<i class="fa-solid fa-trash"></i> Seçilenleri Kaldır',
+                confirmButtonColor: '#ef4444',
+                cancelButtonText: 'Vazgeç',
+                focusConfirm: false,
+                width: '600px'
+            });
+
+            if (result.isConfirmed) {
+                const checkboxes = document.querySelectorAll('.del-chk:checked');
+                const indexesToDelete = new Set(Array.from(checkboxes).map(c => parseInt(c.value)));
+
+                if (indexesToDelete.size > 0) {
+                    const newLines = lines.filter((_, idx) => !indexesToDelete.has(idx));
+                    textarea.value = newLines.join('\n');
+                    Swal.fire('Başarılı', `${indexesToDelete.size} adet link kaldırıldı.`, 'success');
+                }
+            }
+        }
 
     </script>
 </body>
