@@ -564,6 +564,13 @@ async function fetchConfig() {
 
         startDormNameRotation();
 
+        // --- 9. Bilgi Kartı Rotasyonunu Başlat ---
+        if (infoRotationInterval) clearInterval(infoRotationInterval);
+        if (infoData && infoData.length > 0) {
+            rotateInfo(); // İlkini hemen göster
+            infoRotationInterval = setInterval(rotateInfo, 10000); // 10 saniyede bir değiştir
+        }
+
     } catch (error) {
         console.error("Config error:", error);
     }
