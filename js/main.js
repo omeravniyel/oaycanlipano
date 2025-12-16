@@ -214,10 +214,7 @@ async function fetchConfig() {
                 });
             }
         }
-        // User Request: Stop pulling from local folder
-        // else if (galleryImages.length === 0) {
-        //    await fetchGalleryImages();
-        // }
+
 
         // --- 2.1 Sol Galeri (Admin Panelinden) ---
         let adminLeftGallery = [];
@@ -234,11 +231,7 @@ async function fetchConfig() {
             // Rotasyonu başlat (mevcut varsa durdurup yeniden başlat)
             startLeftGalleryRotation();
         }
-        // User Request: Stop pulling from local folder
-        // else {
-        //    // Admin boşsa yerelden çek (Fallback)
-        //     await fetchLeftGalleryImages();
-        // }
+
 
         let newVideoId = config.video_url || null;
         if (newVideoId && newVideoId.trim() !== '') {
@@ -290,7 +283,13 @@ async function fetchConfig() {
 
         // --- 5. Kazanan Yatakhaneler ---
         // Yatakhane 1
-        if (config.dorm1) {
+        if (config.dorm1_names || config.dorm1_name) {
+            // Yeni Schema (admin.js)
+            document.getElementById('dorm1-name').innerText = config.dorm1_name || '---';
+            document.getElementById('dorm1-count').innerText = config.dorm1_count ? (config.dorm1_count + '.KEZ') : '0.KEZ';
+            dorm1Names = Array.isArray(config.dorm1_names) ? config.dorm1_names.filter(n => n) : [];
+        } else if (config.dorm1) {
+            // Legacy Schema
             const d1 = (typeof config.dorm1 === 'string') ? JSON.parse(config.dorm1) : config.dorm1;
             document.getElementById('dorm1-name').innerText = d1.name || '---';
             document.getElementById('dorm1-count').innerText = d1.count ? (d1.count + '.KEZ') : '0.KEZ';
@@ -298,7 +297,13 @@ async function fetchConfig() {
         }
 
         // Yatakhane 2
-        if (config.dorm2) {
+        if (config.dorm2_names || config.dorm2_name) {
+            // Yeni Schema (admin.js)
+            document.getElementById('dorm2-name').innerText = config.dorm2_name || '---';
+            document.getElementById('dorm2-count').innerText = config.dorm2_count ? (config.dorm2_count + '.KEZ') : '0.KEZ';
+            dorm2Names = Array.isArray(config.dorm2_names) ? config.dorm2_names.filter(n => n) : [];
+        } else if (config.dorm2) {
+            // Legacy Schema
             const d2 = (typeof config.dorm2 === 'string') ? JSON.parse(config.dorm2) : config.dorm2;
             document.getElementById('dorm2-name').innerText = d2.name || '---';
             document.getElementById('dorm2-count').innerText = d2.count ? (d2.count + '.KEZ') : '0.KEZ';

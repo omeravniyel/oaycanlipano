@@ -11,22 +11,6 @@
             "destination": "/api/$1"
         },
         {
-            "source": "/super-admin",
-            "destination": "/super-admin.html"
-        },
-        {
-            "source": "/admin",
-            "destination": "/admin.html"
-        },
-        {
-            "source": "/login",
-            "destination": "/login.html"
-        },
-        {
-            "source": "/([^/]+)/admin",
-            "destination": "/admin.html"
-        },
-        {
             "source": "/",
             "destination": "/index.html"
         },

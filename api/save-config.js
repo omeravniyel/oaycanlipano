@@ -1,7 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_ANON_KEY;
+// Use Service Role Key if available to bypass RLS, otherwise fallback to Anon Key
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default async function handler(request, response) {
@@ -37,10 +38,27 @@ export default async function handler(request, response) {
         return response.status(401).json({ error: 'Hatalı şifre!' });
     }
 
-    // 2. Veriyi Güncelle
+    // 2. Mevcut Veriyi Çek (Merge için)
+    const { data: existingData, error: fetchError2 } = await supabase
+        .from('institutions')
+        .select('config')
+        .eq('slug', slug)
+        .single();
+
+    if (fetchError2) {
+        console.error('Merge fetch error:', fetchError2);
+        return response.status(500).json({ error: 'Mevcut veri okunamadı: ' + fetchError2.message });
+    }
+
+    const existingConfig = existingData.config || {};
+
+    // Merge: Mevcut config üzerine yenisini yaz (böylece admin panelinde olmayan type gibi alanlar kaybolmaz)
+    const finalConfig = { ...existingConfig, ...config };
+
+    // 3. Veriyi Güncelle
     const { data, error } = await supabase
         .from('institutions')
-        .update({ config: config })
+        .update({ config: finalConfig })
         .eq('slug', slug)
         .select();
 
