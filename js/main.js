@@ -392,9 +392,9 @@ async function fetchConfig() {
             }
 
             document.getElementById('hadith-content').innerHTML = `
-                <span class="absolute top-0 left-0 text-5xl text-emerald-300 font-serif opacity-40 -translate-x-2 -translate-y-2">"</span>
-                ${h.text || ''}
-                <span class="absolute bottom-0 right-0 text-5xl text-emerald-300 font-serif opacity-40 translate-x-2 translate-y-2">"</span>
+                <i class="fas fa-quote-left absolute -top-6 left-0 text-3xl text-emerald-200/50"></i>
+                <span class="relative z-10 block py-2">${h.text || ''}</span>
+                <i class="fas fa-quote-right absolute -bottom-6 right-0 text-3xl text-emerald-200/50"></i>
             `;
 
             const arabDiv = document.getElementById('hadith-arabic');

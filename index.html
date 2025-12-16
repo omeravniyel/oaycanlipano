@@ -119,89 +119,99 @@
                 <!-- Normal İçerik (Galeri yokken veya gösterilmiyorken) -->
                 <div id="left-normal-content" class="flex flex-col gap-3 h-full">
 
-                    <!-- HADİS KARTI -->
+                    <!-- HADİS KARTI (PREMIUM REDESIGN) -->
                     <div id="hadith-card"
-                        class="relative rounded-xl shadow-lg p-1 flex items-center justify-center flex-[5.5] transition-all duration-500 overflow-hidden bg-gradient-to-br from-[#f0f9ff] to-[#e6ffe6]">
+                        class="relative rounded-xl shadow-[0_20px_50px_-12px_rgba(0,0,0,0.1)] p-6 flex items-center justify-center flex-[5.5] transition-all duration-500 overflow-hidden group">
 
-                        <!-- Decorative Frame Pattern -->
-                        <div
-                            class="absolute inset-0 border-[6px] border-double border-emerald-200/50 rounded-xl pointer-events-none z-10">
-                        </div>
-                        <div
-                            class="absolute top-0 left-0 w-16 h-16 border-t-4 border-l-4 border-emerald-400 rounded-tl-xl z-10 opacity-50">
-                        </div>
-                        <div
-                            class="absolute top-0 right-0 w-16 h-16 border-t-4 border-r-4 border-emerald-400 rounded-tr-xl z-10 opacity-50">
-                        </div>
-                        <div
-                            class="absolute bottom-0 left-0 w-16 h-16 border-b-4 border-l-4 border-emerald-400 rounded-bl-xl z-10 opacity-50">
-                        </div>
-                        <div
-                            class="absolute bottom-0 right-0 w-16 h-16 border-b-4 border-r-4 border-emerald-400 rounded-br-xl z-10 opacity-50">
+                        <!-- Dynamic Background -->
+                        <div class="absolute inset-0 bg-[#fafdfb]"></div>
+                        <!-- Subtle Pattern Overlay -->
+                        <div class="absolute inset-0 opacity-[0.03]"
+                            style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cpath d=\'M54.627 0l.83.828-1.415 1.415-.828-.828-.828.828-1.415-1.415.828-.828-.828-.828 1.415-1.415.828.828.828-.828 1.415 1.415-.828.828zM22.485 0l.83.828-1.415 1.415-.828-.828-.828.828-1.415-1.415.828-.828-.828-.828 1.415-1.415.828.828.828-.828 1.415 1.415-.828.828zM0 22.485l.828.83-1.415 1.415-.828-.828-.828.828L-2.83 22.485l.828-.828-.828-.828 1.415-1.415.828.828.828-.828 1.415 1.415-.828.828zM0 54.627l.828.83-1.415 1.415-.828-.828-.828.828L-2.83 54.627l.828-.828-.828-.828 1.415-1.415.828.828.828-.828 1.415 1.415-.828.828zM54.627 60l.83-.828-1.415-1.415-.828.828-.828-.828-1.415 1.415.828.828-.828.828 1.415 1.415-.828-.828.828.828 1.415-1.415-.828-.828zM22.485 60l.83-.828-1.415-1.415-.828.828-.828-.828-1.415 1.415.828.828-.828.828 1.415-1.415-.828-.828.828.828 1.415-1.415-.828-.828z\' fill=\'%2310b981\' fill-opacity=\'1\' fill-rule=\'evenodd\'/%3E%3C/svg%3E'); background-size: 24px;">
                         </div>
 
-                        <!-- Main Content Container -->
+                        <!-- Decorative Corners (Golden/Emerald) -->
                         <div
-                            class="w-full h-full bg-white/60 backdrop-blur-sm rounded-lg flex flex-col items-center justify-start p-0 relative z-0 overflow-hidden">
+                            class="absolute top-4 left-4 w-16 h-16 border-t-[3px] border-l-[3px] border-emerald-600/20 rounded-tl-3xl">
+                        </div>
+                        <div
+                            class="absolute top-4 right-4 w-16 h-16 border-t-[3px] border-r-[3px] border-emerald-600/20 rounded-tr-3xl">
+                        </div>
+                        <div
+                            class="absolute bottom-4 left-4 w-16 h-16 border-b-[3px] border-l-[3px] border-emerald-600/20 rounded-bl-3xl">
+                        </div>
+                        <div
+                            class="absolute bottom-4 right-4 w-16 h-16 border-b-[3px] border-r-[3px] border-emerald-600/20 rounded-br-3xl">
+                        </div>
 
-                            <!-- Top: Header Group -->
-                            <div
-                                class="w-full flex flex-col items-center border-b-[3px] border-emerald-100/80 pb-3 bg-gradient-to-b from-white via-emerald-50/50 to-emerald-50 pt-5 px-4 shadow-sm relative z-20">
-                                <!-- Static Title -->
-                                <span
-                                    class="text-[0.7rem] font-black text-emerald-500/80 uppercase tracking-[0.3em] mb-1">
-                                    HAFTANIN HADİS-İ ŞERİFİ
-                                </span>
+                        <!-- Inner Content Container -->
+                        <div class="w-full h-full relative z-10 flex flex-col items-center justify-between py-2">
 
-                                <!-- Dynamic Week Info (Prominent) -->
-                                <div id="hadith-week"
-                                    class="text-2xl md:text-3xl text-emerald-950 font-black font-serif-tr tracking-tight mb-3 drop-shadow-sm uppercase">
-                                    Hafta Bilgisi Yükleniyor...
-                                </div>
-
-                                <!-- Hijri Date (Badge) -->
-                                <span
-                                    class="bg-emerald-600/90 text-white px-5 py-1 rounded-full text-[0.75rem] font-bold shadow-md flex items-center gap-2 border border-emerald-400/30"
-                                    id="hijri-date">
-                                    <span>📅</span> ---
-                                </span>
-                            </div>
-
-                            <!-- Middle: Hadith Content -->
-                            <div
-                                class="flex flex-col items-center justify-center flex-grow w-full text-center py-4 px-2 relative space-y-4">
-
-                                <!-- Background Calligraphy Decoration (Optional) -->
+                            <!-- Header Area -->
+                            <div class="w-full flex flex-col items-center justify-center relative">
+                                <!-- Top Ornament -->
                                 <div
-                                    class="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none select-none">
-                                    <svg viewBox="0 0 200 200" class="w-64 h-64 text-emerald-900 fill-current">
-                                        <path
-                                            d="M100,10 C50,10 10,50 10,100 C10,150 50,190 100,190 C150,190 190,150 190,100 C190,50 150,10 100,10 Z M100,180 C55,180 20,145 20,100 C20,55 55,20 100,20 C145,20 180,55 180,100 C180,145 145,180 100,180 Z" />
-                                    </svg>
+                                    class="w-24 h-1 bg-gradient-to-r from-transparent via-emerald-400/40 to-transparent mb-4">
                                 </div>
 
-                                <!-- Arabic Text (ALWAYS TOP) -->
-                                <div id="hadith-arabic"
-                                    class="text-[3rem] lg:text-[3.5rem] font-bold font-arabic text-emerald-900 leading-[1.6] drop-shadow-sm w-full px-4"
-                                    dir="rtl">
-                                    <!-- JS Content -->
-                                </div>
-
-                                <!-- Turkish Text (ALWAYS BOTTOM) -->
-                                <div id="hadith-content"
-                                    class="text-xl lg:text-2xl font-serif-tr text-slate-800 leading-normal relative px-8 font-medium max-w-[95%]">
+                                <div class="flex items-center gap-3 mb-1">
+                                    <div class="h-[1px] w-8 bg-emerald-800/30"></div>
                                     <span
-                                        class="absolute top-0 left-0 text-5xl text-emerald-300 font-serif opacity-40 -translate-x-2 -translate-y-2">"</span>
-                                    Yükleniyor...
-                                    <span
-                                        class="absolute bottom-0 right-0 text-5xl text-emerald-300 font-serif opacity-40 translate-x-2 translate-y-2">"</span>
+                                        class="text-[0.65rem] font-bold text-emerald-800/70 uppercase tracking-[0.4em]">Haftanın
+                                        Hadisi</span>
+                                    <div class="h-[1px] w-8 bg-emerald-800/30"></div>
                                 </div>
 
-                                <img id="hadith-image" src=""
-                                    class="hidden max-h-48 mt-2 object-contain rounded-lg shadow-lg border-2 border-white" />
+                                <!-- Week Title -->
+                                <h2 id="hadith-week"
+                                    class="text-3xl md:text-4xl font-serif text-emerald-950 tracking-tight font-medium drop-shadow-sm playfair-font">
+                                    ...
+                                </h2>
+
+                                <!-- Hijri Date Pill -->
+                                <div id="hijri-date"
+                                    class="mt-2 bg-emerald-50 border border-emerald-100/50 text-emerald-700 px-4 py-1 rounded-full text-xs font-semibold tracking-wide shadow-sm flex items-center gap-2">
+                                    <i class="far fa-calendar-alt opacity-70"></i> <span>...</span>
+                                </div>
                             </div>
 
-                            <!-- Bottom Footer Removed -->
+                            <!-- Main Content Area -->
+                            <div
+                                class="flex-grow w-full flex flex-col items-center justify-center text-center relative px-4 md:px-12 py-2">
+
+                                <!-- Big Watermark Center -->
+                                <div
+                                    class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 opacity-[0.03] pointer-events-none">
+                                    <i class="fas fa-quran text-[18rem]"></i>
+                                </div>
+
+                                <!-- ARABIC TEXT -->
+                                <div id="hadith-arabic"
+                                    class="text-[2.8rem] md:text-[3.8rem] font-arabic leading-[1.6] text-transparent bg-clip-text bg-gradient-to-br from-emerald-900 via-emerald-800 to-emerald-950 font-bold mb-4 drop-shadow-sm w-full"
+                                    style="font-family: 'Amiri', serif; line-height: 1.5;">
+                                    <!-- JS will fill -->
+                                </div>
+
+                                <!-- SEPARATOR -->
+                                <div class="w-12 h-12 flex items-center justify-center my-1 opacity-60">
+                                    <span class="text-2xl text-emerald-500/50">۞</span>
+                                </div>
+
+                                <!-- TURKISH TEXT -->
+                                <div id="hadith-content"
+                                    class="relative text-xl md:text-2xl text-slate-700 font-medium leading-relaxed max-w-4xl px-8 playfair-font">
+
+                                    <i
+                                        class="fas fa-quote-left absolute -top-4 left-0 text-3xl text-emerald-200/50"></i>
+                                    <span class="relative z-10">...</span>
+                                    <i
+                                        class="fas fa-quote-right absolute -bottom-4 right-0 text-3xl text-emerald-200/50"></i>
+                                </div>
+
+                                <!-- Image Fallback -->
+                                <img id="hadith-image" src=""
+                                    class="hidden max-h-48 mt-4 object-contain rounded-lg shadow-xl border-4 border-white/80" />
+                            </div>
                         </div>
                     </div>
 
