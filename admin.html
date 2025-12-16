@@ -521,7 +521,13 @@
             setVal('config-institution_slogan2', data.institution_slogan2);
             setVal('config-institution_logo', data.institution_logo);
             setVal('config-quote_of_day', data.quote_of_day);
-            setVal('config-video_url', data.video_url);
+
+            // Video: Handle array or string
+            if (data.video_urls && Array.isArray(data.video_urls)) {
+                document.getElementById('raw-video-urls').value = data.video_urls.join('\n');
+            } else if (data.video_url) {
+                document.getElementById('raw-video-urls').value = data.video_url;
+            }
 
             // Menus
             setVal('config-lunch_menu', data.lunch_menu);
@@ -568,7 +574,10 @@
             data.institution_slogan2 = getVal('config-institution_slogan2');
             data.institution_logo = getVal('config-institution_logo');
             data.quote_of_day = getVal('config-quote_of_day');
-            data.video_url = getVal('config-video_url');
+
+            // Videos
+            data.video_urls = getLines('raw-video-urls');
+            data.video_url = data.video_urls.length > 0 ? data.video_urls[0] : ''; // Fallback for legacy
 
             data.bottom_widget_type = document.getElementById('config-bottom_widget_type').value;
 
@@ -682,6 +691,73 @@
         function scrollToSection(id) {
             document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
         }
+
+        // --- UPLOAD LOGIC ---
+        async function handleUpload(files, targetId) {
+            if (!files || files.length === 0) return;
+
+            const textarea = document.getElementById(targetId);
+            const originalText = textarea.value;
+
+            // Show loading indicator in textarea temporarily or use SweetAlert
+            const loadingToast = Swal.mixin({
+                toast: true, position: 'top-end', showConfirmButton: false, timerProgressBar: true
+            });
+            loadingToast.fire({ icon: 'info', title: 'Resimler yükleniyor...' });
+
+            let newUrls = [];
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                try {
+                    const base64 = await toBase64(file);
+                    const res = await fetch('/api/upload', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            filename: file.name,
+                            fileBase64: base64,
+                            contentType: file.type,
+                            slug: currentSlug
+                        })
+                    });
+
+                    const data = await res.json();
+                    if (data.success && data.url) {
+                        newUrls.push(data.url);
+                    } else {
+                        console.error('Upload failed for', file.name, data.error);
+                    }
+                } catch (err) {
+                    console.error('Upload error', err);
+                }
+            }
+
+            if (newUrls.length > 0) {
+                // Append to textarea
+                const currentVal = textarea.value.trim();
+                textarea.value = currentVal + (currentVal ? '\n' : '') + newUrls.join('\n');
+
+                loadingToast.fire({ icon: 'success', title: `${newUrls.length} resim yüklendi!` });
+            } else {
+                loadingToast.fire({ icon: 'warning', title: 'Yükleme başarısız veya iptal edildi.' });
+            }
+        }
+
+        const toBase64 = file => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.onload = () => resolve(reader.result.split(',')[1]); // Remove header
+            reader.onerror = error => reject(error);
+        });
+
+        // Event Listeners
+        document.getElementById('upload-gallery-input').addEventListener('change', (e) => {
+            handleUpload(e.target.files, 'raw-gallery-links');
+        });
+        document.getElementById('upload-left-gallery-input').addEventListener('change', (e) => {
+            handleUpload(e.target.files, 'raw-left-gallery-links');
+        });
 
     </script>
 </body>
