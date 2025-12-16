@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yönetim Paneli - Dijital Pano</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-slate-100 min-h-screen text-slate-800">
+
+    <!-- LOGIN SCREEN -->
+    <div id="login-view"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900 overflow-hidden hidden">
+        <div class="absolute inset-0 opacity-20 bg-[url('https://grainy-gradients.vercel.app/noise.svg')]"></div>
+        <div class="absolute inset-0 bg-gradient-to-br from-indigo-900 via-slate-900 to-black opacity-90"></div>
+
+        <div class="relative z-10 w-full max-w-md p-8 glass-panel rounded-2xl shadow-2xl m-4">
+            <div class="text-center mb-8">
+                <div
+                    class="w-20 h-20 bg-indigo-600 rounded-2xl mx-auto mb-4 flex items-center justify-center shadow-lg shadow-indigo-500/30 text-white text-3xl">
+                    <i class="fa-solid fa-layer-group"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-slate-900" id="login-institution-name">Kurum Yönetimi</h2>
+                <p class="text-sm text-slate-500 mt-2">Lütfen yönetici şifrenizle giriş yapın</p>
+            </div>
+
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Kurum</label>
+                    <input type="text" id="login-slug" disabled
+                        class="w-full bg-slate-100 border border-slate-200 rounded-xl px-4 py-3 text-slate-600 font-mono text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Şifre</label>
+                    <input type="password" id="login-password" required placeholder="••••••••"
+                        class="w-full bg-white border border-slate-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all shadow-sm">
+                </div>
+                <button type="submit"
+                    class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3.5 rounded-xl transition duration-200 shadow-lg shadow-indigo-500/20 flex items-center justify-center gap-2">
+                    <span>Giriş Yap</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN DASHBOARD -->
+    <div id="admin-view" class="min-h-screen flex hidden">
+
+        <!-- Sidebar -->
+        <aside class="w-64 bg-slate-900 text-white flex-shrink-0 hidden md:flex flex-col border-r border-slate-800">
+            <div class="p-6 border-b border-slate-800">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center shrink-0">
+                        <i class="fa-solid fa-sliders text-white"></i>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg leading-tight">Yönetim</h1>
+                        <p class="text-xs text-slate-500">v2.0 PRO</p>
+                    </div>
+                </div>
+            </div>
+
+            <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
+                <button onclick="scrollToSection('section-general')"
+                    class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl hover:bg-slate-800 text-slate-300 hover:text-white transition group">
+                    <i class="fa-solid fa-school w-5 text-center group-hover:text-indigo-400"></i> Kurum
+                </button>
+                <button onclick="scrollToSection('section-dorm')"
+                    class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl hover:bg-slate-800 text-slate-300 hover:text-white transition group">
+                    <i class="fa-solid fa-bed w-5 text-center group-hover:text-indigo-400"></i> Yatakhaneler
+                </button>
+                <button onclick="scrollToSection('section-modules')"
+                    class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl hover:bg-slate-800 text-slate-300 hover:text-white transition group">
+                    <i class="fa-solid fa-puzzle-piece w-5 text-center group-hover:text-indigo-400"></i> Modüller
+                </button>
+                <button onclick="scrollToSection('section-media')"
+                    class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl hover:bg-slate-800 text-slate-300 hover:text-white transition group">
+                    <i class="fa-solid fa-images w-5 text-center group-hover:text-indigo-400"></i> Medya
+                </button>
+            </nav>
+
+            <div class="p-4 border-t border-slate-800">
+                <button id="logout-btn"
+                    class="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-red-400 hover:bg-red-500/10 transition">
+                    <i class="fa-solid fa-right-from-bracket w-5"></i> Çıkış Yap
+                </button>
+            </div>
+        </aside>
+
+        <!-- Content -->
+        <main class="flex-1 flex flex-col h-screen overflow-hidden">
+
+            <!-- Topbar -->
+            <header class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0">
+                <div class="flex items-center gap-4">
+                    <button class="md:hidden text-slate-500 hover:text-slate-800"><i
+                            class="fa-solid fa-bars text-xl"></i></button>
+                    <h2 class="font-bold text-slate-800" id="header-slug">...</h2>
+                </div>
+                <div class="flex items-center gap-3">
+                    <button id="save-btn"
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg text-sm font-bold shadow-lg shadow-indigo-500/20 transition flex items-center gap-2">
+                        <i class="fa-solid fa-save"></i> Değişiklikleri Kaydet
+                    </button>
+                </div>
+            </header>
+
+            <!-- Scrollable Area -->
+            <div id="content-area" class="flex-1 overflow-y-auto p-6 md:p-8 space-y-8 bg-slate-50/50">
+
+                <!-- Section: General -->
+                <div id="section-general"
+                    class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 animate-fade-in">
+                    <h3
+                        class="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2 pb-4 border-b border-slate-100">
+                        <span
+                            class="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center text-sm"><i
+                                class="fa-solid fa-school"></i></span>
+                        Genel Ayarlar
+                    </h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 mb-1">Kurum Adı (Başlık)</label>
+                            <input type="text" id="config-institution_title"
+                                class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 mb-1">Alt Başlık</label>
+                            <input type="text" id="config-institution_subtitle"
+                                class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 mb-1">Slogan 1 (Üst)</label>
+                            <input type="text" id="config-institution_slogan1"
+                                class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-slate-500 mb-1">Slogan 2 (Alt)</label>
+                            <input type="text" id="config-institution_slogan2"
+                                class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-bold text-slate-500 mb-1">Logo URL</label>
+                            <input type="text" id="config-institution_logo"
+                                class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section: Dorms -->
+                <div id="section-dorm"
+                    class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 animate-fade-in">
+                    <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
+                        <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2">
+                            <span
+                                class="w-8 h-8 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center text-sm"><i
+                                    class="fa-solid fa-trophy"></i></span>
+                            Yatakhane Yarışması
+                        </h3>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="config-module_dorm_active" class="sr-only peer" checked>
+                            <div
+                                class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-orange-500">
+                            </div>
+                            <span class="ml-3 text-sm font-medium text-slate-600">Aktif</span>
+                        </label>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <!-- Group 1 -->
+                        <div class="bg-orange-50 rounded-xl p-4 border border-orange-100">
+                            <div class="mb-4">
+                                <label class="block text-xs font-bold text-orange-800 mb-1">1. Grup Başlığı (Örn:
+                                    Lise)</label>
+                                <input type="text" id="config-dorm1_custom_title"
+                                    class="w-full p-2 bg-white border border-orange-200 rounded-lg text-sm">
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-xs font-bold text-orange-800 mb-1">Kazanan Yatakhane
+                                    Adı</label>
+                                <input type="text" id="config-dorm1_name"
+                                    class="w-full p-2 bg-white border border-orange-200 rounded-lg text-sm font-bold">
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-xs font-bold text-orange-800 mb-1">Kaçıncı Kez?</label>
+                                <input type="number" id="config-dorm1_count"
+                                    class="w-full p-2 bg-white border border-orange-200 rounded-lg text-sm">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-xs font-bold text-orange-800">Öğrenciler (Her satıra bir
+                                    isim)</label>
+                                <input type="text"
+                                    class="dorm1-student w-full p-2 bg-white border border-orange-200 rounded-lg text-xs"
+                                    placeholder="1. Öğrenci">
+                                <input type="text"
+                                    class="dorm1-student w-full p-2 bg-white border border-orange-200 rounded-lg text-xs"
+                                    placeholder="2. Öğrenci">
+                                <input type="text"
+                                    class="dorm1-student w-full p-2 bg-white border border-orange-200 rounded-lg text-xs"
+                                    placeholder="3. Öğrenci">
+                                <input type="text"
+                                    class="dorm1-student w-full p-2 bg-white border border-orange-200 rounded-lg text-xs"
+                                    placeholder="4. Öğrenci">
+                                <input type="text"
+                                    class="dorm1-student w-full p-2 bg-white border border-orange-200 rounded-lg text-xs"
+                                    placeholder="5. Öğrenci">
+                                <input type="text"
+                                    class="dorm1-student w-full p-2 bg-white border border-orange-200 rounded-lg text-xs"
+                                    placeholder="6. Öğrenci">
+                            </div>
+                        </div>
+
+                        <!-- Group 2 -->
+                        <div class="bg-orange-50 rounded-xl p-4 border border-orange-100">
+                            <div class="mb-4">
+                                <label class="block text-xs font-bold text-orange-800 mb-1">2. Grup Başlığı (Örn:
+                                    Ortaokul)</label>
+                                <input type="text" id="config-dorm2_custom_title"
+                                    class="w-full p-2 bg-white border border-orange-200 rounded-lg text-sm">
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-xs font-bold text-orange-800 mb-1">Kazanan Yatakhane
+                                    Adı</label>
+                                <input type="text" id="config-dorm2_name"
+                                    class="w-full p-2 bg-white border border-orange-200 rounded-lg text-sm font-bold">
+                            </div>
+                            <div class="mb-4">
+                                <label class="block text-xs font-bold text-orange-800 mb-1">Kaçıncı Kez?</label>
+                                <input type="number" id="config-dorm2_count"
+                                    class="w-full p-2 bg-white border border-orange-200 rounded-lg text-sm">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="block text-xs font-bold text-orange-800">Öğrenciler</label>
+                                <input type="text"
+                                    class="dorm2-student w-full p-2 bg-white border border-orange-200 rounded-lg text-xs"
+                                    placeholder="1. Öğrenci">
+                                <input type="text"
+                                    class="dorm2-student w-full p-2 bg-white border border-orange-200 rounded-lg text-xs"
+                                    placeholder="2. Öğrenci">
+                                <input type="text"
+                                    class="dorm2-student w-full p-2 bg-white border border-orange-200 rounded-lg text-xs"
+                                    placeholder="3. Öğrenci">
+                                <input type="text"
+                                    class="dorm2-student w-full p-2 bg-white border border-orange-200 rounded-lg text-xs"
+                                    placeholder="4. Öğrenci">
+                                <input type="text"
+                                    class="dorm2-student w-full p-2 bg-white border border-orange-200 rounded-lg text-xs"
+                                    placeholder="5. Öğrenci">
+                                <input type="text"
+                                    class="dorm2-student w-full p-2 bg-white border border-orange-200 rounded-lg text-xs"
+                                    placeholder="6. Öğrenci">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section: Modules -->
+                <div id="section-modules"
+                    class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 animate-fade-in">
+                    <h3
+                        class="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2 pb-4 border-b border-slate-100">
+                        <span
+                            class="w-8 h-8 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center text-sm"><i
+                                class="fa-solid fa-layer-group"></i></span>
+                        Sağ Alt Widget İçeriği
+                    </h3>
+
+                    <div class="mb-6">
+                        <label class="block text-xs font-bold text-slate-500 mb-2">Görüntülenecek Modül</label>
+                        <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+                            <button type="button"
+                                class="module-selector p-3 rounded-xl border border-slate-200 text-sm font-medium hover:border-purple-500 hover:bg-purple-50 transition text-center"
+                                data-value="auto">
+                                <i class="fa-solid fa-magic block mb-1"></i> Otomatik
+                            </button>
+                            <button type="button"
+                                class="module-selector p-3 rounded-xl border border-slate-200 text-sm font-medium hover:border-purple-500 hover:bg-purple-50 transition text-center"
+                                data-value="exam">
+                                <i class="fa-solid fa-graduation-cap block mb-1"></i> Sınav
+                            </button>
+                            <button type="button"
+                                class="module-selector p-3 rounded-xl border border-slate-200 text-sm font-medium hover:border-purple-500 hover:bg-purple-50 transition text-center"
+                                data-value="menu">
+                                <i class="fa-solid fa-utensils block mb-1"></i> Yemek
+                            </button>
+                            <button type="button"
+                                class="module-selector p-3 rounded-xl border border-slate-200 text-sm font-medium hover:border-purple-500 hover:bg-purple-50 transition text-center"
+                                data-value="announcement">
+                                <i class="fa-solid fa-bullhorn block mb-1"></i> Duyuru
+                            </button>
+                            <button type="button"
+                                class="module-selector p-3 rounded-xl border border-slate-200 text-sm font-medium hover:border-purple-500 hover:bg-purple-50 transition text-center"
+                                data-value="student_of_week">
+                                <i class="fa-solid fa-star block mb-1"></i> Haf. Öğr.
+                            </button>
+                        </div>
+                        <input type="hidden" id="config-bottom_widget_type">
+                    </div>
+
+                    <!-- Dynamic Content Forms based on selection (Simplified for now, showing all inputs) -->
+                    <div class="space-y-6">
+                        <!-- Menu -->
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                            <h4 class="font-bold text-sm text-slate-700 mb-3 flex items-center gap-2"><i
+                                    class="fa-solid fa-utensils text-purple-500"></i> Yemek Menüsü</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 mb-1">Öğle Yemeği</label>
+                                    <textarea id="config-lunch_menu" rows="3"
+                                        class="w-full p-2 bg-white border border-slate-200 rounded-lg text-sm"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 mb-1">Akşam Yemeği</label>
+                                    <textarea id="config-dinner_menu" rows="3"
+                                        class="w-full p-2 bg-white border border-slate-200 rounded-lg text-sm"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Announcements -->
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                            <h4 class="font-bold text-sm text-slate-700 mb-3 flex items-center gap-2"><i
+                                    class="fa-solid fa-bullhorn text-purple-500"></i> Kayan Yazı & Duyurular</h4>
+                            <label class="block text-xs font-bold text-slate-500 mb-1">Kayan Yazı (Günün Sözü)</label>
+                            <input type="text" id="config-quote_of_day"
+                                class="w-full p-2 bg-white border border-slate-200 rounded-lg text-sm mb-3">
+
+                            <label class="block text-xs font-bold text-slate-500 mb-1">Duyuru Listesi (Her satıra bir
+                                duyuru)</label>
+                            <textarea id="raw-announcements" rows="3"
+                                class="w-full p-2 bg-white border border-slate-200 rounded-lg text-sm"
+                                placeholder="Yarın okul tatil&#10;Sınav sonuçları açıklandı"></textarea>
+                        </div>
+
+                        <!-- Exam Winners -->
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                            <h4 class="font-bold text-sm text-slate-700 mb-3 flex items-center gap-2"><i
+                                    class="fa-solid fa-graduation-cap text-purple-500"></i> Sınav Şampiyonları</h4>
+                            <label class="block text-xs font-bold text-slate-500 mb-1">Liste (Format: Ad Soyad -
+                                Puan)</label>
+                            <textarea id="raw-exam-winners" rows="4"
+                                class="w-full p-2 bg-white border border-slate-200 rounded-lg text-sm"
+                                placeholder="Ahmet Yılmaz - 500&#10;Mehmet Demir - 490"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section: Media -->
+                <div id="section-media"
+                    class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 animate-fade-in">
+                    <h3
+                        class="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2 pb-4 border-b border-slate-100">
+                        <span
+                            class="w-8 h-8 rounded-lg bg-pink-100 text-pink-600 flex items-center justify-center text-sm"><i
+                                class="fa-solid fa-video"></i></span>
+                        Medya & Galeri
+                    </h3>
+
+                    <div class="mb-6">
+                        <label class="block text-xs font-bold text-slate-500 mb-1">YouTube Video URL (Video Modu
+                            İçin)</label>
+                        <input type="text" id="config-video_url"
+                            class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-pink-500 transition"
+                            placeholder="https://youtube.com/watch?v=...">
+                    </div>
+
+                    <div class="mb-6">
+                        <label class="block text-xs font-bold text-slate-500 mb-1">Ana Galeri Resimleri (Her satıra bir
+                            URL)</label>
+                        <textarea id="raw-gallery-links" rows="3"
+                            class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-pink-500 transition"
+                            placeholder="https://ornek.com/resim1.jpg"></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 mb-1">Sol Galeri Resimleri
+                            (Opsiyonel)</label>
+                        <textarea id="raw-left-gallery-links" rows="3"
+                            class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-pink-500 transition"
+                            placeholder="https://ornek.com/resim2.jpg"></textarea>
+                    </div>
+                </div>
+
+                <div class="h-10"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- MAIN LOGIC -->
+    <script>
+        // Init
+        const API_BASE = '/api';
+        let currentSlug = '';
+        let currentConfig = {};
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            // 1. URL'den Slugu Al
+            // Örnek: /omeravniyel/admin -> slug = omeravniyel
+            const pathParts = window.location.pathname.split('/');
+            // pathParts[0] usually empty string
+            // pathParts[1] slug
+            // pathParts[2] admin
+            const slugFromUrl = pathParts[1];
+
+            if (!slugFromUrl || slugFromUrl === 'admin.html') {
+                // Hatalı giriş, ana sayfaya yolla
+                window.location.href = '/';
+                return;
+            }
+
+            currentSlug = slugFromUrl;
+            document.getElementById('login-slug').value = currentSlug;
+            document.getElementById('login-institution-name').innerText = currentSlug.toUpperCase() + ' PANEL';
+            document.getElementById('header-slug').innerText = currentSlug.toUpperCase(); // Placeholder
+
+            // 2. Auth Kontrolü
+            const storedPass = localStorage.getItem(`admin_pass_${currentSlug}`);
+            if (storedPass) {
+                // Token var, doğrula
+                await tryLogin(currentSlug, storedPass, true);
+            } else {
+                showLogin();
+            }
+        });
+
+        // --- AUTH ---
+        function showLogin() {
+            document.getElementById('login-view').classList.remove('hidden');
+            document.getElementById('admin-view').classList.add('hidden');
+        }
+
+        document.getElementById('login-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const password = document.getElementById('login-password').value;
+            await tryLogin(currentSlug, password, false);
+        });
+
+        async function tryLogin(slug, password, isAuto) {
+            const btn = document.querySelector('#login-form button');
+            if (btn) btn.innerHTML = '<i class="fa-solid fa-spin fa-spinner"></i> Giriliyor...';
+
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ slug, password })
+                });
+
+                if (!res.ok) throw new Error('Giriş başarısız');
+
+                const data = await res.json();
+
+                // Başarılı
+                localStorage.setItem(`admin_pass_${slug}`, password);
+
+                // Panele Geç
+                document.getElementById('header-slug').innerText = data.name || slug.toUpperCase();
+                document.getElementById('login-view').classList.add('hidden');
+                document.getElementById('admin-view').classList.remove('hidden');
+
+                // Config Yükle
+                loadConfig();
+
+            } catch (err) {
+                console.error(err);
+                if (isAuto) {
+                    showLogin(); // Auto login failed
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Hata', text: 'Şifre hatalı veya kurum bulunamadı.' });
+                }
+            } finally {
+                if (btn) btn.innerHTML = '<span>Giriş Yap</span><i class="fa-solid fa-arrow-right"></i>';
+            }
+        }
+
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            localStorage.removeItem(`admin_pass_${currentSlug}`);
+            window.location.reload();
+        });
+
+        // --- DATA HANDLING ---
+        async function loadConfig() {
+            try {
+                const res = await fetch(`/api/get-config?slug=${currentSlug}`);
+                if (!res.ok) throw new Error('Veri çekilemedi');
+                currentConfig = await res.json();
+                populateForm(currentConfig);
+            } catch (err) {
+                Swal.fire('Hata', 'Veriler yüklenirken hata oluştu', 'error');
+            }
+        }
+
+        function populateForm(data) {
+            // General
+            setVal('config-institution_title', data.institution_title);
+            setVal('config-institution_subtitle', data.institution_subtitle);
+            setVal('config-institution_slogan1', data.institution_slogan1);
+            setVal('config-institution_slogan2', data.institution_slogan2);
+            setVal('config-institution_logo', data.institution_logo);
+            setVal('config-quote_of_day', data.quote_of_day);
+            setVal('config-video_url', data.video_url);
+
+            // Menus
+            setVal('config-lunch_menu', data.lunch_menu);
+            setVal('config-dinner_menu', data.dinner_menu);
+
+            // Module Type
+            setModuleType(data.bottom_widget_type || 'auto');
+
+            // Dorms
+            if (data.module_dorm_active !== undefined) {
+                document.getElementById('config-module_dorm_active').checked = data.module_dorm_active;
+            }
+            setVal('config-dorm1_custom_title', data.dorm1_custom_title);
+            setVal('config-dorm1_name', data.dorm1_name);
+            setVal('config-dorm1_count', data.dorm1_count);
+            setVal('config-dorm2_custom_title', data.dorm2_custom_title);
+            setVal('config-dorm2_name', data.dorm2_name);
+            setVal('config-dorm2_count', data.dorm2_count);
+
+            // Dorm Students Arrays
+            const s1 = document.querySelectorAll('.dorm1-student');
+            if (data.dorm1_names && Array.isArray(data.dorm1_names)) {
+                s1.forEach((inp, i) => inp.value = data.dorm1_names[i] || '');
+            }
+            const s2 = document.querySelectorAll('.dorm2-student');
+            if (data.dorm2_names && Array.isArray(data.dorm2_names)) {
+                s2.forEach((inp, i) => inp.value = data.dorm2_names[i] || '');
+            }
+
+            // Arrays (TextArea parsing)
+            if (data.announcements) document.getElementById('raw-announcements').value = data.announcements.join('\n');
+            if (data.exam_winners) document.getElementById('raw-exam-winners').value = data.exam_winners.join('\n');
+            if (data.gallery_links) document.getElementById('raw-gallery-links').value = data.gallery_links.join('\n');
+            if (data.left_gallery_links) document.getElementById('raw-left-gallery-links').value = data.left_gallery_links.join('\n');
+        }
+
+        function getFormData() {
+            const data = { ...currentConfig }; // Preserve existing keys
+
+            // General
+            data.institution_title = getVal('config-institution_title');
+            data.institution_subtitle = getVal('config-institution_subtitle');
+            data.institution_slogan1 = getVal('config-institution_slogan1');
+            data.institution_slogan2 = getVal('config-institution_slogan2');
+            data.institution_logo = getVal('config-institution_logo');
+            data.quote_of_day = getVal('config-quote_of_day');
+            data.video_url = getVal('config-video_url');
+
+            data.bottom_widget_type = document.getElementById('config-bottom_widget_type').value;
+
+            // Menus & Dorms
+            data.lunch_menu = getVal('config-lunch_menu');
+            data.dinner_menu = getVal('config-dinner_menu');
+            data.module_dorm_active = document.getElementById('config-module_dorm_active').checked;
+
+            data.dorm1_custom_title = getVal('config-dorm1_custom_title');
+            data.dorm1_name = getVal('config-dorm1_name');
+            data.dorm1_count = parseInt(getVal('config-dorm1_count')) || 0;
+
+            data.dorm2_custom_title = getVal('config-dorm2_custom_title');
+            data.dorm2_name = getVal('config-dorm2_name');
+            data.dorm2_count = parseInt(getVal('config-dorm2_count')) || 0;
+
+            // Arrays
+            data.dorm1_names = Array.from(document.querySelectorAll('.dorm1-student')).map(i => i.value).filter(x => x.trim() !== '');
+            data.dorm2_names = Array.from(document.querySelectorAll('.dorm2-student')).map(i => i.value).filter(x => x.trim() !== '');
+
+            data.announcements = getLines('raw-announcements');
+            data.exam_winners = getLines('raw-exam-winners');
+            data.gallery_links = getLines('raw-gallery-links');
+            data.left_gallery_links = getLines('raw-left-gallery-links');
+
+            return data;
+        }
+
+        // --- SAVE ---
+        document.getElementById('save-btn').addEventListener('click', async () => {
+            const btn = document.getElementById('save-btn');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Kaydediliyor...';
+
+            try {
+                const newData = getFormData();
+                const password = localStorage.getItem(`admin_pass_${currentSlug}`); // Get pass for auth
+
+                const payload = {
+                    slug: currentSlug,
+                    password: password, // Required by save-config
+                    config: newData
+                    // Note: We are sending the WHOLE config object, merged with previous state?
+                    // Actually save-config usually merges or overwrites 'config' column.
+                    // Let's assume it updates the config column with what we send.
+                };
+
+                const res = await fetch('/api/save-config', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await res.json();
+                if (!res.ok) throw new Error(result.error || 'Hata');
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Başarılı',
+                    text: 'Ayarlar başarıyla güncellendi ve yayına alındı.',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+
+            } catch (err) {
+                Swal.fire('Hata', err.message, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        });
+
+        // Utilities
+        function setVal(id, val) {
+            const el = document.getElementById(id);
+            if (el) el.value = (val === undefined || val === null) ? '' : val;
+        }
+        function getVal(id) {
+            const el = document.getElementById(id);
+            return el ? el.value : '';
+        }
+        function getLines(id) {
+            const val = getVal(id);
+            return val.split('\n').map(x => x.trim()).filter(x => x !== '');
+        }
+
+        // Module Selector UI
+        const selectors = document.querySelectorAll('.module-selector');
+        const hiddenInput = document.getElementById('config-bottom_widget_type');
+
+        selectors.forEach(btn => {
+            btn.addEventListener('click', () => {
+                setModuleType(btn.dataset.value);
+            });
+        });
+
+        function setModuleType(type) {
+            hiddenInput.value = type;
+            selectors.forEach(btn => {
+                if (btn.dataset.value === type) {
+                    btn.classList.add('border-purple-500', 'bg-purple-100', 'text-purple-700');
+                    btn.classList.remove('border-slate-200');
+                } else {
+                    btn.classList.remove('border-purple-500', 'bg-purple-100', 'text-purple-700');
+                    btn.classList.add('border-slate-200');
+                }
+            });
+        }
+
+        function scrollToSection(id) {
+            document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+        }
+
+    </script>
+</body>
+
+</html>
