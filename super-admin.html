@@ -252,13 +252,10 @@
             // Slug checks for folder organization
             const slug = document.getElementById('form-slug').value || 'common';
 
-            // Show loading state on button
-            const btn = event.target.nextElementSibling; // The Upload button (might need adjustment if structure changes, but finding by siblings is risky if HTML structure shifts. Let's rely on ID if possible or use event.target logic carefully. Actually, the button triggered input, input triggered change. The button is effectively separate in DOM flow. I will find button by ID or just use global loader concept. For simplicity, let's just use generic loading or no loading on button specifically, but Swal loading.)
-
             // Better: Swal loading
             Swal.fire({
                 title: 'Yükleniyor...',
-                text: 'Lütfen bekleyin',
+                text: 'Logo sunucuya yükleniyor, lütfen bekleyin.',
                 allowOutsideClick: false,
                 didOpen: () => { Swal.showLoading() }
             });
@@ -266,26 +263,39 @@
             try {
                 // Convert to Base64
                 const reader = new FileReader();
+
+                reader.onerror = () => {
+                    Swal.fire('Hata', 'Dosya okunamadı.', 'error');
+                };
+
                 reader.onload = async (e) => {
-                    const base64Data = e.target.result.split(',')[1];
-                    const filename = `logo-${Date.now()}-${file.name}`;
+                    try {
+                        const base64Data = e.target.result.split(',')[1];
+                        // Safe filename
+                        const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+                        const filename = `logo-${Date.now()}-${safeName}`;
 
-                    // Upload via API
-                    const res = await fetch('/api/upload', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            filename: filename,
-                            file: base64Data,
-                            contentType: file.type,
-                            slug: slug
-                        })
-                    });
+                        // Upload via API
+                        const res = await fetch('/api/upload', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                filename: filename,
+                                file: base64Data,
+                                contentType: file.type,
+                                slug: slug
+                            })
+                        });
 
-                    if (res.ok) {
                         const data = await res.json();
+
+                        if (!res.ok) {
+                            throw new Error(data.error || 'Yükleme başarısız');
+                        }
+
                         // Set URL to input
                         document.getElementById('form-logo').value = data.url;
+
                         Swal.fire({
                             icon: 'success',
                             title: 'Yüklendi!',
@@ -293,16 +303,20 @@
                             timer: 1500,
                             showConfirmButton: false
                         });
-                    } else {
-                        throw new Error('Yükleme başarısız');
+
+                    } catch (uploadError) {
+                        console.error("Upload error details:", uploadError);
+                        Swal.fire('Hata', 'Yükleme sırasında hata oluştu: ' + uploadError.message, 'error');
                     }
                 };
+
                 reader.readAsDataURL(file);
+
             } catch (error) {
                 console.error(error);
-                Swal.fire('Hata', 'Dosya yüklenirken bir sorun oluştu.', 'error');
+                Swal.fire('Hata', 'Dosya işlenirken bir sorun oluştu.', 'error');
             } finally {
-                event.target.value = ''; // Reset input
+                event.target.value = ''; // Reset input to allow re-selection
             }
         }
 
