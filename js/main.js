@@ -343,41 +343,34 @@ async function fetchConfig() {
             try {
                 const startDate = new Date(config.weekly_hadiths.startDate);
                 const now = new Date();
-
-                // Hafta farkını bul (ms cinsinden fark / bir haftalık ms)
-                const diffTime = Math.abs(now - startDate);
-                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-                // Daha hassas hesap:
                 const oneWeek = 1000 * 60 * 60 * 24 * 7;
-                // Başlangıç tarihinden bugüne geçen hafta sayısı (0-indexed)
-                // Eğer startDate gelecekteyse 0. index, geçmişteyse hesapla.
-                let weekIndex = -1;
 
-                if (now >= startDate) {
-                    weekIndex = Math.floor((now - startDate) / oneWeek);
+                // Hafta indexini hesapla
+                let weekIndex = Math.floor((now - startDate) / oneWeek);
+
+                // Eğer negatifse (henüz başlamadıysa) ilk haftayı göster veya manuel'e düş
+                if (weekIndex < 0) weekIndex = 0;
+
+                // Eğer index array dışındaysa son haftayı göster (isteğe bağlı, veya döngü)
+                // Şimdilik sınırda tutalım:
+                if (weekIndex >= config.weekly_hadiths.weeks.length) {
+                    weekIndex = config.weekly_hadiths.weeks.length - 1;
                 }
 
                 if (weekIndex >= 0 && weekIndex < config.weekly_hadiths.weeks.length) {
                     const wData = config.weekly_hadiths.weeks[weekIndex];
-                    if (wData && (wData.text || wData.arabic)) {
-                        // Otomatik Hafta İsmi Oluştur (Eğer boşsa)
-                        let displayWeek = wData.week;
-
-                        // Tarih aralığını hesapla ve göster (İsteğe bağlı, şimdilik sadece haftayı gösterelim)
-                        // const currentWeekStart = new Date(startDate.getTime() + (weekIndex * oneWeek));
-                        // const currentWeekEnd = new Date(currentWeekStart.getTime() + (6 * 24 * 60 * 60 * 1000));
-                        // const dateRange = `${currentWeekStart.getDate()} - ${currentWeekEnd.getDate()} ${currentWeekEnd.toLocaleString('tr-TR', { month: 'long' })}`;
-
+                    if (wData) {
                         selectedHadith = {
-                            week: displayWeek || `${weekIndex + 1}. HAFTA`,
+                            week: wData.week || `${weekIndex + 1}. HAFTA`,
                             text: wData.text,
                             arabic: wData.arabic,
-                            img: wData.img // img desteği varsa
+                            img: wData.img,
+                            weekIndex: weekIndex // Tarih hesaplama için sakla
                         };
-                        console.log(`Haftalık programdan ${weekIndex + 1}. hafta hadisi seçildi.`);
+                        console.log(`Haftalık program: ${weekIndex + 1}. hafta`, selectedHadith);
                     }
                 }
-            } catch (e) { console.error('Haftalık hadis hesaplama hatası:', e); }
+            } catch (e) { console.error('Haftalık hadis hatası:', e); }
         }
 
         // 2. Manuel Hadis (Fallback)
@@ -724,14 +717,15 @@ function onYouTubeIframeAPIReady() {
     player = new YT.Player('player', {
         height: '100%',
         width: '100%',
-        videoId: '', // Başlangıçta boş, loadVideoById ile yüklenecek
+        videoId: '',
         playerVars: {
             'autoplay': 1,
             'controls': 0,
             'rel': 0,
             'showinfo': 0,
-            'mute': 1, // Otomatik oynatma için
-            'modestbranding': 1
+            'mute': 1, // Otomatik oynatma için sessiz başlatmak zorunludur
+            'modestbranding': 1,
+            'loop': 1
         },
         events: {
             'onReady': onPlayerReady,
