@@ -380,24 +380,38 @@
                     </h3>
 
                     <div class="mb-6">
-                        <label class="block text-xs font-bold text-slate-500 mb-1">YouTube Video URL (Video Modu
-                            İçin)</label>
-                        <input type="text" id="config-video_url"
+                        <label class="block text-xs font-bold text-slate-500 mb-1">YouTube Video Listesi (Her satıra bir
+                            URL)</label>
+                        <textarea id="raw-video-urls" rows="3"
                             class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-pink-500 transition"
-                            placeholder="https://youtube.com/watch?v=...">
+                            placeholder="https://youtube.com/watch?v=..."></textarea>
                     </div>
 
                     <div class="mb-6">
-                        <label class="block text-xs font-bold text-slate-500 mb-1">Ana Galeri Resimleri (Her satıra bir
-                            URL)</label>
-                        <textarea id="raw-gallery-links" rows="3"
+                        <div class="flex justify-between items-end mb-1">
+                            <label class="block text-xs font-bold text-slate-500">Ana Galeri Resimleri</label>
+                            <button type="button" onclick="document.getElementById('upload-gallery-input').click()"
+                                class="text-xs bg-pink-100 text-pink-600 px-2 py-1 rounded hover:bg-pink-200 transition font-bold">
+                                <i class="fa-solid fa-cloud-arrow-up"></i> Toplu Yükle
+                            </button>
+                            <input type="file" id="upload-gallery-input" multiple
+                                accept="image/png, image/jpeg, image/jpg" class="hidden">
+                        </div>
+                        <textarea id="raw-gallery-links" rows="4"
                             class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-pink-500 transition"
                             placeholder="https://ornek.com/resim1.jpg"></textarea>
                     </div>
 
                     <div>
-                        <label class="block text-xs font-bold text-slate-500 mb-1">Sol Galeri Resimleri
-                            (Opsiyonel)</label>
+                        <div class="flex justify-between items-end mb-1">
+                            <label class="block text-xs font-bold text-slate-500">Sol Galeri Resimleri</label>
+                            <button type="button" onclick="document.getElementById('upload-left-gallery-input').click()"
+                                class="text-xs bg-pink-100 text-pink-600 px-2 py-1 rounded hover:bg-pink-200 transition font-bold">
+                                <i class="fa-solid fa-cloud-arrow-up"></i> Toplu Yükle
+                            </button>
+                            <input type="file" id="upload-left-gallery-input" multiple
+                                accept="image/png, image/jpeg, image/jpg" class="hidden">
+                        </div>
                         <textarea id="raw-left-gallery-links" rows="3"
                             class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-pink-500 transition"
                             placeholder="https://ornek.com/resim2.jpg"></textarea>
