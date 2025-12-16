@@ -140,7 +140,7 @@ async function fetchConfig() {
             return;
         }
 
-        const res = await fetch(`/api/get-config?slug=${slug}`);
+        const res = await fetch(`/api/get-config?slug=${slug}&_t=${Date.now()}`);
 
         if (res.status === 404) {
             let errInfo = {};
@@ -855,6 +855,11 @@ async function fetchWeather() {
 // Initial Fetch and Interval
 fetchWeather();
 setInterval(fetchWeather, 30 * 60 * 1000); // 30 Mins
+
+// Auto Refresh Page every 30 minutes to fetch new code/config cleanly
+setTimeout(() => {
+    window.location.reload();
+}, 30 * 60 * 1000);
 
 // --- SOL GALERİ ROTASYONU ---
 // (Değişkenler yukarı taşındı)
