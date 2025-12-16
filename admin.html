@@ -174,8 +174,21 @@
                         </div>
                         <div class="md:col-span-2">
                             <label class="block text-xs font-bold text-slate-500 mb-1">Logo URL</label>
-                            <input type="text" id="config-institution_logo"
-                                class="w-full p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none transition">
+                            <div class="flex gap-2">
+                                <input type="text" id="config-institution_logo"
+                                    class="flex-1 p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-blue-500 transition"
+                                    placeholder="https://...">
+                                <button type="button" onclick="document.getElementById('upload-logo-input').click()"
+                                    class="bg-blue-100 text-blue-600 px-4 rounded-xl hover:bg-blue-200 transition font-bold text-sm">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i> Yükle
+                                </button>
+                                <button type="button" id="delete-logo-btn"
+                                    class="bg-red-100 text-red-600 px-4 rounded-xl hover:bg-red-200 transition font-bold text-sm">
+                                    <i class="fa-solid fa-trash"></i> Sil
+                                </button>
+                            </div>
+                            <input type="file" id="upload-logo-input" accept="image/png, image/jpeg, image/jpg"
+                                class="hidden">
                         </div>
                     </div>
                 </div>
@@ -783,6 +796,50 @@
         // Event Listeners
         document.getElementById('upload-left-gallery-input').addEventListener('change', (e) => {
             handleUpload(e.target.files, 'raw-left-gallery-links');
+        });
+
+        // Logo Listeners
+        document.getElementById('upload-logo-input').addEventListener('change', async (e) => {
+            const files = e.target.files;
+            if (!files || files.length === 0) return;
+            const file = files[0];
+
+            // Show loading
+            const btn = document.querySelector('[onclick="document.getElementById(\'upload-logo-input\').click()"]');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            btn.disabled = true;
+
+            try {
+                const base64 = await toBase64(file);
+                const res = await fetch('/api/upload', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        filename: 'logo-' + file.name,
+                        fileBase64: base64,
+                        contentType: file.type,
+                        slug: currentSlug
+                    })
+                });
+                const data = await res.json();
+                if (data.success && data.url) {
+                    document.getElementById('config-institution_logo').value = data.url;
+                    Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Logo güncellendi', timer: 2000, showConfirmButton: false });
+                } else {
+                    throw new Error(data.error);
+                }
+            } catch (err) {
+                console.error(err);
+                Swal.fire('Hata', 'Logo yüklenemedi', 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        });
+
+        document.getElementById('delete-logo-btn').addEventListener('click', () => {
+            document.getElementById('config-institution_logo').value = '';
         });
 
         // --- CLEANER LOGIC ---
