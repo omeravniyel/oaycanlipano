@@ -320,6 +320,9 @@ async function fetchConfig() {
         if (!dormActive) {
             if (dormCard) dormCard.style.display = 'none';
             if (hadithCard) {
+                // If dorm inactive, hadith takes full relative space (but we usually want it to just expand)
+                // Actually the design seems to rely on flex ratios.
+                // If dorm is hidden, hadith should probably just be flex-1 or take available space.
                 hadithCard.classList.remove('flex-[3]');
                 hadithCard.classList.add('flex-1');
             }
@@ -329,7 +332,6 @@ async function fetchConfig() {
                 hadithCard.classList.add('flex-[3]');
                 hadithCard.classList.remove('flex-1');
             }
-            // İsim rotasyonunu başlat
             startDormNameRotation();
         }
 
