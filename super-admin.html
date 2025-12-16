@@ -1,1 +1,445 @@
-<!-- super-admin.html has been cleared per user request. All admin functionality moved to integrated panel. -->
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Süper Yönetici Paneli</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex flex-col">
+
+    <!-- LOGIN MODAL -->
+    <div id="login-modal"
+        class="fixed inset-0 bg-gray-900 bg-opacity-90 z-50 flex items-center justify-center backdrop-blur-sm">
+        <div class="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md transform transition-all scale-100">
+            <div class="text-center mb-8">
+                <div class="bg-indigo-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-user-shield text-3xl text-indigo-600"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800">Süper Yönetici Girişi</h2>
+                <p class="text-gray-500 text-sm mt-2">Devam etmek için ana şifreyi giriniz.</p>
+            </div>
+            <form id="login-form" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Ana Şifre</label>
+                    <input type="password" id="master-password"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
+                        placeholder="••••••••" required>
+                </div>
+                <button type="submit"
+                    class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5">
+                    Giriş Yap
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT (Hidden by default) -->
+    <div id="main-content" class="hidden flex-1 flex flex-col">
+
+        <!-- Navbar -->
+        <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-30">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex items-center gap-3">
+                        <i class="fas fa-shield-alt text-indigo-600 text-2xl"></i>
+                        <h1 class="text-xl font-bold text-gray-900 tracking-tight">Süper Yönetici Paneli</h1>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <span class="text-sm text-gray-500 hidden sm:block">Hoşgeldiniz, <span
+                                class="font-bold text-gray-800">Admin</span></span>
+                        <button onclick="logout()"
+                            class="text-gray-500 hover:text-red-600 transition-colors bg-gray-50 hover:bg-red-50 p-2 rounded-lg">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <div class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+
+            <!-- Actions Bar -->
+            <div class="flex justify-between items-center mb-8">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800">Kurumlar</h2>
+                    <p class="text-gray-500 text-sm mt-1">Sistemde kayıtlı olan tüm panoları buradan yönetebilirsiniz.
+                    </p>
+                </div>
+                <button onclick="openModal()"
+                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg shadow-md hover:shadow-lg transition-all flex items-center gap-2 font-medium">
+                    <i class="fas fa-plus"></i> Yeni Kurum Ekle
+                </button>
+            </div>
+
+            <!-- Loader -->
+            <div id="loader" class="hidden flex justify-center py-12">
+                <i class="fas fa-circle-notch fa-spin text-4xl text-indigo-500"></i>
+            </div>
+
+            <!-- Institutions Grid -->
+            <div id="institutions-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Items will be populated here -->
+            </div>
+
+        </div>
+    </div>
+
+    <!-- EDIT/ADD MODAL -->
+    <div id="edit-modal"
+        class="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div class="border-b border-gray-100 px-6 py-4 flex justify-between items-center bg-gray-50 rounded-t-2xl">
+                <h3 id="modal-title" class="text-lg font-bold text-gray-800">Yeni Kurum Ekle</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <form id="institution-form" class="p-6 space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Slug (ID) -->
+                    <div class="col-span-2">
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Kurum URL Yolu (Slug)</label>
+                        <div class="relative">
+                            <span class="absolute left-3 top-3 text-gray-400 text-sm">/</span>
+                            <input type="text" id="form-slug"
+                                class="pl-6 w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                placeholder="ornek-koleji" required>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Bu alan kurumun panele erişim adresini belirler (örn:
+                            super-pano.com/<b>ornek-koleji</b>)</p>
+                    </div>
+
+                    <!-- Name -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Kurum Adı</label>
+                        <input type="text" id="form-name"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                            placeholder="Örnek Koleji" required>
+                    </div>
+
+                    <!-- Password -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Yönetici Şifresi</label>
+                        <div class="relative">
+                            <input type="text" id="form-password"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                                placeholder="Şifre123" required>
+                            <button type="button" onclick="generatePassword()"
+                                class="absolute right-2 top-1.5 text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 px-2 py-1 rounded transition-colors">Oluştur</button>
+                        </div>
+                    </div>
+
+                    <!-- Type -->
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">Kurum Tipi</label>
+                        <select id="form-type"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="Ortaokul">Ortaokul</option>
+                            <option value="Lise">Lise</option>
+                            <option value="Yurt">Yurt</option>
+                            <option value="Kurs">Kurs</option>
+                        </select>
+                    </div>
+
+                    <!-- Logo/Type Settings -->
+                    <div class="col-span-2 bg-gray-50 p-4 rounded-xl border border-gray-200">
+                        <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Gelişmiş Ayarlar</h4>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Logo Lock -->
+                            <div
+                                class="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-200">
+                                <span class="text-sm font-medium text-gray-700">Logo Değişikliği Kilitli</span>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="form-logo-locked" class="sr-only peer">
+                                    <div
+                                        class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-500">
+                                    </div>
+                                </label>
+                            </div>
+
+                            <!-- Dorm Module Active -->
+                            <div
+                                class="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-200">
+                                <span class="text-sm font-medium text-gray-700">Yurt Yarışma Modülü</span>
+                                <label class="relative inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" id="form-dorm-active" class="sr-only peer" checked>
+                                    <div
+                                        class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500">
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Logo URL Override -->
+                        <div class="mt-4">
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Zorunlu Logo URL
+                                (Opsiyonel)</label>
+                            <input type="text" id="form-logo"
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"
+                                placeholder="Resim linki yapıştırın...">
+                            <p class="text-xs text-gray-500 mt-1">Buraya link girilirse ve kilitlenirse admin
+                                değiştiremez.</p>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="pt-4 flex justify-end gap-3 border-t border-gray-100 mt-6">
+                    <button type="button" onclick="closeModal()"
+                        class="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors">İptal</button>
+                    <button type="submit"
+                        class="px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 shadow-md hover:shadow-lg font-medium transition-all">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // --- AUTH ---
+        let MASTER_PASSWORD = localStorage.getItem('super_admin_pass') || "";
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (MASTER_PASSWORD) {
+                verifyLogin(MASTER_PASSWORD);
+            }
+        });
+
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const pass = document.getElementById('master-password').value;
+            verifyLogin(pass);
+        });
+
+        async function verifyLogin(pass) {
+            try {
+                // Şifreyi doğrulamak için bir "list" isteği atalım
+                const res = await fetch('/api/manage-institutions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'list', master_password: pass })
+                });
+
+                if (res.ok) {
+                    MASTER_PASSWORD = pass;
+                    localStorage.setItem('super_admin_pass', pass);
+                    document.getElementById('login-modal').classList.add('hidden');
+                    document.getElementById('main-content').classList.remove('hidden');
+                    fetchInstitutions();
+                } else {
+                    const data = await res.json();
+                    Swal.fire({ icon: 'error', title: 'Hatalı Şifre', text: data.error || 'Giriş yapılamadı.' });
+                    localStorage.removeItem('super_admin_pass');
+                }
+            } catch (e) {
+                console.error(e);
+                Swal.fire('Hata', 'Sunucu bağlantı hatası', 'error');
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('super_admin_pass');
+            window.location.reload();
+        }
+
+        // --- MAIN LOGIC ---
+        let institutions = [];
+
+        async function fetchInstitutions() {
+            const grid = document.getElementById('institutions-grid');
+            const loader = document.getElementById('loader');
+
+            grid.innerHTML = '';
+            loader.classList.remove('hidden');
+
+            try {
+                const res = await fetch('/api/manage-institutions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'list', master_password: MASTER_PASSWORD })
+                });
+                const data = await res.json();
+                institutions = data.institutions || [];
+                renderInstitutions();
+            } catch (e) {
+                Swal.fire('Hata', 'Listeleme hatası', 'error');
+            } finally {
+                loader.classList.add('hidden');
+            }
+        }
+
+        function renderInstitutions() {
+            const grid = document.getElementById('institutions-grid');
+            grid.innerHTML = '';
+
+            institutions.forEach(inst => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-xl shadow border border-gray-100 p-5 hover:shadow-lg transition-all group relative';
+
+                // Config extraction safe checks
+                const cfg = inst.config || {};
+                const logo = cfg.institution_logo || 'https://via.placeholder.com/50?text=Logo';
+                const type = cfg.institution_type || 'Bilinmiyor';
+
+                card.innerHTML = `
+                    <div class="flex items-start gap-4">
+                        <div class="w-16 h-16 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center p-2 flex-shrink-0">
+                            <img src="${logo}" class="max-w-full max-h-full object-contain" onerror="this.src='https://via.placeholder.com/50?text=Error'">
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <h3 class="text-lg font-bold text-gray-900 truncate">${inst.name}</h3>
+                            <a href="/${inst.slug}/admin" target="_blank" class="text-xs text-indigo-500 hover:text-indigo-700 hover:underline flex items-center gap-1 mt-0.5">
+                                <i class="fas fa-external-link-alt"></i> /${inst.slug}
+                            </a>
+                            <div class="mt-2 flex items-center gap-2">
+                                <span class="px-2 py-1 bg-gray-100 text-gray-600 text-[0.65rem] uppercase font-bold rounded tracking-wider">${type}</span>
+                                <span class="text-xs text-gray-400 font-mono bg-gray-50 px-2 py-1 rounded border border-gray-100">Pass: ${inst.password}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button onclick="editInst('${inst.slug}')" class="p-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 transition-colors" title="Düzenle">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="deleteInst('${inst.slug}')" class="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors" title="Sil">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+
+        // --- CRUD ACTIONS ---
+        function openModal() {
+            document.getElementById('form-slug').value = '';
+            document.getElementById('form-slug').readOnly = false;
+            document.getElementById('form-name').value = '';
+            document.getElementById('form-password').value = '';
+            document.getElementById('form-type').value = 'Ortaokul';
+            document.getElementById('form-logo').value = '';
+            document.getElementById('form-logo-locked').checked = false;
+            document.getElementById('form-dorm-active').checked = true;
+
+            document.getElementById('modal-title').innerText = 'Yeni Kurum Ekle';
+            document.getElementById('edit-modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('edit-modal').classList.add('hidden');
+        }
+
+        function editInst(slug) {
+            const inst = institutions.find(i => i.slug === slug);
+            if (!inst) return;
+            const cfg = inst.config || {};
+
+            document.getElementById('form-slug').value = inst.slug;
+            document.getElementById('form-slug').readOnly = true; // Slug cannot be changed on edit
+            document.getElementById('form-name').value = inst.name;
+            document.getElementById('form-password').value = inst.password;
+            document.getElementById('form-type').value = cfg.institution_type || 'Ortaokul';
+
+            // Advanced
+            document.getElementById('form-logo').value = cfg.institution_logo || '';
+            document.getElementById('form-logo-locked').checked = cfg.logo_locked || false;
+            document.getElementById('form-dorm-active').checked = (cfg.module_dorm_active !== undefined) ? cfg.module_dorm_active : true;
+
+            document.getElementById('modal-title').innerText = 'Kurumu Düzenle';
+            document.getElementById('edit-modal').classList.remove('hidden');
+        }
+
+        async function deleteInst(slug) {
+            const result = await Swal.fire({
+                title: 'Emin misiniz?',
+                text: `${slug} kurumunu silmek üzeresiniz. Bu işlem geri alınamaz!`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Evet, Sil',
+                cancelButtonText: 'İptal'
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    const res = await fetch('/api/manage-institutions', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'delete', master_password: MASTER_PASSWORD, payload: { slug } })
+                    });
+
+                    if (res.ok) {
+                        Swal.fire('Silindi!', 'Kurum başarıyla silindi.', 'success');
+                        fetchInstitutions();
+                    } else {
+                        Swal.fire('Hata', 'Silme işlemi başarısız.', 'error');
+                    }
+                } catch (e) {
+                    Swal.fire('Hata', 'Sunucu hatası.', 'error');
+                }
+            }
+        }
+
+        document.getElementById('institution-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const payload = {
+                slug: document.getElementById('form-slug').value,
+                name: document.getElementById('form-name').value,
+                password: document.getElementById('form-password').value,
+                type: document.getElementById('form-type').value,
+                // Advanced
+                institution_logo: document.getElementById('form-logo').value,
+                logo_locked: document.getElementById('form-logo-locked').checked,
+                module_dorm_active: document.getElementById('form-dorm-active').checked
+            };
+
+            try {
+                const res = await fetch('/api/manage-institutions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'upsert', master_password: MASTER_PASSWORD, payload })
+                });
+
+                if (res.ok) {
+                    Swal.fire('Başarılı', 'İşlem tamamlandı.', 'success');
+                    closeModal();
+                    fetchInstitutions();
+                } else {
+                    const d = await res.json();
+                    Swal.fire('Hata', d.error || 'Kaydetme başarısız.', 'error');
+                }
+            } catch (e) {
+                console.error(e);
+                Swal.fire('Hata', 'Sunucu hatası.', 'error');
+            }
+        });
+
+        function generatePassword() {
+            const chars = 'abcdefghjkmnpqrstuvwxyz23456789';
+            let pass = '';
+            for (let i = 0; i < 6; i++) {
+                pass += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            document.getElementById('form-password').value = pass;
+        }
+
+    </script>
+</body>
+
+</html>

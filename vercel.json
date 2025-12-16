@@ -11,6 +11,10 @@
             "destination": "/api/$1"
         },
         {
+            "source": "/super-admin",
+            "destination": "/super-admin.html"
+        },
+        {
             "source": "/([^/]+)/admin",
             "destination": "/admin.html"
         },
