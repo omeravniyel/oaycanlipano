@@ -146,22 +146,22 @@
 
                             <!-- Top: Header Group -->
                             <div
-                                class="w-full flex flex-col items-center border-b border-emerald-200/60 pb-3 bg-emerald-50/80 pt-4 px-4 shadow-sm">
+                                class="w-full flex flex-col items-center border-b-[3px] border-emerald-100/80 pb-3 bg-gradient-to-b from-white via-emerald-50/50 to-emerald-50 pt-5 px-4 shadow-sm relative z-20">
                                 <!-- Static Title -->
                                 <span
-                                    class="text-[0.65rem] font-black text-emerald-400/90 uppercase tracking-[0.25em] mb-1">
+                                    class="text-[0.7rem] font-black text-emerald-500/80 uppercase tracking-[0.3em] mb-1">
                                     HAFTANIN HADİS-İ ŞERİFİ
                                 </span>
 
                                 <!-- Dynamic Week Info (Prominent) -->
                                 <div id="hadith-week"
-                                    class="text-xl md:text-2xl text-emerald-900 font-bold font-serif-tr tracking-wide mb-2 drop-shadow-sm">
+                                    class="text-2xl md:text-3xl text-emerald-950 font-black font-serif-tr tracking-tight mb-3 drop-shadow-sm uppercase">
                                     Hafta Bilgisi Yükleniyor...
                                 </div>
 
                                 <!-- Hijri Date (Badge) -->
                                 <span
-                                    class="bg-gradient-to-r from-emerald-600 to-emerald-500 text-white px-4 py-0.5 rounded-full text-[0.7rem] font-bold shadow flex items-center gap-2"
+                                    class="bg-emerald-600/90 text-white px-5 py-1 rounded-full text-[0.75rem] font-bold shadow-md flex items-center gap-2 border border-emerald-400/30"
                                     id="hijri-date">
                                     <span>📅</span> ---
                                 </span>
@@ -182,19 +182,19 @@
 
                                 <!-- Arabic Text (ALWAYS TOP) -->
                                 <div id="hadith-arabic"
-                                    class="text-[2.5rem] lg:text-[2.8rem] font-arabic text-emerald-900 leading-[1.8] drop-shadow-sm w-full px-4"
+                                    class="text-[3rem] lg:text-[3.5rem] font-bold font-arabic text-emerald-900 leading-[1.6] drop-shadow-sm w-full px-4"
                                     dir="rtl">
                                     <!-- JS Content -->
                                 </div>
 
                                 <!-- Turkish Text (ALWAYS BOTTOM) -->
                                 <div id="hadith-content"
-                                    class="text-lg lg:text-xl font-serif-tr text-slate-700 leading-relaxed relative px-8 italic font-medium max-w-[90%]">
+                                    class="text-xl lg:text-2xl font-serif-tr text-slate-800 leading-normal relative px-8 font-medium max-w-[95%]">
                                     <span
-                                        class="absolute top-0 left-0 text-4xl text-emerald-400 font-serif opacity-40">"</span>
+                                        class="absolute top-0 left-0 text-5xl text-emerald-300 font-serif opacity-40 -translate-x-2 -translate-y-2">"</span>
                                     Yükleniyor...
                                     <span
-                                        class="absolute bottom-0 right-0 text-4xl text-emerald-400 font-serif opacity-40">"</span>
+                                        class="absolute bottom-0 right-0 text-5xl text-emerald-300 font-serif opacity-40 translate-x-2 translate-y-2">"</span>
                                 </div>
 
                                 <img id="hadith-image" src=""
