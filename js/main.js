@@ -320,13 +320,13 @@ async function fetchConfig() {
         if (!dormActive) {
             if (dormCard) dormCard.style.display = 'none';
             if (hadithCard) {
-                hadithCard.classList.remove('flex-[4]');
+                hadithCard.classList.remove('flex-[5.5]');
                 hadithCard.classList.add('flex-1');
             }
         } else {
             if (dormCard) dormCard.style.display = 'flex';
             if (hadithCard) {
-                hadithCard.classList.add('flex-[4]');
+                hadithCard.classList.add('flex-[5.5]');
                 hadithCard.classList.remove('flex-1');
             }
             // İsim rotasyonunu başlat
