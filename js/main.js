@@ -457,11 +457,21 @@ async function fetchConfig() {
 
 
         // 7. Video Listesi (Playlist)
+        videoPlaylist = [];
         if (config.video_urls && Array.isArray(config.video_urls) && config.video_urls.length > 0) {
             videoPlaylist = config.video_urls;
         } else if (config.video_url) {
-            videoPlaylist = [config.video_url];
+            // Fallback for single video
+            let vUrl = config.video_url;
+            // Bazen string array gibi gelebilir "["..."]"
+            if (vUrl.startsWith('[') && vUrl.endsWith(']')) {
+                try { videoPlaylist = JSON.parse(vUrl); } catch (e) { videoPlaylist = [vUrl]; }
+            } else {
+                videoPlaylist = [vUrl];
+            }
         }
+        // Admin panelinden gelen boş satırları temizle
+        videoPlaylist = videoPlaylist.filter(v => v && v.trim().length > 5);
 
         // --- 8. BAŞLAT ---
         if (videoPlaylist.length > 0) {
@@ -642,60 +652,87 @@ fetchConfig();
 var player;
 var galleryImages = [];
 var currentMediaState = 'none'; // 'video', 'slide'
-var videoPlaylist = []; // Artık array (Playlist)
-var currentVideoIndex = 0; // Hangi videodayız
+var videoPlaylist = [];
+var currentVideoIndex = 0;
 var slideIntervalHandle = null;
+var isYoutubeReady = false;
+var pendingVideoPlay = false;
 
 // Galeriyi Çek (Yerel klasörden)
 async function fetchGalleryImages() {
-    // ... (Mevcut kod aynı, sunucudan çekmediği için bu fonksiyon pek kullanılmıyor olabilir, main.js'deki config'e bakacağız)
+    // ...
 }
 
 function onYouTubeIframeAPIReady() {
+    isYoutubeReady = true;
     player = new YT.Player('player', {
         height: '100%',
         width: '100%',
-        videoId: '',
+        videoId: '', // Başlangıçta boş, loadVideoById ile yüklenecek
         playerVars: {
             'autoplay': 1,
             'controls': 0,
-            'rel': 0,            // İlgili videoları gizle
-            'showinfo': 0,       // Başlığı gizle
-            'mute': 1            // Tarayıcıların otomatik oynatması için Mute şarttır
+            'rel': 0,
+            'showinfo': 0,
+            'mute': 1, // Otomatik oynatma için
+            'modestbranding': 1
         },
         events: {
             'onReady': onPlayerReady,
-            'onStateChange': onPlayerStateChange
+            'onStateChange': onPlayerStateChange,
+            'onError': onPlayerError
         }
     });
 }
 
 function onPlayerReady(event) {
-    // Player hazır, ancak oynatma emri switchMedia'dan gelecek
+    // Eğer config yüklendiğinde video modu seçildiyse ve başlatılamadıysa şimdi başlat
+    if (pendingVideoPlay || currentMediaState === 'video') {
+        playCurrentVideo();
+    }
+}
+
+function onPlayerError(event) {
+    console.error("Youtube Player Error:", event.data);
+    // Hata durumunda bir sonraki videoya geç
+    playNextVideoOrSlide();
 }
 
 function onPlayerStateChange(event) {
     if (event.data == YT.PlayerState.ENDED) {
-        // Video bitti
-        currentVideoIndex++; // Sonraki videoya geç
+        playNextVideoOrSlide();
+    }
+}
 
-        if (currentVideoIndex < videoPlaylist.length) {
-            // Sırada başka video var, onu oynat
-            if (player && typeof player.loadVideoById === 'function') {
-                const vid = extractVideoID(videoPlaylist[currentVideoIndex]);
-                if (vid) {
-                    player.loadVideoById(vid);
-                    player.playVideo();
-                } else {
-                    // Link hatalıysa sonrakine geç veya bitir
-                    onPlayerStateChange({ data: YT.PlayerState.ENDED });
-                }
-            }
-        } else {
-            // Playlist bitti, Slider'a geç
-            currentVideoIndex = 0; // Bir dahaki sefere başa dönmek için sıfırla
-            switchMedia('slide');
-        }
+function playNextVideoOrSlide() {
+    currentVideoIndex++;
+    if (currentVideoIndex < videoPlaylist.length) {
+        playCurrentVideo();
+    } else {
+        // Liste bitti, slayta geç
+        currentVideoIndex = 0;
+        switchMedia('slide');
+    }
+}
+
+function playCurrentVideo() {
+    if (!player || typeof player.loadVideoById !== 'function') {
+        // Player henüz hazır değilse flag koy, ready olunca çalar
+        pendingVideoPlay = true;
+        return;
+    }
+
+    pendingVideoPlay = false;
+    const rawUrl = videoPlaylist[currentVideoIndex];
+    const vid = extractVideoID(rawUrl);
+
+    if (vid) {
+        player.loadVideoById(vid);
+        player.playVideo();
+    } else {
+        // Link geçersizse sonrakine atla
+        console.warn("Geçersiz Video Linki:", rawUrl);
+        playNextVideoOrSlide();
     }
 }
 
@@ -727,17 +764,8 @@ function switchMedia(mode) {
         if (playerContainer) playerContainer.classList.remove('hidden');
         if (playerEl) playerEl.style.display = 'block';
 
-        // İlk videoyu oynat (veya kaldığı yerden)
-        if (player && typeof player.loadVideoById === 'function') {
-            const vid = extractVideoID(videoPlaylist[currentVideoIndex]);
-            if (vid) {
-                player.loadVideoById(vid);
-                player.playVideo();
-            } else {
-                // Hatalı link ise galeriye geç
-                switchMedia('slide');
-            }
-        }
+        // Videoyu başlat
+        playCurrentVideo();
 
     } else if (mode === 'slide') {
         // --- 2. SLAYT MODU ---
