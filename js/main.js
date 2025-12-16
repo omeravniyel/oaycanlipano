@@ -467,11 +467,11 @@ async function fetchConfig() {
                 const score = parts[1] ? parts[1].trim() : '';
                 rawExams.push({
                     type: 'exam',
-                    title: config.exam_name || 'SINAV ŞAMPİYONLARI',
-                    badge: score ? `${score} PUAN` : '🏆',
+                    title: (config.exam_name ? config.exam_name + ' ŞAMPİYONLARI' : 'SINAV ŞAMPİYONLARI'),
+                    badge: 'MAŞAALLAH', // Sağ üst badge artık sabit veya başka bir şey olabilir çünkü puanı ismin yanına aldık
                     circle: '🥇', // Sıra numarası eklenebilir
                     topLabel: 'TEBRİK EDERİZ',
-                    content: name
+                    content: score ? `${name} - ${score} PUAN` : name
                 });
             });
         }
