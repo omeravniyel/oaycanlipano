@@ -14,7 +14,18 @@ export default async function handler(request, response) {
         return response.status(405).json({ error: 'Method Not Allowed' });
     }
 
-    const { action, master_password, payload } = request.body;
+    let { action, master_password, payload } = request.body;
+
+    // Fail-safe initialization
+    if (!payload) {
+        // If payload is undefined, check if the body itself contains the data (legacy/flat format)
+        // Check if important keys exist in the root
+        if (request.body.slug || request.body.name) {
+            payload = request.body;
+        } else {
+            payload = {}; // Prevent destructuring error
+        }
+    }
 
     // 1. Master Password Kontrolü
     if (master_password !== MASTER_PASSWORD) {
@@ -34,8 +45,13 @@ export default async function handler(request, response) {
         }
 
         // --- EKLEME / GÜNCELLEME ---
+        // --- EKLEME / GÜNCELLEME ---
         if (action === 'upsert') {
-            let { slug, name, password, type, institution_logo, logo_locked, institution_subtitle, institution_slogan1, institution_slogan2, cover, city, district, weekly_hadiths, admin_contact, module_dorm_active, module_bottom_right_type } = payload;
+            let { slug, name, password, type, institution_logo, logo_locked, institution_subtitle, institution_slogan1, institution_slogan2, cover, city, district, weekly_hadiths, admin_contact, module_dorm_active, module_bottom_right_type } = payload || {};
+
+            if (!slug) {
+                return response.status(400).json({ error: 'Kurum URL (Slug) alanı zorunludur!' });
+            }
             slug = slug.trim(); // Boşlukları temizle
 
             // Legacy support (eski payload uyumluluğu - frontend düzeltildi ama yine de kalsın)
@@ -141,7 +157,7 @@ export default async function handler(request, response) {
 
         // --- SİLME ---
         if (action === 'delete') {
-            const { slug } = payload;
+            const { slug } = payload || {};
             const { error } = await supabase
                 .from('institutions')
                 .delete()

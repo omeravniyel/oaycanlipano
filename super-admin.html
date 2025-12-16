@@ -502,7 +502,7 @@
                     const res = await fetch('/api/manage-institutions', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ action: 'delete', master_password: MASTER_PASSWORD, slug: slug })
+                        body: JSON.stringify({ action: 'delete', master_password: MASTER_PASSWORD, payload: { slug: slug } })
                     });
 
                     if (res.ok) {
@@ -544,7 +544,7 @@
                     body: JSON.stringify({
                         action: 'upsert',
                         master_password: MASTER_PASSWORD,
-                        ...payload
+                        payload: payload
                     })
                 });
 

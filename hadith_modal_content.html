@@ -1,0 +1,79 @@
+<!-- HADITH MANAGEMENT MODAL -->
+<div id="hadith-modal"
+    class="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col">
+        <!-- Header -->
+        <div
+            class="border-b border-gray-100 px-6 py-4 flex justify-between items-center bg-gray-50 rounded-t-2xl flex-shrink-0">
+            <div class="flex items-center gap-3">
+                <div class="bg-emerald-100 p-2 rounded-lg">
+                    <i class="fas fa-book-open text-emerald-600 text-xl"></i>
+                </div>
+                <div>
+                    <h3 class="text-lg font-bold text-gray-800">Merkezi Hadis Yönetimi</h3>
+                    <p class="text-xs text-gray-500">Seçilen tipteki tüm kurumlara haftalık hadisleri topluca dağıtır.
+                    </p>
+                </div>
+            </div>
+            <button onclick="closeHadithModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Body -->
+        <div class="p-6 overflow-y-auto flex-1 bg-gray-50/50">
+
+            <!-- Filters -->
+            <div
+                class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm mb-6 flex flex-col md:flex-row gap-4 items-end">
+                <div class="flex-1 w-full">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Hangi Kurum Tipi İçin Düzenleme
+                        Yapılacak?</label>
+                    <select id="hadith-target-type" onchange="loadLocalHadiths()"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
+                        <option value="Ortaokul">Ortaokul</option>
+                        <option value="Lise">Lise</option>
+                        <option value="Yurt">Yurt</option>
+                        <option value="Kurs">Kurs</option>
+                    </select>
+                </div>
+                <div class="flex-1 w-full">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Otomatik Tarih Hesapla
+                        (Başlangıç)</label>
+                    <input type="date" id="semester-start-date"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"
+                        onchange="recalculateWeekLabels()">
+                </div>
+            </div>
+
+            <!-- Weeks Container -->
+            <div id="weeks-container" class="space-y-6">
+                <!-- Weeks will be generated here -->
+            </div>
+
+            <!-- Add Week Button -->
+            <div class="mt-6 text-center">
+                <button onclick="addNewWeek()"
+                    class="bg-white border-2 border-dashed border-gray-300 text-gray-500 px-6 py-3 rounded-xl hover:border-emerald-400 hover:text-emerald-600 hover:bg-emerald-50 transition-all font-medium w-full">
+                    <i class="fas fa-plus-circle mr-2"></i> Yeni Hafta Ekle
+                </button>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div
+            class="border-t border-gray-100 px-6 py-4 bg-white rounded-b-2xl flex justify-between items-center flex-shrink-0">
+            <span class="text-xs text-gray-400">
+                <i class="fas fa-info-circle mr-1"></i> Değişiklikler tarayıcınızda otomatik hatırlanır.
+            </span>
+            <div class="flex gap-3">
+                <button onclick="closeHadithModal()"
+                    class="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors">Vazgeç</button>
+                <button onclick="saveAndDistributeHadiths()"
+                    class="px-6 py-2.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 shadow-md hover:shadow-lg font-medium transition-all flex items-center gap-2">
+                    <i class="fas fa-paper-plane"></i> Kaydet ve Dağıt
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
