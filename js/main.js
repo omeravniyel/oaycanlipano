@@ -462,9 +462,20 @@ async function fetchConfig() {
         if (config.exam_winners && Array.isArray(config.exam_winners)) {
             config.exam_winners.forEach(w => {
                 // Format: "Name - Puan" or just "Name"
-                const parts = w.split('-');
-                const name = parts[0].trim();
-                const score = parts[1] ? parts[1].trim() : '';
+                // Format: "Name - Puan" or "Name Puan"
+                let parts = w.split('-');
+                let name = parts[0].trim();
+                let score = parts[1] ? parts[1].trim() : '';
+
+                // Fallback: Eğer tire yoksa ve son kelime sayıysa onu puan kabul et
+                if (!score) {
+                    const spaces = name.split(' ');
+                    const last = spaces[spaces.length - 1];
+                    if (spaces.length > 1 && !isNaN(last)) {
+                        score = last;
+                        name = spaces.slice(0, -1).join(' ');
+                    }
+                }
                 rawExams.push({
                     type: 'exam',
                     title: (config.exam_name ? config.exam_name + ' ŞAMPİYONLARI' : 'SINAV ŞAMPİYONLARI'),
