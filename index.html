@@ -22,7 +22,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
     <link
-        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Dancing+Script:wght@600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Amiri:wght@400;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Dancing+Script:wght@600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Amiri:wght@400;700&family=Scheherazade+New:wght@400;700&display=swap"
         rel="stylesheet">
     <!-- Swiper CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
@@ -43,7 +43,7 @@
         }
 
         .font-arabic {
-            font-family: 'Amiri', serif;
+            font-family: 'Scheherazade New', serif;
         }
 
         /* Marquee */
@@ -121,49 +121,86 @@
 
                     <!-- HADİS KARTI -->
                     <div id="hadith-card"
-                        class="bg-dots rounded-xl shadow-md p-6 flex flex-col items-center text-center relative flex-[4] border border-green-100 justify-between transition-all duration-500">
+                        class="relative rounded-xl shadow-lg p-1 flex items-center justify-center flex-[4] transition-all duration-500 overflow-hidden bg-gradient-to-br from-[#f0f9ff] to-[#e6ffe6]">
 
-                        <!-- Üst Kısım: Tarih ve Başlık -->
-                        <div class="w-full flex flex-col items-center">
-                            <span
-                                class="bg-emerald-100 text-emerald-700 px-4 py-1 rounded-full text-sm font-bold shadow-sm mb-3"
-                                id="hijri-date">
-                                Hicri Takvim Yükleniyor...
-                            </span>
-                            <h2
-                                class="text-emerald-600 font-bold text-xs tracking-[0.2em] uppercase flex items-center gap-2 mb-2">
-                                <span>★</span> HAFTANIN HADİS-İ ŞERİFİ <span>★</span>
-                            </h2>
+                        <!-- Decorative Frame Pattern -->
+                        <div
+                            class="absolute inset-0 border-[6px] border-double border-emerald-200/50 rounded-xl pointer-events-none z-10">
+                        </div>
+                        <div
+                            class="absolute top-0 left-0 w-16 h-16 border-t-4 border-l-4 border-emerald-400 rounded-tl-xl z-10 opacity-50">
+                        </div>
+                        <div
+                            class="absolute top-0 right-0 w-16 h-16 border-t-4 border-r-4 border-emerald-400 rounded-tr-xl z-10 opacity-50">
+                        </div>
+                        <div
+                            class="absolute bottom-0 left-0 w-16 h-16 border-b-4 border-l-4 border-emerald-400 rounded-bl-xl z-10 opacity-50">
+                        </div>
+                        <div
+                            class="absolute bottom-0 right-0 w-16 h-16 border-b-4 border-r-4 border-emerald-400 rounded-br-xl z-10 opacity-50">
                         </div>
 
-                        <!-- Orta Kısım: Hadis İçeriği -->
-                        <div class="flex flex-col items-center justify-center flex-grow px-2 w-full">
+                        <!-- Main Content Container -->
+                        <div
+                            class="w-full h-full bg-white/60 backdrop-blur-sm rounded-lg flex flex-col items-center justify-between p-4 relative z-0">
 
-                            <!-- Arapça -->
-                            <div id="hadith-arabic"
-                                class="text-4xl mb-3 font-arabic text-emerald-800 leading-relaxed drop-shadow-sm w-full"
-                                dir="rtl">
-                                <!-- Arapça Metin JS'den gelecek -->
+                            <!-- Top: Date & Title -->
+                            <div class="w-full flex flex-col items-center border-b border-emerald-100 pb-2">
+                                <span
+                                    class="bg-emerald-600 text-white px-5 py-1 rounded-full text-xs font-bold shadow-sm tracking-wider mb-2"
+                                    id="hijri-date">
+                                    Hicri Takvim Yükleniyor...
+                                </span>
+                                <div class="flex items-center gap-2 text-emerald-800 opacity-80">
+                                    <span class="text-xs">❖</span>
+                                    <h2 class="font-serif-tr font-bold text-sm tracking-widest uppercase">Haftanın
+                                        Hadis-i Şerifi</h2>
+                                    <span class="text-xs">❖</span>
+                                </div>
                             </div>
 
-                            <!-- Türkçe -->
-                            <div id="hadith-content"
-                                class="text-3xl font-serif-tr font-bold text-gray-800 leading-snug relative px-6 italic">
-                                <span
-                                    class="absolute -top-4 -left-1 text-5xl text-emerald-200 font-serif opacity-50">"</span>
-                                Yükleniyor...
-                                <span
-                                    class="absolute -bottom-6 -right-1 text-5xl text-emerald-200 font-serif opacity-50">"</span>
+                            <!-- Middle: Hadith Content -->
+                            <div
+                                class="flex flex-col items-center justify-center flex-grow w-full text-center py-2 relative">
+
+                                <!-- Background Calligraphy Decoration (Optional) -->
+                                <div
+                                    class="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none select-none">
+                                    <svg viewBox="0 0 200 200" class="w-64 h-64 text-emerald-900 fill-current">
+                                        <path
+                                            d="M100,10 C50,10 10,50 10,100 C10,150 50,190 100,190 C150,190 190,150 190,100 C190,50 150,10 100,10 Z M100,180 C55,180 20,145 20,100 C20,55 55,20 100,20 C145,20 180,55 180,100 C180,145 145,180 100,180 Z" />
+                                    </svg>
+                                </div>
+
+                                <!-- Arabic Text -->
+                                <div id="hadith-arabic"
+                                    class="text-[2.5rem] lg:text-[3rem] font-arabic text-emerald-900 leading-[1.6] drop-shadow-sm w-full px-4 mb-4"
+                                    dir="rtl">
+                                    <!-- JS Content -->
+                                </div>
+
+                                <!-- Turkish Text -->
+                                <div id="hadith-content"
+                                    class="text-xl lg:text-2xl font-serif-tr text-slate-800 leading-normal relative px-8 italic font-medium">
+                                    <span
+                                        class="absolute top-0 left-0 text-4xl text-emerald-300 font-serif opacity-60">"</span>
+                                    Yükleniyor...
+                                    <span
+                                        class="absolute bottom-0 right-0 text-4xl text-emerald-300 font-serif opacity-60">"</span>
+                                </div>
+
+                                <img id="hadith-image" src=""
+                                    class="hidden max-h-48 mt-2 object-contain rounded-lg shadow-lg border-2 border-white" />
                             </div>
 
-                            <img id="hadith-image" src=""
-                                class="hidden max-h-48 mt-4 object-contain rounded-lg shadow-lg" />
-                        </div>
+                            <!-- Bottom: Week Info -->
+                            <div class="border-t border-emerald-100 pt-2 w-full flex justify-center">
+                                <div id="hadith-week"
+                                    class="text-emerald-600 text-[0.65rem] font-bold tracking-[0.2em] uppercase bg-emerald-50 px-4 py-1.5 rounded border border-emerald-100/50">
+                                    <!-- JS Content -->
+                                </div>
+                            </div>
 
-                        <!-- Alt Kısım: Hafta Bilgisi -->
-                        <div id="hadith-week"
-                            class="mt-2 text-emerald-500 text-xs font-bold tracking-[0.15em] uppercase bg-white/60 px-3 py-1 rounded-lg">
-                            <!-- Hafta Bilgisi JS'den gelecek -->
                         </div>
                     </div>
 
