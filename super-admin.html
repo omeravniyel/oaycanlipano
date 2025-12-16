@@ -153,6 +153,31 @@
                         </select>
                     </div>
 
+                    <!-- Contact Info -->
+                    <div class="col-span-2 bg-white p-4 rounded-xl border border-gray-200">
+                        <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Kurum Yöneticisi</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Adı Soyadı</label>
+                                <input type="text" id="form-contact-name"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"
+                                    placeholder="Ad Soyad">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">Telefon</label>
+                                <input type="text" id="form-contact-phone"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"
+                                    placeholder="0555...">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-semibold text-gray-700 mb-1">E-Posta</label>
+                                <input type="email" id="form-contact-email"
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"
+                                    placeholder="ornek@mail.com">
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Logo/Type Settings -->
                     <div class="col-span-2 bg-gray-50 p-4 rounded-xl border border-gray-200">
                         <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Gelişmiş Ayarlar</h4>
@@ -413,6 +438,11 @@
             document.getElementById('form-logo-locked').checked = false;
             document.getElementById('form-dorm-active').checked = true;
 
+            // Reset Contact
+            document.getElementById('form-contact-name').value = '';
+            document.getElementById('form-contact-phone').value = '';
+            document.getElementById('form-contact-email').value = '';
+
             document.getElementById('modal-title').innerText = 'Yeni Kurum Ekle';
             document.getElementById('edit-modal').classList.remove('hidden');
         }
@@ -436,6 +466,12 @@
             document.getElementById('form-logo').value = cfg.institution_logo || '';
             document.getElementById('form-logo-locked').checked = cfg.logo_locked || false;
             document.getElementById('form-dorm-active').checked = (cfg.module_dorm_active !== undefined) ? cfg.module_dorm_active : true;
+
+            // Populate Contact
+            const contact = cfg.admin_contact || {};
+            document.getElementById('form-contact-name').value = contact.name || '';
+            document.getElementById('form-contact-phone').value = contact.phone || '';
+            document.getElementById('form-contact-email').value = contact.email || '';
 
             document.getElementById('modal-title').innerText = 'Kurumu Düzenle';
             document.getElementById('edit-modal').classList.remove('hidden');
@@ -481,6 +517,12 @@
                 name: document.getElementById('form-name').value,
                 password: document.getElementById('form-password').value,
                 type: document.getElementById('form-type').value,
+                // Contact
+                admin_contact: {
+                    name: document.getElementById('form-contact-name').value,
+                    phone: document.getElementById('form-contact-phone').value,
+                    email: document.getElementById('form-contact-email').value
+                },
                 // Advanced
                 institution_logo: document.getElementById('form-logo').value,
                 logo_locked: document.getElementById('form-logo-locked').checked,
