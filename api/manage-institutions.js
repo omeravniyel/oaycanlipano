@@ -151,6 +151,45 @@ export default async function handler(request, response) {
             return response.status(200).json({ success: true });
         }
 
+        // --- HADİS DAĞITIMI (BULK UPDATE) ---
+        if (action === 'distribute_hadiths') {
+            const { type, hadiths } = payload;
+
+            // 1. İlgili tipteki kurumları çek
+            const { data: targets, error: fetchError } = await supabase
+                .from('institutions')
+                .select('*') // Json filtreleme supabase-js ile zor olabilir, client tarafında filtrelicem ya da raw query.
+                // Supabase postgrest filter for json is tricky. Let's fetch all and filter in JS for safety or use column filtering if type was a column.
+                // Wait, institution_type is inside config JSON.
+                // .filter('config->>institution_type', 'eq', type) // Bu sözdizimi değişebilir.
+                // Basitlik için hepsini çekip JS'de filtreleyelim (Kurum sayısı az olduğu için performans sorunu olmaz).
+                .select('*');
+
+            if (fetchError) throw fetchError;
+
+            const updates = [];
+            for (const inst of targets) {
+                const cfg = inst.config || {};
+                // Tip Kontrolü (Typosuz eşleşme)
+                if (cfg.institution_type === type) {
+                    cfg.weekly_hadiths = hadiths;
+
+                    // Update promise
+                    const p = supabase
+                        .from('institutions')
+                        .update({ config: cfg })
+                        .eq('slug', inst.slug);
+                    updates.push(p);
+                }
+            }
+
+            if (updates.length > 0) {
+                await Promise.all(updates);
+            }
+
+            return response.status(200).json({ success: true, count: updates.length });
+        }
+
         return response.status(400).json({ error: 'Geçersiz işlem' });
 
     } catch (err) {
