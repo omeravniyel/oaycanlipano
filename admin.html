@@ -202,12 +202,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <!-- Group 1 -->
                         <div class="bg-orange-50 rounded-xl p-4 border border-orange-100">
-                            <div class="mb-4">
-                                <label class="block text-xs font-bold text-orange-800 mb-1">1. Grup Başlığı (Örn:
-                                    Lise)</label>
-                                <input type="text" id="config-dorm1_custom_title"
-                                    class="w-full p-2 bg-white border border-orange-200 rounded-lg text-sm">
-                            </div>
+
                             <div class="mb-4">
                                 <label class="block text-xs font-bold text-orange-800 mb-1">Kazanan Yatakhane
                                     Adı</label>
@@ -245,12 +240,7 @@
 
                         <!-- Group 2 -->
                         <div class="bg-orange-50 rounded-xl p-4 border border-orange-100">
-                            <div class="mb-4">
-                                <label class="block text-xs font-bold text-orange-800 mb-1">2. Grup Başlığı (Örn:
-                                    Ortaokul)</label>
-                                <input type="text" id="config-dorm2_custom_title"
-                                    class="w-full p-2 bg-white border border-orange-200 rounded-lg text-sm">
-                            </div>
+
                             <div class="mb-4">
                                 <label class="block text-xs font-bold text-orange-800 mb-1">Kazanan Yatakhane
                                     Adı</label>
@@ -544,10 +534,10 @@
             if (data.module_dorm_active !== undefined) {
                 document.getElementById('config-module_dorm_active').checked = data.module_dorm_active;
             }
-            setVal('config-dorm1_custom_title', data.dorm1_custom_title);
+
             setVal('config-dorm1_name', data.dorm1_name);
             setVal('config-dorm1_count', data.dorm1_count);
-            setVal('config-dorm2_custom_title', data.dorm2_custom_title);
+
             setVal('config-dorm2_name', data.dorm2_name);
             setVal('config-dorm2_count', data.dorm2_count);
 
@@ -587,11 +577,11 @@
             data.dinner_menu = getVal('config-dinner_menu');
             data.module_dorm_active = document.getElementById('config-module_dorm_active').checked;
 
-            data.dorm1_custom_title = getVal('config-dorm1_custom_title');
+
             data.dorm1_name = getVal('config-dorm1_name');
             data.dorm1_count = parseInt(getVal('config-dorm1_count')) || 0;
 
-            data.dorm2_custom_title = getVal('config-dorm2_custom_title');
+
             data.dorm2_name = getVal('config-dorm2_name');
             data.dorm2_count = parseInt(getVal('config-dorm2_count')) || 0;
 
