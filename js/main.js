@@ -348,11 +348,10 @@ async function fetchConfig() {
                 // Hafta indexini hesapla
                 let weekIndex = Math.floor((now - startDate) / oneWeek);
 
-                // Eğer negatifse (henüz başlamadıysa) ilk haftayı göster veya manuel'e düş
+                // Eğer negatifse (henüz başlamadıysa) ilk haftayı göster
                 if (weekIndex < 0) weekIndex = 0;
 
-                // Eğer index array dışındaysa son haftayı göster (isteğe bağlı, veya döngü)
-                // Şimdilik sınırda tutalım:
+                // Eğer index array dışındaysa son haftayı göster
                 if (weekIndex >= config.weekly_hadiths.weeks.length) {
                     weekIndex = config.weekly_hadiths.weeks.length - 1;
                 }
@@ -388,26 +387,41 @@ async function fetchConfig() {
 
             // Tarih Aralığı Hesapla (Miladi)
             if (config.weekly_hadiths && config.weekly_hadiths.startDate) {
-                const start = new Date(config.weekly_hadiths.startDate);
-                // Mevcut hafta başlangıcı
-                const currentWeekStart = new Date(start);
-                currentWeekStart.setDate(start.getDate() + (weekIndex * 7));
+                try {
+                    // weekIndex kapsam dışındaydı, h.weekIndex kullanalım veya yeniden hesaplayalım
+                    let wIdx = 0;
+                    if (typeof h.weekIndex !== 'undefined') {
+                        wIdx = h.weekIndex;
+                    } else {
+                        // Manuel hesaplama (Fallback)
+                        const s = new Date(config.weekly_hadiths.startDate);
+                        const n = new Date();
+                        wIdx = Math.floor((n - s) / (1000 * 60 * 60 * 24 * 7));
+                    }
+                    if (wIdx < 0) wIdx = 0;
 
-                // Mevcut hafta bitişi
-                const currentWeekEnd = new Date(currentWeekStart);
-                currentWeekEnd.setDate(currentWeekStart.getDate() + 6);
+                    const start = new Date(config.weekly_hadiths.startDate);
+                    const currentWeekStart = new Date(start);
+                    currentWeekStart.setDate(start.getDate() + (wIdx * 7));
 
-                const options = { day: 'numeric', month: 'long' };
-                const sStr = currentWeekStart.toLocaleDateString('tr-TR', options);
-                const eStr = currentWeekEnd.toLocaleDateString('tr-TR', options);
+                    const currentWeekEnd = new Date(currentWeekStart);
+                    currentWeekEnd.setDate(currentWeekStart.getDate() + 6);
 
-                const rangeEl = document.getElementById('week-date-range');
-                if (rangeEl) rangeEl.innerText = `${sStr} - ${eStr}`;
+                    const options = { day: 'numeric', month: 'long' };
+                    const sStr = currentWeekStart.toLocaleDateString('tr-TR', options);
+                    const eStr = currentWeekEnd.toLocaleDateString('tr-TR', options);
+
+                    const rangeEl = document.getElementById('week-date-range');
+                    if (rangeEl) rangeEl.innerText = `${sStr} - ${eStr}`;
+                } catch (e) { console.log(e); }
             }
+
+            // Metin Kontrolü - Boşsa fallback metin
+            const hadithText = h.text || '...';
 
             document.getElementById('hadith-content').innerHTML = `
                 <i class="fas fa-quote-left absolute -top-6 left-0 text-3xl text-emerald-200/50"></i>
-                <span class="relative z-10 block py-2">${h.text || ''}</span>
+                <span class="relative z-10 block py-2">${hadithText}</span>
                 <i class="fas fa-quote-right absolute -bottom-6 right-0 text-3xl text-emerald-200/50"></i>
             `;
 
@@ -429,9 +443,6 @@ async function fetchConfig() {
         }
 
         // --- 7. Bilgi Kartı (Modüller) ---
-        // (Buradaki mantık unchanged, sadece değişken hazırlığı)
-
-
         // 1. Veri Kaynaklarını Hazırla
         const rawAnnouncements = [];
         let annList = config.announcements || [];
@@ -464,7 +475,6 @@ async function fetchConfig() {
                 });
             });
         }
-        // Legacy Support (exam_config / exam_results) removed for cleanliness as Admin Panel overrides it now.
 
         const rawMenus = [];
         if (config.menu_enabled) {
@@ -503,11 +513,6 @@ async function fetchConfig() {
         }
 
         // 2. Mod Seçimine Göre infoData'yı Doldur
-        // Super Admin ve Admin ayarlarını birleştiriyoruz.
-        // Super Admin 'module_bottom_right_type' kullanıyor (auto, exam, announcement).
-        // Regular Admin 'bottom_widget_type' kullanıyor (exam, student_of_week, most_improved, menu).
-        // Öncelik: Regular Admin ayarı varsa onu kullan (User Request). Yoksa Super Admin.
-
         let selectedType = config.bottom_widget_type;
         if (!selectedType && config.module_bottom_right_type) selectedType = config.module_bottom_right_type;
         if (!selectedType) selectedType = 'auto'; // Default
@@ -531,7 +536,6 @@ async function fetchConfig() {
         if (infoData.length === 0 && selectedType !== 'auto') {
             infoData = [...rawAnnouncements, ...rawMenus];
         }
-
 
         // 7. Video Listesi (Playlist)
         videoPlaylist = [];
@@ -559,11 +563,6 @@ async function fetchConfig() {
         }
 
         startDormNameRotation();
-
-
-
-        // B) Filter Info Data (Already handled above)
-
 
     } catch (error) {
         console.error("Config error:", error);
