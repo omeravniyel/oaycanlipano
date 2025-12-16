@@ -183,15 +183,26 @@
                             </div>
                         </div>
 
-                        <!-- Logo URL Override -->
+                        <!-- Logo URL Override with Upload -->
                         <div class="mt-4">
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">Zorunlu Logo URL
-                                (Opsiyonel)</label>
-                            <input type="text" id="form-logo"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"
-                                placeholder="Resim linki yapıştırın...">
-                            <p class="text-xs text-gray-500 mt-1">Buraya link girilirse ve kilitlenirse admin
-                                değiştiremez.</p>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1">Kurum Logosu</label>
+                            <div class="flex gap-2">
+                                <input type="text" id="form-logo"
+                                    class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50"
+                                    placeholder="Resim linki veya Yükle butonunu kullanın..." readonly>
+                                <input type="file" id="upload-logo-input" class="hidden" accept="image/png, image/jpeg">
+
+                                <button type="button" onclick="document.getElementById('upload-logo-input').click()"
+                                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
+                                    <i class="fas fa-upload mr-1"></i> Yükle
+                                </button>
+                                <button type="button" onclick="document.getElementById('form-logo').value = ''"
+                                    class="bg-red-100 hover:bg-red-200 text-red-600 px-3 py-2 rounded-lg text-sm font-medium transition-colors">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">Logo yükleyerek veya doğrudan link girerek
+                                belirleyebilirsiniz. PNG veya JPG formatı önerilir.</p>
                         </div>
                     </div>
 
@@ -208,6 +219,69 @@
     </div>
 
     <script>
+        // --- FILE UPLOAD LOGIC ---
+        async function handleLogoUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Slug checks for folder organization
+            const slug = document.getElementById('form-slug').value || 'common';
+
+            // Show loading state on button
+            const btn = event.target.nextElementSibling; // The Upload button (might need adjustment if structure changes, but finding by siblings is risky if HTML structure shifts. Let's rely on ID if possible or use event.target logic carefully. Actually, the button triggered input, input triggered change. The button is effectively separate in DOM flow. I will find button by ID or just use global loader concept. For simplicity, let's just use generic loading or no loading on button specifically, but Swal loading.)
+
+            // Better: Swal loading
+            Swal.fire({
+                title: 'Yükleniyor...',
+                text: 'Lütfen bekleyin',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading() }
+            });
+
+            try {
+                // Convert to Base64
+                const reader = new FileReader();
+                reader.onload = async (e) => {
+                    const base64Data = e.target.result.split(',')[1];
+                    const filename = `logo-${Date.now()}-${file.name}`;
+
+                    // Upload via API
+                    const res = await fetch('/api/upload', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            filename: filename,
+                            file: base64Data,
+                            contentType: file.type,
+                            slug: slug
+                        })
+                    });
+
+                    if (res.ok) {
+                        const data = await res.json();
+                        // Set URL to input
+                        document.getElementById('form-logo').value = data.url;
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Yüklendi!',
+                            text: 'Logo başarıyla yüklendi.',
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        throw new Error('Yükleme başarısız');
+                    }
+                };
+                reader.readAsDataURL(file);
+            } catch (error) {
+                console.error(error);
+                Swal.fire('Hata', 'Dosya yüklenirken bir sorun oluştu.', 'error');
+            } finally {
+                event.target.value = ''; // Reset input
+            }
+        }
+
+
         // --- AUTH ---
         let MASTER_PASSWORD = localStorage.getItem('super_admin_pass') || "";
 
@@ -215,6 +289,10 @@
             if (MASTER_PASSWORD) {
                 verifyLogin(MASTER_PASSWORD);
             }
+
+            // File Upload Listener
+            const uploadInput = document.getElementById('upload-logo-input');
+            if (uploadInput) uploadInput.addEventListener('change', handleLogoUpload);
         });
 
         document.getElementById('login-form').addEventListener('submit', (e) => {
