@@ -333,21 +333,75 @@ async function fetchConfig() {
             startDormNameRotation();
         }
 
-        // --- 6. Hadis ---
-        if (config.hadith) {
-            const h = (typeof config.hadith === 'string') ? JSON.parse(config.hadith) : config.hadith;
-            if (h.week && document.getElementById('hadith-week')) document.getElementById('hadith-week').innerText = h.week;
+        // --- 6. Hadis (Akıllı Seçim) ---
+        let selectedHadith = null;
+
+        // 1. Haftalık Program Kontrolü
+        if (config.weekly_hadiths && config.weekly_hadiths.startDate && Array.isArray(config.weekly_hadiths.weeks)) {
+            try {
+                const startDate = new Date(config.weekly_hadiths.startDate);
+                const now = new Date();
+
+                // Hafta farkını bul (ms cinsinden fark / bir haftalık ms)
+                const diffTime = Math.abs(now - startDate);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                // Daha hassas hesap:
+                const oneWeek = 1000 * 60 * 60 * 24 * 7;
+                // Başlangıç tarihinden bugüne geçen hafta sayısı (0-indexed)
+                // Eğer startDate gelecekteyse 0. index, geçmişteyse hesapla.
+                let weekIndex = -1;
+
+                if (now >= startDate) {
+                    weekIndex = Math.floor((now - startDate) / oneWeek);
+                }
+
+                if (weekIndex >= 0 && weekIndex < config.weekly_hadiths.weeks.length) {
+                    const wData = config.weekly_hadiths.weeks[weekIndex];
+                    if (wData && (wData.text || wData.arabic)) {
+                        // Otomatik Hafta İsmi Oluştur (Eğer boşsa)
+                        let displayWeek = wData.week;
+
+                        // Tarih aralığını hesapla ve göster (İsteğe bağlı, şimdilik sadece haftayı gösterelim)
+                        // const currentWeekStart = new Date(startDate.getTime() + (weekIndex * oneWeek));
+                        // const currentWeekEnd = new Date(currentWeekStart.getTime() + (6 * 24 * 60 * 60 * 1000));
+                        // const dateRange = `${currentWeekStart.getDate()} - ${currentWeekEnd.getDate()} ${currentWeekEnd.toLocaleString('tr-TR', { month: 'long' })}`;
+
+                        selectedHadith = {
+                            week: displayWeek || `${weekIndex + 1}. HAFTA`,
+                            text: wData.text,
+                            arabic: wData.arabic,
+                            img: wData.img // img desteği varsa
+                        };
+                        console.log(`Haftalık programdan ${weekIndex + 1}. hafta hadisi seçildi.`);
+                    }
+                }
+            } catch (e) { console.error('Haftalık hadis hesaplama hatası:', e); }
+        }
+
+        // 2. Manuel Hadis (Fallback)
+        if (!selectedHadith && config.hadith) {
+            selectedHadith = (typeof config.hadith === 'string') ? JSON.parse(config.hadith) : config.hadith;
+        }
+
+        // 3. Ekrana Bas
+        if (selectedHadith) {
+            const h = selectedHadith;
+
+            if (h.week && document.getElementById('hadith-week')) {
+                document.getElementById('hadith-week').innerText = h.week;
+            }
 
             document.getElementById('hadith-content').innerHTML = `
-                <span class="absolute -top-4 -left-1 text-5xl text-emerald-200 font-serif-tr opacity-50">“</span>
+                <span class="absolute top-0 left-0 text-5xl text-emerald-300 font-serif opacity-40 -translate-x-2 -translate-y-2">"</span>
                 ${h.text || ''}
-                <span class="absolute -bottom-6 -right-1 text-5xl text-emerald-200 font-serif-tr opacity-50">”</span>
+                <span class="absolute bottom-0 right-0 text-5xl text-emerald-300 font-serif opacity-40 translate-x-2 translate-y-2">"</span>
             `;
 
             const arabDiv = document.getElementById('hadith-arabic');
             arabDiv.innerText = h.arabic || '';
             arabDiv.style.display = h.arabic ? 'block' : 'none';
 
+            // Resim varsa
             if (h.img) {
                 document.getElementById('hadith-image').src = h.img;
                 document.getElementById('hadith-image').classList.remove('hidden');
