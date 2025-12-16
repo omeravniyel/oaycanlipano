@@ -179,7 +179,9 @@ async function fetchConfig() {
         if (config.institution_slogan2 !== undefined) document.getElementById('header-slogan2').innerText = config.institution_slogan2;
         else document.getElementById('header-slogan2').innerText = 'buluştuğu yer';
 
-        if (config.institution_logo) document.getElementById('header-logo').src = config.institution_logo;
+        if (config.institution_logo && config.institution_logo.trim() !== "") {
+            document.getElementById('header-logo').src = config.institution_logo;
+        }
 
         // --- 1. Başlıklar ---
         if (config.dorm_title) {
@@ -187,8 +189,22 @@ async function fetchConfig() {
             if (el) el.innerText = config.dorm_title;
         }
 
-        // --- 2. Galeri & Video ---
-        // Yeni Galeri Linkleri (Admin panelinden gelenler)
+        // --- 2. Galeri & Video Data Prep ---
+        // Video Playlist Hazırlığı
+        videoPlaylist = [];
+        if (config.video_urls && Array.isArray(config.video_urls) && config.video_urls.length > 0) {
+            videoPlaylist = config.video_urls;
+        } else if (config.video_url) {
+            let vUrl = config.video_url;
+            if (vUrl.startsWith('[') && vUrl.endsWith(']')) {
+                try { videoPlaylist = JSON.parse(vUrl); } catch (e) { videoPlaylist = [vUrl]; }
+            } else {
+                videoPlaylist = [vUrl];
+            }
+        }
+        videoPlaylist = videoPlaylist.filter(v => v && v.trim().length > 5);
+
+        // Ana Galeri Linkleri
         let adminGallery = [];
         if (config.gallery_links) {
             try {
@@ -197,12 +213,9 @@ async function fetchConfig() {
             } catch (e) { console.error('Galeri parse hatası', e); }
         }
 
-        // Eğer admin galerisi varsa onu kullan, yoksa klasörden çek
+        // Galeri DOM Güncelleme
         if (adminGallery.length > 0) {
             galleryImages = adminGallery;
-            console.log("Admin galerisi yüklendi:", galleryImages);
-
-            // Swiper Wrapper Güncelle (DOM'a bas)
             const wrapper = document.getElementById('slide-wrapper');
             if (wrapper) {
                 wrapper.innerHTML = '';
@@ -215,8 +228,7 @@ async function fetchConfig() {
             }
         }
 
-
-        // --- 2.1 Sol Galeri (Admin Panelinden) ---
+        // Sol Galeri
         let adminLeftGallery = [];
         if (config.left_gallery_links) {
             try {
@@ -227,29 +239,7 @@ async function fetchConfig() {
 
         if (adminLeftGallery.length > 0) {
             leftGalleryImages = adminLeftGallery;
-            console.log("Admin sol galerisi yüklendi:", leftGalleryImages);
-            // Rotasyonu başlat (mevcut varsa durdurup yeniden başlat)
             startLeftGalleryRotation();
-        }
-
-
-        let newVideoId = config.video_url || null;
-        if (newVideoId && newVideoId.trim() !== '') {
-            if (newVideoId.includes('v=')) newVideoId = newVideoId.split('v=')[1].split('&')[0];
-            else if (newVideoId.includes('youtu.be/')) newVideoId = newVideoId.split('youtu.be/')[1];
-            else if (newVideoId.includes('embed/')) newVideoId = newVideoId.split('embed/')[1];
-        } else {
-            newVideoId = null;
-        }
-
-        // Video ID değiştiyse veya ilk açılışsa state güncelle
-        if (newVideoId !== videoId) {
-            videoId = newVideoId;
-            if (videoId) switchMedia('video');
-            else switchMedia('slide'); // Video yoksa slayta dön
-        } else if (currentMediaState === 'none') {
-            if (videoId) switchMedia('video');
-            else switchMedia('slide');
         }
 
         // --- 3. Yemek Menüsü (Global) ---
@@ -257,10 +247,7 @@ async function fetchConfig() {
         window.dinnerMenu = config.dinner_menu || "";
 
         // --- 4. Günün Sözleri (Marquee) ---
-        // --- 4. Günün Sözleri (Marquee) ---
         let quotesText = "";
-
-        // A) Array Formatı (Yeni)
         if (config.quotes) {
             try {
                 const q = (typeof config.quotes === 'string') ? JSON.parse(config.quotes) : config.quotes;
@@ -269,13 +256,9 @@ async function fetchConfig() {
                 }
             } catch (e) { }
         }
-
-        // B) String Formatı (Eski / Fallback)
         if (!quotesText && config.quote_of_day) {
             quotesText = `★ ${config.quote_of_day} ★`;
         }
-
-        // C) Ekrana Bas
         const marquee = document.getElementById('marquee-text');
         if (marquee && quotesText) {
             marquee.innerHTML = quotesText;
@@ -283,63 +266,88 @@ async function fetchConfig() {
 
         // --- 5. Kazanan Yatakhaneler ---
         // Yatakhane 1
-        if (config.dorm1_names || config.dorm1_name) {
-            // Yeni Schema (admin.js)
-            document.getElementById('dorm1-name').innerText = config.dorm1_name || '---';
+        if (config.dorm1_names && Array.isArray(config.dorm1_names) && config.dorm1_names.length > 0) {
+            // Yeni Array Formatı
+            dorm1Names = config.dorm1_names.filter(n => n);
+            document.getElementById('dorm1-name').innerText = config.dorm1_name || '1. GRUP';
             document.getElementById('dorm1-count').innerText = config.dorm1_count ? (config.dorm1_count + '.KEZ') : '0.KEZ';
-            dorm1Names = Array.isArray(config.dorm1_names) ? config.dorm1_names.filter(n => n) : [];
+        } else if (config.dorm1_name) {
+            // Yeni Tekil Format (öğrenciler boş olabilir veya array boş gelmiş olabilir)
+            document.getElementById('dorm1-name').innerText = config.dorm1_name;
+            document.getElementById('dorm1-count').innerText = config.dorm1_count ? (config.dorm1_count + '.KEZ') : '0.KEZ';
+            dorm1Names = []; // Temizle
         } else if (config.dorm1) {
-            // Legacy Schema
-            const d1 = (typeof config.dorm1 === 'string') ? JSON.parse(config.dorm1) : config.dorm1;
-            document.getElementById('dorm1-name').innerText = d1.name || '---';
-            document.getElementById('dorm1-count').innerText = d1.count ? (d1.count + '.KEZ') : '0.KEZ';
-            dorm1Names = [d1.s1, d1.s2, d1.s3, d1.s4, d1.s5, d1.s6].filter(n => n && n !== '---');
+            // Legacy Nesne Formatı
+            try {
+                const d1 = (typeof config.dorm1 === 'string') ? JSON.parse(config.dorm1) : config.dorm1;
+                document.getElementById('dorm1-name').innerText = d1.name || '---';
+                document.getElementById('dorm1-count').innerText = d1.count ? (d1.count + '.KEZ') : '0.KEZ';
+                dorm1Names = [d1.s1, d1.s2, d1.s3, d1.s4, d1.s5, d1.s6].filter(n => n && n !== '---');
+            } catch (e) { }
         }
 
         // Yatakhane 2
-        if (config.dorm2_names || config.dorm2_name) {
-            // Yeni Schema (admin.js)
-            document.getElementById('dorm2-name').innerText = config.dorm2_name || '---';
+        if (config.dorm2_names && Array.isArray(config.dorm2_names) && config.dorm2_names.length > 0) {
+            dorm2Names = config.dorm2_names.filter(n => n);
+            document.getElementById('dorm2-name').innerText = config.dorm2_name || '2. GRUP';
             document.getElementById('dorm2-count').innerText = config.dorm2_count ? (config.dorm2_count + '.KEZ') : '0.KEZ';
-            dorm2Names = Array.isArray(config.dorm2_names) ? config.dorm2_names.filter(n => n) : [];
+        } else if (config.dorm2_name) {
+            document.getElementById('dorm2-name').innerText = config.dorm2_name;
+            document.getElementById('dorm2-count').innerText = config.dorm2_count ? (config.dorm2_count + '.KEZ') : '0.KEZ';
+            dorm2Names = [];
         } else if (config.dorm2) {
-            // Legacy Schema
-            const d2 = (typeof config.dorm2 === 'string') ? JSON.parse(config.dorm2) : config.dorm2;
-            document.getElementById('dorm2-name').innerText = d2.name || '---';
-            document.getElementById('dorm2-count').innerText = d2.count ? (d2.count + '.KEZ') : '0.KEZ';
-            dorm2Names = [d2.s1, d2.s2, d2.s3, d2.s4, d2.s5, d2.s6].filter(n => n && n !== '---');
+            try {
+                const d2 = (typeof config.dorm2 === 'string') ? JSON.parse(config.dorm2) : config.dorm2;
+                document.getElementById('dorm2-name').innerText = d2.name || '---';
+                document.getElementById('dorm2-count').innerText = d2.count ? (d2.count + '.KEZ') : '0.KEZ';
+                dorm2Names = [d2.s1, d2.s2, d2.s3, d2.s4, d2.s5, d2.s6].filter(n => n && n !== '---');
+            } catch (e) { }
         }
 
-        // İsim rotasyonunu başlat
-        startDormNameRotation();
+        // Görünürlük ayarları
+        if (document.getElementById('dorm1-custom-title')) {
+            document.getElementById('dorm1-custom-title').innerText = config.dorm1_custom_title || "";
+        }
+        if (document.getElementById('dorm2-custom-title')) {
+            document.getElementById('dorm2-custom-title').innerText = config.dorm2_custom_title || "";
+        }
+
+        // Dorm section visibility check
+        const dormActive = (config.module_dorm_active !== undefined) ? config.module_dorm_active : true;
+        const dormCard = document.getElementById('dorm-card');
+        const hadithCard = document.getElementById('hadith-card');
+
+        if (!dormActive) {
+            if (dormCard) dormCard.style.display = 'none';
+            if (hadithCard) {
+                hadithCard.classList.remove('flex-[4]');
+                hadithCard.classList.add('flex-1');
+            }
+        } else {
+            if (dormCard) dormCard.style.display = 'flex';
+            if (hadithCard) {
+                hadithCard.classList.add('flex-[4]');
+                hadithCard.classList.remove('flex-1');
+            }
+            // İsim rotasyonunu başlat
+            startDormNameRotation();
+        }
 
         // --- 6. Hadis ---
         if (config.hadith) {
             const h = (typeof config.hadith === 'string') ? JSON.parse(config.hadith) : config.hadith;
+            if (h.week && document.getElementById('hadith-week')) document.getElementById('hadith-week').innerText = h.week;
 
-            // Hafta Bilgisi
-            if (h.week) {
-                const weekEl = document.getElementById('hadith-week');
-                if (weekEl) weekEl.innerText = h.week;
-            }
-
-            // Türkçe Metin
             document.getElementById('hadith-content').innerHTML = `
                 <span class="absolute -top-4 -left-1 text-5xl text-emerald-200 font-serif-tr opacity-50">“</span>
                 ${h.text || ''}
                 <span class="absolute -bottom-6 -right-1 text-5xl text-emerald-200 font-serif-tr opacity-50">”</span>
             `;
 
-            // Arapça Metin
             const arabDiv = document.getElementById('hadith-arabic');
             arabDiv.innerText = h.arabic || '';
-            if (!h.arabic) arabDiv.style.display = 'none';
-            else arabDiv.style.display = 'block';
+            arabDiv.style.display = h.arabic ? 'block' : 'none';
 
-            // Hafta Bilgisi
-            document.getElementById('hadith-week').innerText = h.week || '';
-
-            // Görsel Kontrolü
             if (h.img) {
                 document.getElementById('hadith-image').src = h.img;
                 document.getElementById('hadith-image').classList.remove('hidden');
@@ -352,8 +360,9 @@ async function fetchConfig() {
             }
         }
 
-        // --- 5. Bilgi Kartı Rotasyonu İçin Veri Hazırla ---
-        infoData = [];
+        // --- 7. Bilgi Kartı (Modüller) ---
+        // (Buradaki mantık unchanged, sadece değişken hazırlığı)
+
 
         // 1. Veri Kaynaklarını Hazırla
         const rawAnnouncements = [];
