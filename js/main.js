@@ -420,9 +420,9 @@ async function fetchConfig() {
             const hadithText = h.text || '...';
 
             document.getElementById('hadith-content').innerHTML = `
-                <i class="fas fa-quote-left absolute -top-6 left-0 text-3xl text-emerald-200/50"></i>
-                <span class="relative z-10 block py-2">${hadithText}</span>
-                <i class="fas fa-quote-right absolute -bottom-6 right-0 text-3xl text-emerald-200/50"></i>
+                <i class="fas fa-quote-left absolute -top-4 left-0 text-2xl text-emerald-200/50"></i>
+                <span class="relative z-10 block py-1">${hadithText}</span>
+                <i class="fas fa-quote-right absolute -bottom-4 right-0 text-2xl text-emerald-200/50"></i>
             `;
 
             const arabDiv = document.getElementById('hadith-arabic');

@@ -141,28 +141,22 @@
                         </div>
 
                         <!-- Content -->
-                        <div class="w-full h-full relative z-10 flex flex-col items-center justify-between py-1">
-                            <div class="w-full flex flex-col items-center justify-center relative -mt-2">
-                                <span
-                                    class="text-[0.65rem] font-bold text-emerald-800/60 uppercase tracking-[0.2em] mb-0.5">HAFTANIN
-                                    HADİS-İ ŞERİFİ</span>
-                                <h2 id="hadith-week"
-                                    class="text-3xl md:text-4xl font-serif text-emerald-950 font-bold playfair-font mb-0 leading-none">
-                                    ...
-                                </h2>
-                                <div id="week-date-range" class="text-sm font-medium text-emerald-700/80 mb-1">
-                                    <!-- 15-21 Aralık -->
-                                </div>
+                        <div class="w-full h-full relative z-10 flex flex-col items-center justify-between py-2">
+                            
+                            <!-- Header: Title & Hijri Date -->
+                            <div class="w-full flex flex-col items-center justify-center relative -mt-1 gap-2">
+                                <span class="text-[0.65rem] font-bold text-emerald-800/60 uppercase tracking-[0.2em]">HAFTANIN HADİS-İ ŞERİFİ</span>
+                                
                                 <div id="hijri-date"
-                                    class="bg-emerald-50/80 border border-emerald-100 text-emerald-700 px-3 py-0.5 rounded-full text-[0.6rem] font-semibold tracking-wide flex items-center gap-2 mt-0.5">
+                                    class="bg-emerald-50/80 border border-emerald-100 text-emerald-700 px-4 py-1 rounded-full text-[0.7rem] font-semibold tracking-wide flex items-center gap-2 shadow-sm">
                                     <i class="far fa-calendar-alt opacity-70"></i> <span>...</span>
                                 </div>
                             </div>
 
-                            <div
-                                class="flex-grow w-full flex flex-col items-center justify-center text-center relative px-4 md:px-6">
+                            <!-- Middle: Hadith Text (Arabic & Turkish) -->
+                            <div class="flex-grow w-full flex flex-col items-center justify-center text-center relative px-4 md:px-6 gap-2">
                                 <div id="hadith-arabic"
-                                    class="text-[2.2rem] md:text-[2.8rem] font-arabic leading-[1.6] text-emerald-900 font-bold mb-2 w-full"
+                                    class="text-[2.2rem] md:text-[2.8rem] font-arabic leading-[1.6] text-emerald-900 font-bold w-full"
                                     style="font-family: 'Amiri', serif; line-height: 1.4;">
                                 </div>
 
@@ -170,12 +164,32 @@
                                     class="relative text-lg md:text-xl text-slate-700 font-medium leading-relaxed max-w-3xl px-6 playfair-font">
                                     <i class="fas fa-quote-left absolute -top-3 left-0 text-xl text-emerald-200/50"></i>
                                     <span class="relative z-10">...</span>
-                                    <i
-                                        class="fas fa-quote-right absolute -bottom-3 right-0 text-xl text-emerald-200/50"></i>
+                                    <i class="fas fa-quote-right absolute -bottom-3 right-0 text-xl text-emerald-200/50"></i>
                                 </div>
                                 <img id="hadith-image" src=""
                                     class="hidden max-h-32 mt-2 object-contain rounded-lg shadow-lg border-2 border-white/80" />
                             </div>
+
+                            <!-- Footer: Week Info Box -->
+                            <div class="w-full px-8 mb-1">
+                                <div class="bg-gradient-to-r from-emerald-50/50 via-white/80 to-emerald-50/50 border border-emerald-100/60 rounded-xl py-2 px-4 flex flex-col items-center justify-center shadow-sm relative overflow-hidden group hover:shadow-md transition-all duration-500">
+                                    <!-- Decorative faint glint -->
+                                    <div class="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-emerald-200/50 to-transparent"></div>
+                                    
+                                    <h2 id="hadith-week"
+                                        class="text-2xl md:text-3xl font-serif text-emerald-950 font-bold playfair-font leading-none mb-1">
+                                        ...
+                                    </h2>
+                                    <div class="flex items-center gap-2 text-emerald-700/80">
+                                        <div class="h-[1px] w-4 bg-emerald-200"></div>
+                                        <div id="week-date-range" class="text-xs font-bold uppercase tracking-widest">
+                                            <!-- 15-21 Aralık -->
+                                        </div>
+                                        <div class="h-[1px] w-4 bg-emerald-200"></div>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
 
