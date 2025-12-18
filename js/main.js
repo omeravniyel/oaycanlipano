@@ -797,6 +797,7 @@ function playCurrentVideo() {
 
     if (vid) {
         player.loadVideoById(vid);
+        player.mute(); // Tarayıcı politikaları için sesi kapat
         player.playVideo();
     } else {
         // Link geçersizse sonrakine atla
@@ -822,6 +823,11 @@ function switchMedia(mode) {
     if (slideIntervalHandle) {
         clearTimeout(slideIntervalHandle);
         slideIntervalHandle = null;
+    }
+
+    // Swiper'ı durdur (arka planda çalışmasın)
+    if (window.mySwiperInstance && window.mySwiperInstance.autoplay) {
+        window.mySwiperInstance.autoplay.stop();
     }
 
     if (mode === 'video' && videoPlaylist.length > 0) {
@@ -853,6 +859,8 @@ function switchMedia(mode) {
                 spaceBetween: 30,
                 effect: "fade",
                 centeredSlides: true,
+                observer: true, // DOM değişikliklerini izle
+                observeParents: true, // Parent değişikliklerini izle
                 autoplay: {
                     delay: 10000,
                     disableOnInteraction: false,
