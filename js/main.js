@@ -387,39 +387,53 @@ async function fetchConfig() {
         if (selectedHadith) {
             const h = selectedHadith;
 
-            if (h.week && document.getElementById('hadith-week')) {
-                document.getElementById('hadith-week').innerText = h.week;
-            }
+            // --- TARIH VE HAFTA GÖSTERİMİ ---
+            const startDateStr = (config.weekly_hadiths && config.weekly_hadiths.startDate) ? config.weekly_hadiths.startDate : '2024-09-09'; // Varsayılan: 9 Eylül 2024
 
-            // Tarih Aralığı Hesapla (Miladi)
-            if (config.weekly_hadiths && config.weekly_hadiths.startDate) {
-                try {
-                    // weekIndex kapsam dışındaydı, h.weekIndex kullanalım veya yeniden hesaplayalım
-                    let wIdx = 0;
-                    if (typeof h.weekIndex !== 'undefined') {
-                        wIdx = h.weekIndex;
-                    } else {
-                        // Manuel hesaplama (Fallback)
-                        const s = new Date(config.weekly_hadiths.startDate);
-                        const n = new Date();
-                        wIdx = Math.floor((n - s) / (1000 * 60 * 60 * 24 * 7));
-                    }
-                    if (wIdx < 0) wIdx = 0;
+            let weekLabel = h.week || '';
+            let dateRangeLabel = '';
 
-                    const start = new Date(config.weekly_hadiths.startDate);
-                    const currentWeekStart = new Date(start);
-                    currentWeekStart.setDate(start.getDate() + (wIdx * 7));
+            try {
+                const start = new Date(startDateStr);
+                const now = new Date();
 
-                    const currentWeekEnd = new Date(currentWeekStart);
-                    currentWeekEnd.setDate(currentWeekStart.getDate() + 6);
+                // Eğer manuel olarak week index gelmediyse hesapla
+                let wIdx = (typeof h.weekIndex !== 'undefined') ? h.weekIndex : Math.floor((now - start) / (1000 * 60 * 60 * 24 * 7));
+                if (wIdx < 0) wIdx = 0;
 
-                    const options = { day: 'numeric', month: 'long' };
-                    const sStr = currentWeekStart.toLocaleDateString('tr-TR', options);
-                    const eStr = currentWeekEnd.toLocaleDateString('tr-TR', options);
+                // Eğer hafta etiketi yoksa hesapla (Örn: 15. Hafta)
+                if (!weekLabel) {
+                    weekLabel = `${wIdx + 1}. Hafta`;
+                }
 
-                    const rangeEl = document.getElementById('week-date-range');
-                    if (rangeEl) rangeEl.innerText = `${sStr} - ${eStr}`;
-                } catch (e) { console.log(e); }
+                // Tarih Aralığı: (Pazartesi - Pazar)
+                const currentWeekStart = new Date(start);
+                currentWeekStart.setDate(start.getDate() + (wIdx * 7));
+
+                const currentWeekEnd = new Date(currentWeekStart);
+                currentWeekEnd.setDate(currentWeekStart.getDate() + 6);
+
+                const options = { day: 'numeric', month: 'long' };
+                const sStr = currentWeekStart.toLocaleDateString('tr-TR', options);
+                const eStr = currentWeekEnd.toLocaleDateString('tr-TR', options);
+
+                dateRangeLabel = `${sStr} - ${eStr}`;
+
+            } catch (e) { console.log('Date Calc Err:', e); }
+
+            // UI Güncelle
+            const weekEl = document.getElementById('hadith-week');
+            const rangeEl = document.getElementById('week-date-range');
+
+            if (weekEl) weekEl.innerText = weekLabel;
+
+            // Eğer ikisi de varsa araya nokta koy
+            if (rangeEl) {
+                if (weekLabel && dateRangeLabel) {
+                    rangeEl.innerHTML = `&nbsp;•&nbsp; ${dateRangeLabel}`;
+                } else {
+                    rangeEl.innerText = dateRangeLabel;
+                }
             }
 
             // Metin Kontrolü - Boşsa fallback metin
