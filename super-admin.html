@@ -638,8 +638,9 @@
         }
 
         // --- HADITH MANAGEMENT LOGIC ---
+        // --- HADITH MANAGEMENT LOGIC ---
         let hadithWeeks = [];
-        const DEFAULT_START_DATE = '2025-09-15'; // Örnek eğitim yılı başlangıcı
+        const DEFAULT_START_DATE = '2025-09-08'; // Revize: 8 Eylül 2025
 
         function openHadithModal() {
             document.getElementById('hadith-modal').classList.remove('hidden');
@@ -659,23 +660,50 @@
             container.innerHTML = '';
             hadithWeeks = [];
 
+            // Tarih ayarını önce yükle (Hesaplama için gerekli)
+            const dateKey = `super_admin_start_date_${type}`;
+            const savedDate = localStorage.getItem(dateKey);
+            const activeStartDate = savedDate || DEFAULT_START_DATE;
+
+            document.getElementById('semester-start-date').value = activeStartDate;
+
             if (stored) {
                 try {
                     const parsed = JSON.parse(stored);
-                    if (Array.isArray(parsed)) {
+                    if (Array.isArray(parsed) && parsed.length > 0) {
                         parsed.forEach(w => addNewWeek(w));
+                    } else {
+                        // Kayıtlı ama boş liste
+                        addCurrentWeek(activeStartDate);
                     }
-                } catch (e) { console.error(e); }
+                } catch (e) {
+                    console.error(e);
+                    addCurrentWeek(activeStartDate);
+                }
             } else {
-                addNewWeek();
+                // Hiç kayıt yoksa, BUGÜNKÜ haftayı ekle
+                addCurrentWeek(activeStartDate);
             }
 
-            // Tarih ayarını yükle
-            const dateKey = `super_admin_start_date_${type}`;
-            const savedDate = localStorage.getItem(dateKey);
-            document.getElementById('semester-start-date').value = savedDate || new Date().toISOString().split('T')[0];
-
             recalculateWeekLabels();
+        }
+
+        function addCurrentWeek(startDateStr) {
+            // Şimdiki zaman ile başlangıç arasındaki hafta farkını bul
+            const start = new Date(startDateStr);
+            const now = new Date();
+            let weekDiff = Math.floor((now - start) / (1000 * 60 * 60 * 24 * 7));
+            if (weekDiff < 0) weekDiff = 0;
+
+            // Hafta numarası 1'den başlar (fark + 1)
+            // Ama biz kullanıcının önüne boş bir form getireceğiz, başlığı da o haftaya ayarlayacağız
+
+            // Eğer boş bir hafta ekliyorsak, hafta başlığını otomatik ayarla
+            addNewWeek({
+                week: `${weekDiff + 1}. HAFTA`,
+                text: '',
+                arabic: ''
+            });
         }
 
         function addNewWeek(data = null) {
