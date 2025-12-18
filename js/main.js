@@ -1028,6 +1028,9 @@ async function fetchWeather() {
         if (document.getElementById('weather-temp')) {
             document.getElementById('weather-temp').innerHTML = `${icon} ${Math.round(temp)}°C`;
             document.getElementById('weather-desc').innerText = district.toUpperCase(); // İlçe adını göster
+            if (document.getElementById('weather-condition')) {
+                document.getElementById('weather-condition').innerText = desc;
+            }
         }
         if (document.getElementById('weather-icon')) document.getElementById('weather-icon').innerText = icon;
 
