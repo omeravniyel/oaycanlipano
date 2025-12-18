@@ -520,25 +520,50 @@ async function fetchConfig() {
         const rawExams = [];
         if (config.exam_winners && Array.isArray(config.exam_winners) && config.exam_winners.length > 0) {
             config.exam_winners.forEach(w => {
-                // ... existing parsing logic ...
-                let parts = w.split('-');
-                let name = parts[0].trim();
-                let score = parts[1] ? parts[1].trim() : '';
-                if (!score) {
-                    const spaces = name.split(' ');
+                // Parse format: [Class] Name - Score
+                // or legacy: Name - Score
+                let fullStr = w.trim();
+                let className = '';
+                let studentName = '';
+                let score = '';
+
+                // Regex to capture [Class] (optional), Name, - Score (optional)
+                const match = fullStr.match(/^(?:\[(.*?)\]\s*)?(.*?)(?:\s*-\s*(.*))?$/);
+
+                if (match) {
+                    className = match[1] ? match[1].trim() : '';
+                    studentName = match[2] ? match[2].trim() : '';
+                    score = match[3] ? match[3].trim() : '';
+                } else {
+                    // Fallback
+                    studentName = fullStr;
+                }
+
+                // Fallback for score if inside name (Legacy spaces split)
+                if (!score && !className) {
+                    // Only use space splitting logic if we didn't find a class (legacy data assumption)
+                    const spaces = studentName.split(' ');
                     const last = spaces[spaces.length - 1];
                     if (spaces.length > 1 && !isNaN(last)) {
                         score = last;
-                        name = spaces.slice(0, -1).join(' ');
+                        studentName = spaces.slice(0, -1).join(' ');
                     }
                 }
+
+                // Construct Display String
+                // Format: "5-A ALİ VELİ 500 PUAN" (No brackets, no hyphens)
+                let displayStr = '';
+                if (className) displayStr += `${className} `;
+                displayStr += studentName;
+                if (score) displayStr += ` ${score} PUAN`;
+
                 rawExams.push({
                     type: 'exam',
                     title: (config.exam_name ? config.exam_name + ' ŞAMPİYONLARI' : 'SINAV ŞAMPİYONLARI'),
                     badge: 'MAŞAALLAH',
                     circle: '<i class="fa-solid fa-trophy"></i>',
                     topLabel: 'TEBRİK EDERİZ',
-                    content: score ? `${name} - ${score} PUAN` : name
+                    content: displayStr
                 });
             });
         }
