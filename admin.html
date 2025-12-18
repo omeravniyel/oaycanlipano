@@ -215,6 +215,13 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <!-- Group 1 -->
                         <div class="bg-orange-50 rounded-xl p-4 border border-orange-100">
+                            <div class="mb-4 border-b border-orange-200 pb-2">
+                                <label class="block text-xs font-bold text-orange-800 mb-1">Grup Başlığı (İsteğe
+                                    Bağlı)</label>
+                                <input type="text" id="config-dorm1_title"
+                                    class="w-full p-2 bg-white border border-orange-200 rounded-lg text-sm placeholder-orange-300"
+                                    placeholder="Örn: Haftanın En Temiz Yatakhanesi">
+                            </div>
 
                             <div class="mb-4">
                                 <label class="block text-xs font-bold text-orange-800 mb-1">Kazanan Yatakhane
@@ -252,7 +259,24 @@
                         </div>
 
                         <!-- Group 2 -->
-                        <div class="bg-orange-50 rounded-xl p-4 border border-orange-100">
+                        <div class="bg-orange-50 rounded-xl p-4 border border-orange-100 relative">
+                            <div class="absolute top-4 right-4 z-10">
+                                <label class="relative inline-flex items-center cursor-pointer"
+                                    title="Bu grubu aktif et/kapat">
+                                    <input type="checkbox" id="config-dorm2_active" class="sr-only peer" checked>
+                                    <div
+                                        class="w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-orange-500">
+                                    </div>
+                                </label>
+                            </div>
+
+                            <div class="mb-4 border-b border-orange-200 pb-2 pr-12">
+                                <label class="block text-xs font-bold text-orange-800 mb-1">Grup Başlığı (İsteğe
+                                    Bağlı)</label>
+                                <input type="text" id="config-dorm2_title"
+                                    class="w-full p-2 bg-white border border-orange-200 rounded-lg text-sm placeholder-orange-300"
+                                    placeholder="Örn: Ayın Örnek Etütü">
+                            </div>
 
                             <div class="mb-4">
                                 <label class="block text-xs font-bold text-orange-800 mb-1">Kazanan Yatakhane
@@ -588,9 +612,14 @@
                 document.getElementById('config-module_dorm_active').checked = data.module_dorm_active;
             }
 
+            setVal('config-dorm1_title', data.dorm1_title);
             setVal('config-dorm1_name', data.dorm1_name);
             setVal('config-dorm1_count', data.dorm1_count);
 
+            if (data.dorm2_active !== undefined) {
+                document.getElementById('config-dorm2_active').checked = data.dorm2_active;
+            }
+            setVal('config-dorm2_title', data.dorm2_title);
             setVal('config-dorm2_name', data.dorm2_name);
             setVal('config-dorm2_count', data.dorm2_count);
 
@@ -636,11 +665,12 @@
             data.exam_name = getVal('config-exam_name'); // Sınav Adı
             data.module_dorm_active = document.getElementById('config-module_dorm_active').checked;
 
-
+            data.dorm1_title = getVal('config-dorm1_title');
             data.dorm1_name = getVal('config-dorm1_name');
             data.dorm1_count = parseInt(getVal('config-dorm1_count')) || 0;
 
-
+            data.dorm2_active = document.getElementById('config-dorm2_active').checked;
+            data.dorm2_title = getVal('config-dorm2_title');
             data.dorm2_name = getVal('config-dorm2_name');
             data.dorm2_count = parseInt(getVal('config-dorm2_count')) || 0;
 

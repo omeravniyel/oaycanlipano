@@ -312,10 +312,28 @@ async function fetchConfig() {
 
         // Görünürlük ayarları
         if (document.getElementById('dorm1-custom-title')) {
-            document.getElementById('dorm1-custom-title').innerText = config.dorm1_custom_title || "";
+            document.getElementById('dorm1-custom-title').innerText = config.dorm1_title || "";
         }
         if (document.getElementById('dorm2-custom-title')) {
-            document.getElementById('dorm2-custom-title').innerText = config.dorm2_custom_title || "";
+            document.getElementById('dorm2-custom-title').innerText = config.dorm2_title || "";
+        }
+
+        // Single Dorm Mode (Etüt Modu)
+        const d2Active = (config.dorm2_active !== undefined) ? config.dorm2_active : true;
+        const d2Container = document.getElementById('dorm2-container');
+        const d1Container = document.getElementById('dorm1-container');
+
+        if (d2Container && d1Container) {
+            if (!d2Active) {
+                // Hide Dorm 2
+                d2Container.classList.add('hidden');
+                // Adjust Dorm 1 (Remove border)
+                d1Container.classList.remove('border-r', 'border-white/20');
+            } else {
+                // Show Dorm 2
+                d2Container.classList.remove('hidden');
+                d1Container.classList.add('border-r', 'border-white/20');
+            }
         }
 
         // Dorm section visibility check
