@@ -423,13 +423,32 @@ async function fetchConfig() {
             }
 
             // Metin Kontrolü - Boşsa fallback metin
-            const hadithText = h.text || '...';
+            let hadithText = h.text || '...';
+            let arabicText = h.arabic || '';
+
+            // --- SMART SPLIT for Legacy Data (Arabic / Turkish) ---
+            // Eğer Arapça alanı boşsa VE metin içinde Türkçe karakterler ve / varsa ayırmayı dene
+            if (!arabicText && hadithText.includes('/')) {
+                // Arapça Unicode Aralığı: \u0600 - \u06FF
+                const hasArabicChar = /[\u0600-\u06FF]/.test(hadithText);
+                if (hasArabicChar) {
+                    const parts = hadithText.split('/');
+                    if (parts.length >= 2) {
+                        // Genellikle format: ARAPÇA / TÜRKÇE
+                        // İlk parçada Arapça harf var mı?
+                        if (/[\u0600-\u06FF]/.test(parts[0])) {
+                            arabicText = parts[0].trim();
+                            hadithText = parts.slice(1).join('/').trim(); // Geri kalan hepsi Türkçe
+                        }
+                    }
+                }
+            }
 
             document.getElementById('hadith-content').innerHTML = hadithText;
 
             const arabDiv = document.getElementById('hadith-arabic');
-            arabDiv.innerText = h.arabic || '';
-            arabDiv.style.display = h.arabic ? 'block' : 'none';
+            arabDiv.innerText = arabicText;
+            arabDiv.style.display = arabicText ? 'block' : 'none';
 
             // Resim varsa
             if (h.img) {
