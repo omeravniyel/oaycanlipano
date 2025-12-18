@@ -654,7 +654,33 @@
         function loadLocalHadiths() {
             const type = document.getElementById('hadith-target-type').value;
             const storageKey = `super_admin_hadiths_${type}`;
-            const stored = localStorage.getItem(storageKey);
+            let stored = localStorage.getItem(storageKey);
+
+            // Eğer LocalStorage boşsa, mevcut kurumlardan birinin verisini çekmeyi dene
+            if (!stored) {
+                const sampleInst = institutions.find(i => {
+                    const t = i.config?.institution_type || 'Ortaokul';
+                    return t === type && i.config?.hadith;
+                });
+
+                if (sampleInst) {
+                    try {
+                        const hData = typeof sampleInst.config.hadith === 'string'
+                            ? JSON.parse(sampleInst.config.hadith)
+                            : sampleInst.config.hadith;
+
+                        // Tekil hadis formatındaysa listeye çevirip kaydet
+                        if (hData) {
+                            // Mevcut tekil hadisi 1. eleman olarak ekle
+                            // Ama listede "hafta" bilgisi varsa ona uygun sıraya da koyabiliriz.
+                            // Şimdilik basitçe tek elemanlı liste yapıyoruz.
+                            const list = [hData];
+                            stored = JSON.stringify(list);
+                            localStorage.setItem(storageKey, stored); // Sonraki sefer için cache
+                        }
+                    } catch (e) { console.log('Hadith extract err', e); }
+                }
+            }
 
             const container = document.getElementById('weeks-container');
             container.innerHTML = '';
