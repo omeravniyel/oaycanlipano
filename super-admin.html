@@ -137,102 +137,113 @@
                         </div>
                     </div>
 
-                    <div class="mt-4">
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Kurum Tipi</label>
-                        <select id="form-type"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                            <option value="Ortaokul">Ortaokul</option>
-                            <option value="Lise">Lise</option>
-                            <option value="Yurt">Yurt</option>
-                            <option value="Kurs">Kurs</option>
-                        </select>
-                    </div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Kurum Tipi</label>
+                    <select id="form-type"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="Ortaokul">Ortaokul</option>
+                        <option value="Lise">Lise</option>
+                        <option value="Yurt">Yurt</option>
+                        <option value="Kurs">Kurs</option>
+                    </select>
                 </div>
 
-                <!-- Contact Info -->
-                <div class="bg-white p-4 rounded-xl border border-gray-200">
-                    <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Kurum Yöneticisi</h4>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">Adı Soyadı</label>
-                            <input type="text" id="form-contact-name"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"
-                                placeholder="Ad Soyad">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">Telefon</label>
-                            <input type="text" id="form-contact-phone"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"
-                                placeholder="0555...">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">E-Posta</label>
-                            <input type="email" id="form-contact-email"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"
-                                placeholder="ornek@mail.com">
-                        </div>
+                <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">İl (Şehir)</label>
+                        <input type="text" id="form-city"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                            placeholder="Istanbul" required>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-gray-700 mb-1">İlçe</label>
+                        <input type="text" id="form-district"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                            placeholder="Uskudar" required>
                     </div>
                 </div>
-
-                <!-- Logo/Type Settings -->
-                <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
-                    <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Gelişmiş Ayarlar</h4>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <!-- Logo Lock -->
-                        <div class="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-200">
-                            <span class="text-sm font-medium text-gray-700">Logo Değişikliği Kilitli</span>
-                            <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" id="form-logo-locked" class="sr-only peer">
-                                <div
-                                    class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-500">
-                                </div>
-                            </label>
-                        </div>
-
-                        <!-- Dorm Module Active -->
-                        <div class="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-200">
-                            <span class="text-sm font-medium text-gray-700">Yurt Yarışma Modülü</span>
-                            <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" id="form-dorm-active" class="sr-only peer" checked>
-                                <div
-                                    class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500">
-                                </div>
-                            </label>
-                        </div>
-                    </div>
-
-                    <!-- Logo URL Override with Upload -->
-                    <div class="mt-4">
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Kurum Logosu</label>
-                        <div class="flex gap-2">
-                            <input type="text" id="form-logo"
-                                class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50"
-                                placeholder="Resim linki veya Yükle butonunu kullanın..." readonly>
-                            <input type="file" id="upload-logo-input" class="hidden" accept="image/png, image/jpeg">
-
-                            <button type="button" onclick="document.getElementById('upload-logo-input').click()"
-                                class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
-                                <i class="fas fa-upload mr-1"></i> Yükle
-                            </button>
-                            <button type="button" onclick="document.getElementById('form-logo').value = ''"
-                                class="bg-red-100 hover:bg-red-200 text-red-600 px-3 py-2 rounded-lg text-sm font-medium transition-colors">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                        <p class="text-xs text-gray-500 mt-1">Logo yükleyerek veya doğrudan link girerek
-                            belirleyebilirsiniz. PNG veya JPG formatı önerilir.</p>
-                    </div>
-                </div>
-
-                <div class="pt-4 flex justify-end gap-3 border-t border-gray-100">
-                    <button type="button" onclick="closeModal()"
-                        class="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors">İptal</button>
-                    <button type="submit"
-                        class="px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 shadow-md hover:shadow-lg font-medium transition-all">Kaydet</button>
-                </div>
-            </form>
         </div>
+
+        <!-- Contact Info -->
+        <div class="bg-white p-4 rounded-xl border border-gray-200">
+            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Kurum Yöneticisi</h4>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Adı Soyadı</label>
+                    <input type="text" id="form-contact-name"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Ad Soyad">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Telefon</label>
+                    <input type="text" id="form-contact-phone"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0555...">
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">E-Posta</label>
+                    <input type="email" id="form-contact-email"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm" placeholder="ornek@mail.com">
+                </div>
+            </div>
+        </div>
+
+        <!-- Logo/Type Settings -->
+        <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
+            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Gelişmiş Ayarlar</h4>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Logo Lock -->
+                <div class="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-200">
+                    <span class="text-sm font-medium text-gray-700">Logo Değişikliği Kilitli</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="form-logo-locked" class="sr-only peer">
+                        <div
+                            class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-500">
+                        </div>
+                    </label>
+                </div>
+
+                <!-- Dorm Module Active -->
+                <div class="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-200">
+                    <span class="text-sm font-medium text-gray-700">Yurt Yarışma Modülü</span>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="form-dorm-active" class="sr-only peer" checked>
+                        <div
+                            class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500">
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Logo URL Override with Upload -->
+            <div class="mt-4">
+                <label class="block text-sm font-semibold text-gray-700 mb-1">Kurum Logosu</label>
+                <div class="flex gap-2">
+                    <input type="text" id="form-logo"
+                        class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50"
+                        placeholder="Resim linki veya Yükle butonunu kullanın..." readonly>
+                    <input type="file" id="upload-logo-input" class="hidden" accept="image/png, image/jpeg">
+
+                    <button type="button" onclick="document.getElementById('upload-logo-input').click()"
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
+                        <i class="fas fa-upload mr-1"></i> Yükle
+                    </button>
+                    <button type="button" onclick="document.getElementById('form-logo').value = ''"
+                        class="bg-red-100 hover:bg-red-200 text-red-600 px-3 py-2 rounded-lg text-sm font-medium transition-colors">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+                <p class="text-xs text-gray-500 mt-1">Logo yükleyerek veya doğrudan link girerek
+                    belirleyebilirsiniz. PNG veya JPG formatı önerilir.</p>
+            </div>
+        </div>
+
+        <div class="pt-4 flex justify-end gap-3 border-t border-gray-100">
+            <button type="button" onclick="closeModal()"
+                class="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors">İptal</button>
+            <button type="submit"
+                class="px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 shadow-md hover:shadow-lg font-medium transition-all">Kaydet</button>
+        </div>
+        </form>
+    </div>
     </div>
 
     <!-- HADITH MANAGEMENT MODAL -->
@@ -442,6 +453,8 @@
             document.getElementById('form-name').value = '';
             document.getElementById('form-password').value = '';
             document.getElementById('form-type').value = 'Ortaokul';
+            document.getElementById('form-city').value = '';
+            document.getElementById('form-district').value = '';
             document.getElementById('form-logo').value = '';
             document.getElementById('form-logo-locked').checked = false;
             document.getElementById('form-dorm-active').checked = true;
@@ -469,6 +482,8 @@
             document.getElementById('form-name').value = inst.name;
             document.getElementById('form-password').value = inst.password;
             document.getElementById('form-type').value = cfg.institution_type || 'Ortaokul';
+            document.getElementById('form-city').value = cfg.city || '';
+            document.getElementById('form-district').value = cfg.district || '';
 
             // Advanced
             document.getElementById('form-logo').value = cfg.institution_logo || '';
@@ -525,6 +540,8 @@
                 name: document.getElementById('form-name').value,
                 password: document.getElementById('form-password').value,
                 type: document.getElementById('form-type').value,
+                city: document.getElementById('form-city').value,
+                district: document.getElementById('form-district').value,
                 // Contact
                 admin_contact: {
                     name: document.getElementById('form-contact-name').value,
