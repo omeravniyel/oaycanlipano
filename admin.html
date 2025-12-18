@@ -1039,7 +1039,16 @@
                 return;
             }
 
-            let html = '<div class="text-left text-sm max-h-60 overflow-y-auto border p-2 rounded bg-slate-50 space-y-2">';
+            let html = `
+                <div class="mb-3 flex justify-end">
+                    <button type="button" id="select-all-btn" onclick="toggleSelectAll()" 
+                        class="text-xs bg-blue-100 text-blue-600 px-3 py-1.5 rounded-lg hover:bg-blue-200 transition font-bold border border-blue-200">
+                        <i class="fa-solid fa-check-double"></i> Tümünü Seç
+                    </button>
+                </div>
+                <div class="text-left text-sm max-h-60 overflow-y-auto border p-2 rounded bg-slate-50 space-y-2">
+            `;
+
             lines.forEach((line, idx) => {
                 const isImg = line.match(/\.(jpeg|jpg|png|gif|webp)/i);
                 html += `
@@ -1061,7 +1070,27 @@
                 confirmButtonColor: '#ef4444',
                 cancelButtonText: 'Vazgeç',
                 focusConfirm: false,
-                width: '600px'
+                width: '600px',
+                didOpen: () => {
+                    // Define toggle function in the modal scope
+                    window.toggleSelectAll = function () {
+                        const checkboxes = document.querySelectorAll('.del-chk');
+                        const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+                        const btn = document.getElementById('select-all-btn');
+
+                        checkboxes.forEach(cb => cb.checked = !allChecked);
+
+                        if (!allChecked) {
+                            btn.innerHTML = '<i class="fa-solid fa-times"></i> Seçimi Kaldır';
+                            btn.classList.remove('bg-blue-100', 'text-blue-600', 'border-blue-200');
+                            btn.classList.add('bg-orange-100', 'text-orange-600', 'border-orange-200');
+                        } else {
+                            btn.innerHTML = '<i class="fa-solid fa-check-double"></i> Tümünü Seç';
+                            btn.classList.remove('bg-orange-100', 'text-orange-600', 'border-orange-200');
+                            btn.classList.add('bg-blue-100', 'text-blue-600', 'border-blue-200');
+                        }
+                    };
+                }
             });
 
             if (result.isConfirmed) {
