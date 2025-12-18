@@ -1083,7 +1083,7 @@ function getWeatherInfo(code) {
 }
 
 // Initial Fetch and Interval
-fetchWeather();
+// fetchWeather() is called in fetchConfig after location is set
 setInterval(fetchWeather, 30 * 60 * 1000); // 30 Mins
 
 // Auto Refresh Page every 30 minutes to fetch new code/config cleanly
