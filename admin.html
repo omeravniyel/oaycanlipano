@@ -920,6 +920,10 @@
         });
 
         // Event Listeners
+        document.getElementById('upload-gallery-input').addEventListener('change', (e) => {
+            handleUpload(e.target.files, 'raw-gallery-links');
+        });
+
         document.getElementById('upload-left-gallery-input').addEventListener('change', (e) => {
             handleUpload(e.target.files, 'raw-left-gallery-links');
         });
