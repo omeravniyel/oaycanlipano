@@ -377,11 +377,23 @@
                                 class="w-full p-2 bg-white border border-slate-200 rounded-lg text-sm mb-3"
                                 placeholder="LGS Deneme - 1">
 
-                            <label class="block text-xs font-bold text-slate-500 mb-1">Liste (Format: Ad Soyad -
-                                Puan)</label>
-                            <textarea id="raw-exam-winners" rows="4"
-                                class="w-full p-2 bg-white border border-slate-200 rounded-lg text-sm"
-                                placeholder="Ahmet Yılmaz - 500&#10;Mehmet Demir - 490"></textarea>
+                            <label class="block text-xs font-bold text-slate-500 mb-1">Öğrenci Listesi</label>
+
+                            <div class="grid grid-cols-12 gap-2 mb-2 px-1 text-xs font-bold text-slate-400">
+                                <div class="col-span-3">Sınıf</div>
+                                <div class="col-span-6">Adı Soyadı</div>
+                                <div class="col-span-2">Puan</div>
+                                <div class="col-span-1"></div>
+                            </div>
+
+                            <div id="exam-winners-list" class="space-y-2 mb-3">
+                                <!-- Rows via JS -->
+                            </div>
+
+                            <button type="button" onclick="addExamWinnerRow()"
+                                class="text-xs bg-purple-100 text-purple-600 px-3 py-1.5 rounded-lg hover:bg-purple-200 transition font-bold flex items-center gap-1 w-full justify-center border border-purple-200 border-dashed">
+                                <i class="fa-solid fa-plus"></i> Öğrenci Ekle
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -621,7 +633,45 @@
             if (data.dorm2_names && Array.isArray(data.dorm2_names)) {
                 document.getElementById('val-dorm2-names').value = data.dorm2_names.join('\n');
             }
-            if (data.exam_winners) document.getElementById('raw-exam-winners').value = data.exam_winners.join('\n');
+            if (data.exam_winners && Array.isArray(data.exam_winners)) {
+                document.getElementById('exam-winners-list').innerHTML = ''; // Clear
+                data.exam_winners.forEach(w => {
+                    // Parse line: [Class] Name - Score 
+                    // or just: Name - Score
+                    let cls = '';
+                    let name = w;
+                    let score = '';
+
+                    // Split score first (last part after -)
+                    if (w.includes('-')) {
+                        const parts = w.split('-');
+                        // Last part is score?
+                        // Let's assume standard format Name - Score. 
+                        // If Name has hyphen like "Ala-Attin", this is risky.
+                        // But for now split by last hyphen logic or first hyphen logic?
+                        // Main.js splits by first hyphen. let parts = w.split('-');
+                        // So we should adhere to that.
+
+                        // Re-join everything except last part? No main.js takes parts[0] as name.
+                        // So first hyphen separates name and score.
+                        const p1 = parts[0];
+                        const p2 = parts.slice(1).join('-'); // Rest is score
+
+                        name = p1.trim();
+                        score = p2.trim();
+                    }
+
+                    // Now parse class from name
+                    // Check if starts with [
+                    const match = name.match(/^\[(.*?)\]\s*(.*)$/);
+                    if (match) {
+                        cls = match[1];
+                        name = match[2];
+                    }
+
+                    addExamWinnerRow({ class: cls, name: name, score: score });
+                });
+            }
             if (data.gallery_links) document.getElementById('raw-gallery-links').value = data.gallery_links.join('\n');
             if (data.left_gallery_links) document.getElementById('raw-left-gallery-links').value = data.left_gallery_links.join('\n');
         }
@@ -665,11 +715,63 @@
             data.dorm2_names = getLines('val-dorm2-names');
 
             data.announcements = getLines('raw-announcements');
-            data.exam_winners = getLines('raw-exam-winners');
+
+            // Collect Exam Winners from dynamic list
+            data.exam_winners = [];
+            const examRows = document.querySelectorAll('.exam-winner-row');
+            examRows.forEach(row => {
+                const cls = row.querySelector('.exam-class').value.trim();
+                const name = row.querySelector('.exam-name').value.trim();
+                const score = row.querySelector('.exam-score').value.trim();
+
+                if (name) {
+                    // Start with name
+                    let line = name;
+                    // Prepend class if exists: [8-A] Ahmet
+                    if (cls) {
+                        line = `[${cls}] ${name}`;
+                    }
+                    // Append score if exists
+                    if (score) {
+                        line += ` - ${score}`;
+                    }
+                    data.exam_winners.push(line);
+                }
+            });
+
             data.gallery_links = getLines('raw-gallery-links');
             data.left_gallery_links = getLines('raw-left-gallery-links');
 
             return data;
+        }
+
+        // --- EXAM WINNER DYNAMIC ROWS ---
+        function addExamWinnerRow(data = {}) {
+            const container = document.getElementById('exam-winners-list');
+            const div = document.createElement('div');
+            div.className = 'grid grid-cols-12 gap-2 exam-winner-row items-center animate-fade-in';
+
+            const cls = data.class || '';
+            const name = data.name || '';
+            const score = data.score || '';
+
+            div.innerHTML = `
+                <div class="col-span-3">
+                    <input type="text" class="exam-class w-full p-2 bg-white border border-slate-200 rounded-lg text-sm text-center font-bold text-slate-600" placeholder="8-A" value="${cls}">
+                </div>
+                <div class="col-span-6">
+                    <input type="text" class="exam-name w-full p-2 bg-white border border-slate-200 rounded-lg text-sm font-bold" placeholder="Ad Soyad" value="${name}">
+                </div>
+                <div class="col-span-2">
+                    <input type="text" class="exam-score w-full p-2 bg-white border border-slate-200 rounded-lg text-sm text-center font-bold text-green-600" placeholder="500" value="${score}">
+                </div>
+                <div class="col-span-1 flex justify-center">
+                    <button type="button" onclick="this.closest('.exam-winner-row').remove()" class="text-slate-400 hover:text-red-500 transition">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+            `;
+            container.appendChild(div);
         }
 
         // --- SAVE ---
