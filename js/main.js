@@ -6,22 +6,28 @@ function updateClock() {
     const now = new Date();
 
     // Saat
-    document.getElementById('clock').innerText = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
+    const clockEl = document.getElementById('clock');
+    if (clockEl) clockEl.innerText = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
 
     // Miladi Tarih
-    document.getElementById('date').innerText = now.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', weekday: 'long' });
+    const dateEl = document.getElementById('date');
+    if (dateEl) dateEl.innerText = now.toLocaleDateString('tr-TR', { day: 'numeric', month: 'long', weekday: 'long' });
 
     // Hicri Tarih (JS Intl API)
     try {
-        const hijriDate = new Intl.DateTimeFormat('tr-TR-u-ca-islamic-umalqura', {
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric' // "1446"
-        }).format(now);
-        // "12 Recep 1446" gibi formatlar verir. Bazı tarayıcılarda "12 Recep 1446 AH" yazar. "AH" kısmını silebiliriz.
-        document.getElementById('hijri-date').innerText = hijriDate.replace(' AH', '').replace('Hicri', '').trim();
+        const hijriEl = document.getElementById('hijri-date');
+        if (hijriEl) {
+            const hijriDate = new Intl.DateTimeFormat('tr-TR-u-ca-islamic-umalqura', {
+                day: 'numeric',
+                month: 'long',
+                year: 'numeric' // "1446"
+            }).format(now);
+            // "12 Recep 1446" gibi formatlar verir. Bazı tarayıcılarda "12 Recep 1446 AH" yazar. "AH" kısmını silebiliriz.
+            hijriEl.innerText = hijriDate.replace(' AH', '').replace('Hicri', '').trim();
+        }
     } catch (e) {
-        document.getElementById('hijri-date').innerText = "Hicri Takvim";
+        const hijriEl = document.getElementById('hijri-date');
+        if (hijriEl) hijriEl.innerText = "Hicri Takvim";
     }
 }
 setInterval(updateClock, 1000);
@@ -419,11 +425,7 @@ async function fetchConfig() {
             // Metin Kontrolü - Boşsa fallback metin
             const hadithText = h.text || '...';
 
-            document.getElementById('hadith-content').innerHTML = `
-                <i class="fas fa-quote-left absolute -top-4 left-0 text-2xl text-emerald-200/50"></i>
-                <span class="relative z-10 block py-1">${hadithText}</span>
-                <i class="fas fa-quote-right absolute -bottom-4 right-0 text-2xl text-emerald-200/50"></i>
-            `;
+            document.getElementById('hadith-content').innerHTML = hadithText;
 
             const arabDiv = document.getElementById('hadith-arabic');
             arabDiv.innerText = h.arabic || '';

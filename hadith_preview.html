@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hadis Tasarım Önizleme - Açık Tema</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,500;0,700;1,500&family=Amiri:wght@400;700&family=Scheherazade+New:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            background-color: #f1f5f9;
+            /* Light grey bg for page */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .card-modern-islamic {
+            width: 100%;
+            max-width: 800px;
+            aspect-ratio: 16/11;
+            /* White Background as requested */
+            background: #ffffff;
+            /* White */
+            border-radius: 20px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            color: #1e293b;
+            border: 4px solid #fff;
+        }
+
+        /* The Decorative Border Frame -> Blue on Light */
+        .decorative-frame {
+            position: absolute;
+            inset: 12px;
+            border: 1px solid rgba(14, 165, 233, 0.3);
+            /* Sky 500 low opacity */
+            border-radius: 16px;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        /* Corner Decor */
+        .corner-decor {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border: 2px solid #0284c7;
+            /* Sky 600 */
+            transition: all 0.3s ease;
+            z-index: 6;
+        }
+
+        .top-left {
+            top: 20px;
+            left: 20px;
+            border-right: none;
+            border-bottom: none;
+            border-radius: 16px 0 0 0;
+        }
+
+        .top-right {
+            top: 20px;
+            right: 20px;
+            border-left: none;
+            border-bottom: none;
+            border-radius: 0 16px 0 0;
+        }
+
+        .bottom-left {
+            bottom: 20px;
+            left: 20px;
+            border-right: none;
+            border-top: none;
+            border-radius: 0 0 0 16px;
+        }
+
+        .bottom-right {
+            bottom: 20px;
+            right: 20px;
+            border-left: none;
+            border-top: none;
+            border-radius: 0 0 16px 0;
+        }
+
+        /* Secondary Gold Inner Lines for Corners */
+        .corner-decor::after {
+            content: '';
+            position: absolute;
+            width: 35px;
+            height: 35px;
+            border: 1px solid #f59e0b;
+            /* Amber 500 */
+            opacity: 0.6;
+        }
+
+        .top-left::after {
+            top: 4px;
+            left: 4px;
+            border-right: none;
+            border-bottom: none;
+            border-radius: 10px 0 0 0;
+        }
+
+        .top-right::after {
+            top: 4px;
+            right: 4px;
+            border-left: none;
+            border-bottom: none;
+            border-radius: 0 10px 0 0;
+        }
+
+        .bottom-left::after {
+            bottom: 4px;
+            left: 4px;
+            border-right: none;
+            border-top: none;
+            border-radius: 0 0 0 10px;
+        }
+
+        .bottom-right::after {
+            bottom: 4px;
+            right: 4px;
+            border-left: none;
+            border-top: none;
+            border-radius: 0 0 10px 0;
+        }
+
+
+        /* Pattern Overlay */
+        .pattern-overlay-bg {
+            position: absolute;
+            inset: 0;
+            background-image: url('https://www.transparenttextures.com/patterns/arabesque.png');
+            /* Fallback or local if needed, but using a subtle pattern helps */
+            opacity: 0.1;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+
+        /* Header Area */
+        .header-area {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            padding-top: 45px;
+        }
+
+        .header-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: #e0f2fe;
+            /* Light Sky Blue */
+            padding: 8px 32px;
+            border-radius: 100px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid #bae6fd;
+        }
+
+        .header-title {
+            color: #0369a1;
+            /* Sky 700 */
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+
+        .header-icon {
+            color: #f59e0b;
+            /* Amber 500 */
+            font-size: 1.1rem;
+        }
+
+        /* Content Area */
+        .content-area {
+            flex-grow: 1;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 10px 60px;
+            position: relative;
+        }
+
+        .arabic-text {
+            font-family: 'Amiri', serif;
+            font-size: 4rem;
+            color: #1e3a8a;
+            /* Dark Blue */
+            line-height: 1.6;
+            text-align: center;
+            margin-bottom: 24px;
+            font-weight: 400;
+        }
+
+        .turkish-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            color: #334155;
+            /* Slate 700 */
+            text-align: center;
+            line-height: 1.4;
+            font-weight: 700;
+            max-width: 90%;
+            position: relative;
+            margin-top: 35px;
+        }
+
+        .quote-icon {
+            position: absolute;
+            top: -25px;
+            left: -15px;
+            font-size: 5rem;
+            color: #bae6fd;
+            /* Very Light Blue */
+            opacity: 0.5;
+            font-family: serif;
+            z-index: -1;
+        }
+
+        /* Footer */
+        .footer-area {
+            z-index: 10;
+            padding: 30px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .date-box {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            padding: 8px 30px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.05);
+        }
+
+        .date-text {
+            color: #0369a1;
+            /* Sky 700 */
+            font-weight: 700;
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .date-icon-svg {
+            color: #f59e0b;
+            /* Amber 500 */
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="card-modern-islamic">
+        <!-- Pattern Overlay -->
+        <div class="pattern-overlay-bg"></div>
+
+        <!-- Decorative Frame -->
+        <!-- <div class="decorative-frame"></div> -->
+
+        <!-- Corners -->
+        <div class="corner-decor top-left"></div>
+        <div class="corner-decor top-right"></div>
+        <div class="corner-decor bottom-left"></div>
+        <div class="corner-decor bottom-right"></div>
+
+        <div class="header-area">
+            <div class="header-badge">
+                <span class="header-icon">✦</span>
+                <span class="header-title">Haftanın Hadis-i Şerifi</span>
+                <span class="header-icon">✦</span>
+            </div>
+        </div>
+
+        <div class="content-area">
+            <div class="arabic-text">
+                مَنْ تَشَبَّهَ بِقَوْمٍ فَهُوَ مِنْهُمْ
+            </div>
+
+            <div class="turkish-text">
+                Kim bir kavme benzerse<br>
+                o kimse, o kavimdendir.
+            </div>
+        </div>
+
+        <div class="footer-area">
+            <div class="date-box">
+                <svg class="w-5 h-5 date-icon-svg" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                    </path>
+                </svg>
+                <span class="date-text">15. Hafta • 15-21 Aralık</span>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>
