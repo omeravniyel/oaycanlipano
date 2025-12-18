@@ -501,31 +501,29 @@ async function fetchConfig() {
         }
 
         // --- 7. Bilgi Kartı (Modüller) ---
-        // 1. Veri Kaynaklarını Hazırla
+        // 1. Duyurular
         const rawAnnouncements = [];
-        let annList = config.announcements || [];
-        if (typeof annList === 'string') annList = JSON.parse(annList);
-        if (Array.isArray(annList)) {
-            annList.forEach(a => rawAnnouncements.push({
-                type: 'duyuru',
-                title: 'DUYURULAR',
-                badge: 'GÜNCEL',
-                circle: '📢',
-                topLabel: 'GENEL BİLGİLENDİRME',
-                content: a
-            }));
+        if (config.announcements && Array.isArray(config.announcements) && config.announcements.length > 0) {
+            config.announcements.forEach(text => {
+                if (!text) return;
+                rawAnnouncements.push({
+                    type: 'announcement',
+                    title: 'DUYURULAR',
+                    badge: 'ÖNEMLİ', // Sol üst köşe
+                    circle: '<i class="fa-solid fa-bullhorn"></i>', // Daire içi,
+                    topLabel: 'BİLGİLENDİRME', // Sağ üst
+                    content: text // Ana metin
+                });
+            });
         }
 
         const rawExams = [];
-        if (config.exam_winners && Array.isArray(config.exam_winners)) {
+        if (config.exam_winners && Array.isArray(config.exam_winners) && config.exam_winners.length > 0) {
             config.exam_winners.forEach(w => {
-                // Format: "Name - Puan" or just "Name"
-                // Format: "Name - Puan" or "Name Puan"
+                // ... existing parsing logic ...
                 let parts = w.split('-');
                 let name = parts[0].trim();
                 let score = parts[1] ? parts[1].trim() : '';
-
-                // Fallback: Eğer tire yoksa ve son kelime sayıysa onu puan kabul et
                 if (!score) {
                     const spaces = name.split(' ');
                     const last = spaces[spaces.length - 1];
@@ -537,8 +535,8 @@ async function fetchConfig() {
                 rawExams.push({
                     type: 'exam',
                     title: (config.exam_name ? config.exam_name + ' ŞAMPİYONLARI' : 'SINAV ŞAMPİYONLARI'),
-                    badge: 'MAŞAALLAH', // Sağ üst badge artık sabit veya başka bir şey olabilir çünkü puanı ismin yanına aldık
-                    circle: '🥇', // Sıra numarası eklenebilir
+                    badge: 'MAŞAALLAH',
+                    circle: '<i class="fa-solid fa-trophy"></i>',
                     topLabel: 'TEBRİK EDERİZ',
                     content: score ? `${name} - ${score} PUAN` : name
                 });
@@ -546,9 +544,8 @@ async function fetchConfig() {
         }
 
         const rawMenus = [];
-        // Yemek menüsü varsa ekle (menu_enabled kontrolüne gerek yok, içerik varsa gösterilsin)
-        if (config.lunch_menu) rawMenus.push({ type: 'menu', title: 'ÖĞLE YEMEĞİ', badge: 'AFİYET OLSUN', circle: '☀️', topLabel: 'GÜNÜN MENÜSÜ', content: config.lunch_menu });
-        if (config.dinner_menu) rawMenus.push({ type: 'menu', title: 'AKŞAM YEMEĞİ', badge: 'AFİYET OLSUN', circle: '🌙', topLabel: 'GÜNÜN MENÜSÜ', content: config.dinner_menu });
+        if (config.lunch_menu) rawMenus.push({ type: 'menu', title: 'ÖĞLE YEMEĞİ', badge: 'AFİYET OLSUN', circle: '<i class="fa-solid fa-utensils"></i>', topLabel: 'GÜNÜN MENÜSÜ', content: config.lunch_menu });
+        if (config.dinner_menu) rawMenus.push({ type: 'menu', title: 'AKŞAM YEMEĞİ', badge: 'AFİYET OLSUN', circle: '<i class="fa-solid fa-utensils"></i>', topLabel: 'GÜNÜN MENÜSÜ', content: config.dinner_menu });
 
         const rawStudent = [];
         if (config.student_of_week && config.student_of_week.name) {
@@ -556,7 +553,7 @@ async function fetchConfig() {
                 type: 'student',
                 title: 'HAFTANIN TALEBESİ',
                 badge: config.student_of_week.class || 'BAŞARI',
-                circle: '⭐', // Image handled in rotation
+                circle: '<i class="fa-solid fa-star"></i>', // Image handled in rotation
                 topLabel: 'GURUR TABLOMUZ',
                 content: `${config.student_of_week.name}\n${config.student_of_week.message || ''}`,
                 image: config.student_of_week.image
@@ -568,12 +565,12 @@ async function fetchConfig() {
             config.most_improved_list.forEach(item => {
                 const parts = item.split('-');
                 const name = parts[0].trim();
-                const score = parts[1] ? parts[1].trim() : '📈';
+                const score = parts[1] ? parts[1].trim() : '<i class="fa-solid fa-arrow-trend-up"></i>';
                 rawImproved.push({
                     type: 'improved',
                     title: 'EN ÇOK GELİŞENLER',
                     badge: score,
-                    circle: '🚀',
+                    circle: '<i class="fa-solid fa-arrow-trend-up"></i>',
                     topLabel: 'AZİM VE GAYRET',
                     content: name
                 });
@@ -679,7 +676,8 @@ function rotateInfo() {
             circle.classList.remove('bg-yellow-500', 'bg-blue-500', 'bg-orange-500', 'bg-green-500');
             circle.style.border = '2px solid white';
         } else {
-            circle.innerText = item.circle;
+            // Allow HTML (for icons)
+            circle.innerHTML = item.circle;
             circle.style.border = ''; // Reset border
         }
 
