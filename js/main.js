@@ -1009,42 +1009,50 @@ async function fetchWeather() {
         const geoData = await geoRes.json();
 
         if (!geoData.results || geoData.results.length === 0) {
-            console.warn("Konum bulunamadı:", district, city);
+            console.warn("Konum bulunamadı, varsayılana dönülüyor:", district, city);
+            // Retry with default
+            const defRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=Istanbul%20Uskudar&count=1&language=tr&format=json`);
+            const defData = await defRes.json();
+            if (defData.results && defData.results.length > 0) {
+                const loc = defData.results[0];
+                // Update internal vals so UI shows something valid
+                await fetchWeatherByCoords(loc.latitude, loc.longitude, "ISTANBUL");
+                return;
+            }
             return;
         }
 
         const location = geoData.results[0];
-        const lat = location.latitude;
-        const lon = location.longitude;
-        const locName = location.name; // API'den gelen doğrulanmış isim
-
-        // 2. Weather Data
-        const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=auto`;
-        const weatherRes = await fetch(weatherUrl);
-        const weatherData = await weatherRes.json();
-        const current = weatherData.current_weather;
-
-        const temp = current.temperature;
-        const wmoCode = current.weathercode;
-
-        // 3. WMO Code Mapping
-        const { icon, desc } = getWeatherInfo(wmoCode);
-
-        // 4. Update UI
-        if (document.getElementById('weather-temp')) {
-            document.getElementById('weather-temp').innerHTML = `${icon} ${Math.round(temp)}°C`;
-            // Use user-provided district name for display consistency, or API name if preferred
-            document.getElementById('weather-desc').innerText = district.toUpperCase();
-
-            if (document.getElementById('weather-condition')) {
-                document.getElementById('weather-condition').innerText = desc;
-            }
-        }
-        if (document.getElementById('weather-icon')) document.getElementById('weather-icon').innerText = icon;
+        await fetchWeatherByCoords(location.latitude, location.longitude, district.toUpperCase());
 
     } catch (e) {
         console.error("Hava durumu hatası:", e);
     }
+}
+
+async function fetchWeatherByCoords(lat, lon, displayName) {
+    // 2. Weather Data
+    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=auto`;
+    const weatherRes = await fetch(weatherUrl);
+    const weatherData = await weatherRes.json();
+    const current = weatherData.current_weather;
+
+    const temp = current.temperature;
+    const wmoCode = current.weathercode;
+
+    // 3. WMO Code Mapping
+    const { icon, desc } = getWeatherInfo(wmoCode);
+
+    // 4. Update UI
+    if (document.getElementById('weather-temp')) {
+        document.getElementById('weather-temp').innerHTML = `${icon} ${Math.round(temp)}°C`;
+        document.getElementById('weather-desc').innerText = displayName;
+
+        if (document.getElementById('weather-condition')) {
+            document.getElementById('weather-condition').innerText = desc;
+        }
+    }
+    if (document.getElementById('weather-icon')) document.getElementById('weather-icon').innerText = icon;
 }
 
 function getWeatherInfo(code) {
