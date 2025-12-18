@@ -388,7 +388,8 @@ async function fetchConfig() {
             const h = selectedHadith;
 
             // --- TARIH VE HAFTA GÖSTERİMİ ---
-            const startDateStr = (config.weekly_hadiths && config.weekly_hadiths.startDate) ? config.weekly_hadiths.startDate : '2024-09-09'; // Varsayılan: 9 Eylül 2024
+            // Varsayılan: 2025-2026 Eğitim yılı başlangıcı (8 Eylül 2025)
+            const startDateStr = (config.weekly_hadiths && config.weekly_hadiths.startDate) ? config.weekly_hadiths.startDate : '2025-09-08';
 
             let weekLabel = h.week || '';
             let dateRangeLabel = '';
