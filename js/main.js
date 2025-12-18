@@ -1005,7 +1005,11 @@ async function fetchWeather() {
         const city = window.configLocation?.city || 'Istanbul';
         const district = window.configLocation?.district || 'Uskudar';
 
-        const res = await fetch(`https://wttr.in/${district},${city}?format=j1`);
+        // Encoding for Turkish chars & spaces
+        const qCity = encodeURIComponent(city.trim());
+        const qDistrict = encodeURIComponent(district.trim());
+
+        const res = await fetch(`https://wttr.in/${qDistrict},${qCity}?format=j1`);
         const data = await res.json();
         const current = data.current_condition[0];
 
