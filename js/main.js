@@ -966,7 +966,7 @@ function switchMedia(mode) {
                 observer: true, // DOM değişikliklerini izle
                 observeParents: true, // Parent değişikliklerini izle
                 autoplay: {
-                    delay: 10000,
+                    delay: 12000,
                     disableOnInteraction: false,
                 },
                 loop: false, // Loop false yapıyoruz ki sona gelince yakalayalım
@@ -975,9 +975,8 @@ function switchMedia(mode) {
                     reachEnd: function () {
                         // Slayt bitti -> Videoya geç (Eğer video varsa)
                         if (videoPlaylist.length > 0) {
-                            setTimeout(() => {
-                                switchMedia('video');
-                            }, 5000); // 5 sn bekle
+                            // Beklemeden videoya geç
+                            switchMedia('video');
                         } else {
                             // Video yoksa başa sar
                             this.slideTo(0);
