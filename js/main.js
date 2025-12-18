@@ -994,40 +994,48 @@ function switchMedia(mode) {
 }
 
 
-// --- WEATHER API (Open-Meteo) ---
+// --- WEATHER API (Open-Meteo with Geocoding) ---
 async function fetchWeather() {
     try {
-        // Zeytinburnu Coordinats: 40.99, 28.90
-        // Config'den şehir/ilçe al varsa
-        // fetchConfig fonksiyonu globalCity ve globalDistrict'i güncelleyecek şekilde revize edilecek
-        // Ancak burada DOM'dan okuyamayız çünkü config infoData'da tutuluyor, global değişkene atmamız lazım.
-        // Hızlı çözüm: fetchConfig içinde window.configLocation atayalım, burada kullanalım.
         const city = window.configLocation?.city || 'Istanbul';
         const district = window.configLocation?.district || 'Uskudar';
 
-        // Encoding for Turkish chars & spaces
-        const qCity = encodeURIComponent(city.trim());
-        const qDistrict = encodeURIComponent(district.trim());
+        // 1. Geocoding (Get Lat/Lon)
+        // Search for "District City" for better accuracy
+        const query = encodeURIComponent(`${district} ${city}`);
+        const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${query}&count=1&language=tr&format=json`;
 
-        const res = await fetch(`https://wttr.in/${qDistrict},${qCity}?format=j1`);
-        const data = await res.json();
-        const current = data.current_condition[0];
+        const geoRes = await fetch(geoUrl);
+        const geoData = await geoRes.json();
 
-        const temp = current.temp_C;
-        const desc = current.lang_tr ? current.lang_tr[0].value : current.weatherDesc[0].value;
+        if (!geoData.results || geoData.results.length === 0) {
+            console.warn("Konum bulunamadı:", district, city);
+            return;
+        }
 
-        // Basit ikon eşleşmesi
-        let icon = '☀️';
-        const d = desc.toLowerCase();
-        if (d.includes('bulut')) icon = '☁️';
-        if (d.includes('yağmur') || d.includes('rain')) icon = '🌧️';
-        if (d.includes('kar') || d.includes('snow')) icon = '❄️';
-        if (d.includes('gök') || d.includes('thunder')) icon = '⛈️';
-        if (d.includes('sis') || d.includes('fog')) icon = '🌫️';
+        const location = geoData.results[0];
+        const lat = location.latitude;
+        const lon = location.longitude;
+        const locName = location.name; // API'den gelen doğrulanmış isim
 
+        // 2. Weather Data
+        const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&timezone=auto`;
+        const weatherRes = await fetch(weatherUrl);
+        const weatherData = await weatherRes.json();
+        const current = weatherData.current_weather;
+
+        const temp = current.temperature;
+        const wmoCode = current.weathercode;
+
+        // 3. WMO Code Mapping
+        const { icon, desc } = getWeatherInfo(wmoCode);
+
+        // 4. Update UI
         if (document.getElementById('weather-temp')) {
             document.getElementById('weather-temp').innerHTML = `${icon} ${Math.round(temp)}°C`;
-            document.getElementById('weather-desc').innerText = district.toUpperCase(); // İlçe adını göster
+            // Use user-provided district name for display consistency, or API name if preferred
+            document.getElementById('weather-desc').innerText = district.toUpperCase();
+
             if (document.getElementById('weather-condition')) {
                 document.getElementById('weather-condition').innerText = desc;
             }
@@ -1037,6 +1045,33 @@ async function fetchWeather() {
     } catch (e) {
         console.error("Hava durumu hatası:", e);
     }
+}
+
+function getWeatherInfo(code) {
+    // WMO Weather interpretation codes (WW)
+    // 0: Clear sky
+    // 1, 2, 3: Mainly clear, partly cloudy, and overcast
+    // 45, 48: Fog
+    // 51, 53, 55: Drizzle
+    // 61, 63, 65: Rain
+    // 71, 73, 75: Snow
+    // 77: Snow grains
+    // 80, 81, 82: Rain showers
+    // 85, 86: Snow showers
+    // 95: Thunderstorm
+    // 96, 99: Thunderstorm with slight and heavy hail
+
+    if (code === 0) return { icon: '☀️', desc: 'Açık' };
+    if (code >= 1 && code <= 3) return { icon: '☁️', desc: 'Parçalı Bulutlu' };
+    if (code === 45 || code === 48) return { icon: '🌫️', desc: 'Sisli' };
+    if (code >= 51 && code <= 55) return { icon: '🌦️', desc: 'Çiseleme' };
+    if (code >= 61 && code <= 65) return { icon: '🌧️', desc: 'Yağmurlu' };
+    if (code >= 71 && code <= 77) return { icon: '❄️', desc: 'Karlı' };
+    if (code >= 80 && code <= 82) return { icon: '🌧️', desc: 'Sağanak' };
+    if (code >= 85 && code <= 86) return { icon: '🌨️', desc: 'Kar Sağanağı' };
+    if (code >= 95) return { icon: '⛈️', desc: 'Fırtına' };
+
+    return { icon: '☀️', desc: 'Açık' };
 }
 
 // Initial Fetch and Interval
