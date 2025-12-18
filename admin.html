@@ -212,6 +212,13 @@
                         </label>
                     </div>
 
+                    <div class="mb-4">
+                        <label class="block text-xs font-bold text-slate-500 mb-1">Ana Başlık (Opsiyonel)</label>
+                        <input type="text" id="config-dorm_main_title"
+                            class="w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 outline-none"
+                            placeholder="Varsayılan: GÜNÜN KAZANAN YATAKHANESİ">
+                    </div>
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <!-- Group 1 -->
                         <div class="bg-orange-50 rounded-xl p-4 border border-orange-100">
@@ -612,6 +619,8 @@
                 document.getElementById('config-module_dorm_active').checked = data.module_dorm_active;
             }
 
+            setVal('config-dorm_main_title', data.dorm_main_title);
+
             setVal('config-dorm1_title', data.dorm1_title);
             setVal('config-dorm1_name', data.dorm1_name);
             setVal('config-dorm1_count', data.dorm1_count);
@@ -664,6 +673,8 @@
             data.dinner_menu = getVal('config-dinner_menu');
             data.exam_name = getVal('config-exam_name'); // Sınav Adı
             data.module_dorm_active = document.getElementById('config-module_dorm_active').checked;
+
+            data.dorm_main_title = getVal('config-dorm_main_title');
 
             data.dorm1_title = getVal('config-dorm1_title');
             data.dorm1_name = getVal('config-dorm1_name');

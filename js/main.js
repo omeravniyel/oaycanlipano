@@ -311,6 +311,9 @@ async function fetchConfig() {
         }
 
         // Görünürlük ayarları
+        if (document.getElementById('dorm-section-title')) {
+            document.getElementById('dorm-section-title').innerText = config.dorm_main_title || "GÜNÜN KAZANAN YATAKHANESİ";
+        }
         if (document.getElementById('dorm1-custom-title')) {
             document.getElementById('dorm1-custom-title').innerText = config.dorm1_title || "";
         }
