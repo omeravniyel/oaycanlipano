@@ -281,9 +281,11 @@ async function fetchConfig() {
             // Yeni Tekil Format (öğrenciler boş olabilir veya array boş gelmiş olabilir)
             document.getElementById('dorm1-name').innerText = config.dorm1_name;
             document.getElementById('dorm1-count').innerText = config.dorm1_count ? (config.dorm1_count + '.KEZ') : '0.KEZ';
-            dorm1Names = []; // Temizle
+            // Fallback for old style array if exists in other props? No, usually it was fixed.
+            // If legacy dorm1_names existed as individual props? No, they were fixed checks.
+            // Just empty if not array.
         } else if (config.dorm1) {
-            // Legacy Nesne Formatı
+            // Legacy JSON support
             try {
                 const d1 = (typeof config.dorm1 === 'string') ? JSON.parse(config.dorm1) : config.dorm1;
                 document.getElementById('dorm1-name').innerText = d1.name || '---';
@@ -292,16 +294,15 @@ async function fetchConfig() {
             } catch (e) { }
         }
 
-        // Yatakhane 2
-        if (config.dorm2_names && Array.isArray(config.dorm2_names) && config.dorm2_names.length > 0) {
-            dorm2Names = config.dorm2_names.filter(n => n);
-            document.getElementById('dorm2-name').innerText = config.dorm2_name || '2. GRUP';
-            document.getElementById('dorm2-count').innerText = config.dorm2_count ? (config.dorm2_count + '.KEZ') : '0.KEZ';
+        if (config.dorm2_names && Array.isArray(config.dorm2_names)) {
+            dorm2Names = config.dorm2_names;
+            if (document.getElementById('dorm2-name')) document.getElementById('dorm2-name').innerText = config.dorm2_name || '---';
+            if (document.getElementById('dorm2-count')) document.getElementById('dorm2-count').innerText = config.dorm2_count ? (config.dorm2_count + '.KEZ') : '0.KEZ';
         } else if (config.dorm2_name) {
             document.getElementById('dorm2-name').innerText = config.dorm2_name;
             document.getElementById('dorm2-count').innerText = config.dorm2_count ? (config.dorm2_count + '.KEZ') : '0.KEZ';
-            dorm2Names = [];
         } else if (config.dorm2) {
+            // Legacy JSON support
             try {
                 const d2 = (typeof config.dorm2 === 'string') ? JSON.parse(config.dorm2) : config.dorm2;
                 document.getElementById('dorm2-name').innerText = d2.name || '---';
@@ -740,30 +741,55 @@ function startDormNameRotation() {
     updateDormNames();
 }
 
+// function updateDormNames() logic replacement
 function updateDormNames() {
-    // Yatakhane 1
-    for (let i = 1; i <= 6; i++) {
-        const el = document.getElementById(`dorm1-s${i}`);
-        if (dorm1Names[i - 1]) {
-            el.innerText = dorm1Names[i - 1];
-            el.classList.remove('opacity-50'); // Varsa tam görünür
-        } else {
-            el.innerText = '---';
-            el.classList.add('opacity-50'); // Yoksa silik
+    renderDormList('dorm1-students', dorm1Names);
+    renderDormList('dorm2-students', dorm2Names);
+}
+
+function renderDormList(containerId, names) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    // Fallback if empty
+    if (!names || names.length === 0) {
+        for (let i = 0; i < 6; i++) {
+            const div = document.createElement('div');
+            div.className = 'truncate py-1 border-b border-white/10 opacity-50';
+            div.innerText = '---';
+            container.appendChild(div);
         }
+        return;
     }
 
-    // Yatakhane 2
-    for (let i = 1; i <= 6; i++) {
-        const el = document.getElementById(`dorm2-s${i}`);
-        if (dorm2Names[i - 1]) {
-            el.innerText = dorm2Names[i - 1];
-            el.classList.remove('opacity-50');
-        } else {
-            el.innerText = '---';
-            el.classList.add('opacity-50');
-        }
-    }
+    names.forEach((name, index) => {
+        const div = document.createElement('div');
+        // Son 2 elemanda border-b olmasın (grid 2 col olduğu için)
+        // Eğer tek sayıysa son eleman border'sız, çift ise son 2.
+        // Basit mantık: Her satırın altını çiz, en alt satır hariç.
+        // Grid 2 col ise: 
+        // 0 1 -> border-b
+        // 2 3 -> border-b
+        // ...
+        // length 6: 0,1,2,3 border-b. 4,5 no border.
+
+        let hasBorder = true;
+        const total = names.length;
+        // Son satırda mı?
+        // Row index: Math.floor(index / 2)
+        // Total rows: Math.ceil(total / 2)
+        const rowIndex = Math.floor(index / 2);
+        const totalRows = Math.ceil(total / 2);
+
+        if (rowIndex === totalRows - 1) hasBorder = false;
+
+        div.className = `truncate py-1 ${hasBorder ? 'border-b border-white/10' : ''}`;
+        div.innerText = name;
+        div.title = name; // Tooltip for truncated text
+        container.appendChild(div);
+    });
 }
 
 // Başlangıçta verileri çek

@@ -243,24 +243,9 @@
                             <div class="space-y-2">
                                 <label class="block text-xs font-bold text-orange-800">Öğrenciler (Her satıra bir
                                     isim)</label>
-                                <input type="text"
-                                    class="dorm1-student w-full p-2 bg-white border border-orange-200 rounded-lg text-xs"
-                                    placeholder="1. Öğrenci">
-                                <input type="text"
-                                    class="dorm1-student w-full p-2 bg-white border border-orange-200 rounded-lg text-xs"
-                                    placeholder="2. Öğrenci">
-                                <input type="text"
-                                    class="dorm1-student w-full p-2 bg-white border border-orange-200 rounded-lg text-xs"
-                                    placeholder="3. Öğrenci">
-                                <input type="text"
-                                    class="dorm1-student w-full p-2 bg-white border border-orange-200 rounded-lg text-xs"
-                                    placeholder="4. Öğrenci">
-                                <input type="text"
-                                    class="dorm1-student w-full p-2 bg-white border border-orange-200 rounded-lg text-xs"
-                                    placeholder="5. Öğrenci">
-                                <input type="text"
-                                    class="dorm1-student w-full p-2 bg-white border border-orange-200 rounded-lg text-xs"
-                                    placeholder="6. Öğrenci">
+                                <textarea id="val-dorm1-names" rows="8"
+                                    class="w-full p-2 bg-white border border-orange-200 rounded-lg text-sm placeholder-orange-300"
+                                    placeholder="Ahmet Yılmaz&#10;Mehmet Demir&#10;Ayşe Kara..."></textarea>
                             </div>
                         </div>
 
@@ -295,25 +280,11 @@
                                     class="w-full p-2 bg-white border border-orange-200 rounded-lg text-sm">
                             </div>
                             <div class="space-y-2">
-                                <label class="block text-xs font-bold text-orange-800">Öğrenciler</label>
-                                <input type="text"
-                                    class="dorm2-student w-full p-2 bg-white border border-orange-200 rounded-lg text-xs"
-                                    placeholder="1. Öğrenci">
-                                <input type="text"
-                                    class="dorm2-student w-full p-2 bg-white border border-orange-200 rounded-lg text-xs"
-                                    placeholder="2. Öğrenci">
-                                <input type="text"
-                                    class="dorm2-student w-full p-2 bg-white border border-orange-200 rounded-lg text-xs"
-                                    placeholder="3. Öğrenci">
-                                <input type="text"
-                                    class="dorm2-student w-full p-2 bg-white border border-orange-200 rounded-lg text-xs"
-                                    placeholder="4. Öğrenci">
-                                <input type="text"
-                                    class="dorm2-student w-full p-2 bg-white border border-orange-200 rounded-lg text-xs"
-                                    placeholder="5. Öğrenci">
-                                <input type="text"
-                                    class="dorm2-student w-full p-2 bg-white border border-orange-200 rounded-lg text-xs"
-                                    placeholder="6. Öğrenci">
+                                <label class="block text-xs font-bold text-orange-800">Öğrenciler (Her satıra bir
+                                    isim)</label>
+                                <textarea id="val-dorm2-names" rows="8"
+                                    class="w-full p-2 bg-white border border-orange-200 rounded-lg text-sm placeholder-orange-300"
+                                    placeholder="Fatma Yılmaz&#10;Ali Veli..."></textarea>
                             </div>
                         </div>
                     </div>
@@ -639,11 +610,17 @@
             if (data.dorm2_names && Array.isArray(data.dorm2_names)) {
                 s2.forEach((inp, i) => inp.value = data.dorm2_names[i] || '');
             }
-
             setVal('config-exam_name', data.exam_name);
 
             // Arrays (TextArea parsing)
             if (data.announcements) document.getElementById('raw-announcements').value = data.announcements.join('\n');
+            // Dorm Students Arrays
+            if (data.dorm1_names && Array.isArray(data.dorm1_names)) {
+                document.getElementById('val-dorm1-names').value = data.dorm1_names.join('\n');
+            }
+            if (data.dorm2_names && Array.isArray(data.dorm2_names)) {
+                document.getElementById('val-dorm2-names').value = data.dorm2_names.join('\n');
+            }
             if (data.exam_winners) document.getElementById('raw-exam-winners').value = data.exam_winners.join('\n');
             if (data.gallery_links) document.getElementById('raw-gallery-links').value = data.gallery_links.join('\n');
             if (data.left_gallery_links) document.getElementById('raw-left-gallery-links').value = data.left_gallery_links.join('\n');
@@ -684,8 +661,8 @@
             data.dorm2_count = parseInt(getVal('config-dorm2_count')) || 0;
 
             // Arrays
-            data.dorm1_names = Array.from(document.querySelectorAll('.dorm1-student')).map(i => i.value).filter(x => x.trim() !== '');
-            data.dorm2_names = Array.from(document.querySelectorAll('.dorm2-student')).map(i => i.value).filter(x => x.trim() !== '');
+            data.dorm1_names = getLines('val-dorm1-names');
+            data.dorm2_names = getLines('val-dorm2-names');
 
             data.announcements = getLines('raw-announcements');
             data.exam_winners = getLines('raw-exam-winners');
