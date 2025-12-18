@@ -663,9 +663,29 @@
             // Tarih ayarını önce yükle (Hesaplama için gerekli)
             const dateKey = `super_admin_start_date_${type}`;
             const savedDate = localStorage.getItem(dateKey);
-            const activeStartDate = savedDate || DEFAULT_START_DATE;
+            let activeStartDate = savedDate || DEFAULT_START_DATE;
 
-            document.getElementById('semester-start-date').value = activeStartDate;
+            // PAZARTESİ'YE SABİTLEME
+            try {
+                const d = new Date(activeStartDate);
+                const day = d.getDay();
+                const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+                activeStartDate = new Date(d.setDate(diff)).toISOString().split('T')[0];
+            } catch (e) { }
+
+            const dateInput = document.getElementById('semester-start-date');
+            dateInput.value = activeStartDate;
+
+            dateInput.onchange = function () {
+                const val = this.value;
+                if (!val) return;
+                const d = new Date(val);
+                const day = d.getDay();
+                const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+                const mStr = new Date(d.setDate(diff)).toISOString().split('T')[0];
+                if (this.value !== mStr) this.value = mStr;
+                recalculateWeekLabels();
+            };
 
             if (stored) {
                 try {
