@@ -252,21 +252,46 @@ async function fetchConfig() {
         window.lunchMenu = config.lunch_menu || "";
         window.dinnerMenu = config.dinner_menu || "";
 
-        // --- 4. Günün Sözleri (Marquee) ---
-        let quotesText = "";
-        if (config.quotes) {
+        // --- 4. Günün Sözleri / Marquee (Otomatik Numarayı Yıldıza Çevirme) ---
+        let marqueeItems = [];
+
+        // 1. Duyurular (Dizi) - Numaraları temizle
+        if (config.announcements && Array.isArray(config.announcements)) {
+            config.announcements.forEach(a => {
+                // "1- Metin", "2. Metin" gibi desenleri temizle
+                let clean = a.replace(/^\d+[\-\.)]\s*/, '').trim();
+                if (clean) marqueeItems.push(clean);
+            });
+        }
+
+        // 2. Günün Sözü (Tekil) - Eğer varsa ekle
+        if (config.quote_of_day) {
+            let clean = config.quote_of_day.replace(/^\d+[\-\.)]\s*/, '').trim();
+            // Eğer duyurular listesinde aynısı yoksa ekle (Duplicate önleme)
+            if (clean && !marqueeItems.includes(clean)) {
+                marqueeItems.push(clean);
+            }
+        }
+
+        // 3. Eski Quotes yapısı (Fallback)
+        if (config.quotes && (!marqueeItems.length)) {
             try {
                 const q = (typeof config.quotes === 'string') ? JSON.parse(config.quotes) : config.quotes;
-                if (Array.isArray(q) && q.length > 0) {
-                    quotesText = q.join(' &nbsp; <span class="text-yellow-400 text-2xl">★</span> &nbsp; ');
-                }
+                if (Array.isArray(q)) marqueeItems = q;
             } catch (e) { }
         }
-        if (!quotesText && config.quote_of_day) {
-            quotesText = `★ ${config.quote_of_day} ★`;
+
+        let quotesText = "";
+        if (marqueeItems.length > 0) {
+            // Öğeler arasına YILDIZ koy
+            quotesText = marqueeItems.join(' &nbsp; <span class="text-yellow-400 text-2xl">★</span> &nbsp; ');
+        } else {
+            // Varsayılan
+            quotesText = "Dijital Pano sistemine hoşgeldiniz...";
         }
+
         const marquee = document.getElementById('marquee-text');
-        if (marquee && quotesText) {
+        if (marquee) {
             marquee.innerHTML = quotesText;
         }
 
