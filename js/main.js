@@ -252,25 +252,33 @@ async function fetchConfig() {
         window.lunchMenu = config.lunch_menu || "";
         window.dinnerMenu = config.dinner_menu || "";
 
-        // --- 4. Günün Sözleri / Marquee (Otomatik Numarayı Yıldıza Çevirme) ---
+        // --- 4. Günün Sözleri / Marquee (Gelişmiş Numaralandırma Ayrıştırıcı) ---
         let marqueeItems = [];
 
-        // 1. Duyurular (Dizi) - Numaraları temizle
+        // Helper: Metni numaralardan (1-, 2. vb) bölüp temiz listeye çevirir
+        const parseNumberedText = (text) => {
+            if (!text) return [];
+            // "1- ", "2. ", "3) " gibi desenlerden böl
+            // Regex: Bir sayı, ardından tire/nokta/parantez, ardından boşluklar
+            const parts = text.split(/\d+[\-\.)]\s*/);
+            // Boşlukları temizle ve filtrele
+            return parts.map(p => p.trim()).filter(p => p.length > 0);
+        };
+
+        // 1. Duyurular (Dizi veya Tekil olabilir)
         if (config.announcements && Array.isArray(config.announcements)) {
             config.announcements.forEach(a => {
-                // "1- Metin", "2. Metin" gibi desenleri temizle
-                let clean = a.replace(/^\d+[\-\.)]\s*/, '').trim();
-                if (clean) marqueeItems.push(clean);
+                const parsed = parseNumberedText(a);
+                marqueeItems.push(...parsed);
             });
         }
 
-        // 2. Günün Sözü (Tekil) - Eğer varsa ekle
+        // 2. Günün Sözü (Tekil)
         if (config.quote_of_day) {
-            let clean = config.quote_of_day.replace(/^\d+[\-\.)]\s*/, '').trim();
-            // Eğer duyurular listesinde aynısı yoksa ekle (Duplicate önleme)
-            if (clean && !marqueeItems.includes(clean)) {
-                marqueeItems.push(clean);
-            }
+            const parsed = parseNumberedText(config.quote_of_day);
+            parsed.forEach(p => {
+                if (!marqueeItems.includes(p)) marqueeItems.push(p);
+            });
         }
 
         // 3. Eski Quotes yapısı (Fallback)
