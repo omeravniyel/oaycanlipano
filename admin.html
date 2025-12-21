@@ -928,6 +928,48 @@
             handleUpload(e.target.files, 'raw-left-gallery-links');
         });
 
+        // --- AUTO NUMBERING FOR ANNOUNCEMENTS ---
+        const announcementInput = document.getElementById('raw-announcements');
+        if (announcementInput) {
+            announcementInput.addEventListener('keydown', function (e) {
+                if (e.key === 'Enter') {
+                    const cursorPosition = this.selectionStart;
+                    const value = this.value;
+                    const textBefore = value.substring(0, cursorPosition);
+                    const textAfter = value.substring(cursorPosition);
+
+                    // Find the start of the current line
+                    const lastNewLine = textBefore.lastIndexOf('\n');
+                    const currentLineStart = lastNewLine === -1 ? 0 : lastNewLine + 1;
+                    const currentLine = textBefore.substring(currentLineStart);
+
+                    // Check for number pattern: "1-", "1.", "1)", etc.
+                    // Captures: 1(number), 2(separator), 3(space/content start)
+                    const match = currentLine.match(/^(\d+)([-.)])(\s*)/);
+
+                    if (match) {
+                        e.preventDefault();
+                        const currentNumber = parseInt(match[1]);
+                        const separator = match[2];
+                        const spacing = match[3] || ' '; // Default to one space if regex matched empty space (rare if \s* used but for safety)
+
+                        const nextNumber = currentNumber + 1;
+                        const insertText = `\n${nextNumber}${separator}${spacing}`;
+
+                        this.value = textBefore + insertText + textAfter;
+
+                        // set cursor position
+                        const newCursorPos = cursorPosition + insertText.length;
+                        this.selectionStart = this.selectionEnd = newCursorPos;
+
+                        // Scroll to cursor
+                        this.blur();
+                        this.focus();
+                    }
+                }
+            });
+        }
+
         // Logo Listeners
         document.getElementById('upload-logo-input').addEventListener('change', async (e) => {
             const files = e.target.files;

@@ -848,7 +848,9 @@ function onYouTubeIframeAPIReady() {
             'showinfo': 0,
             'mute': 1, // Otomatik oynatma için sessiz başlatmak zorunludur
             'modestbranding': 1,
-            'loop': 1
+            'loop': 1,
+            'cc_load_policy': 1,
+            'cc_lang_pref': 'tr'
         },
         events: {
             'onReady': onPlayerReady,
@@ -882,9 +884,13 @@ function playNextVideoOrSlide() {
     if (currentVideoIndex < videoPlaylist.length) {
         playCurrentVideo();
     } else {
-        // Liste bitti, slayta geç
+        // Liste bitti, görsel varsa slayta geç, yoksa başa sar
         currentVideoIndex = 0;
-        switchMedia('slide');
+        if (galleryImages.length > 0) {
+            switchMedia('slide');
+        } else {
+            playCurrentVideo();
+        }
     }
 }
 
