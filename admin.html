@@ -636,37 +636,18 @@
             if (data.exam_winners && Array.isArray(data.exam_winners)) {
                 document.getElementById('exam-winners-list').innerHTML = ''; // Clear
                 data.exam_winners.forEach(w => {
-                    // Parse line: [Class] Name - Score 
-                    // or just: Name - Score
                     let cls = '';
                     let name = w;
                     let score = '';
 
-                    // Split score first (last part after -)
-                    if (w.includes('-')) {
-                        const parts = w.split('-');
-                        // Last part is score?
-                        // Let's assume standard format Name - Score. 
-                        // If Name has hyphen like "Ala-Attin", this is risky.
-                        // But for now split by last hyphen logic or first hyphen logic?
-                        // Main.js splits by first hyphen. let parts = w.split('-');
-                        // So we should adhere to that.
+                    // Robust Regex Parsing (Same as main.js)
+                    // Matches: [Class] Name - Score or Name - Score or [Class] Name
+                    const match = w.match(/^(?:\[(.*?)\]\s*)?(.*?)(?:\s*-\s*(.*))?$/);
 
-                        // Re-join everything except last part? No main.js takes parts[0] as name.
-                        // So first hyphen separates name and score.
-                        const p1 = parts[0];
-                        const p2 = parts.slice(1).join('-'); // Rest is score
-
-                        name = p1.trim();
-                        score = p2.trim();
-                    }
-
-                    // Now parse class from name
-                    // Check if starts with [
-                    const match = name.match(/^\[(.*?)\]\s*(.*)$/);
                     if (match) {
-                        cls = match[1];
-                        name = match[2];
+                        cls = match[1] ? match[1].trim() : '';
+                        name = match[2] ? match[2].trim() : '';
+                        score = match[3] ? match[3].trim() : '';
                     }
 
                     addExamWinnerRow({ class: cls, name: name, score: score });
@@ -877,6 +858,16 @@
 
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
+
+                // Limit file size to 2.5MB (Vercel Serverless Payload Limit is ~4.5MB, Base64 adds 33%)
+                if (file.size > 2.5 * 1024 * 1024) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Dosya Çok Büyük',
+                        text: `${file.name} 2.5MB'dan büyük olduğu için yüklenemedi. Lütfen küçültüp tekrar deneyin.`
+                    });
+                    continue;
+                }
                 try {
                     const base64 = await toBase64(file);
                     const res = await fetch('/api/upload', {
@@ -975,6 +966,15 @@
             const files = e.target.files;
             if (!files || files.length === 0) return;
             const file = files[0];
+
+            if (file.size > 2.5 * 1024 * 1024) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Dosya Çok Büyük',
+                    text: `Logo dosyası 2.5MB'dan büyük. Lütfen küçültüp tekrar deneyin.`
+                });
+                return;
+            }
 
             // Show loading
             const btn = document.querySelector('[onclick="document.getElementById(\'upload-logo-input\').click()"]');

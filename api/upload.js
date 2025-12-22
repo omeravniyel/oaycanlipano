@@ -1,9 +1,8 @@
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.SUPABASE_URL;
-const supabaseKey = process.env.SUPABASE_ANON_KEY;
-// Storage işlemleri için Service Role Key gerekebilir ama Anon key de politikalar açıksa yeterli olur.
-// Kullanıcının "images" bucket'ı "Public" olmalı.
+// Use Service Role Key if available to bypass RLS (Row Level Security)
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
