@@ -22,7 +22,13 @@ export default async function handler(request, response) {
         const buffer = Buffer.from(fileBase64, 'base64');
 
         // Benzersiz dosya ismi
-        const uniqueName = `${Date.now()}_${filename}`;
+        // Türkçe karakterleri temizle ve boşlukları tire ile değiştir
+        const sanitizedFilename = filename
+            .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // Remove accents (ü -> u, ş -> s)
+            .replace(/[^a-zA-Z0-9.-]/g, '-') // Replace non-alphanumeric (like spaces) with -
+            .replace(/-+/g, '-'); // Merge multiple hyphens
+
+        const uniqueName = `${Date.now()}_${sanitizedFilename}`;
 
         // Son dosya yolu (Klasörleme: slug/dosya_adi)
         const filePath = slug ? `${slug}/${uniqueName}` : uniqueName;
