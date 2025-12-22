@@ -886,9 +886,15 @@
                         newUrls.push(data.url);
                     } else {
                         console.error('Upload failed for', file.name, data.error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Yükleme Hatası',
+                            text: `DOSYA: ${file.name}\nHATA: ${data.error || 'Bilinmeyen'}`
+                        });
                     }
                 } catch (err) {
                     console.error('Upload error', err);
+                    Swal.fire('Hata', `Yükleme sırasında hata: ${err.message}`, 'error');
                 }
             }
 
@@ -999,11 +1005,11 @@
                     document.getElementById('config-institution_logo').value = data.url;
                     Swal.fire({ toast: true, position: 'top-end', icon: 'success', title: 'Logo güncellendi', timer: 2000, showConfirmButton: false });
                 } else {
-                    throw new Error(data.error);
+                    throw new Error(data.error || 'Bilinmeyen hata');
                 }
             } catch (err) {
                 console.error(err);
-                Swal.fire('Hata', 'Logo yüklenemedi', 'error');
+                Swal.fire('Hata', err.message || 'Logo yüklenemedi', 'error');
             } finally {
                 btn.innerHTML = originalText;
                 btn.disabled = false;

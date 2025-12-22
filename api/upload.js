@@ -38,7 +38,23 @@ export default async function handler(request, response) {
 
         if (error) {
             console.error('Upload Error:', error);
-            return response.status(500).json({ error: error.message });
+
+            // Detailed diagnostics for "Bucket not found"
+            if (error.message.includes('Bucket not found') || error.statusCode === '404') {
+                try {
+                    const { data: buckets, error: listError } = await supabase.storage.listBuckets();
+                    if (buckets) {
+                        const bucketNames = buckets.map(b => b.name).join(', ');
+                        return response.status(500).json({
+                            error: `Bucket 'images' bulunamadı. Mevcut bucketlar: ${bucketNames}. Lütfen Supabase panelinden 'images' adında public bir bucket oluşturun.`
+                        });
+                    }
+                } catch (e) {
+                    console.error('List buckets error:', e);
+                }
+            }
+
+            return response.status(500).json({ error: `Yükleme Hatası: ${error.message}` });
         }
 
         // Public URL oluştur
