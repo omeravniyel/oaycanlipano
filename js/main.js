@@ -522,6 +522,29 @@ async function fetchConfig() {
             arabDiv.innerText = arabicText;
             arabDiv.style.display = arabicText ? 'block' : 'none';
 
+            // --- AUTO FONT SIZING ---
+            // Arabic Scaling
+            if (arabicText.length > 150) {
+                arabDiv.style.fontSize = '2rem';
+            } else if (arabicText.length > 80) {
+                arabDiv.style.fontSize = '2.8rem';
+            } else {
+                arabDiv.style.fontSize = '3.5rem';
+            }
+
+            // Turkish Scaling
+            const trDiv = document.getElementById('hadith-content').parentElement;
+            if (hadithText.length > 200) {
+                trDiv.style.fontSize = '1.3rem';
+                trDiv.style.marginTop = '15px';
+            } else if (hadithText.length > 100) {
+                trDiv.style.fontSize = '1.6rem';
+                trDiv.style.marginTop = '20px';
+            } else {
+                trDiv.style.fontSize = '2rem';
+                trDiv.style.marginTop = '35px';
+            }
+
             // Resim varsa
             if (h.img) {
                 document.getElementById('hadith-image').src = h.img;
