@@ -769,17 +769,29 @@ function rotateInfo() {
         document.getElementById('info-top-label').innerText = item.topLabel; // "BİRİNCİSİ"
 
         const mainText = document.getElementById('info-main-text');
-        mainText.innerText = item.content;
 
-        // Menü ise fontu güncelliyoruz (Daha büyük ve okunaklı)
+        // Menü ise özel HTML formatı (İkonlu Liste)
         if (item.type === 'menu') {
-            mainText.classList.remove('text-2xl', 'text-center');
-            // text-sm -> text-xl (Büyütüldü)
-            // leading-snug -> leading-normal (Satır arası açıldı)
-            mainText.classList.add('text-xl', 'leading-normal', 'whitespace-pre-wrap', 'columns-2', 'gap-4', 'text-left');
+            const lines = item.content.split('\n').filter(l => l.trim().length > 0);
+
+            // Her satırın başına ikon ekle
+            mainText.innerHTML = lines.map(line => `
+                <div class="flex items-start gap-3 mb-3 break-inside-avoid">
+                    <i class="fa-solid fa-utensils text-yellow-300 mt-1.5 text-base opacity-90 shrink-0"></i>
+                    <span class="font-medium">${line.trim()}</span>
+                </div>
+            `).join('');
+
+            mainText.classList.remove('text-2xl', 'text-center', 'whitespace-pre-wrap');
+            mainText.classList.add('text-xl', 'leading-normal', 'columns-2', 'gap-8', 'text-left');
+
         } else {
+            // Diğerleri için düz metin
+            mainText.innerText = item.content;
+
             mainText.classList.add('text-2xl', 'text-center');
-            mainText.classList.remove('text-xl', 'text-sm', 'leading-normal', 'whitespace-pre-wrap', 'columns-2', 'gap-4', 'text-left');
+            // Menüye özgü classları temizle
+            mainText.classList.remove('text-xl', 'text-sm', 'leading-normal', 'columns-2', 'gap-8', 'text-left');
         }
 
         // Fade in
