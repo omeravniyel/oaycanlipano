@@ -771,13 +771,15 @@ function rotateInfo() {
         const mainText = document.getElementById('info-main-text');
         mainText.innerText = item.content;
 
-        // Menü ise fontu küçült ve 2 sütuna böl
+        // Menü ise fontu güncelliyoruz (Daha büyük ve okunaklı)
         if (item.type === 'menu') {
             mainText.classList.remove('text-2xl', 'text-center');
-            mainText.classList.add('text-sm', 'leading-snug', 'whitespace-pre-wrap', 'columns-2', 'gap-4', 'text-left');
+            // text-sm -> text-xl (Büyütüldü)
+            // leading-snug -> leading-normal (Satır arası açıldı)
+            mainText.classList.add('text-xl', 'leading-normal', 'whitespace-pre-wrap', 'columns-2', 'gap-4', 'text-left');
         } else {
             mainText.classList.add('text-2xl', 'text-center');
-            mainText.classList.remove('text-sm', 'leading-snug', 'whitespace-pre-wrap', 'columns-2', 'gap-4', 'text-left');
+            mainText.classList.remove('text-xl', 'text-sm', 'leading-normal', 'whitespace-pre-wrap', 'columns-2', 'gap-4', 'text-left');
         }
 
         // Fade in
