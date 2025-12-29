@@ -754,14 +754,23 @@
                     <input type="text" class="exam-class w-full p-2 bg-white border border-slate-200 rounded-lg text-sm text-center font-bold text-slate-600" placeholder="8-A" value="${cls}">
                 </div>
                 <!-- Image Upload (Col 1) -->
-                <div class="col-span-1 flex justify-center">
+                <div class="col-span-1 flex justify-center relative group">
                      <input type="hidden" class="exam-image" value="${image}">
                      <input type="file" class="hidden row-upload-input" accept="image/png, image/jpeg, image/jpg" onchange="uploadRowImage(this)">
+                     
+                     <!-- Upload Button -->
                      <button type="button" onclick="this.previousElementSibling.click()" 
-                        class="w-10 h-10 rounded-lg border border-slate-200 flex items-center justify-center hover:bg-slate-50 transition overflow-hidden relative group bg-white" title="Fotoğraf Yükle">
+                        class="w-10 h-10 rounded-lg border border-slate-200 flex items-center justify-center hover:bg-slate-50 transition overflow-hidden relative group bg-white upload-btn" title="Fotoğraf Yükle">
                         ${image ? `<img src="${image}" class="w-full h-full object-cover">` : '<i class="fa-solid fa-camera text-slate-400"></i>'}
                         <div class="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center text-white text-xs"><i class="fa-solid fa-pen"></i></div>
                      </button>
+                     
+                     <!-- Delete Image Button (Only if image exists) -->
+                     ${image ? `
+                     <button type="button" onclick="removeRowImage(this)" 
+                        class="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white rounded-full flex items-center justify-center text-[0.6rem] shadow hover:bg-red-600 transition z-10" title="Resmi Sil">
+                        <i class="fa-solid fa-times"></i>
+                     </button>` : ''}
                 </div>
                 <div class="col-span-6">
                     <input type="text" class="exam-name w-full p-2 bg-white border border-slate-200 rounded-lg text-sm font-bold" placeholder="Ad Soyad" value="${name}">
@@ -776,6 +785,22 @@
                 </div>
             `;
             container.appendChild(div);
+        }
+
+        // --- Remove Image Helper ---
+        function removeRowImage(btn) {
+            const container = btn.closest('div');
+            const hiddenInput = container.querySelector('.exam-image');
+            const uploadBtn = container.querySelector('.upload-btn');
+
+            // Clear value
+            hiddenInput.value = '';
+
+            // Reset Icon
+            uploadBtn.innerHTML = '<i class="fa-solid fa-camera text-slate-400"></i><div class="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center text-white text-xs"><i class="fa-solid fa-pen"></i></div>';
+
+            // Remove Delete Button
+            btn.remove();
         }
 
         async function uploadRowImage(input) {
