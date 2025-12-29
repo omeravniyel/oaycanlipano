@@ -918,7 +918,7 @@ function onYouTubeIframeAPIReady() {
             'controls': 0,
             'rel': 0,
             'showinfo': 0,
-            'mute': 1, // Otomatik oynatma için sessiz başlatmak zorunludur
+            'mute': 0, // SESLİ OYNAT (Tarayıcı izni gereklidir)
             'modestbranding': 1,
             'loop': 1,
             'cc_load_policy': 1,
@@ -979,7 +979,9 @@ function playCurrentVideo() {
 
     if (vid) {
         player.loadVideoById(vid);
-        player.mute(); // Tarayıcı politikaları için sesi kapat
+        // player.mute(); // ESKİ: Sesi kapat
+        player.unMute(); // YENİ: Sesi aç
+        player.setVolume(100); // Sesi fulle
         player.playVideo();
     } else {
         // Link geçersizse sonrakine atla
