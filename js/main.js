@@ -522,27 +522,27 @@ async function fetchConfig() {
             arabDiv.innerText = arabicText;
             arabDiv.style.display = arabicText ? 'block' : 'none';
 
-            // --- AUTO FONT SIZING ---
+            // --- AUTO FONT SIZING (More Aggressive) ---
             // Arabic Scaling
-            if (arabicText.length > 150) {
-                arabDiv.style.fontSize = '2rem';
-            } else if (arabicText.length > 80) {
-                arabDiv.style.fontSize = '2.8rem';
+            if (arabicText.length > 100) {
+                arabDiv.style.fontSize = '1.8rem';
+            } else if (arabicText.length > 60) {
+                arabDiv.style.fontSize = '2.2rem';
             } else {
-                arabDiv.style.fontSize = '3.5rem';
+                arabDiv.style.fontSize = '2.8rem';
             }
 
             // Turkish Scaling
             const trDiv = document.getElementById('hadith-content').parentElement;
-            if (hadithText.length > 200) {
-                trDiv.style.fontSize = '1.3rem';
-                trDiv.style.marginTop = '15px';
-            } else if (hadithText.length > 100) {
-                trDiv.style.fontSize = '1.6rem';
-                trDiv.style.marginTop = '20px';
+            if (hadithText.length > 150) {
+                trDiv.style.fontSize = '1rem';
+                trDiv.style.marginTop = '5px';
+            } else if (hadithText.length > 80) {
+                trDiv.style.fontSize = '1.2rem';
+                trDiv.style.marginTop = '8px';
             } else {
-                trDiv.style.fontSize = '2rem';
-                trDiv.style.marginTop = '35px';
+                trDiv.style.fontSize = '1.5rem';
+                trDiv.style.marginTop = '15px';
             }
 
             // Resim varsa
