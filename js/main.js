@@ -918,7 +918,7 @@ function onYouTubeIframeAPIReady() {
             'controls': 0,
             'rel': 0,
             'showinfo': 0,
-            'mute': 0, // SESLİ OYNAT (Tarayıcı izni gereklidir)
+            'mute': 1, // SESLİ BAŞLATMA HİLESİ: Önce sessiz başlat (Oto-oynatma garantisi)
             'modestbranding': 1,
             'loop': 1,
             'cc_load_policy': 1,
@@ -946,6 +946,11 @@ function onPlayerError(event) {
 }
 
 function onPlayerStateChange(event) {
+    if (event.data == YT.PlayerState.PLAYING) {
+        // Video oynamaya başlayınca sesi aç (Browser politikasını aşmak için)
+        player.unMute();
+        player.setVolume(100);
+    }
     if (event.data == YT.PlayerState.ENDED) {
         playNextVideoOrSlide();
     }
@@ -979,10 +984,10 @@ function playCurrentVideo() {
 
     if (vid) {
         player.loadVideoById(vid);
-        // player.mute(); // ESKİ: Sesi kapat
-        player.unMute(); // YENİ: Sesi aç
-        player.setVolume(100); // Sesi fulle
+        // ÖNCE SESSİZ BAŞLAT (Oto oynatma garantisi için)
+        player.mute();
         player.playVideo();
+        // SONRA: onPlayerStateChange içinde "PLAYING" olunca sesi açacağız
     } else {
         // Link geçersizse sonrakine atla
         console.warn("Geçersiz Video Linki:", rawUrl);
