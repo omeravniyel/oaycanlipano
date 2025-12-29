@@ -578,9 +578,17 @@ async function fetchConfig() {
         const rawExams = [];
         if (config.exam_winners && Array.isArray(config.exam_winners) && config.exam_winners.length > 0) {
             config.exam_winners.forEach(w => {
-                // Parse format: [Class] Name - Score
-                // or legacy: Name - Score
+                // Parse format: [Class] Name - Score | IMG:url
                 let fullStr = w.trim();
+                let imageUrl = '';
+
+                // Extract Image first
+                const parts = fullStr.split(' | IMG:');
+                if (parts.length > 1) {
+                    fullStr = parts[0].trim();
+                    imageUrl = parts[1].trim();
+                }
+
                 let className = '';
                 let studentName = '';
                 let score = '';
@@ -599,7 +607,6 @@ async function fetchConfig() {
 
                 // Fallback for score if inside name (Legacy spaces split)
                 if (!score && !className) {
-                    // Only use space splitting logic if we didn't find a class (legacy data assumption)
                     const spaces = studentName.split(' ');
                     const last = spaces[spaces.length - 1];
                     if (spaces.length > 1 && !isNaN(last)) {
@@ -609,7 +616,6 @@ async function fetchConfig() {
                 }
 
                 // Construct Display String
-                // Format: "5-A ALİ VELİ 500 PUAN" (No brackets, no hyphens)
                 let displayStr = '';
                 if (className) displayStr += `${className} `;
                 displayStr += studentName;
@@ -621,7 +627,8 @@ async function fetchConfig() {
                     badge: 'MAŞAALLAH',
                     circle: '<i class="fa-solid fa-trophy"></i>',
                     topLabel: 'TEBRİK EDERİZ',
-                    content: displayStr
+                    content: displayStr,
+                    image: imageUrl // Pass image
                 });
             });
         }

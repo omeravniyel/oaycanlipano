@@ -639,10 +639,17 @@
                     let cls = '';
                     let name = w;
                     let score = '';
+                    let image = '';
 
-                    // Robust Regex Parsing (Same as main.js)
-                    // Matches: [Class] Name - Score or Name - Score or [Class] Name
-                    const match = w.match(/^(?:\[(.*?)\]\s*)?(.*?)(?:\s*-\s*(.*))?$/);
+                    // Separator for Image
+                    const imgSplit = w.split(' | IMG:');
+                    if (imgSplit.length > 1) {
+                        name = imgSplit[0]; // The part before image
+                        image = imgSplit[1].trim();
+                    }
+
+                    // Robust Regex Parsing
+                    const match = name.match(/^(?:\[(.*?)\]\s*)?(.*?)(?:\s*-\s*(.*))?$/);
 
                     if (match) {
                         cls = match[1] ? match[1].trim() : '';
@@ -650,7 +657,7 @@
                         score = match[3] ? match[3].trim() : '';
                     }
 
-                    addExamWinnerRow({ class: cls, name: name, score: score });
+                    addExamWinnerRow({ class: cls, name: name, score: score, image: image });
                 });
             }
             if (data.gallery_links) document.getElementById('raw-gallery-links').value = data.gallery_links.join('\n');
@@ -704,6 +711,7 @@
                 const cls = row.querySelector('.exam-class').value.trim();
                 const name = row.querySelector('.exam-name').value.trim();
                 const score = row.querySelector('.exam-score').value.trim();
+                const image = row.querySelector('.exam-image').value.trim();
 
                 if (name) {
                     // Start with name
@@ -715,6 +723,10 @@
                     // Append score if exists
                     if (score) {
                         line += ` - ${score}`;
+                    }
+                    // Append Image if exists
+                    if (image) {
+                        line += ` | IMG:${image}`;
                     }
                     data.exam_winners.push(line);
                 }
@@ -730,15 +742,26 @@
         function addExamWinnerRow(data = {}) {
             const container = document.getElementById('exam-winners-list');
             const div = document.createElement('div');
-            div.className = 'grid grid-cols-12 gap-2 exam-winner-row items-center animate-fade-in';
+            div.className = 'grid grid-cols-12 gap-2 exam-winner-row items-center animate-fade-in mb-2';
 
             const cls = data.class || '';
             const name = data.name || '';
             const score = data.score || '';
+            const image = data.image || '';
 
             div.innerHTML = `
-                <div class="col-span-3">
+                <div class="col-span-2">
                     <input type="text" class="exam-class w-full p-2 bg-white border border-slate-200 rounded-lg text-sm text-center font-bold text-slate-600" placeholder="8-A" value="${cls}">
+                </div>
+                <!-- Image Upload (Col 1) -->
+                <div class="col-span-1 flex justify-center">
+                     <input type="hidden" class="exam-image" value="${image}">
+                     <input type="file" class="hidden row-upload-input" accept="image/png, image/jpeg, image/jpg" onchange="uploadRowImage(this)">
+                     <button type="button" onclick="this.previousElementSibling.click()" 
+                        class="w-10 h-10 rounded-lg border border-slate-200 flex items-center justify-center hover:bg-slate-50 transition overflow-hidden relative group bg-white" title="Fotoğraf Yükle">
+                        ${image ? `<img src="${image}" class="w-full h-full object-cover">` : '<i class="fa-solid fa-camera text-slate-400"></i>'}
+                        <div class="absolute inset-0 bg-black/50 hidden group-hover:flex items-center justify-center text-white text-xs"><i class="fa-solid fa-pen"></i></div>
+                     </button>
                 </div>
                 <div class="col-span-6">
                     <input type="text" class="exam-name w-full p-2 bg-white border border-slate-200 rounded-lg text-sm font-bold" placeholder="Ad Soyad" value="${name}">
@@ -753,6 +776,44 @@
                 </div>
             `;
             container.appendChild(div);
+        }
+
+        async function uploadRowImage(input) {
+            const file = input.files[0];
+            if (!file) return;
+
+            const btn = input.nextElementSibling;
+            const originalContent = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-slate-400"></i>';
+            btn.disabled = true;
+
+            try {
+                const base64 = await toBase64(file);
+                const res = await fetch('/api/upload', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        filename: 'student-' + Date.now() + '-' + file.name.replace(/[^a-zA-Z0-9.]/g, ''),
+                        fileBase64: base64,
+                        contentType: file.type,
+                        slug: currentSlug
+                    })
+                });
+                const data = await res.json();
+                if (data.success && data.url) {
+                    const hiddenInp = input.previousElementSibling;
+                    hiddenInp.value = data.url;
+                    btn.innerHTML = `<img src="${data.url}" class="w-full h-full object-cover">`;
+                    btn.classList.remove('bg-white'); // Maybe transparent
+                } else {
+                    throw new Error(data.error || 'Yükleme başarısız');
+                }
+            } catch (e) {
+                Swal.fire({ toast: true, icon: 'error', title: 'Resim yüklenemedi: ' + e.message });
+                btn.innerHTML = originalContent;
+            } finally {
+                btn.disabled = false;
+            }
         }
 
         // --- SAVE ---
