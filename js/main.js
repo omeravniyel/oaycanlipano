@@ -265,13 +265,15 @@ async function fetchConfig() {
             return parts.map(p => p.trim()).filter(p => p.length > 0);
         };
 
-        // 1. Duyurular (Dizi veya Tekil olabilir)
+        // 1. Duyurular (Dizi veya Tekil olabilir) - İPTAL EDİLDİ (Kayan yazıda çıkmasın istendi)
+        /*
         if (config.announcements && Array.isArray(config.announcements)) {
             config.announcements.forEach(a => {
                 const parsed = parseNumberedText(a);
                 marqueeItems.push(...parsed);
             });
         }
+        */
 
         // 2. Günün Sözü (Tekil)
         if (config.quote_of_day) {
