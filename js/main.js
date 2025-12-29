@@ -762,13 +762,19 @@ function rotateInfo() {
         // Reset Logic
         circle.innerHTML = '';
         if (item.image) {
-            circle.innerHTML = `<img src="${item.image}" class="w-full h-full object-cover rounded-full">`;
-            circle.classList.remove('bg-yellow-500', 'bg-blue-500', 'bg-orange-500', 'bg-green-500');
-            circle.style.border = '2px solid white';
+            circle.innerHTML = `<img src="${item.image}" class="w-full h-full object-cover rounded-full shadow-sm">`;
+            circle.classList.remove('bg-yellow-500', 'bg-blue-500', 'bg-orange-500', 'bg-green-500', 'bg-purple-500', 'bg-pink-500');
+
+            // Sınav şampiyonu ise Altın Çerçeve, değilse Beyaz
+            if (item.type === 'exam') {
+                circle.style.border = '4px solid #fbbf24'; // Amber-400 (Altın rengi)
+            } else {
+                circle.style.border = '3px solid white';
+            }
         } else {
             // Allow HTML (for icons)
             circle.innerHTML = item.circle;
-            circle.style.border = ''; // Reset border
+            circle.style.border = ''; // Reset border (Use CSS default)
         }
 
         // Color & Size Logic
