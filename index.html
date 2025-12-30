@@ -886,16 +886,18 @@
                         class="transition-all duration-700 ease-in-out h-full flex flex-col justify-center">
 
                         <!-- Header -->
-                        <div class="relative flex items-center justify-center mb-4">
-                            <div class="flex items-center gap-2 px-8">
-                                <span class="text-yellow-400 text-xl drop-shadow-md">🏆</span>
-                                <h3 class="font-bold text-lg md:text-xl tracking-normal uppercase drop-shadow-sm text-center leading-tight"
+                        <div class="relative flex items-center justify-center mb-4 w-full">
+                            <!-- Title Group restricted to 70% width to avoid badge overlap -->
+                            <div class="flex items-center justify-center gap-2 max-w-[70%] z-10">
+                                <span class="text-yellow-400 text-xl drop-shadow-md shrink-0">🏆</span>
+                                <h3 class="font-bold text-lg leading-tight tracking-normal uppercase drop-shadow-sm text-center break-words"
                                     id="info-title">
                                     Yükleniyor...</h3>
                             </div>
+                            <!-- Badge on the right -->
                             <span
-                                class="absolute right-0 top-1/2 -translate-y-1/2 bg-white/20 text-[0.7rem] px-3 py-1 rounded-full uppercase tracking-wider font-bold text-white shadow-sm"
-                                id="info-badge">PANOMUZ</span>
+                                class="absolute right-0 top-1/2 -translate-y-1/2 bg-white/20 text-[0.6rem] px-2 py-1 rounded-full uppercase tracking-wider font-bold text-white shadow-sm whitespace-nowrap"
+                                id="info-badge">...</span>
                         </div>
 
                         <!-- Content Container (Vertical Stack for maximum width) -->
