@@ -52,27 +52,30 @@
         .marquee-container {
             overflow: hidden;
             white-space: nowrap;
-            /* TV Safe Area fix */
-            transform: translate3d(0, 0, 0);
+            width: 100%;
+            position: relative;
         }
 
         .marquee-content {
             display: inline-block;
-            animation: marquee 30s linear infinite;
-            /* Removed will-change/transform-Z to prevent texture memory crash on TVs */
-            backface-visibility: hidden;
-            perspective: 1000px;
+            white-space: nowrap;
+            /* Start completely off-screen to the right using padding */
+            padding-left: 100%;
+            /* Animasyonu biraz yavaşlat (40s) ve lineer yap */
+            animation: marquee 45s linear infinite;
         }
 
         @keyframes marquee {
             0% {
-                transform: translateX(100%);
+                transform: translate3d(0, 0, 0);
             }
 
             100% {
-                transform: translateX(-100%);
+                transform: translate3d(-100%, 0, 0);
             }
         }
+
+
 
         /* Dot Pattern Background for Hadith */
         .bg-dots {
