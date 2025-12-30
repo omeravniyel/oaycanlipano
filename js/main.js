@@ -1326,3 +1326,12 @@ function showLeftGalleryImage() {
 // Sayfa yüklendiğinde sol galeriyi başlat
 // Sayfa yüklendiğinde sol galeriyi başlat (fetchConfig içinde çağrılıyor artık)
 // fetchLeftGalleryImages();
+
+// Regular Config Polling (1 Minute)
+// TV ekranında verilerin (kayan yazı vb.) güncel kalması için her dakika config çek
+setInterval(() => {
+    // Sadece config güncellemesi yapmak için hafif bir çağrı mantığı eklenebilir
+    // Ancak fetchConfig fonksiyonu tüm UI'yı güncellediği için doğrudan çağırabiliriz.
+    // Animasyonlar CSS tabanlı olduğu için DOM update anlık bir "göz kırpma" yapabilir ama veri güncelliği için gereklidir.
+    fetchConfig();
+}, 60 * 1000);
