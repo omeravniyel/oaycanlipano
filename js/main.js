@@ -539,12 +539,15 @@ async function fetchConfig() {
 
             // --- AUTO FONT SIZING (More Aggressive) ---
             // Arabic Scaling
+            arabDiv.style.textWrap = 'balance';
+            arabDiv.style.lineHeight = '1.6';
+
             if (arabicText.length > 100) {
-                arabDiv.style.fontSize = '1.8rem';
+                arabDiv.style.fontSize = '1.5rem';
             } else if (arabicText.length > 60) {
-                arabDiv.style.fontSize = '2.2rem';
+                arabDiv.style.fontSize = '1.9rem';
             } else {
-                arabDiv.style.fontSize = '2.8rem';
+                arabDiv.style.fontSize = '2.4rem';
             }
 
             // Turkish Scaling
