@@ -1110,7 +1110,14 @@ function switchMedia(mode) {
         if (!window.mySwiperInstance) {
             window.mySwiperInstance = new Swiper(".mySwiper", {
                 spaceBetween: 30,
-                effect: "fade",
+                effect: "cube",
+                grabCursor: true,
+                cubeEffect: {
+                    shadow: true,
+                    slideShadows: true,
+                    shadowOffset: 20,
+                    shadowScale: 0.94,
+                },
                 centeredSlides: true,
                 observer: true, // DOM değişikliklerini izle
                 observeParents: true, // Parent değişikliklerini izle
@@ -1119,7 +1126,7 @@ function switchMedia(mode) {
                     disableOnInteraction: false,
                 },
                 loop: false, // Loop false yapıyoruz ki sona gelince yakalayalım
-                speed: 1000,
+                speed: 1500, // Daha yavaş, süslü geçiş
                 on: {
                     reachEnd: function () {
                         // Slayt bitti -> Videoya geç (Eğer video varsa)
@@ -1337,6 +1344,7 @@ function startLeftGalleryRotation() {
 }
 
 // Görseli göster (Tek kutu)
+// Görseli göster (Tek kutu - Efektli Geçiş)
 function showLeftGalleryImage() {
     const galleryContainer = document.getElementById('left-gallery-container');
     const galleryImage = document.getElementById('left-gallery-image');
@@ -1345,12 +1353,32 @@ function showLeftGalleryImage() {
     // Mevcut görseli al
     const currentImage = leftGalleryImages[leftGalleryIndex];
 
-    // Görseli ayarla
-    galleryImage.src = currentImage;
+    // İlk açılış mı kontrolü (Container gizliyse)
+    if (galleryContainer.classList.contains('hidden')) {
+        galleryImage.src = currentImage;
+        galleryImage.style.opacity = '0'; // Başlangıçta gizli
+        galleryImage.style.transform = 'scale(0.95)';
 
-    // Galeri container'ını göster, normal içeriği gizle
-    galleryContainer.classList.remove('hidden');
-    normalContent.classList.add('hidden');
+        galleryContainer.classList.remove('hidden');
+        normalContent.classList.add('hidden');
+
+        // Hafif gecikmeyle göster (CSS transition tetiklensin)
+        setTimeout(() => {
+            galleryImage.style.opacity = '1';
+            galleryImage.style.transform = 'scale(1)';
+        }, 100);
+
+    } else {
+        // Zaten açık, görsel değiştir (Fade Out -> Change -> Fade In)
+        galleryImage.style.opacity = '0';
+        galleryImage.style.transform = 'scale(0.95)';
+
+        setTimeout(() => {
+            galleryImage.src = currentImage;
+            galleryImage.style.opacity = '1';
+            galleryImage.style.transform = 'scale(1)';
+        }, 700); // CSS duration ile aynı olmalı
+    }
 
     // Sonraki görsele geç
     leftGalleryIndex++;
