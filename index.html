@@ -282,7 +282,7 @@
             position: absolute;
             inset: 0;
             opacity: 0.7;
-            /* Static droplets (More dense) */
+            /* Static droplets (High Density) */
             background-image:
                 radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.8) 1.5px, transparent 2.5px),
                 radial-gradient(circle at 75% 30%, rgba(255, 255, 255, 0.7) 2px, transparent 3px),
@@ -295,7 +295,13 @@
                 /* Extra drops */
                 radial-gradient(circle at 15% 55%, rgba(255, 255, 255, 0.8) 1.5px, transparent 2.5px),
                 radial-gradient(circle at 65% 15%, rgba(255, 255, 255, 0.7) 2px, transparent 3px),
-                radial-gradient(circle at 50% 85%, rgba(255, 255, 255, 0.8) 1px, transparent 2px);
+                radial-gradient(circle at 50% 85%, rgba(255, 255, 255, 0.8) 1px, transparent 2px),
+                /* Even MORE drops for density */
+                radial-gradient(circle at 5% 5%, rgba(255, 255, 255, 0.7) 1px, transparent 2px),
+                radial-gradient(circle at 95% 95%, rgba(255, 255, 255, 0.7) 1.5px, transparent 2.5px),
+                radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.6) 1.2px, transparent 2.2px),
+                radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.8) 1.5px, transparent 2.5px),
+                radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.7) 1.5px, transparent 2.5px);
             z-index: 1;
         }
 
@@ -306,18 +312,33 @@
             left: 0;
             width: 100%;
             height: 300%;
-            /* More sliding drips, faster */
+            /* Falling rounded drops (Not lines) */
             background-image:
-                linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.8), transparent),
-                linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.6), transparent),
-                linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.7), transparent);
-            background-size: 2px 50px, 1px 40px, 2px 45px;
-            background-position: 35% 0, 65% 50%, 15% 20%;
+                radial-gradient(ellipse at center, rgba(255, 255, 255, 0.7) 0%, transparent 60%),
+                radial-gradient(ellipse at center, rgba(255, 255, 255, 0.6) 0%, transparent 60%),
+                radial-gradient(ellipse at center, rgba(255, 255, 255, 0.8) 0%, transparent 60%),
+                radial-gradient(ellipse at center, rgba(255, 255, 255, 0.6) 0%, transparent 60%),
+                radial-gradient(ellipse at center, rgba(255, 255, 255, 0.7) 0%, transparent 60%);
+
+            background-size:
+                5px 25px,
+                4px 18px,
+                6px 22px,
+                4px 20px,
+                5px 28px;
+
+            background-position:
+                20% 0,
+                60% 40%,
+                80% 10%,
+                40% 70%,
+                10% 90%;
+
             background-repeat: repeat-y;
-            animation: glass-drips 2s linear infinite;
-            /* Faster */
+            animation: glass-drips 1.5s linear infinite;
+            /* Fast falling */
             will-change: transform;
-            opacity: 0.6;
+            opacity: 0.7;
             z-index: 2;
         }
 
