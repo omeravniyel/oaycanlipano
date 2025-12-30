@@ -52,15 +52,16 @@
         .marquee-container {
             overflow: hidden;
             white-space: nowrap;
+            /* TV Safe Area fix */
+            transform: translate3d(0, 0, 0);
         }
 
         .marquee-content {
             display: inline-block;
             animation: marquee 30s linear infinite;
-            will-change: transform;
-            /* TV Performans Optimizasyonu */
-            transform: translateZ(0);
-            /* Hardware Acceleration Hack */
+            /* Removed will-change/transform-Z to prevent texture memory crash on TVs */
+            backface-visibility: hidden;
+            perspective: 1000px;
         }
 
         @keyframes marquee {
@@ -644,7 +645,7 @@
     </style>
 </head>
 
-<body class="min-h-screen w-screen flex flex-col p-3 gap-3 box-border bg-[#eef2f6] overflow-y-auto lg:overflow-hidden">
+<body class="fixed inset-0 w-screen h-screen flex flex-col p-3 gap-3 box-border bg-[#eef2f6] overflow-hidden">
 
     <!-- Global Fullscreen Weather Overlay -->
     <div id="global-weather-overlay"></div>
