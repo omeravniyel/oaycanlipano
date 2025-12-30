@@ -267,6 +267,144 @@
         .date-icon-svg {
             color: #f59e0b;
         }
+
+        /* --- WEATHER ANIMATIONS --- */
+        /* RAIN */
+        .anim-rain::before {
+            content: "";
+            position: absolute;
+            top: -100%;
+            left: 0;
+            width: 100%;
+            height: 250%;
+            /* Make it long enough */
+            background:
+                linear-gradient(transparent, rgba(255, 255, 255, 0.4)) 10% 0px / 1px 20px no-repeat,
+                linear-gradient(transparent, rgba(255, 255, 255, 0.4)) 30% 100px / 1px 20px no-repeat,
+                linear-gradient(transparent, rgba(255, 255, 255, 0.4)) 50% 50px / 1px 20px no-repeat,
+                linear-gradient(transparent, rgba(255, 255, 255, 0.4)) 70% 150px / 1px 20px no-repeat,
+                linear-gradient(transparent, rgba(255, 255, 255, 0.4)) 90% 200px / 1px 20px no-repeat;
+
+            /* Repeat the pattern horizontally more times using multiple background-images or a better SVG approach. 
+               For simplicity/performance let's use a repeating gradient. */
+            background: repeating-linear-gradient(90deg, transparent 0, transparent 20px, rgba(255, 255, 255, 0.2) 21px, transparent 22px);
+            opacity: 0.3;
+            transform: skewX(-10deg);
+            animation: rain-fall 0.5s linear infinite;
+            will-change: transform;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Better Rain Effect with Masking if possible, but keeping it simple for TV */
+        /* Let's use a simple background image approach with a data URI if needed, but repeating-linear is cheapest.
+           Actually, let's try a stronger visual for "Rain":
+        */
+        .anim-rain {
+            background-color: #3b82f6 !important;
+            /* Blue-500 default */
+            overflow: hidden;
+        }
+
+        .anim-rain::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.2' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='1'/%3E%3C/g%3E%3C/svg%3E");
+            animation: rain-fall 1s linear infinite;
+            /* Wait, dots are not rain. Let's use lines. */
+            background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.5) 100%);
+            background-size: 2px 30px;
+            background-repeat: repeat;
+            opacity: 0.3;
+            height: 200%;
+            top: -100%;
+        }
+
+        @keyframes rain-fall {
+            0% {
+                transform: translateY(0);
+            }
+
+            100% {
+                transform: translateY(50%);
+            }
+        }
+
+        /* SNOW */
+        .anim-snow {
+            background-color: #60a5fa !important;
+            /* Lighter Blue */
+        }
+
+        .anim-snow::after {
+            content: "❄";
+            position: absolute;
+            top: -20px;
+            left: 10%;
+            color: white;
+            opacity: 0.6;
+            font-size: 10px;
+            animation: snow-fall 3s linear infinite;
+            box-shadow:
+                20px 20px 0 white,
+                50px -50px 0 white,
+                80px 50px 0 white,
+                150px -20px 0 white,
+                200px 30px 0 white;
+            /* Inadequate for a full snow effect but simple. */
+        }
+
+        .anim-snow::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='2' cy='2' r='2' fill='%23ffffff' fill-opacity='0.4'/%3E%3C/svg%3E");
+            animation: snow-fall 5s linear infinite;
+            height: 200%;
+            top: -100%;
+        }
+
+        @keyframes snow-fall {
+            0% {
+                transform: translateY(0);
+            }
+
+            100% {
+                transform: translateY(50%);
+            }
+        }
+
+        /* STORM */
+        .anim-storm {
+            background-color: #1e3a8a !important;
+            /* Dark Blue */
+            animation: thunder 4s infinite;
+        }
+
+        @keyframes thunder {
+
+            0%,
+            95%,
+            100% {
+                filter: brightness(1);
+            }
+
+            96% {
+                filter: brightness(2);
+            }
+
+            /* Flash */
+            98% {
+                filter: brightness(1.5);
+            }
+        }
+
+        /* CLOUDY */
+        .anim-cloud {
+            background-color: #64748b !important;
+            /* Slate-500 */
+        }
     </style>
 </head>
 
@@ -460,8 +598,8 @@
                             ARALIK CUMA</div>
                     </div>
                     <!-- Hava -->
-                    <div
-                        class="bg-blue-500 rounded-xl shadow-lg text-white flex items-center justify-between flex-1 px-6 relative overflow-hidden">
+                    <div id="weather-card"
+                        class="bg-blue-500 rounded-xl shadow-lg text-white flex items-center justify-between flex-1 px-6 relative overflow-hidden transition-colors duration-1000">
                         <div class="z-10">
                             <div class="text-[0.65rem] font-bold opacity-80 uppercase tracking-widest mb-1"
                                 id="weather-desc">İSTANBUL</div>

@@ -1163,6 +1163,31 @@ async function fetchWeather() {
         // 3. WMO Code Mapping
         const { icon, desc } = getWeatherInfo(wmoCode);
 
+        // --- WEATHER ANIMATIONS ---
+        const weatherCard = document.getElementById('weather-card');
+        if (weatherCard) {
+            // Reset
+            weatherCard.classList.remove('anim-rain', 'anim-snow', 'anim-storm', 'anim-cloud');
+
+            // Logic
+            if (
+                (wmoCode >= 51 && wmoCode <= 67) ||
+                (wmoCode >= 80 && wmoCode <= 82)
+            ) {
+                weatherCard.classList.add('anim-rain');
+            } else if (
+                (wmoCode >= 71 && wmoCode <= 77) ||
+                (wmoCode >= 85 && wmoCode <= 86)
+            ) {
+                weatherCard.classList.add('anim-snow');
+            } else if (wmoCode >= 95 && wmoCode <= 99) {
+                weatherCard.classList.add('anim-storm');
+                // Storm usually implies rain too but our CSS handles bg color
+            } else if (wmoCode >= 1 && wmoCode <= 3 || wmoCode === 45 || wmoCode === 48) {
+                weatherCard.classList.add('anim-cloud');
+            }
+        }
+
         // 4. Update UI
         if (document.getElementById('weather-temp')) {
             document.getElementById('weather-temp').innerHTML = `${icon} ${Math.round(temp)}°C`;
