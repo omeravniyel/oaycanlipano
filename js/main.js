@@ -1164,9 +1164,15 @@ async function fetchWeather() {
         const { icon, desc } = getWeatherInfo(wmoCode);
 
         // --- WEATHER ANIMATIONS ---
+        // --- WEATHER ANIMATIONS & GLOBAL OVERLAY ---
         const weatherCard = document.getElementById('weather-card');
+        const globalOverlay = document.getElementById('global-weather-overlay');
+
+        // Reset Global Overlay (keep base classes)
+        if (globalOverlay) globalOverlay.className = 'fixed inset-0 pointer-events-none z-50';
+
         if (weatherCard) {
-            // Reset
+            // Reset Card
             weatherCard.classList.remove('anim-rain', 'anim-snow', 'anim-storm', 'anim-cloud');
 
             // Logic
@@ -1175,14 +1181,17 @@ async function fetchWeather() {
                 (wmoCode >= 80 && wmoCode <= 82)
             ) {
                 weatherCard.classList.add('anim-rain');
+                if (globalOverlay) globalOverlay.classList.add('global-rain-overlay');
             } else if (
                 (wmoCode >= 71 && wmoCode <= 77) ||
                 (wmoCode >= 85 && wmoCode <= 86)
             ) {
                 weatherCard.classList.add('anim-snow');
+                if (globalOverlay) globalOverlay.classList.add('global-snow-overlay');
             } else if (wmoCode >= 95 && wmoCode <= 99) {
                 weatherCard.classList.add('anim-storm');
-                // Storm usually implies rain too but our CSS handles bg color
+                // Storm implies rain globally
+                if (globalOverlay) globalOverlay.classList.add('global-rain-overlay');
             } else if (wmoCode >= 1 && wmoCode <= 3 || wmoCode === 45 || wmoCode === 48) {
                 weatherCard.classList.add('anim-cloud');
             }
