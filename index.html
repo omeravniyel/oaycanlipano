@@ -270,6 +270,7 @@
 
         /* --- WEATHER ANIMATIONS --- */
         /* RAIN */
+        /* RAIN - Improved (Spaced Out) */
         .anim-rain::before {
             content: "";
             position: absolute;
@@ -277,48 +278,44 @@
             left: 0;
             width: 100%;
             height: 250%;
-            /* Make it long enough */
-            background:
-                linear-gradient(transparent, rgba(255, 255, 255, 0.4)) 10% 0px / 1px 20px no-repeat,
-                linear-gradient(transparent, rgba(255, 255, 255, 0.4)) 30% 100px / 1px 20px no-repeat,
-                linear-gradient(transparent, rgba(255, 255, 255, 0.4)) 50% 50px / 1px 20px no-repeat,
-                linear-gradient(transparent, rgba(255, 255, 255, 0.4)) 70% 150px / 1px 20px no-repeat,
-                linear-gradient(transparent, rgba(255, 255, 255, 0.4)) 90% 200px / 1px 20px no-repeat;
-
-            /* Repeat the pattern horizontally more times using multiple background-images or a better SVG approach. 
-               For simplicity/performance let's use a repeating gradient. */
-            background: repeating-linear-gradient(90deg, transparent 0, transparent 20px, rgba(255, 255, 255, 0.2) 21px, transparent 22px);
-            opacity: 0.3;
-            transform: skewX(-10deg);
-            animation: rain-fall 0.5s linear infinite;
+            opacity: 0.8;
+            /* Layer 1: Fewer, faster, brighter drops */
+            background-image:
+                linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.6)),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.6)),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.6));
+            background-position: 15% 0, 50% 40%, 85% 20%;
+            background-size: 2px 50px;
+            background-repeat: repeat-y;
+            animation: rain-fall 0.6s linear infinite;
             will-change: transform;
-            pointer-events: none;
             z-index: 0;
         }
 
-        /* Better Rain Effect with Masking if possible, but keeping it simple for TV */
-        /* Let's use a simple background image approach with a data URI if needed, but repeating-linear is cheapest.
-           Actually, let's try a stronger visual for "Rain":
-        */
         .anim-rain {
             background-color: #3b82f6 !important;
-            /* Blue-500 default */
+            /* Blue-500 */
             overflow: hidden;
+            position: relative;
         }
 
         .anim-rain::after {
             content: "";
             position: absolute;
-            inset: 0;
-            background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.2' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='1'/%3E%3C/g%3E%3C/svg%3E");
-            animation: rain-fall 1s linear infinite;
-            /* Wait, dots are not rain. Let's use lines. */
-            background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.5) 100%);
-            background-size: 2px 30px;
-            background-repeat: repeat;
-            opacity: 0.3;
-            height: 200%;
             top: -100%;
+            left: 0;
+            width: 100%;
+            height: 250%;
+            opacity: 0.4;
+            /* Layer 2: More drops, slightly slower, fainter */
+            background-image:
+                linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.5)),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.5)),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0), rgba(255, 255, 255, 0.5));
+            background-position: 5% 60%, 35% 10%, 70% 80%;
+            background-size: 2px 40px;
+            background-repeat: repeat-y;
+            animation: rain-fall 0.9s linear infinite;
         }
 
         @keyframes rain-fall {
