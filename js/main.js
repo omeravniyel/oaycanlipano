@@ -615,11 +615,13 @@ async function fetchConfig() {
                     }
                 }
 
-                // Construct Display String
+                // Construct Display String (HTML Based)
                 let displayStr = '';
-                if (className) displayStr += `${className} `;
-                displayStr += studentName;
-                if (score) displayStr += ` ${score} PUAN`;
+                if (className) displayStr += `<span class="bg-yellow-400 text-purple-900 px-3 py-1 rounded-lg text-lg align-middle mr-2 shadow-sm inline-block font-extrabold">${className}</span>`;
+
+                displayStr += `<span class="font-bold inline-block align-middle">${studentName}</span>`;
+
+                if (score) displayStr += `<span class="bg-green-500 text-white px-3 py-1 rounded-lg text-lg align-middle ml-2 shadow-sm inline-block font-bold">${score} PUAN</span>`;
 
                 rawExams.push({
                     type: 'exam',
@@ -832,7 +834,7 @@ function rotateInfo() {
 
         } else {
             // Temizle ve Hazırla
-            mainText.innerText = item.content;
+            mainText.innerHTML = item.content;
             mainText.classList.remove('text-xl', 'text-sm', 'leading-normal', 'columns-2', 'gap-8', 'text-left');
             mainText.style.fontSize = ''; // Reset inline styles
             mainText.style.whiteSpace = '';
