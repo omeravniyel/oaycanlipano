@@ -1230,13 +1230,13 @@ function getWeatherInfo(code) {
     // 95: Thunderstorm
     // 96, 99: Thunderstorm with slight and heavy hail
 
-    // SVG Icons
-    const sun = '<svg class="w-10 h-10 text-yellow-400 inline-block drop-shadow-md" fill="currentColor" viewBox="0 0 24 24"><path d="M6.99 11L7 11.03C7.03 14.33 9.69 17 13 17C16.3 17 18.96 14.34 19 11.05C19.03 8.35 17.29 6.01 14.9 4.9C14.75 3.32 13.43 2.1 11.85 2.1C10.08 2.1 8.65 3.53 8.65 5.3C8.65 5.71 8.74 6.1 8.9 6.45C7.26 7.37 6.99 9.38 6.99 11ZM12 7C14.21 7 16 8.79 16 11C16 13.21 14.21 15 12 15C9.79 15 8 13.21 8 11C8 8.79 9.79 7 12 7Z" /></svg>';
-    const cloud = '<svg class="w-10 h-10 text-gray-200 inline-block drop-shadow-md" fill="currentColor" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.64-4.96z"/></svg>';
-    const rain = '<svg class="w-10 h-10 text-blue-300 inline-block drop-shadow-md" fill="currentColor" viewBox="0 0 24 24"><path d="M4.13 12C4.05 11.36 4 10.69 4 10C4 5.58 7.58 2 12 2C16.42 2 20 5.58 20 10C20 10.69 19.95 11.36 19.87 12H20C21.66 12 23 13.34 23 15C23 16.66 21.66 18 20 18H5C3.34 18 2 16.66 2 15C2 13.34 3.34 12 5 12H4.13ZM8 15V19H10V15H8ZM14 15V19H16V15H14Z"/></svg>';
-    const snow = '<svg class="w-10 h-10 text-white inline-block drop-shadow-md" fill="currentColor" viewBox="0 0 24 24"><path d="M22 11H20.08L21.5 9.59L20.09 8.17L18.67 9.59L17.26 8.17L18.67 6.76L17.26 5.34L15.84 6.76L14.43 5.34L15.84 3.93L14.43 2.5L13 3.93V2H11V3.93L9.57 2.5L8.16 3.93L9.57 5.34L8.16 6.76L6.74 5.34L5.33 6.76L6.74 8.17L5.33 9.59L3.91 8.17L2.5 9.59L3.92 11H2V13H3.92L2.5 14.41L3.91 15.83L5.33 14.41L6.74 15.83L5.33 17.24L6.74 18.66L8.16 17.24L9.57 18.66L8.16 20.07L9.57 21.5L11 20.07V22H13V20.07L14.43 21.5L15.84 20.07L14.43 18.66L15.84 17.24L14.43 15.83L15.84 14.41L17.26 15.83L18.67 14.41L20.09 15.83L21.5 14.41L20.08 13H22V11Z"/></svg>';
-    const storm = '<svg class="w-10 h-10 text-yellow-300 inline-block drop-shadow-md" fill="currentColor" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 1.25.38 2.4 1.03 3.35L11.5 22l-1.92-3.84L8 19l2-4h-2l3-6v4h2l-1.5 3.5c1.17 1 2.72 1.5 4.5 1.5 3.31 0 6-2.69 6-6h-2.65z"/></svg>';
-    const fog = '<svg class="w-10 h-10 text-gray-300 inline-block drop-shadow-md" fill="currentColor" viewBox="0 0 24 24"><path d="M6 16H18V18H6V16ZM6 12H18V14H6V12ZM4 8H20V10H4V8Z"/></svg>';
+    // SVG Icons (Performance: Removed drop-shadows)
+    const sun = '<svg class="w-10 h-10 text-yellow-400 inline-block" fill="currentColor" viewBox="0 0 24 24"><path d="M6.99 11L7 11.03C7.03 14.33 9.69 17 13 17C16.3 17 18.96 14.34 19 11.05C19.03 8.35 17.29 6.01 14.9 4.9C14.75 3.32 13.43 2.1 11.85 2.1C10.08 2.1 8.65 3.53 8.65 5.3C8.65 5.71 8.74 6.1 8.9 6.45C7.26 7.37 6.99 9.38 6.99 11ZM12 7C14.21 7 16 8.79 16 11C16 13.21 14.21 15 12 15C9.79 15 8 13.21 8 11C8 8.79 9.79 7 12 7Z" /></svg>';
+    const cloud = '<svg class="w-10 h-10 text-gray-200 inline-block" fill="currentColor" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.64-4.96z"/></svg>';
+    const rain = '<svg class="w-10 h-10 text-blue-300 inline-block" fill="currentColor" viewBox="0 0 24 24"><path d="M4.13 12C4.05 11.36 4 10.69 4 10C4 5.58 7.58 2 12 2C16.42 2 20 5.58 20 10C20 10.69 19.95 11.36 19.87 12H20C21.66 12 23 13.34 23 15C23 16.66 21.66 18 20 18H5C3.34 18 2 16.66 2 15C2 13.34 3.34 12 5 12H4.13ZM8 15V19H10V15H8ZM14 15V19H16V15H14Z"/></svg>';
+    const snow = '<svg class="w-10 h-10 text-white inline-block" fill="currentColor" viewBox="0 0 24 24"><path d="M22 11H20.08L21.5 9.59L20.09 8.17L18.67 9.59L17.26 8.17L18.67 6.76L17.26 5.34L15.84 6.76L14.43 5.34L15.84 3.93L14.43 2.5L13 3.93V2H11V3.93L9.57 2.5L8.16 3.93L9.57 5.34L8.16 6.76L6.74 5.34L5.33 6.76L6.74 8.17L5.33 9.59L3.91 8.17L2.5 9.59L3.92 11H2V13H3.92L2.5 14.41L3.91 15.83L5.33 14.41L6.74 15.83L5.33 17.24L6.74 18.66L8.16 17.24L9.57 18.66L8.16 20.07L9.57 21.5L11 20.07V22H13V20.07L14.43 21.5L15.84 20.07L14.43 18.66L15.84 17.24L14.43 15.83L15.84 14.41L17.26 15.83L18.67 14.41L20.09 15.83L21.5 14.41L20.08 13H22V11Z"/></svg>';
+    const storm = '<svg class="w-10 h-10 text-yellow-300 inline-block" fill="currentColor" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 1.25.38 2.4 1.03 3.35L11.5 22l-1.92-3.84L8 19l2-4h-2l3-6v4h2l-1.5 3.5c1.17 1 2.72 1.5 4.5 1.5 3.31 0 6-2.69 6-6h-2.65z"/></svg>';
+    const fog = '<svg class="w-10 h-10 text-gray-300 inline-block" fill="currentColor" viewBox="0 0 24 24"><path d="M6 16H18V18H6V16ZM6 12H18V14H6V12ZM4 8H20V10H4V8Z"/></svg>';
 
     if (code === 0) return { icon: sun, desc: 'Açık' };
     if (code >= 1 && code <= 3) return { icon: cloud, desc: 'Parçalı Bulutlu' };
@@ -1255,10 +1255,10 @@ function getWeatherInfo(code) {
 // fetchWeather() is called in fetchConfig after location is set
 setInterval(fetchWeather, 30 * 60 * 1000); // 30 Mins
 
-// Auto Refresh Page every 30 minutes to fetch new code/config cleanly
+// Auto Refresh Page every 5 minutes to fetch new code/config cleanly and clear memory
 setTimeout(() => {
     window.location.reload();
-}, 30 * 60 * 1000);
+}, 5 * 60 * 1000);
 
 // --- SOL GALERİ ROTASYONU ---
 // (Değişkenler yukarı taşındı)
