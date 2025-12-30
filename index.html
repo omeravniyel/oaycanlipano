@@ -22,7 +22,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Google Fonts -->
     <link
-        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Dancing+Script:wght@600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Amiri:wght@400;700&family=Scheherazade+New:wght@400;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Scheherazade+New:wght@400;700&display=swap"
         rel="stylesheet">
     <!-- Swiper CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
@@ -466,27 +466,16 @@
             /* Performance Optimization */
             will-change: transform, opacity;
             backface-visibility: hidden;
-            /* Drop Set 1: Two drops in different positions */
+            /* Drop Set 1: Single optimized drop */
             background-image:
-                /* Drop A */
+                /* Drop A Body */
                 radial-gradient(circle at center, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 40%, rgba(0, 0, 0, 0.2) 60%, transparent 70%),
-                radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.9) 0%, transparent 10%),
-                /* Drop B */
-                radial-gradient(circle at center, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 40%, rgba(0, 0, 0, 0.2) 60%, transparent 70%),
+                /* Drop A Highlight */
                 radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.9) 0%, transparent 10%);
 
-            background-size:
-                150px 150px, 150px 150px,
-                /* Size Drop A */
-                120px 120px, 120px 120px;
-            /* Size Drop B */
-
+            background-size: 150px 150px, 150px 150px;
             background-repeat: no-repeat;
-            background-position:
-                20% 30%, 20% 30%,
-                /* Pos Drop A */
-                60% 70%, 60% 70%;
-            /* Pos Drop B */
+            background-position: 20% 40%, 20% 40%;
 
             /* Intermittent animation: faster loop (10s) */
             animation: rain-hit-1 10s infinite ease-out;
@@ -498,23 +487,16 @@
             inset: 0;
             opacity: 0;
             z-index: 9999;
-            /* Drop Set 2: Two more drops */
+            /* Drop Set 2: Single optimized drop */
             background-image:
-                /* Drop C */
+                /* Drop C Body */
                 radial-gradient(circle at center, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 40%, rgba(0, 0, 0, 0.2) 60%, transparent 70%),
-                radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.9) 0%, transparent 10%),
-                /* Drop D */
-                radial-gradient(circle at center, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 40%, rgba(0, 0, 0, 0.2) 60%, transparent 70%),
+                /* Drop C Highlight */
                 radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.9) 0%, transparent 10%);
 
-            background-size:
-                100px 100px, 100px 100px,
-                140px 140px, 140px 140px;
-
+            background-size: 100px 100px, 100px 100px;
             background-repeat: no-repeat;
-            background-position:
-                70% 20%, 70% 20%,
-                30% 80%, 30% 80%;
+            background-position: 30% 80%, 30% 80%;
 
             animation: rain-hit-2 12s infinite ease-out;
             animation-delay: 3s;
