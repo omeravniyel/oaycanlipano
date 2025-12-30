@@ -422,149 +422,86 @@
             overflow: hidden;
         }
 
-        /* GLOBAL RAIN (Realistic Glass Drops) */
+        /* GLOBAL RAIN (Slow Falling Drops) */
         .global-rain-overlay::before {
             content: "";
             position: absolute;
             inset: 0;
-            opacity: 0.6;
+            top: -100%;
+            height: 200%;
+            opacity: 0.3;
             z-index: 1;
-            /* Complex Gradient Pattern to simulate water droplets */
-            /* We combine "Shine" (white dot) and "Body" (transparent circle with shadow edge) */
-
-            /* -- LARGE DROPS -- */
-            background-image:
-                /* Shine (Highlight) */
-                radial-gradient(circle at 12% 12%, rgba(255, 255, 255, 0.9) 1px, transparent 2px),
-                radial-gradient(circle at 62% 27%, rgba(255, 255, 255, 0.9) 1px, transparent 2px),
-                radial-gradient(circle at 37% 72%, rgba(255, 255, 255, 0.9) 1.5px, transparent 2.5px),
-                radial-gradient(circle at 87% 62%, rgba(255, 255, 255, 0.9) 1px, transparent 2px),
-
-                /* Body (Main Drop) - Clear center, subtle white edge, dark shadow edge */
-                radial-gradient(circle at 10% 10%, rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.1) 70%, transparent 75%),
-                radial-gradient(circle at 60% 25%, rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.1) 70%, transparent 75%),
-                radial-gradient(circle at 35% 70%, rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.1) 85%, transparent 90%),
-                radial-gradient(circle at 85% 60%, rgba(255, 255, 255, 0.1), rgba(0, 0, 0, 0.1) 70%, transparent 75%),
-
-                /* -- SMALL SCATTERED DROPS -- */
-                radial-gradient(circle at 20% 40%, rgba(255, 255, 255, 0.6) 1px, transparent 1.5px),
-                radial-gradient(circle at 50% 10%, rgba(255, 255, 255, 0.6) 1px, transparent 1.5px),
-                radial-gradient(circle at 75% 80%, rgba(255, 255, 255, 0.6) 1px, transparent 1.5px),
-                radial-gradient(circle at 5% 90%, rgba(255, 255, 255, 0.6) 1px, transparent 1.5px),
-
-                radial-gradient(circle at 20% 40%, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.05) 60%, transparent 65%),
-                radial-gradient(circle at 50% 10%, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.05) 60%, transparent 65%),
-                radial-gradient(circle at 75% 80%, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.05) 60%, transparent 65%);
-
-            background-size:
-                /* Size for Large Shine */
-                100px 100px, 100px 100px, 100px 100px, 100px 100px,
-                /* Size for Large Drops */
-                100px 100px, 100px 100px, 100px 100px, 100px 100px,
-                /* Size for Small Drops */
-                60px 60px, 60px 60px, 60px 60px, 60px 60px,
-                60px 60px, 60px 60px, 60px 60px;
-
-            /* Slight dark overlay to make drops pop */
-            box-shadow: inset 0 0 100px rgba(0, 0, 0, 0.1);
+            /* Layer 1: Background Rain (Slow, Thin) */
+            background-image: linear-gradient(to bottom, transparent 0%, rgba(255, 255, 255, 0.4) 10%, transparent 20%);
+            background-size: 1px 500px;
+            /* Thin lines, spread vertically */
+            background-repeat: repeat-x;
+            animation: global-rain-fall 8s linear infinite;
         }
 
         .global-rain-overlay::after {
             content: "";
             position: absolute;
-            top: -100%;
-            left: 0;
-            width: 100%;
-            height: 300%;
-            opacity: 0.25;
-            /* Sparse dripping */
-            background-image:
-                linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.4), transparent);
-            background-size: 2px 100px;
-            background-position: 50% 0;
-            /* Just one drip line primarily, maybe add one more */
-            /* Actually let's do random positions for falling behavior via keyframes? 
-               CSS only can stick to a repeating background sliding down. */
-            background-image:
-                linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.5), transparent),
-                linear-gradient(to bottom, transparent, rgba(255, 255, 255, 0.3), transparent);
-            background-size: 3px 150px, 2px 100px;
-            background-position: 20% 0, 70% 50%;
-            background-repeat: repeat-y;
 
-            animation: global-drip-fall 8s linear infinite;
-            /* Very slow slide */
-        }
-
-        @keyframes global-drip-fall {
-            0% {
-                transform: translateY(0);
+            /* GLOBAL SNOW (Sparse Falling Flakes) */
+            .global-snow-overlay::before {
+                content: "";
+                position: absolute;
+                inset: 0;
+                top: -100%;
+                height: 300%;
+                background-image: url("data:image/svg+xml,%3Csvg width='30' height='30' viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='15' cy='15' r='2' fill='%23ffffff' fill-opacity='0.5'/%3E%3C/svg%3E");
+                background-size: 200px 200px;
+                /* Spread them out */
+                animation: global-snow-fall 15s linear infinite;
+                opacity: 0.5;
             }
 
-            100% {
-                transform: translateY(30%);
-            }
-        }
-
-        /* GLOBAL SNOW (Sparse Falling Flakes) */
-        .global-snow-overlay::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            top: -100%;
-            height: 300%;
-            background-image: url("data:image/svg+xml,%3Csvg width='30' height='30' viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='15' cy='15' r='2' fill='%23ffffff' fill-opacity='0.5'/%3E%3C/svg%3E");
-            background-size: 200px 200px;
-            /* Spread them out */
-            animation: global-snow-fall 15s linear infinite;
-            opacity: 0.5;
-        }
-
-        /* Add some larger flakes */
-        .global-snow-overlay::after {
-            content: "❄";
-            position: absolute;
-            top: -10px;
-            left: 5%;
-            font-size: 20px;
-            color: rgba(255, 255, 255, 0.3);
-            animation: global-flake-bob 10s linear infinite;
-            text-shadow:
-                10vw 10vh 0 rgba(255, 255, 255, 0.3),
-                30vw 40vh 0 rgba(255, 255, 255, 0.3),
-                70vw 20vh 0 rgba(255, 255, 255, 0.3),
-                90vw 80vh 0 rgba(255, 255, 255, 0.3);
-        }
-
-        @keyframes global-snow-fall {
-            0% {
-                transform: translateY(0);
+            /* Add some larger flakes */
+            .global-snow-overlay::after {
+                content: "❄";
+                position: absolute;
+                top: -10px;
+                left: 5%;
+                font-size: 20px;
+                color: rgba(255, 255, 255, 0.3);
+                animation: global-flake-bob 10s linear infinite;
+                text-shadow:
+                    10vw 10vh 0 rgba(255, 255, 255, 0.3),
+                    30vw 40vh 0 rgba(255, 255, 255, 0.3),
+                    70vw 20vh 0 rgba(255, 255, 255, 0.3),
+                    90vw 80vh 0 rgba(255, 255, 255, 0.3);
             }
 
-            100% {
-                transform: translateY(33%);
-            }
-        }
+            @keyframes global-snow-fall {
+                0% {
+                    transform: translateY(0);
+                }
 
-        @keyframes global-flake-bob {
-            0% {
-                transform: translateY(-20px) translateX(0);
-                opacity: 0;
-            }
-
-            10% {
-                opacity: 0.6;
+                100% {
+                    transform: translateY(33%);
+                }
             }
 
-            90% {
-                opacity: 0.6;
-            }
+            @keyframes global-flake-bob {
+                0% {
+                    transform: translateY(-20px) translateX(0);
+                    opacity: 0;
+                }
 
-            100% {
-                transform: translateY(100vh) translateX(20px);
-                opacity: 0;
+                10% {
+                    opacity: 0.6;
+                }
+
+                90% {
+                    opacity: 0.6;
+                }
+
+                100% {
+                    transform: translateY(100vh) translateX(20px);
+                    opacity: 0;
+                }
             }
-        }
     </style>
 </head>
 
