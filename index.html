@@ -62,7 +62,7 @@
             /* Start completely off-screen to the right using padding */
             padding-left: 100%;
             /* Animasyonu biraz yavaşlat (40s) ve lineer yap */
-            animation: marquee 60s linear infinite;
+            animation: marquee 100s linear infinite;
         }
 
         @keyframes marquee {
@@ -941,8 +941,9 @@
             </svg>
             <span class="font-bold text-sm tracking-wider ml-3">GÜNÜN SÖZÜ</span>
         </div>
-        <div class="marquee-container w-full bg-[#312e81]">
-            <div class="marquee-content px-4 text-2xl font-semibold tracking-wide text-indigo-100" id="marquee-text">
+        <div class="marquee-container flex-1 min-w-0 h-full flex items-center bg-[#312e81]">
+            <div class="marquee-content px-4 text-2xl font-semibold tracking-wide text-indigo-100 whitespace-nowrap"
+                style="white-space: nowrap !important;" id="marquee-text">
                 Dijital Pano sistemine hoşgeldiniz...
             </div>
         </div>
