@@ -568,7 +568,7 @@ async function fetchConfig() {
                     type: 'announcement',
                     title: 'DUYURULAR',
                     badge: 'ÖNEMLİ', // Sol üst köşe
-                    circle: '<i class="fa-solid fa-bullhorn"></i>', // Daire içi,
+                    circle: '<svg class="w-16 h-16 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M22 13C22 14.1 21.1 15 20 15H17.8L15.4 19.8C15.1 20.5 14.3 21 13.5 21C12.4 21 11.5 20.1 11.5 19V15H7C5.9 15 5 14.1 5 13V5C5 3.9 5.9 3 7 3H20C21.1 3 22 3.9 22 5V13ZM2 15H4V5H2V15Z"/></svg>', // Daire içi,
                     topLabel: 'BİLGİLENDİRME', // Sağ üst
                     content: text // Ana metin
                 });
@@ -625,7 +625,7 @@ async function fetchConfig() {
                     type: 'exam',
                     title: (config.exam_name ? config.exam_name + ' ŞAMPİYONLARI' : 'SINAV ŞAMPİYONLARI'),
                     badge: 'MAŞAALLAH',
-                    circle: '<i class="fa-solid fa-trophy"></i>',
+                    circle: '<svg class="w-16 h-16 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M20.2 2H19.5H18C17.1 2 16.3 2.4 15.8 3C15.3 2.4 14.6 2 13.5 2H12.2C11.6 2 11 2.2 10.6 2.6L10 3.3L9.4 2.6C9 2.2 8.4 2 7.8 2H6.5C5.4 2 4.7 2.4 4.2 3C3.7 2.4 2.9 2 2 2H1.3H0V6C0 9.3 2.7 12 6 12H7.2L10 16.2L12.8 12H14C17.3 12 20 9.3 20 6V2H20.2ZM6 10C3.8 10 2 8.2 2 6V4H2.2H3.5C4.1 4 4.5 4.4 4.5 5V6C4.5 6.6 4.9 7 5.5 7H6C6.6 7 7 6.6 7 6V4H7.8C8.4 4 9 4.6 9 5.2V6.5L10 8L11 6.5V5.2C11 4.6 11.6 4 12.2 4H13C13.6-4 14 3.6 14 3H14.5H15.8C16.4 4 17 4.6 17 5.2V6.5L18 8L19 6.5V5.2C19 4.6 19.6 4 20.2 4H21.5H22V6C22 8.2 20.2 10 18 10H14.6L12.8 12.7L10 16.9L7.2 12.7L5.4 10H6ZM10 18H14V22H10V18Z"/></svg>',
                     topLabel: 'TEBRİK EDERİZ',
                     content: displayStr,
                     image: imageUrl // Pass image
@@ -634,8 +634,8 @@ async function fetchConfig() {
         }
 
         const rawMenus = [];
-        if (config.lunch_menu) rawMenus.push({ type: 'menu', title: 'ÖĞLE YEMEĞİ', badge: 'AFİYET OLSUN', circle: '<i class="fa-solid fa-utensils"></i>', topLabel: 'GÜNÜN MENÜSÜ', content: config.lunch_menu });
-        if (config.dinner_menu) rawMenus.push({ type: 'menu', title: 'AKŞAM YEMEĞİ', badge: 'AFİYET OLSUN', circle: '<i class="fa-solid fa-utensils"></i>', topLabel: 'GÜNÜN MENÜSÜ', content: config.dinner_menu });
+        if (config.lunch_menu) rawMenus.push({ type: 'menu', title: 'ÖĞLE YEMEĞİ', badge: 'AFİYET OLSUN', circle: '<svg class="w-16 h-16 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M11 9H9V2H7V9H5V2H3V9C3 11.12 4.66 12.84 6.75 12.97V22H9.25V12.97C11.34 12.84 13 11.12 13 9V2H11V9ZM16 6V14H18.5V22H21V2C18.24 2 16 4.24 16 6Z"/></svg>', topLabel: 'GÜNÜN MENÜSÜ', content: config.lunch_menu });
+        if (config.dinner_menu) rawMenus.push({ type: 'menu', title: 'AKŞAM YEMEĞİ', badge: 'AFİYET OLSUN', circle: '<svg class="w-16 h-16 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M11 9H9V2H7V9H5V2H3V9C3 11.12 4.66 12.84 6.75 12.97V22H9.25V12.97C11.34 12.84 13 11.12 13 9V2H11V9ZM16 6V14H18.5V22H21V2C18.24 2 16 4.24 16 6Z"/></svg>', topLabel: 'GÜNÜN MENÜSÜ', content: config.dinner_menu });
 
         const rawStudent = [];
         if (config.student_of_week && config.student_of_week.name) {
@@ -643,7 +643,7 @@ async function fetchConfig() {
                 type: 'student',
                 title: 'HAFTANIN TALEBESİ',
                 badge: config.student_of_week.class || 'BAŞARI',
-                circle: '<i class="fa-solid fa-star"></i>', // Image handled in rotation
+                circle: '<svg class="w-16 h-16 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.62L12 2L9.19 8.62L2 9.24L7.45 13.97L5.82 21L12 17.27Z"/></svg>', // Image handled in rotation
                 topLabel: 'GURUR TABLOMUZ',
                 content: `${config.student_of_week.name}\n${config.student_of_week.message || ''}`,
                 image: config.student_of_week.image
@@ -655,12 +655,12 @@ async function fetchConfig() {
             config.most_improved_list.forEach(item => {
                 const parts = item.split('-');
                 const name = parts[0].trim();
-                const score = parts[1] ? parts[1].trim() : '<i class="fa-solid fa-arrow-trend-up"></i>';
+                const score = parts[1] ? parts[1].trim() : '<svg class="w-6 h-6 text-white inline-block" fill="currentColor" viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.59-6.59L22 12V6z"/></svg>';
                 rawImproved.push({
                     type: 'improved',
                     title: 'EN ÇOK GELİŞENLER',
                     badge: score,
-                    circle: '<i class="fa-solid fa-arrow-trend-up"></i>',
+                    circle: '<svg class="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.59-6.59L22 12V6z"/></svg>',
                     topLabel: 'AZİM VE GAYRET',
                     content: name
                 });
@@ -1230,17 +1230,25 @@ function getWeatherInfo(code) {
     // 95: Thunderstorm
     // 96, 99: Thunderstorm with slight and heavy hail
 
-    if (code === 0) return { icon: '☀️', desc: 'Açık' };
-    if (code >= 1 && code <= 3) return { icon: '☁️', desc: 'Parçalı Bulutlu' };
-    if (code === 45 || code === 48) return { icon: '🌫️', desc: 'Sisli' };
-    if (code >= 51 && code <= 55) return { icon: '🌦️', desc: 'Çiseleme' };
-    if (code >= 61 && code <= 65) return { icon: '🌧️', desc: 'Yağmurlu' };
-    if (code >= 71 && code <= 77) return { icon: '❄️', desc: 'Karlı' };
-    if (code >= 80 && code <= 82) return { icon: '🌧️', desc: 'Sağanak' };
-    if (code >= 85 && code <= 86) return { icon: '🌨️', desc: 'Kar Sağanağı' };
-    if (code >= 95) return { icon: '⛈️', desc: 'Fırtına' };
+    // SVG Icons
+    const sun = '<svg class="w-10 h-10 text-yellow-400 inline-block drop-shadow-md" fill="currentColor" viewBox="0 0 24 24"><path d="M6.99 11L7 11.03C7.03 14.33 9.69 17 13 17C16.3 17 18.96 14.34 19 11.05C19.03 8.35 17.29 6.01 14.9 4.9C14.75 3.32 13.43 2.1 11.85 2.1C10.08 2.1 8.65 3.53 8.65 5.3C8.65 5.71 8.74 6.1 8.9 6.45C7.26 7.37 6.99 9.38 6.99 11ZM12 7C14.21 7 16 8.79 16 11C16 13.21 14.21 15 12 15C9.79 15 8 13.21 8 11C8 8.79 9.79 7 12 7Z" /></svg>';
+    const cloud = '<svg class="w-10 h-10 text-gray-200 inline-block drop-shadow-md" fill="currentColor" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.64-4.96z"/></svg>';
+    const rain = '<svg class="w-10 h-10 text-blue-300 inline-block drop-shadow-md" fill="currentColor" viewBox="0 0 24 24"><path d="M4.13 12C4.05 11.36 4 10.69 4 10C4 5.58 7.58 2 12 2C16.42 2 20 5.58 20 10C20 10.69 19.95 11.36 19.87 12H20C21.66 12 23 13.34 23 15C23 16.66 21.66 18 20 18H5C3.34 18 2 16.66 2 15C2 13.34 3.34 12 5 12H4.13ZM8 15V19H10V15H8ZM14 15V19H16V15H14Z"/></svg>';
+    const snow = '<svg class="w-10 h-10 text-white inline-block drop-shadow-md" fill="currentColor" viewBox="0 0 24 24"><path d="M22 11H20.08L21.5 9.59L20.09 8.17L18.67 9.59L17.26 8.17L18.67 6.76L17.26 5.34L15.84 6.76L14.43 5.34L15.84 3.93L14.43 2.5L13 3.93V2H11V3.93L9.57 2.5L8.16 3.93L9.57 5.34L8.16 6.76L6.74 5.34L5.33 6.76L6.74 8.17L5.33 9.59L3.91 8.17L2.5 9.59L3.92 11H2V13H3.92L2.5 14.41L3.91 15.83L5.33 14.41L6.74 15.83L5.33 17.24L6.74 18.66L8.16 17.24L9.57 18.66L8.16 20.07L9.57 21.5L11 20.07V22H13V20.07L14.43 21.5L15.84 20.07L14.43 18.66L15.84 17.24L14.43 15.83L15.84 14.41L17.26 15.83L18.67 14.41L20.09 15.83L21.5 14.41L20.08 13H22V11Z"/></svg>';
+    const storm = '<svg class="w-10 h-10 text-yellow-300 inline-block drop-shadow-md" fill="currentColor" viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 1.25.38 2.4 1.03 3.35L11.5 22l-1.92-3.84L8 19l2-4h-2l3-6v4h2l-1.5 3.5c1.17 1 2.72 1.5 4.5 1.5 3.31 0 6-2.69 6-6h-2.65z"/></svg>';
+    const fog = '<svg class="w-10 h-10 text-gray-300 inline-block drop-shadow-md" fill="currentColor" viewBox="0 0 24 24"><path d="M6 16H18V18H6V16ZM6 12H18V14H6V12ZM4 8H20V10H4V8Z"/></svg>';
 
-    return { icon: '☀️', desc: 'Açık' };
+    if (code === 0) return { icon: sun, desc: 'Açık' };
+    if (code >= 1 && code <= 3) return { icon: cloud, desc: 'Parçalı Bulutlu' };
+    if (code === 45 || code === 48) return { icon: fog, desc: 'Sisli' };
+    if (code >= 51 && code <= 55) return { icon: rain, desc: 'Çiseleme' };
+    if (code >= 61 && code <= 65) return { icon: rain, desc: 'Yağmurlu' };
+    if (code >= 71 && code <= 77) return { icon: snow, desc: 'Karlı' };
+    if (code >= 80 && code <= 82) return { icon: rain, desc: 'Sağanak' };
+    if (code >= 85 && code <= 86) return { icon: snow, desc: 'Kar Sağanağı' };
+    if (code >= 95) return { icon: storm, desc: 'Fırtına' };
+
+    return { icon: sun, desc: 'Açık' };
 }
 
 // Initial Fetch and Interval
