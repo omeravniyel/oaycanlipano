@@ -831,12 +831,34 @@ function rotateInfo() {
             mainText.classList.add('text-xl', 'leading-normal', 'columns-2', 'gap-8', 'text-left');
 
         } else {
-            // Diğerleri için düz metin
+            // Temizle ve Hazırla
             mainText.innerText = item.content;
-
-            mainText.classList.add('text-2xl', 'text-center');
-            // Menüye özgü classları temizle
             mainText.classList.remove('text-xl', 'text-sm', 'leading-normal', 'columns-2', 'gap-8', 'text-left');
+            mainText.style.fontSize = ''; // Reset inline styles
+            mainText.style.whiteSpace = '';
+
+            if (item.type === 'announcement') {
+                // Duyurular: Normal Wrapping, biraz daha küçük font
+                mainText.classList.add('text-xl', 'text-center', 'whitespace-pre-wrap');
+                mainText.classList.remove('text-2xl');
+            } else {
+                // İsimler/Sınavlar: Tek satıra sığdırmaya çalış (Auto-Scale)
+                mainText.classList.add('text-center');
+                mainText.classList.remove('whitespace-pre-wrap');
+                mainText.style.whiteSpace = 'nowrap';
+                mainText.style.fontSize = '1.7rem'; // Başlangıç (text-2xl civarı)
+
+                // Sığana kadar küçült (Min: 0.9rem)
+                // DOM update sonrası ölçüm için kısa bir gecikme gerekebilir ama senkron genellikle çalışır.
+                // Güvenlik için max iterasyon: 20
+                let size = 1.7;
+                let iterations = 0;
+                while (mainText.scrollWidth > mainText.clientWidth && iterations < 20) {
+                    size -= 0.1;
+                    mainText.style.fontSize = size + 'rem';
+                    iterations++;
+                }
+            }
         }
 
         // Fade in
