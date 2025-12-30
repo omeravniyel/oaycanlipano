@@ -723,6 +723,7 @@ async function fetchConfig() {
         // --- 9. Bilgi Kartı Rotasyonunu Başlat ---
         if (infoRotationInterval) clearInterval(infoRotationInterval);
         if (infoData && infoData.length > 0) {
+            infoIndex = 0; // Her config güncellemesinde 1. sıradan başla
             rotateInfo(); // İlkini hemen göster
             infoRotationInterval = setInterval(rotateInfo, 10000); // 10 saniyede bir değiştir
         }
