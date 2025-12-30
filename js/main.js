@@ -303,6 +303,21 @@ async function fetchConfig() {
         const marquee = document.getElementById('marquee-text');
         if (marquee) {
             marquee.innerHTML = quotesText;
+
+            // --- Dynamic Marquee Speed ---
+            // Sabit hız için süre hesaplama: Yol = Hız x Zaman => Zaman = Yol / Hız
+            // Yol = Ekran Genişliği + Metin Genişliği
+            // Basitçe: Her karakter yaklaşık 0.3 saniye eklesin + 20sn temel süre
+            const plainText = marquee.innerText || ""; // HTML tagleri olmadan uzunluk
+            const charCount = plainText.length;
+            const baseDuration = 20; // Ekranı boş geçme süresi (saniye)
+            const timePerChar = 0.2; // Karakter başı süre (saniye)
+
+            // Eğer metin çok kısaysa hızlanıp gözden kaçmasın diye min 30sn
+            // Eğer metin çok uzunsa yavaşlasın diye formül
+            const duration = Math.max(30, baseDuration + (charCount * timePerChar));
+
+            marquee.style.animationDuration = `${duration}s`;
         }
 
         // --- 5. Kazanan Yatakhaneler ---
