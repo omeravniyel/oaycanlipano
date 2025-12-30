@@ -283,7 +283,10 @@
             position: absolute;
             inset: 0;
             opacity: 0.7;
-            /* Static droplets (High Density) */
+            z-index: 1;
+            /* Performance Optimization */
+            will-change: opacity;
+            /* Drop Set 1: Two drops in different positions */
             background-image:
                 radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.8) 1.5px, transparent 2.5px),
                 radial-gradient(circle at 75% 30%, rgba(255, 255, 255, 0.7) 2px, transparent 3px),
@@ -457,6 +460,9 @@
             inset: 0;
             opacity: 0;
             z-index: 9999;
+            /* Performance Optimization */
+            will-change: transform, opacity;
+            backface-visibility: hidden;
             /* Drop Set 1: Two drops in different positions */
             background-image:
                 /* Drop A */
