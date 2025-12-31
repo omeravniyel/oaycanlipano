@@ -1110,13 +1110,11 @@ function switchMedia(mode) {
         if (!window.mySwiperInstance) {
             window.mySwiperInstance = new Swiper(".mySwiper", {
                 spaceBetween: 30,
-                effect: "cube",
-                grabCursor: true,
-                cubeEffect: {
-                    shadow: true,
-                    slideShadows: true,
-                    shadowOffset: 20,
-                    shadowScale: 0.94,
+                spaceBetween: 30,
+                effect: "fade",
+                centeredSlides: true,
+                fadeEffect: {
+                    crossFade: true
                 },
                 centeredSlides: true,
                 observer: true, // DOM değişikliklerini izle
