@@ -586,7 +586,7 @@ async function fetchConfig() {
                     type: 'announcement',
                     title: 'DUYURULAR',
                     badge: 'ÖNEMLİ', // Sol üst köşe
-                    circle: '<svg class="w-16 h-16 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M22 13C22 14.1 21.1 15 20 15H17.8L15.4 19.8C15.1 20.5 14.3 21 13.5 21C12.4 21 11.5 20.1 11.5 19V15H7C5.9 15 5 14.1 5 13V5C5 3.9 5.9 3 7 3H20C21.1 3 22 3.9 22 5V13ZM2 15H4V5H2V15Z"/></svg>', // Daire içi,
+                    circle: '', // Daire içi,
                     topLabel: 'BİLGİLENDİRME', // Sağ üst
                     content: text // Ana metin
                 });
@@ -787,6 +787,9 @@ function rotateInfo() {
         circle.style.width = '';
         circle.style.height = '';
 
+        // Reset display
+        circle.style.display = 'flex';
+
         if (item.image) {
             circle.innerHTML = `<img src="${item.image}" class="w-full h-full object-cover rounded-full shadow-lg">`;
             circle.classList.remove('bg-yellow-500', 'bg-blue-500', 'bg-orange-500', 'bg-green-500', 'bg-purple-500', 'bg-pink-500');
@@ -798,12 +801,15 @@ function rotateInfo() {
             // Çerçeveyi Kaldır
             circle.style.border = 'none';
             circle.classList.remove('border-4', 'border-yellow-300'); // HTML default classlarını temizle
-        } else {
+        } else if (item.circle) {
             // Allow HTML (for icons)
             circle.innerHTML = item.circle;
             // Restore default icon border classes
             circle.style.border = ''; // Reset inline border
             circle.classList.add('border-4', 'border-yellow-300');
+        } else {
+            // İkon veya resim yoksa gizle
+            circle.style.display = 'none';
         }
 
         // Color & Size Logic
