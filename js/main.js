@@ -452,7 +452,11 @@ async function fetchConfig() {
 
         // 2. Manuel Hadis (Fallback)
         if (!selectedHadith && config.hadith) {
-            selectedHadith = (typeof config.hadith === 'string') ? JSON.parse(config.hadith) : config.hadith;
+            try {
+                selectedHadith = (typeof config.hadith === 'string') ? JSON.parse(config.hadith) : config.hadith;
+            } catch (e) {
+                selectedHadith = { text: config.hadith };
+            }
         }
 
         // 3. Ekrana Bas
@@ -750,6 +754,10 @@ async function fetchConfig() {
 
     } catch (error) {
         console.error("Config error:", error);
+        if (document.getElementById('header-title')) {
+            document.getElementById('header-title').innerText = "YÜKLEME HATASI";
+            document.getElementById('header-subtitle').innerText = "Lütfen bağlantınızı kontrol edin.";
+        }
     }
 }
 
