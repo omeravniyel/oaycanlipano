@@ -998,7 +998,7 @@ function onYouTubeIframeAPIReady() {
             'showinfo': 0,
             'mute': 1, // SESLİ BAŞLATMA HİLESİ: Önce sessiz başlat (Oto-oynatma garantisi)
             'modestbranding': 1,
-            'loop': 1,
+            'loop': 0,
             'cc_load_policy': 1,
             'cc_lang_pref': 'tr'
         },
@@ -1317,10 +1317,10 @@ function getWeatherInfo(code) {
 // fetchWeather() is called in fetchConfig after location is set
 setInterval(fetchWeather, 30 * 60 * 1000); // 30 Mins
 
-// Auto Refresh Page every 5 minutes to fetch new code/config cleanly and clear memory
+// Auto Refresh Page every 60 minutes to fetch new code/config cleanly and clear memory
 setTimeout(() => {
     window.location.reload();
-}, 5 * 60 * 1000);
+}, 60 * 60 * 1000);
 
 // --- SOL GALERİ ROTASYONU ---
 // (Değişkenler yukarı taşındı)
