@@ -76,7 +76,7 @@ export default async function handler(request, response) {
 
                 // Gelen değerleri güncelle
                 updatedConfig.institution_title = name;
-                if (type) updatedConfig.institution_type = type;
+                if (type) updatedConfig.institution_type = type.trim();
                 if (finalLogo) updatedConfig.institution_logo = finalLogo;
                 if (logo_locked !== undefined) updatedConfig.logo_locked = logo_locked;
 
@@ -114,7 +114,7 @@ export default async function handler(request, response) {
                 const newConfig = {
                     institution_name: name,
                     institution_title: name,
-                    institution_type: type || 'Ortaokul',
+                    institution_type: (type || 'Ortaokul').trim(),
                     // Default values
                     institution_logo: finalLogo || '',
                     logo_locked: logo_locked || false, // Varsayılan kilitli değil
@@ -186,8 +186,12 @@ export default async function handler(request, response) {
             const updates = [];
             for (const inst of targets) {
                 const cfg = inst.config || {};
-                // Tip Kontrolü (Typosuz eşleşme)
-                if (cfg.institution_type === type) {
+
+                // Tip Kontrolü (Case-Insensitive ve Trim)
+                const currentType = (cfg.institution_type || "").trim().toLowerCase();
+                const targetType = (type || "").trim().toLowerCase();
+
+                if (currentType === targetType) {
                     cfg.weekly_hadiths = hadiths;
 
                     // Update promise
