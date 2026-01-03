@@ -37,6 +37,7 @@ updateClock();
 let infoData = [];
 let infoIndex = 0;
 let infoRotationInterval = null; // Bilgi kartı rotasyon interval'i
+let countdownInterval = null; // Geri sayım interval'i
 
 // Yatakhane isim rotasyonu için değişkenler
 let dorm1Names = [];
@@ -691,6 +692,23 @@ async function fetchConfig() {
             });
         }
 
+        // Countdown Data
+        const rawCountdown = [];
+        if (config.countdown_target) {
+            // Check if future
+            const target = new Date(config.countdown_target);
+            if (target > new Date()) {
+                rawCountdown.push({
+                    type: 'countdown',
+                    title: config.countdown_title || 'BÜYÜK GÜN',
+                    badge: 'HEDEF',
+                    circle: '<svg class="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z"/></svg>',
+                    topLabel: 'KALAN SÜRE',
+                    target: config.countdown_target // ISO
+                });
+            }
+        }
+
         // 2. Mod Seçimine Göre infoData'yı Doldur
         let selectedType = config.bottom_widget_type;
         if (!selectedType && config.module_bottom_right_type) selectedType = config.module_bottom_right_type;
@@ -706,9 +724,11 @@ async function fetchConfig() {
             infoData = rawMenus;
         } else if (selectedType === 'announcement') {
             infoData = rawAnnouncements;
+        } else if (selectedType === 'countdown') {
+            infoData = rawCountdown;
         } else {
             // AUTO: Sadece DOLU olanları listeye ekle
-            infoData = [...rawAnnouncements, ...rawExams, ...rawMenus, ...rawStudent, ...rawImproved];
+            infoData = [...rawCountdown, ...rawAnnouncements, ...rawExams, ...rawMenus, ...rawStudent, ...rawImproved];
         }
 
         // Eğer seçilen tipte veri yoksa (veya auto seçilip hepsi boşsa) boş dizide kalır.
@@ -775,6 +795,12 @@ async function fetchConfig() {
 }
 
 function rotateInfo() {
+    // Clear previous countdown timer if exists
+    if (countdownInterval) {
+        clearInterval(countdownInterval);
+        countdownInterval = null;
+    }
+
     if (!infoData || infoData.length === 0) return;
 
     // Fade out
@@ -793,6 +819,9 @@ function rotateInfo() {
         if (item.type === 'menu') {
             // Yemek menüsü için özel gradient
             cardContainer.className = 'w-2/3 bg-gradient-to-br from-orange-500 via-red-500 to-pink-500 rounded-xl shadow-lg p-5 flex flex-col relative overflow-hidden text-white border border-orange-700';
+        } else if (item.type === 'countdown') {
+            // Countdown için özel gradient (Gece mavisi / koyu tema)
+            cardContainer.className = 'w-2/3 bg-gradient-to-br from-slate-800 via-indigo-900 to-slate-900 rounded-xl shadow-lg p-5 flex flex-col relative overflow-hidden text-white border border-indigo-500/50';
         } else {
             // Diğerleri için mor gradient
             cardContainer.className = 'w-2/3 bg-gradient-to-br from-[#4c1d95] to-[#7c3aed] rounded-xl shadow-lg p-5 flex flex-col relative overflow-hidden text-white border border-purple-800';
@@ -852,6 +881,12 @@ function rotateInfo() {
         } else if (item.type === 'improved') {
             circle.style.fontSize = '1.5rem';
             circle.classList.add('bg-green-500');
+        } else if (item.type === 'improved') {
+            circle.style.fontSize = '1.5rem';
+            circle.classList.add('bg-green-500');
+        } else if (item.type === 'countdown') {
+            circle.style.fontSize = '1.5rem';
+            circle.classList.add('bg-indigo-600');
         } else {
             // Default (e.g. Announcement)
             circle.style.fontSize = '1.5rem';
@@ -876,6 +911,58 @@ function rotateInfo() {
 
             mainText.classList.remove('text-2xl', 'text-center', 'whitespace-pre-wrap');
             mainText.classList.add('text-xl', 'leading-normal', 'columns-2', 'gap-8', 'text-left');
+
+            mainText.classList.remove('text-2xl', 'text-center', 'whitespace-pre-wrap');
+            mainText.classList.add('text-xl', 'leading-normal', 'columns-2', 'gap-8', 'text-left');
+
+        } else if (item.type === 'countdown') {
+            // COUNTDOWN RENDER
+            mainText.classList.remove('text-xl', 'text-sm', 'leading-normal', 'columns-2', 'gap-8', 'text-left', 'whitespace-pre-wrap');
+            mainText.classList.add('text-center', 'w-full', 'flex', 'items-center', 'justify-center');
+            mainText.style.fontSize = '';
+
+            const targetDate = new Date(item.target).getTime();
+
+            const updateTimer = () => {
+                const now = new Date().getTime();
+                const distance = targetDate - now;
+
+                if (distance < 0) {
+                    mainText.innerHTML = '<div class="text-3xl font-bold text-yellow-400 animate-pulse">SÜRE DOLDU!</div>';
+                    if (countdownInterval) clearInterval(countdownInterval);
+                    return;
+                }
+
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                // Modern Grid Layout
+                mainText.innerHTML = `
+                    <div class="grid grid-cols-4 gap-2 w-full max-w-sm">
+                        <div class="bg-white/10 rounded-lg p-2 text-center backdrop-blur-sm border border-white/10">
+                            <div class="text-3xl md:text-4xl font-black text-white leading-none mb-1">${days}</div>
+                            <div class="text-[0.6rem] uppercase tracking-wider text-indigo-200 font-bold">GÜN</div>
+                        </div>
+                        <div class="bg-white/10 rounded-lg p-2 text-center backdrop-blur-sm border border-white/10">
+                            <div class="text-3xl md:text-4xl font-black text-white leading-none mb-1">${hours}</div>
+                            <div class="text-[0.6rem] uppercase tracking-wider text-indigo-200 font-bold">SAAT</div>
+                        </div>
+                        <div class="bg-white/10 rounded-lg p-2 text-center backdrop-blur-sm border border-white/10">
+                            <div class="text-3xl md:text-4xl font-black text-white leading-none mb-1">${minutes}</div>
+                            <div class="text-[0.6rem] uppercase tracking-wider text-indigo-200 font-bold">DK</div>
+                        </div>
+                        <div class="bg-indigo-500/20 rounded-lg p-2 text-center backdrop-blur-sm border border-indigo-400/30">
+                            <div class="text-3xl md:text-4xl font-black text-yellow-300 leading-none mb-1">${seconds}</div>
+                            <div class="text-[0.6rem] uppercase tracking-wider text-indigo-200 font-bold">SN</div>
+                        </div>
+                    </div>
+                `;
+            };
+
+            updateTimer(); // Initial call
+            countdownInterval = setInterval(updateTimer, 1000);
 
         } else {
             // Temizle ve Hazırla

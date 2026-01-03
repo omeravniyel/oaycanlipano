@@ -329,12 +329,37 @@
                                 data-value="student_of_week">
                                 <i class="fa-solid fa-star block mb-1"></i> Haf. Öğr.
                             </button>
+                            <button type="button"
+                                class="module-selector p-3 rounded-xl border border-slate-200 text-sm font-medium hover:border-purple-500 hover:bg-purple-50 transition text-center"
+                                data-value="countdown">
+                                <i class="fa-solid fa-hourglass-half block mb-1"></i> Geri Sayım
+                            </button>
                         </div>
                         <input type="hidden" id="config-bottom_widget_type">
                     </div>
 
                     <!-- Dynamic Content Forms based on selection (Simplified for now, showing all inputs) -->
                     <div class="space-y-6">
+                        <!-- Countdown Config -->
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                            <h4 class="font-bold text-sm text-slate-700 mb-3 flex items-center gap-2"><i
+                                    class="fa-solid fa-hourglass-half text-purple-500"></i> Geri Sayım Ayarları</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 mb-1">Hedef Tarih &
+                                        Saat</label>
+                                    <input type="datetime-local" id="config-countdown_target"
+                                        class="w-full p-2 bg-white border border-slate-200 rounded-lg text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-slate-500 mb-1">Etkinlik Başlığı</label>
+                                    <input type="text" id="config-countdown_title"
+                                        class="w-full p-2 bg-white border border-slate-200 rounded-lg text-sm"
+                                        placeholder="LGS Sınavı, Yılbaşı vb.">
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Menu -->
                         <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
                             <h4 class="font-bold text-sm text-slate-700 mb-3 flex items-center gap-2"><i
@@ -595,6 +620,10 @@
             // Module Type
             setModuleType(data.bottom_widget_type || 'auto');
 
+            // Countdown
+            setVal('config-countdown_target', data.countdown_target);
+            setVal('config-countdown_title', data.countdown_title);
+
             // Dorms
             if (data.module_dorm_active !== undefined) {
                 document.getElementById('config-module_dorm_active').checked = data.module_dorm_active;
@@ -680,6 +709,10 @@
             data.video_url = data.video_urls.length > 0 ? data.video_urls[0] : ''; // Fallback for legacy
 
             data.bottom_widget_type = document.getElementById('config-bottom_widget_type').value;
+
+            // Countdown
+            data.countdown_target = getVal('config-countdown_target');
+            data.countdown_title = getVal('config-countdown_title');
 
             // Menus & Dorms
             data.lunch_menu = getVal('config-lunch_menu');
