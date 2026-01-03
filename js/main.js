@@ -735,11 +735,24 @@ async function fetchConfig() {
         videoPlaylist = videoPlaylist.filter(v => v && v.trim().length > 5);
 
         // --- 8. BAŞLAT ---
+        // --- 8. BAŞLAT (AKILLI KONTROL) ---
         if (videoPlaylist.length > 0) {
-            currentVideoIndex = 0;
-            switchMedia('video');
+            // Eğer zaten video modundaysak ve playlist değişmediyse KARIŞMA
+            const isSamePlaylist = (currentMediaState === 'video') &&
+                (JSON.stringify(window.lastVideoPlaylist) === JSON.stringify(videoPlaylist));
+
+            if (!isSamePlaylist) {
+                console.log("Playlist değişti veya yeni başlatılıyor...");
+                window.lastVideoPlaylist = [...videoPlaylist]; // Kopya sakla
+                currentVideoIndex = 0;
+                switchMedia('video');
+            } else {
+                console.log("Playlist aynı, video devam ediyor...");
+            }
         } else {
-            switchMedia('slide');
+            if (currentMediaState !== 'slide') {
+                switchMedia('slide');
+            }
         }
 
         startDormNameRotation();
