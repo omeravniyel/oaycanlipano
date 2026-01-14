@@ -491,12 +491,11 @@
         <div class="max-w-7xl mx-auto px-4 text-center">
 
             <div class="mb-8 flex justify-center gap-8">
-                <a href="#" class="text-slate-400 dark:text-gray-500 hover:text-blue-500 transition-colors text-2xl"><i
-                        class="fa-brands fa-twitter"></i></a>
-                <a href="#" class="text-slate-400 dark:text-gray-500 hover:text-blue-500 transition-colors text-2xl"><i
-                        class="fa-brands fa-instagram"></i></a>
-                <a href="#" class="text-slate-400 dark:text-gray-500 hover:text-blue-500 transition-colors text-2xl"><i
-                        class="fa-brands fa-whatsapp"></i></a>
+                <!-- Twitter & Instagram Removed -->
+                <a href="#" id="whatsapp-link" target="_blank"
+                    class="text-slate-400 dark:text-gray-500 hover:text-green-500 transition-colors text-3xl">
+                    <i class="fa-brands fa-whatsapp"></i>
+                </a>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-lg mx-auto mb-8 text-slate-600 dark:text-gray-400">
@@ -504,6 +503,7 @@
                     <i class="fa-solid fa-envelope text-blue-500"></i>
                     <span id="footer-email">iletisim@kartaltepepano.com</span>
                 </div>
+                <!-- ID updated for easy JS access -->
                 <div class="flex items-center justify-center gap-2">
                     <i class="fa-solid fa-phone text-blue-500"></i>
                     <span id="footer-phone">0850 123 45 67</span>
@@ -564,7 +564,27 @@
             // Contact
             if (cfg.contact) {
                 if (cfg.contact.email) document.getElementById('footer-email').innerText = cfg.contact.email;
-                if (cfg.contact.phone) document.getElementById('footer-phone').innerText = cfg.contact.phone;
+                if (cfg.contact.phone) {
+                    const phoneDisplay = cfg.contact.phone;
+                    document.getElementById('footer-phone').innerText = phoneDisplay;
+
+                    // WhatsApp Link Logic
+                    const waLink = document.getElementById('whatsapp-link');
+                    if (waLink) {
+                        // Clean phone number (remove spaces, dashes, etc.)
+                        const cleanPhone = phoneDisplay.replace(/[^0-9]/g, '');
+                        // Pre-filled Message: "Merhaba, Dijital Pano sistemi hakkında bilgi almak istiyorum."
+                        const msg = "Merhaba, Dijital Pano sistemi hakkında bilgi almak istiyorum.";
+                        const encodedMsg = encodeURIComponent(msg);
+
+                        // Check if it starts with 90, if not (and is 10 digits), assume TR and add 90
+                        let finalPhone = cleanPhone;
+                        if (finalPhone.length === 10) finalPhone = '90' + finalPhone;
+                        else if (finalPhone.length === 11 && finalPhone.startsWith('0')) finalPhone = '90' + finalPhone.substring(1);
+
+                        waLink.href = `https://wa.me/${finalPhone}?text=${encodedMsg}`;
+                    }
+                }
             }
         }
     </script>
