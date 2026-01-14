@@ -85,8 +85,7 @@ export default async function handler(request, response) {
                     .insert([{
                         slug: 'system-requests',
                         name: 'System Requests',
-                        config: requests, // Send array directly
-                        is_active: false
+                        config: requests // Send array directly
                     }]);
                 if (insertError) throw insertError;
             } else {
