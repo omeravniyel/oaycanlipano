@@ -691,10 +691,13 @@
                 let requests = [];
 
                 if (sysReqParams && sysReqParams.config) {
-                    try {
-                        requests = JSON.parse(sysReqParams.config);
-                        if (!Array.isArray(requests)) requests = [];
-                    } catch (e) { requests = []; }
+                    if (Array.isArray(sysReqParams.config)) {
+                        requests = sysReqParams.config;
+                    } else if (typeof sysReqParams.config === 'string') {
+                        try {
+                            requests = JSON.parse(sysReqParams.config);
+                        } catch (e) { requests = []; }
+                    }
                 }
 
                 // If not found in current list (maybe lazy load?), try refetching list silently or specific.
