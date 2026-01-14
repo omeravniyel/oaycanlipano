@@ -600,6 +600,62 @@
             once: true
         });
 
+        });
+
+        // --- FORM SUBMISSION LOGIC ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('application-form');
+            const submitBtn = document.getElementById('submit-btn');
+            const formMessage = document.getElementById('form-message');
+
+            if (form) {
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault(); // STOP THE GET REQUEST
+
+                    // UI Loading State
+                    const originalBtnContent = submitBtn.innerHTML;
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Gönderiliyor...';
+                    formMessage.className = 'text-center text-sm mt-4 hidden';
+
+                    const formData = new FormData(form);
+                    const data = Object.fromEntries(formData.entries());
+
+                    try {
+                        const res = await fetch('/api/manage-institutions', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                action: 'submit_application',
+                                application: data
+                            })
+                        });
+
+                        const result = await res.json();
+
+                        if (res.ok && result.success) {
+                            // Success
+                            form.reset();
+                            formMessage.innerText = "✅ Başvurunuz başarıyla alındı! En kısa sürede sizinle iletişime geçeceğiz.";
+                            formMessage.className = "text-center text-sm mt-4 text-green-500 font-semibold animate-pulse block";
+                        } else {
+                            throw new Error(result.error || 'Bir hata oluştu.');
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        formMessage.innerText = "⚠️ " + err.message;
+                        formMessage.className = "text-center text-sm mt-4 text-red-500 font-semibold block";
+                    } finally {
+                        // Reset Button
+                        setTimeout(() => {
+                            submitBtn.disabled = false;
+                            submitBtn.innerHTML = originalBtnContent;
+                        }, 500); // Small delay for UX
+                    }
+                });
+            }
+        });
+
         // --- CMS HYDRATION LOGIC ---
         document.addEventListener('DOMContentLoaded', async () => {
             try {

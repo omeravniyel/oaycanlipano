@@ -72,15 +72,15 @@ export default async function handler(request, response) {
                 .insert([{
                     slug: 'system-requests',
                     name: 'System Requests',
-                    config: JSON.stringify(requests),
-                    is_active: false // Sistem kaydı, aktif değil
+                    config: requests, // Send array directly
+                    is_active: false
                 }]);
             if (insertError) throw insertError;
         } else {
             // Update
             const { error: updateError } = await supabase
                 .from('institutions')
-                .update({ config: JSON.stringify(requests) })
+                .update({ config: requests }) // Send array directly
                 .eq('slug', 'system-requests');
             if (updateError) throw updateError;
         }
