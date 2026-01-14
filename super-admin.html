@@ -648,8 +648,21 @@
 
 
         // --- APPLICATIONS LOGIC ---
-        function openApplicationsModal() {
+        async function openApplicationsModal() {
             document.getElementById('applications-modal').classList.remove('hidden');
+            // Loader shows automatically in fetchApplications but let's refresh data first
+            const loader = document.getElementById('applications-loader');
+            const list = document.getElementById('applications-list');
+            const empty = document.getElementById('applications-empty');
+
+            list.innerHTML = '';
+            empty.classList.add('hidden');
+            loader.classList.remove('hidden');
+
+            // Refresh global data to get new requests
+            await fetchInstitutions();
+
+            // Now render
             fetchApplications();
         }
 
