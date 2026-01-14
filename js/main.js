@@ -1276,7 +1276,7 @@ function switchMedia(mode) {
                 observer: true, // DOM değişikliklerini izle
                 observeParents: true, // Parent değişikliklerini izle
                 autoplay: {
-                    delay: 12000,
+                    delay: 18000,
                     disableOnInteraction: false,
                 },
                 loop: false, // Loop false yapıyoruz ki sona gelince yakalayalım
@@ -1539,7 +1539,7 @@ function showLeftGalleryImage() {
 
     // Eğer tüm görseller gösterildiyse
     if (leftGalleryIndex >= leftGalleryImages.length) {
-        // 10 saniye sonra galeriyi gizle
+        // 10 saniye sonra galeriyi gizle (GÜNCELLENDİ: 18sn)
         leftGalleryTimeout = setTimeout(() => {
             galleryContainer.classList.add('hidden');
             normalContent.classList.remove('hidden');
@@ -1549,10 +1549,10 @@ function showLeftGalleryImage() {
                 leftGalleryIndex = 0;
                 showLeftGalleryImage();
             }, 20000); // 20 saniye bekleme
-        }, 10000); // Son görseli 10 saniye göster
+        }, 18000); // Son görseli 18 saniye göster
     } else {
-        // 10 saniye sonra bir sonraki görseli göster
-        leftGalleryTimeout = setTimeout(showLeftGalleryImage, 10000);
+        // 10 saniye sonra bir sonraki görseli göster (GÜNCELLENDİ: 18sn)
+        leftGalleryTimeout = setTimeout(showLeftGalleryImage, 18000);
     }
 }
 
