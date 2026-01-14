@@ -58,13 +58,18 @@ async function fetchConfig() {
         const path = window.location.pathname;
         let slug = path.split('/')[1] || ''; // Boşsa varsayılanı API halleder
 
+        let isDemoMode = false;
         // "index.html", "index", "board.html", "board" gelirse özel slug olarak alma
         const ignoredBundles = ['index.html', 'index', 'board.html', 'board'];
         if (ignoredBundles.includes(slug.toLowerCase())) {
+            // Eğer özellikle board.html ise ve slug yoksa, DEMO MODU'nu aktif et
+            if (slug.toLowerCase().includes('board')) {
+                isDemoMode = true;
+            }
             slug = '';
         }
 
-        if (!slug) {
+        if (!slug && !isDemoMode) {
             // --- ANA SAYFA (Landing Page) ---
             // --- ANA SAYFA (Landing Page - Electric Theme) ---
             document.body.innerHTML = `
@@ -148,23 +153,59 @@ async function fetchConfig() {
             return;
         }
 
-        const res = await fetch(`/api/get-config?slug=${slug}&_t=${Date.now()}`);
+        let config;
 
-        if (res.status === 404) {
-            let errInfo = {};
-            try { errInfo = await res.json(); } catch (e) { }
+        if (isDemoMode) {
+            // --- DEMO CONFIGURATION ---
+            console.log("Demo Modu Aktif: Örnek veriler yükleniyor...");
+            config = {
+                institution_title: "Kartaltepe Pano Demo",
+                institution_subtitle: "Modern Eğitim Teknolojileri",
+                institution_slogan1: "Geleceğe",
+                institution_slogan2: "Teknolojiyle",
+                institution_logo: "logo.png",
+                city: "Istanbul",
+                district: "Uskudar",
+                lunch_menu: "Mercimek Çorbası\nEt Sote\nPilav\nSalata",
+                dinner_menu: "Domates Çorbası\nTavuk Izgara\nMakarna\nAyran",
+                quote_of_day: "1. En büyük zenginlik bilgidir. 2. Sabır acıdır ama meyvesi tatlıdır. 3. İşleyen demir ışıldar.",
+                hadith_data: {
+                    arabic: "خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ",
+                    turkish: "Sizin en hayırlınız Kuran'ı öğrenen ve öğreteninizdir.",
+                    source: "Buhârî, Fezâilü'l-Kur'ân 21",
+                    week: 1,
+                    start_date: "2024-01-01",
+                    end_date: "2024-12-31"
+                },
+                dorm_title: "AYIN ÖRNEK ODASI",
+                dorms: [
+                    { name: "A-101", count: 3, students: ["Ahmet Y.", "Mehmet K.", "Ali V.", "Veli D."] },
+                    { name: "B-203", count: 2, students: ["Hasan H.", "Hüseyin B.", "Ömer F.", "Yusuf E."] }
+                ],
+                announcements: [
+                    { title: "Yazılı Tarihleri", content: "Matematik yazılısı 15 Ocak tarihinde yapılacaktır." },
+                    { title: "Veli Toplantısı", content: "20 Ocak Pazar günü saat 14:00'te veli toplantısı yapılacaktır." }
+                ],
+                video_url: "https://www.w3schools.com/html/mov_bbb.mp4" // Örnek Video
+            };
+        } else {
+            const res = await fetch(`/api/get-config?slug=${slug}&_t=${Date.now()}`);
 
-            document.body.innerHTML = `
-                <div class="flex flex-col items-center justify-center h-screen bg-slate-900 text-white font-sans">
-                    <div class="text-6xl mb-4 animate-bounce">⚠️</div>
-                    <h1 class="text-3xl font-bold mb-2">Kurum Bulunamadı</h1>
-                    <p class="text-slate-400">Aradığınız <b>/${slug}</b> adresine ait bir kayıt bulunamadı.</p>
-                    <a href="/" class="mt-6 px-6 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-white transition">Ana Sayfaya Dön</a>
-                </div>`;
-            return;
+            if (res.status === 404) {
+                let errInfo = {};
+                try { errInfo = await res.json(); } catch (e) { }
+
+                document.body.innerHTML = `
+                    <div class="flex flex-col items-center justify-center h-screen bg-slate-900 text-white font-sans">
+                        <div class="text-6xl mb-4 animate-bounce">⚠️</div>
+                        <h1 class="text-3xl font-bold mb-2">Kurum Bulunamadı</h1>
+                        <p class="text-slate-400">Aradığınız <b>/${slug}</b> adresine ait bir kayıt bulunamadı.</p>
+                        <a href="/" class="mt-6 px-6 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-white transition">Ana Sayfaya Dön</a>
+                    </div>`;
+                return;
+            }
+            config = await res.json();
         }
-
-        const config = await res.json();
 
         // Hava durumu için konumu global'e at
         window.configLocation = {
