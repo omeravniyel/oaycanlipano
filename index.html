@@ -483,6 +483,82 @@
 
             </div>
         </div>
+        </div>
+        </div>
+    </section>
+
+    <!-- REGISTRATION / APPLICATION FORM -->
+    <section id="register"
+        class="py-20 bg-white dark:bg-slate-800 relative border-t border-slate-200 dark:border-white/5">
+        <div class="max-w-4xl mx-auto px-4">
+            <div class="text-center mb-12">
+                <span class="text-blue-500 font-bold tracking-wider uppercase text-sm">Hemen Başlayın</span>
+                <h2 class="text-3xl md:text-4xl font-bold mt-2 text-slate-900 dark:text-white">Demo Talebi & Başvuru
+                </h2>
+                <p class="text-slate-600 dark:text-gray-400 mt-4 max-w-2xl mx-auto">
+                    Kurumunuza özel dijital pano sistemini ücretsiz denemek veya detaylı bilgi almak için formu
+                    doldurun.
+                </p>
+            </div>
+
+            <div
+                class="glass-card rounded-3xl p-8 md:p-10 border border-slate-200 dark:border-white/10 bg-slate-50/50 dark:bg-slate-900/50 shadow-xl">
+                <form id="application-form" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Kurum Adı -->
+                        <div class="space-y-2">
+                            <label class="text-sm font-semibold text-slate-700 dark:text-gray-300">Kurum Adı</label>
+                            <input type="text" name="institution_name" required
+                                class="w-full px-4 py-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all placeholder:text-gray-400"
+                                placeholder="Örn: Kartaltepe Koleji">
+                        </div>
+                        <!-- Yetkili -->
+                        <div class="space-y-2">
+                            <label class="text-sm font-semibold text-slate-700 dark:text-gray-300">Yetkili Adı
+                                Soyadı</label>
+                            <input type="text" name="authorized_person" required
+                                class="w-full px-4 py-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all placeholder:text-gray-400"
+                                placeholder="Ad Soyad">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Telefon -->
+                        <div class="space-y-2">
+                            <label class="text-sm font-semibold text-slate-700 dark:text-gray-300">Telefon</label>
+                            <input type="tel" name="phone" required
+                                class="w-full px-4 py-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all placeholder:text-gray-400"
+                                placeholder="0500 000 00 00">
+                        </div>
+                        <!-- E-posta -->
+                        <div class="space-y-2">
+                            <label class="text-sm font-semibold text-slate-700 dark:text-gray-300">E-posta
+                                (Opsiyonel)</label>
+                            <input type="email" name="email"
+                                class="w-full px-4 py-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all placeholder:text-gray-400"
+                                placeholder="ornek@okul.com">
+                        </div>
+                    </div>
+
+                    <!-- Not -->
+                    <div class="space-y-2">
+                        <label class="text-sm font-semibold text-slate-700 dark:text-gray-300">Mesajınız /
+                            Notunuz</label>
+                        <textarea name="note" rows="3"
+                            class="w-full px-4 py-3 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 outline-none transition-all placeholder:text-gray-400"
+                            placeholder="Belirtmek istediğiniz detaylar..."></textarea>
+                    </div>
+
+                    <button type="submit" id="submit-btn"
+                        class="w-full py-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-lg shadow-lg shadow-blue-500/25 transition-all transform hover:scale-[1.01] active:scale-[0.99] flex items-center justify-center gap-2">
+                        <span>Başvuruyu Gönder</span>
+                        <i class="fa-solid fa-paper-plane"></i>
+                    </button>
+
+                    <p id="form-message" class="text-center text-sm mt-4 hidden"></p>
+                </form>
+            </div>
+        </div>
     </section>
 
     <!-- FOOTER / CONTACT -->

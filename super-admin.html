@@ -69,6 +69,10 @@
                     </p>
                 </div>
                 <div class="flex gap-3">
+                    <button onclick="openApplicationsModal()"
+                        class="bg-orange-600 hover:bg-orange-700 text-white px-6 py-2.5 rounded-lg shadow-md hover:shadow-lg transition-all flex items-center gap-2 font-medium relative">
+                        <i class="fas fa-inbox"></i> Başvurular
+                    </button>
                     <button onclick="openHadithModal()"
                         class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-lg shadow-md hover:shadow-lg transition-all flex items-center gap-2 font-medium">
                         <i class="fas fa-book-open"></i> Hadis Yönetimi
@@ -480,6 +484,49 @@
         </div>
     </div>
 
+    <!-- APPLICATIONS MODAL -->
+    <div id="applications-modal"
+        class="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col h-[90vh]">
+            <!-- Header -->
+            <div
+                class="border-b border-gray-100 px-6 py-4 flex justify-between items-center bg-gray-50 rounded-t-2xl flex-shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="bg-orange-100 p-2 rounded-lg">
+                        <i class="fas fa-inbox text-orange-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-800">Gelen Başvurular & Talepler</h3>
+                        <p class="text-xs text-gray-500">Demo talepleri ve iletişim formlarını buradan yönetebilirsiniz.
+                        </p>
+                    </div>
+                </div>
+                <button onclick="closeApplicationsModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <!-- Body -->
+            <div class="p-0 overflow-y-auto flex-1 bg-gray-50/50">
+                <div id="applications-list" class="divide-y divide-gray-100">
+                    <!-- Items -->
+                </div>
+                <div id="applications-loader" class="text-center py-20 hidden">
+                    <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-orange-600 mx-auto mb-4"></div>
+                    <p class="text-gray-500">Başvurular yükleniyor...</p>
+                </div>
+                <div id="applications-empty" class="text-center py-20 hidden">
+                    <div
+                        class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400 text-2xl">
+                        <i class="fas fa-inbox"></i>
+                    </div>
+                    <h4 class="text-gray-800 font-bold mb-1">Henüz Başvuru Yok</h4>
+                    <p class="text-gray-500 text-sm">Gelen kutusu şu an boş.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         // --- AUTH ---
         let MASTER_PASSWORD = localStorage.getItem('super_admin_pass') || "";
@@ -599,6 +646,98 @@
             });
         }
 
+
+        // --- APPLICATIONS LOGIC ---
+        function openApplicationsModal() {
+            document.getElementById('applications-modal').classList.remove('hidden');
+            fetchApplications();
+        }
+
+        function closeApplicationsModal() {
+            document.getElementById('applications-modal').classList.add('hidden');
+        }
+
+        async function fetchApplications() {
+            const listContainer = document.getElementById('applications-list');
+            const loader = document.getElementById('applications-loader');
+            const emptyState = document.getElementById('applications-empty');
+
+            listContainer.innerHTML = '';
+            loader.classList.remove('hidden');
+            emptyState.classList.add('hidden');
+
+            try {
+                // Fetch 'system-requests' config via existing list/filter or direct get
+                // Since we don't have a direct "get slug" in frontend yet, likely need to find it from list or get_landing_config equivalent?
+                // Actually API `list` returns all. We can find 'system-requests' in `institutions` array.
+                // Re-using fetchInstitutions data might be stale, let's refresh or find in current.
+
+                // Better approach: Let's assume fetchInstitutions was called. But 'system-requests' might be filtered if we change API?
+                // Currently API `list` returns ALL. 
+                const sysReqParams = institutions.find(i => i.slug === 'system-requests');
+                let requests = [];
+
+                if (sysReqParams && sysReqParams.config) {
+                    try {
+                        requests = JSON.parse(sysReqParams.config);
+                        if (!Array.isArray(requests)) requests = [];
+                    } catch (e) { requests = []; }
+                }
+
+                // If not found in current list (maybe lazy load?), try refetching list silently or specific.
+                // For now, relies on `institutions` global.
+
+                loader.classList.add('hidden');
+
+                if (requests.length === 0) {
+                    emptyState.classList.remove('hidden');
+                    return;
+                }
+
+                requests.forEach(req => {
+                    const date = new Date(req.date).toLocaleString('tr-TR');
+                    const note = req.note ? `<p class="text-sm text-gray-600 mt-2 bg-gray-50 p-2 rounded border border-gray-100 italic">"${req.note}"</p>` : '';
+
+                    // Format Phone for WhatsApp
+                    let cleanPhone = req.phone.replace(/[^0-9]/g, '');
+                    if (cleanPhone.length === 10) cleanPhone = '90' + cleanPhone;
+                    else if (cleanPhone.length === 11 && cleanPhone.startsWith('0')) cleanPhone = '90' + cleanPhone.substring(1);
+                    const waLink = `https://wa.me/${cleanPhone}`;
+
+                    const item = document.createElement('div');
+                    item.className = 'p-6 hover:bg-gray-50 transition-colors flex flex-col md:flex-row gap-4 items-start';
+                    item.innerHTML = `
+                        <div class="flex-1">
+                            <div class="flex items-center gap-2 mb-1">
+                                <span class="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-0.5 rounded uppercase tracking-wide">Yeni</span>
+                                <span class="text-xs text-gray-400 font-mono">${date}</span>
+                            </div>
+                            <h4 class="font-bold text-gray-900 text-lg">${req.institution_name}</h4>
+                            <div class="flex flex-wrap gap-4 text-sm text-gray-600 mt-1">
+                                <span class="flex items-center gap-1"><i class="fas fa-user text-gray-400"></i> ${req.authorized_person}</span>
+                                <span class="flex items-center gap-1"><i class="fas fa-phone text-gray-400"></i> ${req.phone}</span>
+                                ${req.email ? `<span class="flex items-center gap-1"><i class="fas fa-envelope text-gray-400"></i> ${req.email}</span>` : ''}
+                            </div>
+                            ${note}
+                        </div>
+                        <div class="flex gap-2 flex-shrink-0 mt-2 md:mt-0">
+                            <a href="${waLink}" target="_blank" class="bg-green-100 hover:bg-green-200 text-green-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+                                <i class="fab fa-whatsapp text-lg"></i>
+                            </a>
+                            <a href="tel:${req.phone}" class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
+                                <i class="fas fa-phone"></i>
+                            </a>
+                        </div>
+                    `;
+                    listContainer.appendChild(item);
+                });
+
+            } catch (e) {
+                console.error(e);
+                loader.classList.add('hidden');
+                emptyState.classList.remove('hidden'); // Fallback
+            }
+        }
 
         // --- CRUD ACTIONS ---
         function openModal() {

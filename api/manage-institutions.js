@@ -28,10 +28,64 @@ export default async function handler(request, response) {
     }
 
     // 1. Master Password Kontrolü (Public actionlar hariç)
-    const PUBLIC_ACTIONS = ['get_landing_config'];
+    const PUBLIC_ACTIONS = ['get_landing_config', 'submit_application'];
 
     if (!PUBLIC_ACTIONS.includes(action) && master_password !== MASTER_PASSWORD) {
         return response.status(401).json({ error: 'Yetkisiz Erişim! Ana şifre yanlış.' });
+    }
+
+    // --- SUBMIT APPLICATION (PUBLIC) ---
+    if (action === 'submit_application') {
+        const { application } = request.body;
+        if (!application) return response.status(400).json({ error: 'Başvuru verisi eksik.' });
+
+        // 1. Mevcut başvuruları çek
+        let { data: existingData, error: fetchError } = await supabase
+            .from('institutions')
+            .select('config')
+            .eq('slug', 'system-requests')
+            .single();
+
+        let requests = [];
+        if (existingData && existingData.config) {
+            try {
+                requests = JSON.parse(existingData.config);
+                if (!Array.isArray(requests)) requests = [];
+            } catch (e) { requests = []; }
+        }
+
+        // 2. Yeni başvuruyu ekle
+        const newRequest = {
+            id: crypto.randomUUID(),
+            date: new Date().toISOString(),
+            status: 'new', // new, read, contacted
+            ...application
+        };
+        requests.unshift(newRequest); // En yeni en başa
+
+        // 3. Kaydet
+        // Eğer kayıt yoksa oluştur, varsa güncelle
+        if (!existingData && fetchError) {
+            // Kayıt yoksa insert
+            const { error: insertError } = await supabase
+                .from('institutions')
+                .insert([{
+                    slug: 'system-requests',
+                    name: 'System Requests',
+                    config: JSON.stringify(requests),
+                    is_active: false // Sistem kaydı, aktif değil
+                }]);
+            if (insertError) throw insertError;
+        } else {
+            // Update
+            const { error: updateError } = await supabase
+                .from('institutions')
+                .update({ config: JSON.stringify(requests) })
+                .eq('slug', 'system-requests');
+            if (updateError) throw updateError;
+        }
+
+        return response.status(200).json({ success: true, message: 'Başvurunuz alındı.' });
     }
 
     try {
