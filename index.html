@@ -677,7 +677,10 @@
         function hydratePage(cfg) {
             // Hero
             if (cfg.hero) {
-                if (cfg.hero.badge) document.getElementById('hero-badge').innerHTML = `<span class="w-2 h-2 rounded-full bg-indigo-500 dark:bg-indigo-400 animate-pulse"></span> ${cfg.hero.badge}`;
+                if (cfg.hero.badge) {
+                    const badgeEl = document.getElementById('hero-badge-text');
+                    if (badgeEl) badgeEl.innerHTML = cfg.hero.badge;
+                }
                 if (cfg.hero.title1) document.getElementById('hero-title1').innerText = cfg.hero.title1;
                 if (cfg.hero.title2) document.getElementById('hero-title2').innerText = cfg.hero.title2;
                 if (cfg.hero.desc) document.getElementById('hero-desc').innerHTML = cfg.hero.desc; // Allow HTML bold tags
