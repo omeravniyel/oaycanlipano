@@ -58,8 +58,9 @@ async function fetchConfig() {
         const path = window.location.pathname;
         let slug = path.split('/')[1] || ''; // Boşsa varsayılanı API halleder
 
-        // "index.html" veya "index" gelirse ana sayfa kabul et
-        if (slug.toLowerCase() === 'index.html' || slug.toLowerCase() === 'index') {
+        // "index.html", "index", "board.html", "board" gelirse özel slug olarak alma
+        const ignoredBundles = ['index.html', 'index', 'board.html', 'board'];
+        if (ignoredBundles.includes(slug.toLowerCase())) {
             slug = '';
         }
 
