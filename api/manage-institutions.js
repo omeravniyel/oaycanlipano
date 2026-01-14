@@ -39,6 +39,15 @@ export default async function handler(request, response) {
         const { application } = request.body;
         if (!application) return response.status(400).json({ error: 'Başvuru verisi eksik.' });
 
+        // UUID Helper (Environment agnostic)
+        const generateUUID = () => {
+            if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                return v.toString(16);
+            });
+        };
+
         // 1. Mevcut başvuruları çek
         let { data: existingData, error: fetchError } = await supabase
             .from('institutions')
@@ -56,7 +65,7 @@ export default async function handler(request, response) {
 
         // 2. Yeni başvuruyu ekle
         const newRequest = {
-            id: crypto.randomUUID(),
+            id: generateUUID(),
             date: new Date().toISOString(),
             status: 'new', // new, read, contacted
             ...application
