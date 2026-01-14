@@ -19,6 +19,10 @@
             "destination": "/admin.html"
         },
         {
+            "source": "/board",
+            "destination": "/board.html"
+        },
+        {
             "source": "/",
             "destination": "/index.html"
         },

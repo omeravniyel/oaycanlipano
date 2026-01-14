@@ -1,946 +1,574 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="tr" class="dark scroll-smooth">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dijital Pano</title>
+    <title>Kartaltepe Dijital Pano Sistemi</title>
+    <meta name="description" content="Kartaltepe Kurumsal Dijital Pano ve Bilgilendirme Sistemi">
 
-    <!-- Social Media Preview (WhatsApp/OG) -->
-    <meta property="og:title" content="Dijital Pano Sistemi" />
-    <meta property="og:description" content="Kurumsal Bilgilendirme ve Duyuru Ekranı" />
-    <meta property="og:image" content="https://kartaltepepano.com/logo-share.png" />
-    <meta property="og:url" content="https://kartaltepepano.com" />
-    <meta property="og:type" content="website" />
-
-    <!-- Twitter Card (WhatsApp Fallback) -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Dijital Pano Sistemi" />
-    <meta name="twitter:description" content="Kurumsal Bilgilendirme ve Duyuru Ekranı" />
-    <meta name="twitter:image" content="https://kartaltepepano.com/logo-share.png" />
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts -->
+    <!-- Fonts -->
     <link
-        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Dancing+Script:wght@600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Amiri:wght@400;700&family=Scheherazade+New:wght@400;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap"
         rel="stylesheet">
-    <!-- Swiper CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
-    <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- Animations -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        heading: ['Space Grotesk', 'sans-serif'],
+                        body: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        dark: {
+                            DEFAULT: '#0f172a',
+                            surface: '#1e293b'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
 
     <style>
-        body {
-            font-family: 'Montserrat', sans-serif;
-            overflow: hidden;
-            background-color: #e2e8f0;
-        }
-
-        .font-script {
-            font-family: 'Dancing Script', cursive;
-        }
-
-        .font-serif-tr {
-            font-family: 'Playfair Display', serif;
-        }
-
-        .font-arabic {
-            font-family: 'Scheherazade New', serif;
-        }
-
-        /* Marquee */
-        .marquee-container {
-            overflow: hidden;
-            white-space: nowrap;
-            width: 100%;
-            position: relative;
-        }
-
-        .marquee-content {
-            display: inline-block;
-            white-space: nowrap;
-            /* Start completely off-screen to the right using padding */
-            padding-left: 100%;
-            /* Animasyonu biraz yavaşlat (40s) ve lineer yap */
-            animation: marquee 100s linear infinite;
-        }
-
-        @keyframes marquee {
-            0% {
-                transform: translate3d(0, 0, 0);
-            }
-
-            100% {
-                transform: translate3d(-100%, 0, 0);
-            }
-        }
-
-
-
-        /* Dot Pattern Background for Hadith */
-        .bg-dots {
-            background-color: #f0fdf9;
-            background-image: radial-gradient(#ccfbf1 2px, transparent 2px);
-            background-size: 20px 20px;
-        }
-
-        /* --- NEW LIGHT THEME HADITH CSS --- */
-        .card-modern-islamic {
-            /* White Background as requested */
-            background: #ffffff;
-            border-radius: 20px;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-            position: relative;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-            color: #1e293b;
-            border: 4px solid #fff;
-        }
-
-        .corner-decor {
-            position: absolute;
-            width: 50px;
-            height: 50px;
-            border: 3px solid #0284c7;
-            /* Sky 600 */
+        /* Glassmorphism Utilities */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease;
-            z-index: 6;
         }
 
-        .top-left {
-            top: 15px;
-            left: 15px;
-            border-right: none;
-            border-bottom: none;
-            border-radius: 16px 0 0 0;
+        .dark .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
 
-        .top-right {
-            top: 15px;
-            right: 15px;
-            border-left: none;
-            border-bottom: none;
-            border-radius: 0 16px 0 0;
+        /* Light Mode Glass/Card Override */
+        html:not(.dark) .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            border: 1px solid rgba(203, 213, 225, 0.4);
+            backdrop-filter: blur(8px);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.05);
         }
 
-        .bottom-left {
-            bottom: 15px;
-            left: 15px;
-            border-right: none;
-            border-top: none;
-            border-radius: 0 0 0 16px;
+        html:not(.dark) body {
+            background-color: #f8fafc;
+            /* Slate-50 */
+            color: #1e293b;
+            /* Slate-800 */
         }
 
-        .bottom-right {
-            bottom: 15px;
-            right: 15px;
-            border-left: none;
-            border-top: none;
-            border-radius: 0 0 16px 0;
-        }
-
-        .corner-decor::after {
-            content: '';
+        .hero-glow {
             position: absolute;
-            width: 35px;
-            height: 35px;
-            border: 1px solid #f59e0b;
-            /* Amber 500 */
-            opacity: 0.6;
-        }
-
-        .top-left::after {
-            top: 4px;
-            left: 4px;
-            border-right: none;
-            border-bottom: none;
-            border-radius: 10px 0 0 0;
-        }
-
-        .top-right::after {
-            top: 4px;
-            right: 4px;
-            border-left: none;
-            border-bottom: none;
-            border-radius: 0 10px 0 0;
-        }
-
-        .bottom-left::after {
-            bottom: 4px;
-            left: 4px;
-            border-right: none;
-            border-top: none;
-            border-radius: 0 0 0 10px;
-        }
-
-        .bottom-right::after {
-            bottom: 4px;
-            right: 4px;
-            border-left: none;
-            border-top: none;
-            border-radius: 0 0 10px 0;
-        }
-
-        .pattern-overlay-bg {
-            position: absolute;
-            inset: 0;
-            background-image: url('https://www.transparenttextures.com/patterns/arabesque.png');
-            opacity: 0.1;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.15) 0%, rgba(0, 0, 0, 0) 70%);
+            top: -100px;
+            left: 50%;
+            transform: translateX(-50%);
+            pointer-events: none;
             z-index: 0;
-            pointer-events: none;
         }
 
-        .header-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 12px;
-            background: #e0f2fe;
-            padding: 8px 32px;
-            border-radius: 100px;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-            border: 1px solid #bae6fd;
+        html:not(.dark) .hero-glow {
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.08) 0%, rgba(255, 255, 255, 0) 70%);
         }
 
-        .header-title {
-            color: #0369a1;
-            font-weight: 700;
-            letter-spacing: 0.15em;
-            font-size: 0.85rem;
-            text-transform: uppercase;
+        /* Gradient Text */
+        .gradient-text {
+            background: linear-gradient(135deg, #60a5fa 0%, #a855f7 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
         }
 
-        .header-icon {
-            color: #f59e0b;
-            font-size: 1.1rem;
+        html:not(.dark) .gradient-text {
+            background: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
         }
 
-        .arabic-text {
-            font-family: 'Amiri', serif;
-            font-size: 3.5rem;
-            color: #1e3a8a;
-            line-height: 1.4;
-            text-align: center;
-            margin-bottom: 10px;
-            font-weight: 400;
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transform: translateY(-5px);
+            transition: all 0.3s ease;
         }
 
-        .turkish-text {
-            font-family: 'Playfair Display', serif;
-            font-size: 2rem;
-            color: #334155;
-            text-align: center;
-            line-height: 1.3;
-            font-weight: 700;
-            max-width: 95%;
-            position: relative;
-            margin-top: 35px;
-        }
-
-        .quote-icon {
-            position: absolute;
-            top: -25px;
-            left: -15px;
-            font-size: 4rem;
-            color: #bae6fd;
-            opacity: 0.5;
-            font-family: serif;
-            z-index: -1;
-        }
-
-        .date-box {
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            padding: 6px 25px;
-            border-radius: 50px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.05);
-        }
-
-        .date-text {
-            color: #0369a1;
-            font-weight: 700;
-            font-size: 0.8rem;
-            letter-spacing: 0.05em;
-            text-transform: uppercase;
-        }
-
-        .date-icon-svg {
-            color: #f59e0b;
-        }
-
-        /* --- WEATHER ANIMATIONS --- */
-        /* RAIN - Glass Effect (Cama Yağmış Gibi) */
-        .anim-rain {
-            background-color: #3b82f6 !important;
-            /* Blue-500 */
-            position: relative;
-            overflow: hidden;
-        }
-
-        .anim-rain::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            opacity: 0.7;
-            z-index: 1;
-            /* Performance Optimization */
-            will-change: opacity;
-            /* Drop Set 1: Two drops in different positions */
-            background-image:
-                radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.8) 1.5px, transparent 2.5px),
-                radial-gradient(circle at 75% 30%, rgba(255, 255, 255, 0.7) 2px, transparent 3px),
-                radial-gradient(circle at 40% 70%, rgba(255, 255, 255, 0.8) 1.5px, transparent 2.5px),
-                radial-gradient(circle at 85% 60%, rgba(255, 255, 255, 0.8) 1px, transparent 2px),
-                radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.7) 2px, transparent 3px),
-                radial-gradient(circle at 55% 45%, rgba(255, 255, 255, 0.8) 1.5px, transparent 2.5px),
-                radial-gradient(circle at 90% 10%, rgba(255, 255, 255, 0.7) 1px, transparent 2px),
-                radial-gradient(circle at 30% 40%, rgba(255, 255, 255, 0.7) 1.5px, transparent 2.5px),
-                /* Extra drops */
-                radial-gradient(circle at 15% 55%, rgba(255, 255, 255, 0.8) 1.5px, transparent 2.5px),
-                radial-gradient(circle at 65% 15%, rgba(255, 255, 255, 0.7) 2px, transparent 3px),
-                radial-gradient(circle at 50% 85%, rgba(255, 255, 255, 0.8) 1px, transparent 2px),
-                /* Even MORE drops for density */
-                radial-gradient(circle at 5% 5%, rgba(255, 255, 255, 0.7) 1px, transparent 2px),
-                radial-gradient(circle at 95% 95%, rgba(255, 255, 255, 0.7) 1.5px, transparent 2.5px),
-                radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.6) 1.2px, transparent 2.2px),
-                radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.8) 1.5px, transparent 2.5px),
-                radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.7) 1.5px, transparent 2.5px);
-            z-index: 1;
-        }
-
-        .anim-rain::after {
-            content: "";
-            position: absolute;
-            top: -100%;
-            left: 0;
-            width: 100%;
-            height: 300%;
-            /* Falling rounded drops (Not lines) */
-            background-image:
-                radial-gradient(ellipse at center, rgba(255, 255, 255, 0.7) 0%, transparent 60%),
-                radial-gradient(ellipse at center, rgba(255, 255, 255, 0.6) 0%, transparent 60%),
-                radial-gradient(ellipse at center, rgba(255, 255, 255, 0.8) 0%, transparent 60%),
-                radial-gradient(ellipse at center, rgba(255, 255, 255, 0.6) 0%, transparent 60%),
-                radial-gradient(ellipse at center, rgba(255, 255, 255, 0.7) 0%, transparent 60%);
-
-            background-size:
-                5px 25px,
-                4px 18px,
-                6px 22px,
-                4px 20px,
-                5px 28px;
-
-            background-position:
-                20% 0,
-                60% 40%,
-                80% 10%,
-                40% 70%,
-                10% 90%;
-
-            background-repeat: repeat-y;
-            animation: glass-drips 1.5s linear infinite;
-            /* Fast falling */
-            will-change: transform;
-            opacity: 0.7;
-            z-index: 2;
-        }
-
-        @keyframes glass-drips {
-            0% {
-                transform: translateY(0);
-            }
-
-            100% {
-                transform: translateY(33.33%);
-            }
-        }
-
-        @keyframes rain-fall {
-
-            /* Legacy Keyframe kept to avoid breaking other refs if any (safeguard) */
-            0% {
-                transform: translateY(0);
-            }
-
-            100% {
-                transform: translateY(50%);
-            }
-        }
-
-        /* SNOW */
-        .anim-snow {
-            background-color: #60a5fa !important;
-            /* Lighter Blue */
-        }
-
-        .anim-snow::after {
-            content: "❄";
-            position: absolute;
-            top: -20px;
-            left: 10%;
-            color: white;
-            opacity: 0.6;
-            font-size: 10px;
-            animation: snow-fall 3s linear infinite;
-            box-shadow:
-                20px 20px 0 white,
-                50px -50px 0 white,
-                80px 50px 0 white,
-                150px -20px 0 white,
-                200px 30px 0 white;
-            /* Inadequate for a full snow effect but simple. */
-        }
-
-        .anim-snow::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='2' cy='2' r='2' fill='%23ffffff' fill-opacity='0.4'/%3E%3C/svg%3E");
-            animation: snow-fall 5s linear infinite;
-            height: 200%;
-            top: -100%;
-        }
-
-        @keyframes snow-fall {
-            0% {
-                transform: translateY(0);
-            }
-
-            100% {
-                transform: translateY(50%);
-            }
-        }
-
-        /* STORM */
-        .anim-storm {
-            background-color: #1e3a8a !important;
-            /* Dark Blue */
-            animation: thunder 4s infinite;
-        }
-
-        @keyframes thunder {
-
-            0%,
-            95%,
-            100% {
-                filter: brightness(1);
-            }
-
-            96% {
-                filter: brightness(2);
-            }
-
-            /* Flash */
-            98% {
-                filter: brightness(1.5);
-            }
-        }
-
-        /* CLOUDY */
-        .anim-cloud {
-            background-color: #64748b !important;
-            /* Slate-500 */
-        }
-
-        /* --- GLOBAL FULLSCREEN WEATHER OVERLAYS --- */
-        /* Common Overlay Base */
-        #global-weather-overlay {
-            position: fixed;
-            inset: 0;
-            z-index: 9999;
-            pointer-events: none;
-            overflow: hidden;
-        }
-
-        /* GLOBAL RAIN (Intermittent Realistic Screen Drops - More Frequent) */
-        .global-rain-overlay::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            opacity: 0;
-            z-index: 9999;
-            /* Performance Optimization */
-            will-change: transform, opacity;
-            backface-visibility: hidden;
-            /* Drop Set 1: Single optimized drop */
-            background-image:
-                /* Drop A Body */
-                radial-gradient(circle at center, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 40%, rgba(0, 0, 0, 0.2) 60%, transparent 70%),
-                /* Drop A Highlight */
-                radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.9) 0%, transparent 10%);
-
-            background-size: 150px 150px, 150px 150px;
-            background-repeat: no-repeat;
-            background-position: 20% 40%, 20% 40%;
-
-            /* Intermittent animation: faster loop (10s) */
-            animation: rain-hit-1 10s infinite ease-out;
-        }
-
-        .global-rain-overlay::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            opacity: 0;
-            z-index: 9999;
-            /* Drop Set 2: Single optimized drop */
-            background-image:
-                /* Drop C Body */
-                radial-gradient(circle at center, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 40%, rgba(0, 0, 0, 0.2) 60%, transparent 70%),
-                /* Drop C Highlight */
-                radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.9) 0%, transparent 10%);
-
-            background-size: 100px 100px, 100px 100px;
-            background-repeat: no-repeat;
-            background-position: 30% 80%, 30% 80%;
-
-            animation: rain-hit-2 12s infinite ease-out;
-            animation-delay: 3s;
-        }
-
-        @keyframes rain-hit-1 {
-
-            0%,
-            80% {
-                opacity: 0;
-                transform: scale(3);
-            }
-
-            85% {
-                opacity: 1;
-                transform: scale(1);
-            }
-
-            /* Hit */
-            92% {
-                opacity: 0.8;
-                transform: scale(1) translateY(30px);
-            }
-
-            /* Slide/Drip */
-            100% {
-                opacity: 0;
-                transform: scale(1) translateY(50px);
-            }
-        }
-
-        @keyframes rain-hit-2 {
-
-            0%,
-            80% {
-                opacity: 0;
-                transform: scale(2);
-            }
-
-            85% {
-                opacity: 1;
-                transform: scale(1);
-            }
-
-            92% {
-                opacity: 0.7;
-                transform: scale(1) translateY(40px);
-            }
-
-            100% {
-                opacity: 0;
-                transform: scale(0.9) translateY(60px);
-            }
-        }
-
-        /* GLOBAL SNOW (Optimized for TV) */
-        .global-snow-overlay::before {
-            content: "";
-            position: absolute;
-            inset: 0;
-            opacity: 0;
-            z-index: 9999;
-            /* Performance Optimization */
-            will-change: transform, opacity;
-            backface-visibility: hidden;
-
-            /* Use Background Images instead of Text Shadow */
-            background-image:
-                url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='50' y='50' font-size='60' fill='white' fill-opacity='0.4'%3E❄%3C/text%3E%3C/svg%3E"),
-                url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='40' y='40' font-size='40' fill='white' fill-opacity='0.3'%3E❄%3C/text%3E%3C/svg%3E");
-
-            background-repeat: no-repeat;
-            background-position: 20% 50%, 70% 30%;
-            background-size: 200px 200px, 150px 150px;
-
-            animation: snow-drift-1 12s infinite linear;
-            pointer-events: none;
-        }
-
-        .global-snow-overlay::after {
-            content: "";
-            position: absolute;
-            inset: 0;
-            opacity: 0;
-            z-index: 9999;
-            will-change: transform, opacity;
-            backface-visibility: hidden;
-
-            /* Second Set of Flakes */
-            background-image:
-                url("data:image/svg+xml,%3Csvg width='90' height='90' viewBox='0 0 90 90' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='45' y='45' font-size='50' fill='white' fill-opacity='0.3'%3E❄%3C/text%3E%3C/svg%3E"),
-                url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='60' y='60' font-size='80' fill='white' fill-opacity='0.4'%3E❄%3C/text%3E%3C/svg%3E");
-
-            background-repeat: no-repeat;
-            background-position: 80% 60%, 30% 20%;
-            background-size: 180px 180px, 240px 240px;
-
-            animation: snow-drift-2 15s infinite linear;
-            animation-delay: 5s;
-            pointer-events: none;
-        }
-
-        @keyframes snow-drift-1 {
-
-            0%,
-            60% {
-                opacity: 0;
-                transform: translate3d(-50px, -50px, 0) rotate(0deg);
-            }
-
-            70% {
-                opacity: 0.6;
-            }
-
-            90% {
-                opacity: 0.4;
-            }
-
-            100% {
-                opacity: 0;
-                transform: translate3d(50px, 100px, 0) rotate(45deg);
-            }
-        }
-
-        @keyframes snow-drift-2 {
-
-            0%,
-            60% {
-                opacity: 0;
-                transform: translate3d(20px, -20px, 0) rotate(0deg);
-            }
-
-            70% {
-                opacity: 0.5;
-            }
-
-            90% {
-                opacity: 0.3;
-            }
-
-            100% {
-                opacity: 0;
-                transform: translate3d(-50px, 120px, 0) rotate(-30deg);
-            }
+        .feature-icon {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
     </style>
 </head>
 
-<body class="fixed inset-0 w-screen h-screen flex flex-col p-3 gap-3 box-border bg-[#eef2f6] overflow-hidden">
+<body
+    class="bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white selection:bg-blue-500 selection:text-white transition-colors duration-300">
 
-    <!-- Global Fullscreen Weather Overlay -->
-    <div id="global-weather-overlay"></div>
+    <!-- Decorative Glow -->
+    <div class="hero-glow"></div>
 
-    <!-- Ana İçerik Grid -->
-    <div class="flex flex-col lg:grid lg:grid-cols-12 gap-3 flex-grow lg:h-[calc(100%-4rem)] h-auto">
+    <!-- Normalize Navbar Space -->
+    <nav class="w-full py-6 px-4 md:px-8 max-w-7xl mx-auto flex justify-between items-center z-50 relative">
+        <div class="flex items-center gap-3">
+            <div
+                class="w-10 h-10 bg-white/50 dark:bg-white/10 rounded-lg flex items-center justify-center border border-slate-200 dark:border-white/10 backdrop-blur-md transition-colors">
+                <i class="fa-solid fa-layer-group text-blue-600 dark:text-blue-400"></i>
+            </div>
+            <span
+                class="font-heading font-bold text-lg md:text-xl tracking-wide text-slate-800 dark:text-gray-100 transition-colors">KARTALTEPE<span
+                    class="text-blue-600 dark:text-blue-500">PANO</span></span>
+        </div>
+        <div class="hidden md:flex items-center gap-6">
+            <a href="#solutions"
+                class="text-slate-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-white transition-colors text-sm font-medium">Çözümlerimiz</a>
+            <a href="#features"
+                class="text-slate-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-white transition-colors text-sm font-medium">Özellikler</a>
+            <a href="#contact"
+                class="text-slate-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-white transition-colors text-sm font-medium">İletişim</a>
 
-        <!-- SOL SÜTUN (5 Birim) -->
-        <div class="w-full lg:col-span-5 flex flex-col gap-3 lg:h-full h-auto">
+            <!-- Theme Toggle -->
+            <button onclick="toggleTheme()"
+                class="w-10 h-10 rounded-full flex items-center justify-center text-slate-600 dark:text-gray-400 hover:bg-slate-100 dark:hover:bg-white/5 transition-colors"
+                title="Temayı Değiştir">
+                <i class="fa-solid fa-moon dark:hidden"></i>
+                <i class="fa-solid fa-sun hidden dark:block"></i>
+            </button>
 
-            <!-- HEADER -->
-            <div class="bg-[#1e1f35] rounded-xl shadow-lg p-3 flex items-center justify-between text-white flex-[0.8]">
-                <div class="flex items-center gap-4">
-                    <div class="w-20 h-20 flex items-center justify-center relative overflow-hidden">
-                        <img id="header-logo" src="logo.png" alt="Kurum Logo"
-                            class="w-full h-full object-contain brightness-0 invert">
+            <a href="admin.html"
+                class="px-5 py-2 rounded-full border border-slate-200 dark:border-white/10 text-sm font-medium hover:bg-slate-100 dark:hover:bg-white/5 transition-all text-slate-700 dark:text-gray-300">Giriş
+                Yap</a>
+            <a href="board.html"
+                class="px-6 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white rounded-full text-sm font-semibold shadow-lg shadow-blue-500/20 transition-all flex items-center gap-2 group">
+                <span>Panoyu Başlat</span>
+                <i class="fa-solid fa-arrow-right text-xs group-hover:translate-x-1 transition-transform"></i>
+            </a>
+        </div>
+        <!-- Mobile Menu Button -->
+        <button class="md:hidden text-slate-800 dark:text-white text-xl">
+            <i class="fa-solid fa-bars"></i>
+        </button>
+    </nav>
+
+    <script>
+        // Check local storage or system preference
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+
+        function toggleTheme() {
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.theme = 'light';
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.theme = 'dark';
+            }
+        }
+    </script>
+
+    <!-- HERO SECTION -->
+    <section
+        class="relative pt-16 pb-20 md:pt-28 md:pb-32 px-4 max-w-7xl mx-auto flex flex-col items-center text-center z-10">
+
+        <div id="hero-badge"
+            class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-100 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20 text-indigo-600 dark:text-indigo-400 text-xs font-semibold uppercase tracking-wider mb-8"
+            data-aos="fade-down" data-aos-delay="100">
+            <span class="w-2 h-2 rounded-full bg-indigo-500 dark:bg-indigo-400 animate-pulse"></span>
+            V2.0 YAYINDA: DAHA HIZLI, DAHA AKILLI
+        </div>
+
+        <h1 class="font-heading text-5xl md:text-7xl font-extrabold tracking-tight mb-6 leading-tight max-w-5xl text-slate-900 dark:text-white"
+            data-aos="fade-up" data-aos-delay="200">
+            <span id="hero-title1">Kurumunuza Özel</span> <br />
+            <span id="hero-title2" class="gradient-text">Modern İletişim Çözümü</span>
+        </h1>
+
+        <p id="hero-desc" class="text-slate-600 dark:text-gray-400 text-lg md:text-xl max-w-2xl mb-10 leading-relaxed"
+            data-aos="fade-up" data-aos-delay="300">
+            Sıradan panoları unutun. Kartaltepe Pano ile duyurularınızı, başarı analizlerinizi ve kurumsal kimliğinizi
+            <strong>tek bir ekranda, en şık haliyle</strong> sunun.
+        </p>
+
+        <div class="flex flex-col sm:flex-row gap-4 items-center justify-center w-full sm:w-auto" data-aos="fade-up"
+            data-aos-delay="400">
+            <a href="board.html"
+                class="w-full sm:w-auto px-8 py-4 bg-white dark:bg-white text-slate-900 hover:bg-slate-50 dark:hover:bg-gray-100 rounded-xl font-bold shadow-xl shadow-slate-200/50 dark:shadow-white/5 transition-all hover:scale-105 flex items-center justify-center gap-3 border border-slate-100 dark:border-transparent">
+                <i class="fa-solid fa-rocket text-blue-600"></i>
+                Canlı Demoyu İncele
+            </a>
+            <a href="admin.html"
+                class="w-full sm:w-auto px-8 py-4 bg-slate-100 dark:bg-slate-800/50 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-white border border-slate-200 dark:border-slate-700/50 rounded-xl font-semibold transition-all flex items-center justify-center gap-3 backdrop-blur-sm">
+                <i class="fa-solid fa-sliders"></i>
+                Yönetim Paneli
+            </a>
+        </div>
+
+        <!-- PRODUCT SHOWCASE VISUAL -->
+        <div class="mt-20 relative w-full max-w-6xl mx-auto" data-aos="fade-up" data-aos-delay="500">
+            <!-- Background Blob -->
+            <div
+                class="absolute -inset-4 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 rounded-[2rem] blur-2xl opacity-20 animate-pulse">
+            </div>
+
+            <!-- Main Mockup Container -->
+            <div
+                class="relative bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700/50 rounded-2xl overflow-hidden shadow-2xl ring-1 ring-black/5 dark:ring-white/10">
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-0">
+
+                    <!-- Sidebar Mockup -->
+                    <div
+                        class="hidden md:flex col-span-1 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700/50 flex-col items-center py-4 gap-4">
+                        <div class="w-8 h-8 rounded-lg bg-blue-500"></div>
+                        <div class="w-6 h-6 rounded bg-slate-200 dark:bg-slate-700 mt-4"></div>
+                        <div class="w-6 h-6 rounded bg-slate-200 dark:bg-slate-700"></div>
+                        <div class="w-6 h-6 rounded bg-slate-200 dark:bg-slate-700"></div>
+                    </div>
+
+                    <!-- Main Content Area Mockup -->
+                    <div
+                        class="col-span-1 md:col-span-11 bg-slate-50 dark:bg-slate-900 p-2 md:p-6 overflow-hidden relative min-h-[300px] md:min-h-[500px] flex items-center justify-center">
+                        <img src="logo.png"
+                            class="absolute w-full h-full object-cover opacity-5 dark:opacity-10 blur-sm"
+                            alt="App Preview">
+
+                        <!-- Floating Feature Cards (Abstract Representation) -->
+                        <div class="relative z-10 flex flex-col md:flex-row gap-6 items-center">
+                            <!-- Card 1 -->
+                            <div
+                                class="glass-card p-6 rounded-2xl w-64 transform md:-rotate-6 hover:rotate-0 transition-transform duration-500">
+                                <div
+                                    class="w-10 h-10 rounded-full bg-green-500/20 text-green-500 dark:text-green-400 flex items-center justify-center mb-3">
+                                    <i class="fa-solid fa-check"></i>
+                                </div>
+                                <h4 class="font-bold text-slate-800 dark:text-white mb-1">Kolay Kurulum</h4>
+                                <p class="text-xs text-slate-500 dark:text-gray-400">Tek tıkla sisteminiz hazır.
+                                    Karmaşık kodlama yok.</p>
+                            </div>
+
+                            <!-- Card 2 (Center Highlight) -->
+                            <div
+                                class="glass-card p-6 rounded-2xl w-72 transform hover:scale-105 transition-transform duration-500 border-blue-500/30 bg-blue-50 dark:bg-blue-900/10">
+                                <div
+                                    class="w-12 h-12 rounded-full bg-blue-500 text-white flex items-center justify-center mb-4 text-xl shadow-lg shadow-blue-500/40">
+                                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                </div>
+                                <h4 class="font-bold text-xl text-slate-900 dark:text-white mb-2">Tam Otomatik</h4>
+                                <p class="text-sm text-slate-600 dark:text-gray-300">Nöbet listeleri, yemek menüsü ve
+                                    ders programları otomatik güncellenir.</p>
+                            </div>
+
+                            <!-- Card 3 -->
+                            <div
+                                class="glass-card p-6 rounded-2xl w-64 transform md:rotate-6 hover:rotate-0 transition-transform duration-500">
+                                <div
+                                    class="w-10 h-10 rounded-full bg-purple-500/20 text-purple-500 dark:text-purple-400 flex items-center justify-center mb-3">
+                                    <i class="fa-solid fa-brush"></i>
+                                </div>
+                                <h4 class="font-bold text-slate-800 dark:text-white mb-1">Kurumsal Tema</h4>
+                                <p class="text-xs text-slate-500 dark:text-gray-400">Logonuzu yükleyin, renklerinizi
+                                    seçin. Pano size uyum sağlasın.</p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- VALUE PROPOSITIONS -->
+    <section id="solutions"
+        class="py-20 bg-white dark:bg-slate-900/50 border-y border-slate-200 dark:border-white/5 relative overflow-hidden transition-colors">
+        <!-- Background Decoration -->
+        <div class="absolute top-0 left-0 w-full h-full overflow-hidden opacity-30 pointer-events-none">
+            <div class="absolute top-10 left-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
+            <div class="absolute bottom-10 right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 relative z-10">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12 text-center md:text-left">
+
+                <!-- Prop 1 -->
+                <div class="group" data-aos="fade-up" data-aos-delay="100">
+                    <div
+                        class="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-cyan-400 flex items-center justify-center mb-6 shadow-lg shadow-blue-500/20 group-hover:scale-110 transition-transform">
+                        <i id="sol1-icon" class="fa-solid fa-bolt text-2xl text-white"></i>
+                    </div>
+                    <h3 id="sol1-title"
+                        class="text-2xl font-bold text-slate-800 dark:text-white mb-3 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                        Ultra Hızlı & Hafif</h3>
+                    <p id="sol1-desc" class="text-slate-600 dark:text-gray-400 leading-relaxed">Gereksiz yüklerden
+                        arındırılmış,
+                        optimize edilmiş kod yapısı. Akıllı tahtalarda ve eski PC'lerde bile yağ gibi akar.</p>
+                </div>
+
+                <!-- Prop 2 -->
+                <div class="group" data-aos="fade-up" data-aos-delay="200">
+                    <div
+                        class="w-14 h-14 rounded-2xl bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center mb-6 shadow-lg shadow-purple-500/20 group-hover:scale-110 transition-transform">
+                        <i id="sol2-icon" class="fa-solid fa-paintbrush text-2xl text-white"></i>
+                    </div>
+                    <h3 id="sol2-title"
+                        class="text-2xl font-bold text-slate-800 dark:text-white mb-3 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                        %100 Özelleştirilebilir</h3>
+                    <p id="sol2-desc" class="text-slate-600 dark:text-gray-400 leading-relaxed">Kurumunuzun ruhunu
+                        yansıtın. Başlıklar,
+                        sloganlar, görseller ve modüller tamamen sizin kontrolünüzde.</p>
+                </div>
+
+                <!-- Prop 3 -->
+                <div class="group" data-aos="fade-up" data-aos-delay="300">
+                    <div
+                        class="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center mb-6 shadow-lg shadow-orange-500/20 group-hover:scale-110 transition-transform">
+                        <i id="sol3-icon" class="fa-solid fa-mobile-screen text-2xl text-white"></i>
+                    </div>
+                    <h3 id="sol3-title"
+                        class="text-2xl font-bold text-slate-800 dark:text-white mb-3 group-hover:text-orange-600 dark:group-hover:text-orange-400 transition-colors">
+                        Tam Mobil Uyum</h3>
+                    <p id="sol3-desc" class="text-slate-600 dark:text-gray-400 leading-relaxed">Sadece TV'de değil;
+                        velileriniz ve
+                        öğretmenleriniz için cep telefonunda da kusursuz bir deneyim sunar.</p>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- FEATURES BENTO GRID (Original Content Reframed) -->
+    <section id="features" class="py-24 px-4 transition-colors">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-16" data-aos="fade-up">
+                <span class="text-blue-600 dark:text-blue-400 font-semibold tracking-wide uppercase text-sm">ZENGİN
+                    İÇERİK</span>
+                <h2 class="font-heading text-4xl md:text-5xl font-bold mb-4 mt-2 text-slate-900 dark:text-white">
+                    İhtiyacınız Olan Her Şey</h2>
+                <p class="text-slate-600 dark:text-gray-400 max-w-2xl mx-auto text-lg">Eğitim kurumlarının günlük
+                    akışını yönetmek için tasarlanmış modüller.</p>
+            </div>
+
+            <!-- Bento Grid Layout -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 auto-rows-[280px]">
+
+                <!-- FEATURE 1: DORMITORY (Large - Highlighting Competition) -->
+                <div class="col-span-1 md:col-span-2 row-span-2 glass-card rounded-3xl p-8 relative overflow-hidden group hover:border-orange-500/30 transition-colors"
+                    data-aos="fade-up">
+                    <div
+                        class="absolute top-0 right-0 w-80 h-80 bg-orange-500/10 rounded-full blur-3xl -mr-20 -mt-20 group-hover:bg-orange-500/20 transition-all">
+                    </div>
+                    <div class="relative z-10 h-full flex flex-col">
+                        <div class="flex items-center justify-between mb-8">
+                            <div
+                                class="w-14 h-14 feature-icon rounded-2xl flex items-center justify-center text-orange-500 dark:text-orange-400 text-3xl shadow-lg ring-1 ring-black/5 dark:ring-white/10">
+                                <i class="fa-solid fa-trophy"></i>
+                            </div>
+                            <span
+                                class="bg-orange-100 dark:bg-orange-500/20 text-orange-600 dark:text-orange-300 text-xs font-bold px-3 py-1 rounded-full border border-orange-200 dark:border-orange-500/20">POPÜLER
+                                MODÜL</span>
+                        </div>
+
+                        <h3 class="text-3xl font-bold mb-3 text-slate-800 dark:text-white">Tatlı Rekabet</h3>
+                        <p class="text-slate-600 dark:text-gray-400 mb-8 text-lg leading-relaxed">Öğrencilerinizi motive
+                            edin! "En Temiz Yurt", "Haftanın Öğrencisi" gibi modüllerle pozitif rekabet ortamı yaratın.
+                        </p>
+
+                        <!-- Mini Visual Interaction -->
+                        <div class="mt-auto grid grid-cols-2 gap-4">
+                            <div
+                                class="bg-white/80 dark:bg-slate-800/80 rounded-xl p-4 border border-slate-200 dark:border-white/5 backdrop-blur-sm transform group-hover:translate-y-[-5px] transition-transform duration-300 shadow-sm">
+                                <div class="text-xs text-gray-500 mb-1">🥇 Bu Haftanın Kazananı</div>
+                                <div class="font-bold text-slate-800 dark:text-white text-lg">3. Grup</div>
+                            </div>
+                            <div
+                                class="bg-white/80 dark:bg-slate-800/80 rounded-xl p-4 border border-slate-200 dark:border-white/5 backdrop-blur-sm transform group-hover:translate-y-[-5px] transition-transform duration-300 delay-75 shadow-sm">
+                                <div class="text-xs text-gray-500 mb-1">🚀 En Çok Gelişen</div>
+                                <div class="font-bold text-slate-800 dark:text-white text-lg">Ali Yılmaz</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FEATURE 2: ANNOUNCEMENTS (Tall) -->
+                <div class="col-span-1 md:col-span-1 row-span-2 glass-card rounded-3xl p-6 flex flex-col relative overflow-hidden group hover:border-yellow-500/30 transition-colors"
+                    data-aos="fade-up" data-aos-delay="100">
+                    <div
+                        class="absolute bottom-0 left-0 w-full h-1/2 bg-gradient-to-t from-yellow-500/10 to-transparent">
+                    </div>
+                    <div
+                        class="w-12 h-12 feature-icon rounded-xl flex items-center justify-center text-yellow-500 text-2xl mb-auto shadow-inner">
+                        <i class="fa-solid fa-bullhorn"></i>
+                    </div>
+
+                    <div class="relative z-10 mt-8">
+                        <h3 class="text-xl font-bold mb-2 text-slate-800 dark:text-white">Anlık Duyurular</h3>
+                        <p class="text-sm text-slate-600 dark:text-gray-400 mb-4">Kayan yazı bandı ile önemli bilgileri
+                            anında tüm binaya yayınlayın.</p>
+                        <div
+                            class="w-full bg-slate-100 dark:bg-slate-800 rounded px-2 py-1 text-xs text-yellow-600 dark:text-yellow-400 font-mono animate-pulse border border-yellow-500/20">
+                            📢 Yarın deneme sınavı...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FEATURE 3: MENU & DUTY (Combined) -->
+                <div class="col-span-1 md:col-span-1 glass-card rounded-3xl p-6 flex flex-col justify-between group hover:border-green-500/30 transition-colors"
+                    data-aos="fade-up" data-aos-delay="200">
+                    <div
+                        class="w-12 h-12 feature-icon rounded-xl flex items-center justify-center text-green-500 dark:text-green-400 text-2xl">
+                        <i class="fa-solid fa-utensils"></i>
                     </div>
                     <div>
-                        <h1 id="header-title" class="text-xl font-extrabold tracking-tight leading-tight">YÜKLENİYOR...
-                        </h1>
-                        <p id="header-subtitle"
-                            class="text-[0.65rem] tracking-[0.2em] font-medium text-gray-400 uppercase">
-                            Dijital Pano Sistemi
-                        </p>
+                        <h3 class="text-lg font-bold mb-1 text-slate-800 dark:text-white">Yemek & Liste</h3>
+                        <p class="text-xs text-slate-600 dark:text-gray-400">Otomatik güncellenen menüler.</p>
                     </div>
                 </div>
-                <div class="text-right">
-                    <p id="header-slogan1" class="font-script text-lg text-gray-300 leading-none">...</p>
-                    <p id="header-slogan2" class="font-script text-lg text-white leading-none">...</p>
-                </div>
-            </div>
 
-
-            <!-- HADİS VE YATAKHANE BİRLEŞİK ALAN (Galeri için) -->
-            <div class="flex-[7.2] relative rounded-xl overflow-hidden min-h-[400px] lg:min-h-0">
-
-                <!-- Sol Galeri (Tek Kutu) -->
-                <div id="left-gallery-container"
-                    class="absolute inset-0 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-xl hidden z-20 flex items-center justify-center">
-                    <img id="left-gallery-image" src=""
-                        class="w-full h-full object-contain rounded-xl transition-all duration-700 ease-in-out" />
-                </div>
-
-                <!-- Normal İçerik (Galeri yokken veya gösterilmiyorken) -->
-                <div id="left-normal-content" class="flex flex-col gap-3 h-full">
-
-                    <!-- HADİS KARTI (LIGHT THEME - NEW DESIGN) -->
-                    <div id="hadith-card"
-                        class="card-modern-islamic flex-[3] transition-all duration-500 flex flex-col justify-between items-center p-0 relative group">
-
-                        <!-- Pattern Overlay -->
-                        <div class="pattern-overlay-bg"></div>
-
-                        <!-- Corners -->
-                        <div class="corner-decor top-left"></div>
-                        <div class="corner-decor top-right"></div>
-                        <div class="corner-decor bottom-left"></div>
-                        <div class="corner-decor bottom-right"></div>
-
-                        <div class="header-area mt-4 w-full flex justify-center">
-                            <div
-                                class="header-badge px-4 py-1.5 bg-blue-100/90 rounded-full border border-blue-200/50 shadow-sm flex items-center justify-center gap-2 max-w-[90%]">
-                                <span class="header-icon text-blue-400 text-xs shrink-0">✦</span>
-                                <span
-                                    class="header-title font-bold text-blue-900 uppercase tracking-wide text-center leading-tight whitespace-normal text-[0.65rem] md:text-xs break-words">HAFTANIN
-                                    HADİS-İ ŞERİFİ</span>
-                                <span class="header-icon text-blue-400 text-xs shrink-0">✦</span>
-                            </div>
-                        </div>
-
-                        <div
-                            class="content-area flex-grow flex flex-col justify-evenly items-center p-2 relative z-10 w-full overflow-hidden">
-                            <div id="hadith-arabic" class="arabic-text w-full text-center leading-relaxed">
-                                <!-- JS Doldurur -->
-                            </div>
-
-                            <div class="turkish-text w-full flex items-center justify-center">
-                                <div id="hadith-content" class="text-center leading-snug">Yükleniyor...</div>
-                            </div>
-
-                            <!-- Image Support -->
-                            <img id="hadith-image" src=""
-                                class="hidden max-h-40 object-contain rounded-lg shadow-lg border-2 border-white/80 z-20" />
-                        </div>
-
-                        <div class="footer-area mb-4">
-                            <div class="date-box">
-                                <svg class="w-5 h-5 date-icon-svg" fill="none" stroke="currentColor"
-                                    viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
-                                    </path>
-                                </svg>
-                                <span class="date-text">
-                                    <span id="hadith-week"></span> <span id="week-date-range"></span>
-                                </span>
-                            </div>
-                        </div>
-
-                        <!-- Hidden elements for compatibility -->
-                        <div id="hijri-date" class="hidden"></div>
-                    </div>
-
-                    <!-- YURT KARTI -->
-                    <div id="dorm-card"
-                        class="bg-gradient-to-r from-red-400 to-orange-300 rounded-xl shadow-md p-0 flex flex-col relative overflow-hidden flex-[1.7] transition-all duration-500">
-
-                        <!-- ORTAK BAŞLIK -->
-                        <div class="w-full text-center py-1.5 border-b border-white/20 bg-white/10">
-                            <h2
-                                class="text-white font-black tracking-widest text-xs flex items-center justify-center gap-2">
-                                <span class="text-yellow-200 text-sm">♛</span> <span id="dorm-section-title">GÜNÜN
-                                    KAZANAN YATAKHANESİ</span> <span class="text-yellow-200 text-sm">♛</span>
-                            </h2>
-                        </div>
-
-                        <div class="flex-1 flex w-full overflow-hidden">
-
-                            <!-- YURT 1 (SOL) -->
-                            <div id="dorm1-container"
-                                class="flex-1 flex flex-col items-center justify-start border-r border-white/20 p-1 relative">
-                                <!-- Başlık -->
-                                <div id="dorm1-custom-title"
-                                    class="text-[0.6rem] text-yellow-100/90 uppercase font-bold tracking-wider mb-0.5">
-                                </div>
-                                <div class="flex w-full items-center justify-center relative mb-1 px-1">
-                                    <div class="text-xl md:text-2xl font-black text-white text-center leading-none drop-shadow-md truncate max-w-[80%]"
-                                        id="dorm1-name">---</div>
-                                    <div class="absolute right-0 top-1/2 -translate-y-1/2 bg-yellow-400 text-yellow-900 px-1.5 py-0.5 rounded text-[0.6rem] font-bold shadow-sm transform rotate-3"
-                                        id="dorm1-count">0.KEZ</div>
-                                </div>
-                                <!-- Liste -->
-                                <div class="w-full flex-grow flex flex-col justify-center px-2">
-                                    <div id="dorm1-students"
-                                        class="w-full grid grid-cols-2 gap-x-2 gap-y-1 text-sm font-bold text-white text-center leading-tight">
-                                        <!-- Dynamic Content -->
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- YURT 2 (SAĞ) -->
-                            <div id="dorm2-container"
-                                class="flex-1 flex flex-col items-center justify-start p-1 relative">
-                                <!-- Başlık -->
-                                <div id="dorm2-custom-title"
-                                    class="text-[0.6rem] text-yellow-100/90 uppercase font-bold tracking-wider mb-0.5">
-                                </div>
-                                <div class="flex w-full items-center justify-center relative mb-1 px-1">
-                                    <div class="text-xl md:text-2xl font-black text-white text-center leading-none drop-shadow-md truncate max-w-[80%]"
-                                        id="dorm2-name">---</div>
-                                    <div class="absolute right-0 top-1/2 -translate-y-1/2 bg-yellow-400 text-yellow-900 px-1.5 py-0.5 rounded text-[0.6rem] font-bold shadow-sm transform rotate-3"
-                                        id="dorm2-count">0.KEZ</div>
-                                </div>
-                                <!-- Liste -->
-                                <div class="w-full flex-grow flex flex-col justify-center px-2">
-                                    <div id="dorm2-students"
-                                        class="w-full grid grid-cols-2 gap-x-2 gap-y-1 text-sm font-bold text-white text-center leading-tight">
-                                        <!-- Dynamic Content -->
-                                    </div>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-
-
-        </div>
-
-        <!-- SAĞ SÜTUN (7 Birim) -->
-        <div class="w-full lg:col-span-7 flex flex-col gap-3 lg:h-full h-auto">
-
-            <!-- VİDEO ALANI -->
-            <div
-                class="bg-black rounded-xl shadow-lg overflow-hidden flex-[2.5] relative group border-4 border-[#1e1f35] min-h-[250px] lg:min-h-0">
-                <div id="player" class="absolute inset-0 w-full h-full"></div>
-                <div class="swiper mySwiper absolute inset-0 w-full h-full hidden">
-                    <div class="swiper-wrapper" id="slide-wrapper"></div>
-                </div>
-            </div>
-
-            <!-- ALT BİLGİ ŞERİDİ (Grid yapısı ekran görüntüsündeki gibi 2 parça alt alta solda, büyük parça sağda) -->
-            <div class="flex gap-3 flex-[1.2]">
-
-                <!-- Sol Kısım (Saat & Hava) -->
-                <div class="flex flex-col gap-3 w-1/3">
-                    <!-- Saat -->
+                <!-- FEATURE 4: MEDIA (Standard) -->
+                <div class="col-span-1 md:col-span-1 glass-card rounded-3xl p-6 flex flex-col justify-between group hover:border-pink-500/30 transition-colors"
+                    data-aos="fade-up" data-aos-delay="300">
                     <div
-                        class="bg-[#1e293b] rounded-xl shadow-lg text-white flex flex-col items-center justify-center flex-1 p-2">
-                        <div class="text-5xl font-extrabold tracking-tighter" id="clock">12:00</div>
-                        <div class="text-xs font-semibold text-blue-200 mt-1 uppercase tracking-wide" id="date">12
-                            ARALIK CUMA</div>
+                        class="w-12 h-12 feature-icon rounded-xl flex items-center justify-center text-pink-500 dark:text-pink-400 text-2xl">
+                        <i class="fa-solid fa-play-circle"></i>
                     </div>
-                    <!-- Hava -->
-                    <div id="weather-card"
-                        class="bg-blue-500 rounded-xl shadow-lg text-white flex items-center justify-between flex-1 px-6 relative overflow-hidden transition-colors duration-1000">
-                        <div class="z-10">
-                            <div class="text-[0.65rem] font-bold opacity-80 uppercase tracking-widest mb-1"
-                                id="weather-desc">İSTANBUL</div>
-                            <div class="text-3xl font-bold flex items-start leading-none">
-                                <span id="weather-temp">--</span><span class="text-lg mt-0.5">°</span>
-                            </div>
-                            <div class="text-[0.65rem] opacity-70 mt-1" id="weather-condition">Açık</div>
-                        </div>
-                        <svg class="w-12 h-12 text-white/80 z-10" fill="currentColor" viewBox="0 0 24 24">
-                            <path
-                                d="M19.36 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.64-4.96z" />
-                        </svg>
-                        <!-- Cloud decoration -->
+                    <div>
+                        <h3 class="text-lg font-bold mb-1 text-slate-800 dark:text-white">4K Medya</h3>
+                        <p class="text-xs text-slate-600 dark:text-gray-400">Video ve fotoğraf galerisi.</p>
+                    </div>
+                </div>
+
+                <!-- FEATURE 5: CONTENT (Wide) -->
+                <div class="col-span-1 md:col-span-4 glass-card rounded-3xl p-8 md:p-12 flex flex-col md:flex-row items-center justify-between gap-8 group hover:border-indigo-500/30 transition-colors bg-gradient-to-r from-slate-100/50 to-indigo-50/50 dark:from-slate-800/50 dark:to-indigo-900/20"
+                    data-aos="fade-up">
+                    <div class="flex-1 text-center md:text-left">
+                        <h3 class="text-2xl md:text-3xl font-bold mb-4 text-slate-900 dark:text-white">İçerik Yönetimi
+                            Artık Çocuk Oyuncağı</h3>
+                        <p class="text-slate-600 dark:text-gray-400 text-lg mb-6 max-w-2xl">Teknik personele ihtiyacınız
+                            yok. Yönetim paneli üzerinden resim yükleyin, yazı yazın, anında ekrana yansısın. Her şey bu
+                            kadar basit.</p>
+                        <a href="admin.html"
+                            class="inline-flex items-center gap-2 text-indigo-600 dark:text-indigo-400 font-semibold hover:text-indigo-800 dark:hover:text-white transition-colors">
+                            Yönetim Panelini Keşfet <i class="fa-solid fa-arrow-right-long"></i>
+                        </a>
+                    </div>
+                    <div class="flex-shrink-0 relative">
+                        <!-- Abstract Admin UI Illustration -->
                         <div
-                            class="absolute -right-4 -bottom-4 text-white/10 w-24 h-24 rounded-full bg-white/20 blur-xl">
+                            class="w-64 h-40 bg-slate-900 rounded-lg border border-slate-700 shadow-2xl p-4 flex flex-col gap-2 transform rotate-2 group-hover:rotate-0 transition-transform duration-500">
+                            <div class="w-full h-8 bg-slate-800 rounded flex items-center px-3 gap-2">
+                                <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                                <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                            </div>
+                            <div class="flex gap-2 h-full">
+                                <div class="w-1/4 bg-slate-800 rounded"></div>
+                                <div class="w-3/4 bg-slate-800/50 rounded flex flex-col gap-2 p-2">
+                                    <div
+                                        class="w-full h-full bg-blue-600/20 rounded border border-blue-500/30 flex items-center justify-center">
+                                        <i class="fa-solid fa-image text-blue-500"></i>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Sağ Kısım (Dönen Kart: Duyuru / Sınav) -->
-                <div
-                    class="w-2/3 bg-gradient-to-br from-[#4c1d95] to-[#7c3aed] rounded-xl shadow-lg p-5 flex flex-col relative overflow-hidden text-white border border-purple-800">
+            </div>
+        </div>
+    </section>
 
-                    <!-- Dönen Alan -->
-                    <div id="info-carousel"
-                        class="transition-all duration-700 ease-in-out h-full flex flex-col justify-center">
+    <!-- FOOTER / CONTACT -->
+    <footer id="contact"
+        class="py-12 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-white/5 transition-colors">
+        <div class="max-w-7xl mx-auto px-4 text-center">
 
-                        <!-- Header -->
-                        <div class="relative flex items-center justify-center mb-4 w-full">
-                            <!-- Title Group restricted to 70% width to avoid badge overlap -->
-                            <div class="flex items-center justify-center gap-2 max-w-[70%] z-10">
-                                <span class="text-yellow-400 text-xl drop-shadow-md shrink-0">🏆</span>
-                                <h3 class="font-bold text-lg leading-tight tracking-normal uppercase drop-shadow-sm text-center break-words"
-                                    id="info-title">
-                                    Yükleniyor...</h3>
-                            </div>
-                            <!-- Badge on the right -->
-                            <span
-                                class="absolute right-0 top-1/2 -translate-y-1/2 bg-white/20 text-[0.6rem] px-2 py-1 rounded-full uppercase tracking-wider font-bold text-white shadow-sm whitespace-nowrap"
-                                id="info-badge">...</span>
-                        </div>
+            <div class="mb-8 flex justify-center gap-8">
+                <a href="#" class="text-slate-400 dark:text-gray-500 hover:text-blue-500 transition-colors text-2xl"><i
+                        class="fa-brands fa-twitter"></i></a>
+                <a href="#" class="text-slate-400 dark:text-gray-500 hover:text-blue-500 transition-colors text-2xl"><i
+                        class="fa-brands fa-instagram"></i></a>
+                <a href="#" class="text-slate-400 dark:text-gray-500 hover:text-blue-500 transition-colors text-2xl"><i
+                        class="fa-brands fa-whatsapp"></i></a>
+            </div>
 
-                        <!-- Content Container (Vertical Stack for maximum width) -->
-                        <div
-                            class="flex-grow flex flex-col items-center justify-center p-2 relative overflow-hidden w-full">
-
-                            <!-- Icon -->
-                            <div class="w-20 h-20 rounded-full bg-yellow-500 flex items-center justify-center text-white font-bold text-lg shadow-lg border-4 border-yellow-300 transform transition-transform duration-500 hover:scale-110 mb-2 shrink-0"
-                                id="info-circle-badge">
-                                <!-- JS fills this -->
-                            </div>
-
-                            <!-- Label -->
-                            <div class="text-[0.7rem] text-purple-200 uppercase tracking-widest font-bold mb-1 opacity-80"
-                                id="info-top-label">BİLGİLENDİRME</div>
-
-                            <!-- Text -->
-                            <div class="text-2xl font-bold tracking-tight text-center w-full px-2 leading-tight"
-                                id="info-main-text">
-                                ---
-                            </div>
-
-                        </div>
-
-                    </div>
-
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-lg mx-auto mb-8 text-slate-600 dark:text-gray-400">
+                <div class="flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-envelope text-blue-500"></i>
+                    <span id="footer-email">iletisim@kartaltepepano.com</span>
                 </div>
-
+                <div class="flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-phone text-blue-500"></i>
+                    <span id="footer-phone">0850 123 45 67</span>
+                </div>
             </div>
-        </div>
 
-    </div>
-
-    <!-- FOOTER -->
-    <div
-        class="h-16 bg-[#312e81] text-white flex items-center rounded-lg shadow-lg overflow-hidden relative border-t-2 border-indigo-400">
-        <div class="bg-[#4338ca] px-6 h-full flex items-center justify-center z-10 shadow-md">
-            <svg class="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z">
-                </path>
-            </svg>
-            <span class="font-bold text-sm tracking-wider ml-3">GÜNÜN SÖZÜ</span>
+            <p class="text-slate-400 dark:text-gray-600 text-sm">
+                &copy; 2026 Kartaltepe Dijital Pano Sistemleri. Tüm hakları saklıdır.
+            </p>
         </div>
-        <div class="marquee-container flex-1 min-w-0 h-full flex items-center bg-[#312e81]">
-            <div class="marquee-content px-4 text-2xl font-semibold tracking-wide text-indigo-100 whitespace-nowrap"
-                style="white-space: nowrap !important;" id="marquee-text">
-                Dijital Pano sistemine hoşgeldiniz...
-            </div>
-        </div>
-    </div>
+    </footer>
 
     <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    <script src="https://www.youtube.com/iframe_api"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="/js/supabase.js"></script>
-    <script src="/js/main.js?v=20251230_3"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 800,
+            once: true
+        });
+
+        // --- CMS HYDRATION LOGIC ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const res = await fetch('/api/manage-institutions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'get_landing_config' })
+                });
+
+                if (res.ok) {
+                    const { config } = await res.json();
+                    if (config) hydratePage(config);
+                }
+            } catch (e) {
+                console.error("CMS Load Error:", e);
+            }
+        });
+
+        function hydratePage(cfg) {
+            // Hero
+            if (cfg.hero) {
+                if (cfg.hero.badge) document.getElementById('hero-badge').innerHTML = `<span class="w-2 h-2 rounded-full bg-indigo-500 dark:bg-indigo-400 animate-pulse"></span> ${cfg.hero.badge}`;
+                if (cfg.hero.title1) document.getElementById('hero-title1').innerText = cfg.hero.title1;
+                if (cfg.hero.title2) document.getElementById('hero-title2').innerText = cfg.hero.title2;
+                if (cfg.hero.desc) document.getElementById('hero-desc').innerHTML = cfg.hero.desc; // Allow HTML bold tags
+            }
+            // Solutions
+            if (cfg.solutions) {
+                ['sol1', 'sol2', 'sol3'].forEach((key, idx) => {
+                    const item = cfg.solutions[idx];
+                    if (item) {
+                        if (item.title) document.getElementById(`${key}-title`).innerText = item.title;
+                        if (item.desc) document.getElementById(`${key}-desc`).innerText = item.desc;
+                        if (item.icon) document.getElementById(`${key}-icon`).className = item.icon + " text-2xl text-white";
+                    }
+                });
+            }
+            // Contact
+            if (cfg.contact) {
+                if (cfg.contact.email) document.getElementById('footer-email').innerText = cfg.contact.email;
+                if (cfg.contact.phone) document.getElementById('footer-phone').innerText = cfg.contact.phone;
+            }
+        }
+    </script>
 </body>
 
 </html>

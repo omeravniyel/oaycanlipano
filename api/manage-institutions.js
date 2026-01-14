@@ -27,8 +27,10 @@ export default async function handler(request, response) {
         }
     }
 
-    // 1. Master Password Kontrolü
-    if (master_password !== MASTER_PASSWORD) {
+    // 1. Master Password Kontrolü (Public actionlar hariç)
+    const PUBLIC_ACTIONS = ['get_landing_config'];
+
+    if (!PUBLIC_ACTIONS.includes(action) && master_password !== MASTER_PASSWORD) {
         return response.status(401).json({ error: 'Yetkisiz Erişim! Ana şifre yanlış.' });
     }
 
@@ -174,11 +176,6 @@ export default async function handler(request, response) {
             // 1. İlgili tipteki kurumları çek
             const { data: targets, error: fetchError } = await supabase
                 .from('institutions')
-                .select('*') // Json filtreleme supabase-js ile zor olabilir, client tarafında filtrelicem ya da raw query.
-                // Supabase postgrest filter for json is tricky. Let's fetch all and filter in JS for safety or use column filtering if type was a column.
-                // Wait, institution_type is inside config JSON.
-                // .filter('config->>institution_type', 'eq', type) // Bu sözdizimi değişebilir.
-                // Basitlik için hepsini çekip JS'de filtreleyelim (Kurum sayısı az olduğu için performans sorunu olmaz).
                 .select('*');
 
             if (fetchError) throw fetchError;
@@ -208,6 +205,62 @@ export default async function handler(request, response) {
             }
 
             return response.status(200).json({ success: true, count: updates.length });
+        }
+
+        // --- LANDING PAGE CMS (SİSTEM AYARLARI) ---
+        // Özel bir "system-landing-config" slug'ı kullanarak ayarları saklarız.
+        const SYSTEM_CONFIG_SLUG = 'system-landing-config';
+
+        if (action === 'get_landing_config') {
+            const { data, error } = await supabase
+                .from('institutions')
+                .select('config')
+                .eq('slug', SYSTEM_CONFIG_SLUG)
+                .single();
+
+            // Eğer kayıt yoksa boş dönebilir veya hata verebilir, onu handle edelim
+            if (!data || error) {
+                return response.status(200).json({ config: null });
+            }
+            return response.status(200).json({ config: data.config });
+        }
+
+        if (action === 'save_landing_config') {
+            const { config } = payload;
+
+            // Mevcut var mı kontrol et
+            const { data: existing } = await supabase
+                .from('institutions')
+                .select('slug')
+                .eq('slug', SYSTEM_CONFIG_SLUG)
+                .single();
+
+            let result;
+            if (existing) {
+                // Güncelle
+                const { data, error } = await supabase
+                    .from('institutions')
+                    .update({ config: config })
+                    .eq('slug', SYSTEM_CONFIG_SLUG)
+                    .select();
+                if (error) throw error;
+                result = data[0];
+            } else {
+                // Oluştur (Gizli bir kurum gibi davranır)
+                const { data, error } = await supabase
+                    .from('institutions')
+                    .insert([{
+                        slug: SYSTEM_CONFIG_SLUG,
+                        name: 'System Config',
+                        password: Math.random().toString(36), // Rastgele şifre, giriş yapılamaz
+                        config: config
+                    }])
+                    .select();
+                if (error) throw error;
+                result = data[0];
+            }
+
+            return response.status(200).json({ success: true, data: result });
         }
 
         return response.status(400).json({ error: 'Geçersiz işlem' });
