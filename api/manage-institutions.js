@@ -36,65 +36,74 @@ export default async function handler(request, response) {
 
     // --- SUBMIT APPLICATION (PUBLIC) ---
     if (action === 'submit_application') {
-        const { application } = request.body;
-        if (!application) return response.status(400).json({ error: 'Başvuru verisi eksik.' });
+        try {
+            const { application } = request.body;
+            if (!application) return response.status(400).json({ error: 'Başvuru verisi eksik.' });
 
-        // UUID Helper (Environment agnostic)
-        const generateUUID = () => {
-            if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
-            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-                var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-                return v.toString(16);
-            });
-        };
+            // UUID Helper (Environment agnostic)
+            const generateUUID = () => {
+                if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
+                return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                    return v.toString(16);
+                });
+            };
 
-        // 1. Mevcut başvuruları çek
-        let { data: existingData, error: fetchError } = await supabase
-            .from('institutions')
-            .select('config')
-            .eq('slug', 'system-requests')
-            .single();
-
-        let requests = [];
-        if (existingData && existingData.config) {
-            try {
-                requests = JSON.parse(existingData.config);
-                if (!Array.isArray(requests)) requests = [];
-            } catch (e) { requests = []; }
-        }
-
-        // 2. Yeni başvuruyu ekle
-        const newRequest = {
-            id: generateUUID(),
-            date: new Date().toISOString(),
-            status: 'new', // new, read, contacted
-            ...application
-        };
-        requests.unshift(newRequest); // En yeni en başa
-
-        // 3. Kaydet
-        // Eğer kayıt yoksa oluştur, varsa güncelle
-        if (!existingData && fetchError) {
-            // Kayıt yoksa insert
-            const { error: insertError } = await supabase
+            // 1. Mevcut başvuruları çek
+            let { data: existingData, error: fetchError } = await supabase
                 .from('institutions')
-                .insert([{
-                    slug: 'system-requests',
-                    name: 'System Requests',
-                    config: requests, // Send array directly
-                    is_active: false
-                }]);
-            if (insertError) throw insertError;
-        } else {
-            // Update
-            const { error: updateError } = await supabase
-                .from('institutions')
-                .update({ config: requests }) // Send array directly
-                .eq('slug', 'system-requests');
-            if (updateError) throw updateError;
-        }
+                .select('config')
+                .eq('slug', 'system-requests')
+                .single();
 
-        return response.status(200).json({ success: true, message: 'Başvurunuz alındı.' });
+            let requests = [];
+            if (existingData && existingData.config) {
+                if (typeof existingData.config === 'string') {
+                    try {
+                        requests = JSON.parse(existingData.config);
+                    } catch (e) { requests = []; }
+                } else if (Array.isArray(existingData.config)) {
+                    requests = existingData.config;
+                }
+            }
+            if (!Array.isArray(requests)) requests = [];
+
+            // 2. Yeni başvuruyu ekle
+            const newRequest = {
+                id: generateUUID(),
+                date: new Date().toISOString(),
+                status: 'new', // new, read, contacted
+                ...application
+            };
+            requests.unshift(newRequest); // En yeni en başa
+
+            // 3. Kaydet
+            if (!existingData && fetchError) {
+                // Kayıt yoksa insert
+                const { error: insertError } = await supabase
+                    .from('institutions')
+                    .insert([{
+                        slug: 'system-requests',
+                        name: 'System Requests',
+                        config: requests, // Send array directly
+                        is_active: false
+                    }]);
+                if (insertError) throw insertError;
+            } else {
+                // Update
+                const { error: updateError } = await supabase
+                    .from('institutions')
+                    .update({ config: requests }) // Send array directly
+                    .eq('slug', 'system-requests');
+                if (updateError) throw updateError;
+            }
+
+            return response.status(200).json({ success: true, message: 'Başvurunuz alındı.' });
+
+        } catch (err) {
+            console.error('Submit Application Error:', err);
+            return response.status(500).json({ error: 'İşlem Başarısız: ' + err.message });
+        }
     }
 
     try {
