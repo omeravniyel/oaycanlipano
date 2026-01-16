@@ -264,16 +264,38 @@ async function fetchConfig() {
 
         // Galeri DOM Güncelleme
         if (adminGallery.length > 0) {
-            galleryImages = adminGallery;
-            const wrapper = document.getElementById('slide-wrapper');
-            if (wrapper) {
-                wrapper.innerHTML = '';
-                galleryImages.forEach(url => {
-                    const slide = document.createElement('div');
-                    slide.className = 'swiper-slide flex items-center justify-center bg-gradient-to-br from-orange-400 via-red-400 to-pink-400';
-                    slide.innerHTML = `<img src="${url}" class="w-full h-full object-contain" />`;
-                    wrapper.appendChild(slide);
-                });
+            // Check if gallery actually changed to avoid resetting Swiper every 60 seconds
+            const currentGalleryStr = JSON.stringify(adminGallery);
+            const lastGalleryStr = window.lastGalleryStr || "";
+
+            if (currentGalleryStr !== lastGalleryStr) {
+                console.log("Galeri içeriği değişti, güncelleniyor...");
+                window.lastGalleryStr = currentGalleryStr;
+                galleryImages = adminGallery;
+
+                const wrapper = document.getElementById('slide-wrapper');
+                if (wrapper) {
+                    wrapper.innerHTML = '';
+                    galleryImages.forEach(url => {
+                        const slide = document.createElement('div');
+                        slide.className = 'swiper-slide flex items-center justify-center bg-gradient-to-br from-orange-400 via-red-400 to-pink-400';
+                        slide.innerHTML = `<img src="${url}" class="w-full h-full object-contain" />`;
+                        wrapper.appendChild(slide);
+                    });
+
+                    // Eğer swiper zaten çalışıyorsa güncelle
+                    if (window.mySwiperInstance) {
+                        try {
+                            window.mySwiperInstance.update();
+                            window.mySwiperInstance.slideTo(0);
+                            window.mySwiperInstance.autoplay.start();
+                        } catch (e) {
+                            console.error("Swiper update error:", e);
+                        }
+                    }
+                }
+            } else {
+                console.log("Galeri değişmedi, rotasyon devam ediyor.");
             }
         }
 
@@ -1276,7 +1298,7 @@ function switchMedia(mode) {
                 observer: true, // DOM değişikliklerini izle
                 observeParents: true, // Parent değişikliklerini izle
                 autoplay: {
-                    delay: 18000,
+                    delay: 12000,
                     disableOnInteraction: false,
                 },
                 loop: false, // Loop false yapıyoruz ki sona gelince yakalayalım
