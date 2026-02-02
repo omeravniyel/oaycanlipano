@@ -829,11 +829,14 @@
                         body: JSON.stringify({ action: 'delete', master_password: MASTER_PASSWORD, payload: { slug: slug } })
                     });
 
+                    const data = await res.json();
+
                     if (res.ok) {
                         Swal.fire('Silindi!', 'Kurum başarıyla silindi.', 'success');
                         fetchInstitutions();
                     } else {
-                        Swal.fire('Hata', 'Silme işlemi başarısız.', 'error');
+                        // Show specific error from server
+                        Swal.fire('Hata', data.error || 'Silme işlemi başarısız.', 'error');
                     }
                 } catch (e) {
                     Swal.fire('Hata', 'Sunucu hatası.', 'error');
