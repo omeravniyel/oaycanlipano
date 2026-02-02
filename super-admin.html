@@ -531,7 +531,8 @@
         </div>
     </div>
 
-    <script>
+
+
     <!-- GLOBAL GALLERY MODAL -->
     <div id="global-gallery-modal"
         class="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
@@ -637,7 +638,7 @@
 
         async function openGlobalGalleryModal() {
             document.getElementById('global-gallery-modal').classList.remove('hidden');
-            
+
             // Load Fresh Data
             try {
                 const res = await fetch('/api/manage-institutions', {
@@ -645,7 +646,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'get_global_gallery', master_password: MASTER_PASSWORD })
                 });
-                
+
                 if (res.ok) {
                     const data = await res.json();
                     globalGalleryConfig = data.config || {};
@@ -685,7 +686,7 @@
 
             // 4. Fill Inputs
             const typeData = globalGalleryConfig[type] || { images: [], videos: [] };
-            
+
             // Join arrays to string
             document.getElementById('global-images-input').value = (typeData.images || []).join('\n');
             document.getElementById('global-videos-input').value = (typeData.videos || []).join('\n');
@@ -699,7 +700,7 @@
             const videos = vidText.split('\n').map(l => l.trim()).filter(l => l);
 
             if (!globalGalleryConfig[currentGalleryType]) globalGalleryConfig[currentGalleryType] = {};
-            
+
             globalGalleryConfig[currentGalleryType].images = images;
             globalGalleryConfig[currentGalleryType].videos = videos;
         }
@@ -712,10 +713,10 @@
                 const res = await fetch('/api/manage-institutions', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        action: 'save_global_gallery', 
+                    body: JSON.stringify({
+                        action: 'save_global_gallery',
                         master_password: MASTER_PASSWORD,
-                        payload: { config: globalGalleryConfig } 
+                        payload: { config: globalGalleryConfig }
                     })
                 });
 
@@ -741,7 +742,7 @@
         console.log("Script loaded and running");
 
         document.addEventListener('DOMContentLoaded', () => {
-             console.log("DOM Content Loaded");
+            console.log("DOM Content Loaded");
 
             // MAGIC LOGIN CHECK
             const urlParams = new URLSearchParams(window.location.search);
@@ -749,28 +750,28 @@
             if (magicKey) {
                 // OPTIMISTIC LOGIN (Hemen içeri al, sonra kontrol et)
                 window.history.replaceState({}, document.title, "/super-admin");
-                
+
                 MASTER_PASSWORD = magicKey;
                 localStorage.setItem('super_admin_pass', magicKey);
-                
+
                 // UI'yi hemen aç
                 document.getElementById('login-modal').classList.add('hidden');
                 document.getElementById('main-content').classList.remove('hidden');
-                
+
                 // Arkada kontrol et (Sessizce)
-                fetchInstitutions(); 
+                fetchInstitutions();
             } else if (MASTER_PASSWORD) {
                 // Auto-login attempt
                 verifyLogin(MASTER_PASSWORD);
             }
-            
+
             // File Upload Listener
             const uploadInput = document.getElementById('upload-logo-input');
             if (uploadInput) uploadInput.addEventListener('change', handleLogoUpload);
 
             // Bind Form Listener explicitly inside DOMContentLoaded
             const form = document.getElementById('login-form');
-            if(form) {
+            if (form) {
                 form.addEventListener('submit', (e) => {
                     e.preventDefault();
                     console.log("Form submitted!");
@@ -802,7 +803,7 @@
                     console.error("API Error: Expected JSON but got", contentType);
                     const text = await res.text();
                     console.error("Response body:", text.substring(0, 200) + "..."); // Start of body
-                    
+
                     Swal.fire({
                         icon: 'error',
                         title: 'Bağlantı Hatası',
@@ -827,7 +828,7 @@
                     document.getElementById('login-modal').classList.add('hidden');
                     document.getElementById('main-content').classList.remove('hidden');
                     fetchInstitutions();
-                    
+
                     // Show success toast
                     const Toast = Swal.mixin({
                         toast: true,
