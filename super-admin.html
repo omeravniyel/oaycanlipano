@@ -585,7 +585,7 @@
                             <div class="flex items-center justify-between mb-2">
                                 <label class="block text-sm font-bold text-gray-700">Ortak Görseller (Slayt)</label>
                                 <div class="flex gap-2">
-                                    <input type="file" id="upload-global-image-input" class="hidden"
+                                    <input type="file" id="upload-global-image-input" class="hidden" multiple
                                         accept="image/png, image/jpeg, image/webp">
                                     <button type="button"
                                         onclick="document.getElementById('upload-global-image-input').click()"
@@ -1202,71 +1202,98 @@
         }
 
         async function handleGlobalGalleryUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
+            const files = event.target.files;
+            if (!files || files.length === 0) return;
+
+            const totalFiles = files.length;
+            let successCount = 0;
+            let errorCount = 0;
+            const newUrls = [];
+
+            // Helper to read file as Base64
+            const readFileAsBase64 = (file) => {
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result.split(',')[1]);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
+                });
+            };
 
             // Show Loading
             Swal.fire({
                 title: 'Yükleniyor...',
-                text: 'Görsel galeriye yükleniyor, lütfen bekleyin.',
+                html: `Lütfen bekleyin, görseller yükleniyor.<br><b>0/${totalFiles}</b> tamamlandı.`,
                 allowOutsideClick: false,
                 didOpen: () => { Swal.showLoading() }
             });
 
-            try {
-                const reader = new FileReader();
-                reader.onerror = () => Swal.fire('Hata', 'Dosya okunamadı.', 'error');
+            for (let i = 0; i < totalFiles; i++) {
+                const file = files[i];
 
-                reader.onload = async (e) => {
-                    try {
-                        const base64Data = e.target.result.split(',')[1];
-                        const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-                        const filename = `gallery-${Date.now()}-${safeName}`;
+                // Update Progress
+                Swal.getHtmlContainer().querySelector('b').textContent = `${i}/${totalFiles}`;
 
-                        // Upload via API
-                        const res = await fetch('/api/upload', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                filename: filename,
-                                fileBase64: base64Data,
-                                contentType: file.type,
-                                slug: 'system-global-gallery' // Special folder for shared assets
-                            })
-                        });
+                try {
+                    const base64Data = await readFileAsBase64(file);
+                    const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+                    const filename = `gallery-${Date.now()}-${i}-${safeName}`;
 
-                        const data = await res.json();
+                    // Upload via API
+                    const res = await fetch('/api/upload', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            filename: filename,
+                            fileBase64: base64Data,
+                            contentType: file.type,
+                            slug: 'system-global-gallery'
+                        })
+                    });
 
-                        if (!res.ok) throw new Error(data.error || 'Yükleme başarısız');
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.error || 'Yükleme başarısız');
 
-                        // Append URL to Textarea
-                        const textArea = document.getElementById('global-images-input');
-                        const currentVal = textArea.value.trim();
-                        textArea.value = currentVal ? (currentVal + '\n' + data.url) : data.url;
+                    newUrls.push(data.url);
+                    successCount++;
 
-                        // Trigger sync
-                        saveCurrentInputToMemory();
-
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Yüklendi!',
-                            text: 'Görsel listeye eklendi.',
-                            timer: 1500,
-                            showConfirmButton: false
-                        });
-
-                    } catch (uploadError) {
-                        console.error("Gallery Upload Error:", uploadError);
-                        Swal.fire('Hata', 'Yükleme hatası: ' + uploadError.message, 'error');
-                    }
-                };
-                reader.readAsDataURL(file);
-            } catch (error) {
-                console.error(error);
-                Swal.fire('Hata', 'Bir sorun oluştu.', 'error');
-            } finally {
-                event.target.value = ''; // Reset
+                } catch (err) {
+                    console.error(`File ${file.name} failed:`, err);
+                    errorCount++;
+                }
             }
+
+            // Finished
+            if (successCount > 0) {
+                // Append URLs to Textarea
+                const textArea = document.getElementById('global-images-input');
+                const currentVal = textArea.value.trim();
+                const newContent = newUrls.join('\n');
+                textArea.value = currentVal ? (currentVal + '\n' + newContent) : newContent;
+
+                // Trigger sync
+                saveCurrentInputToMemory();
+            }
+
+            // Result Message
+            if (errorCount === 0) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Harika!',
+                    text: `${successCount} görsel başarıyla eklendi.`,
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            } else {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Tamamlandı',
+                    text: `${successCount} yüklendi, ${errorCount} dosya başarısız oldu.`,
+                });
+            }
+
+            // Reset input
+            event.target.value = '';
         }
 
         async function handleLogoUpload(event) {
