@@ -393,6 +393,58 @@ export default async function handler(request, response) {
             return response.status(200).json({ success: true, data: result });
         }
 
+        // --- CENTRAL GALLERY MANAGEMENT ---
+        const GLOBAL_GALLERY_SLUG = 'system-global-gallery';
+
+        if (action === 'get_global_gallery') {
+            const { data, error } = await supabase
+                .from('institutions')
+                .select('config')
+                .eq('slug', GLOBAL_GALLERY_SLUG)
+                .single();
+
+            if (!data || error) {
+                return response.status(200).json({ config: {} });
+            }
+            return response.status(200).json({ config: data.config });
+        }
+
+        if (action === 'save_global_gallery') {
+            const { config } = payload; // Expected structure: { 'Ortaokul': { images: [], videos: [] }, ... }
+
+            // Check if exists
+            const { data: existing } = await supabase
+                .from('institutions')
+                .select('slug')
+                .eq('slug', GLOBAL_GALLERY_SLUG)
+                .single();
+
+            let result;
+            if (existing) {
+                const { data, error } = await supabase
+                    .from('institutions')
+                    .update({ config: config })
+                    .eq('slug', GLOBAL_GALLERY_SLUG)
+                    .select();
+                if (error) throw error;
+                result = data[0];
+            } else {
+                const { data, error } = await supabase
+                    .from('institutions')
+                    .insert([{
+                        slug: GLOBAL_GALLERY_SLUG,
+                        name: 'System Global Gallery',
+                        password: Math.random().toString(36),
+                        config: config
+                    }])
+                    .select();
+                if (error) throw error;
+                result = data[0];
+            }
+
+            return response.status(200).json({ success: true, data: result });
+        }
+
         return response.status(400).json({ error: 'Geçersiz işlem' });
 
     } catch (err) {

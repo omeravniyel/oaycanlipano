@@ -81,6 +81,10 @@
                         class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg shadow-md hover:shadow-lg transition-all flex items-center gap-2 font-medium">
                         <i class="fas fa-desktop"></i> Site Yönetimi
                     </button>
+                    <button onclick="openGlobalGalleryModal()"
+                        class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2.5 rounded-lg shadow-md hover:shadow-lg transition-all flex items-center gap-2 font-medium">
+                        <i class="fas fa-images"></i> Merkezi Galeri
+                    </button>
                     <button onclick="openModal()"
                         class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg shadow-md hover:shadow-lg transition-all flex items-center gap-2 font-medium">
                         <i class="fas fa-plus"></i> Yeni Kurum Ekle
@@ -528,6 +532,208 @@
     </div>
 
     <script>
+    <!-- GLOBAL GALLERY MODAL -->
+    <div id="global-gallery-modal"
+        class="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col h-[90vh]">
+            <!-- Header -->
+            <div
+                class="border-b border-gray-100 px-6 py-4 flex justify-between items-center bg-gray-50 rounded-t-2xl flex-shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="bg-purple-100 p-2 rounded-lg">
+                        <i class="fas fa-images text-purple-600 text-xl"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-800">Merkezi Galeri Yönetimi</h3>
+                        <p class="text-xs text-gray-500">Seçilen tipteki tüm kurumlara ortak görsel ve videolar ekleyin.
+                        </p>
+                    </div>
+                </div>
+                <button onclick="closeGlobalGalleryModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <!-- Body -->
+            <div class="p-6 overflow-y-auto flex-1 bg-gray-50/50">
+
+                <!-- Type Selector -->
+                <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm mb-6">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Hangi Kurum Tipi İçin Düzenleme
+                        Yapıyorsunuz?</label>
+                    <div class="flex gap-2 flex-wrap" id="gallery-type-tabs">
+                        <button onclick="switchGalleryType('Ortaokul')"
+                            class="gallery-tab px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 hover:bg-gray-50 transition-colors active-tab-purple"
+                            data-type="Ortaokul">Ortaokul</button>
+                        <button onclick="switchGalleryType('Lise')"
+                            class="gallery-tab px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 hover:bg-gray-50 transition-colors"
+                            data-type="Lise">Lise</button>
+                        <button onclick="switchGalleryType('Yurt')"
+                            class="gallery-tab px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 hover:bg-gray-50 transition-colors"
+                            data-type="Yurt">Yurt</button>
+                        <button onclick="switchGalleryType('Kurs')"
+                            class="gallery-tab px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 hover:bg-gray-50 transition-colors"
+                            data-type="Kurs">Kurs</button>
+                    </div>
+                </div>
+
+                <div id="gallery-content-area w-full">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- IMAGES -->
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <label class="block text-sm font-bold text-gray-700">Ortak Görseller (Slayt)</label>
+                                <span class="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded">Her satıra 1
+                                    link</span>
+                            </div>
+                            <textarea id="global-images-input" rows="12"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 font-mono text-sm leading-relaxed"
+                                placeholder="https://ornek.com/resim1.jpg&#10;https://ornek.com/resim2.png"></textarea>
+                            <p class="text-xs text-gray-500 mt-2">Bu görseller, ilgili tipteki <b>tüm kurumların</b>
+                                kendi
+                                görselleriyle karışık olarak slaytta dönecektir.</p>
+                        </div>
+
+                        <!-- VIDEOS -->
+                        <div>
+                            <div class="flex items-center justify-between mb-2">
+                                <label class="block text-sm font-bold text-gray-700">Ortak Videolar (Playlist)</label>
+                                <span class="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded">Her satıra 1
+                                    link</span>
+                            </div>
+                            <textarea id="global-videos-input" rows="12"
+                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 font-mono text-sm leading-relaxed"
+                                placeholder="https://www.youtube.com/embed/VIDEO_ID&#10;https://ornek.com/video.mp4"></textarea>
+                            <p class="text-xs text-gray-500 mt-2">MP4 veya YouTube Embed linkleri. Kurumların videoları
+                                ile birleşir, sırayla oynatılır.</p>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Footer -->
+            <div
+                class="border-t border-gray-100 px-6 py-4 bg-white rounded-b-2xl flex justify-between items-center flex-shrink-0">
+                <span class="text-xs text-gray-400">
+                    <i class="fas fa-info-circle mr-1"></i> "Kaydet" dediğinizde değişiklikler tüm panolara yansır.
+                </span>
+                <div class="flex gap-3">
+                    <button onclick="closeGlobalGalleryModal()"
+                        class="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors">Vazgeç</button>
+                    <button onclick="saveGlobalGallery()"
+                        class="px-6 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 shadow-md hover:shadow-lg font-medium transition-all flex items-center gap-2">
+                        <i class="fas fa-save"></i> Değişiklikleri Kaydet
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- GLOBAL GALLERY LOGIC ---
+        let globalGalleryConfig = {}; // Stores all types: { 'Ortaokul': { images: [], videos: [] }, ... }
+        let currentGalleryType = 'Ortaokul';
+
+        async function openGlobalGalleryModal() {
+            document.getElementById('global-gallery-modal').classList.remove('hidden');
+            
+            // Load Fresh Data
+            try {
+                const res = await fetch('/api/manage-institutions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'get_global_gallery', master_password: MASTER_PASSWORD })
+                });
+                
+                if (res.ok) {
+                    const data = await res.json();
+                    globalGalleryConfig = data.config || {};
+                } else {
+                    globalGalleryConfig = {};
+                }
+            } catch (e) {
+                console.error('Gallery Load Error:', e);
+                globalGalleryConfig = {};
+            }
+
+            // Init UI
+            switchGalleryType('Ortaokul');
+        }
+
+        function closeGlobalGalleryModal() {
+            document.getElementById('global-gallery-modal').classList.add('hidden');
+        }
+
+        function switchGalleryType(type) {
+            // 1. Save current input to memory before switching
+            saveCurrentInputToMemory();
+
+            // 2. Update Type
+            currentGalleryType = type;
+
+            // 3. Update Tabs UI
+            document.querySelectorAll('.gallery-tab').forEach(btn => {
+                if (btn.dataset.type === type) {
+                    btn.classList.add('bg-purple-50', 'text-purple-700', 'border-purple-200', 'ring-2', 'ring-purple-200');
+                    btn.classList.remove('bg-white', 'text-gray-700', 'border-gray-200');
+                } else {
+                    btn.classList.remove('bg-purple-50', 'text-purple-700', 'border-purple-200', 'ring-2', 'ring-purple-200');
+                    btn.classList.add('bg-white', 'text-gray-700', 'border-gray-200');
+                }
+            });
+
+            // 4. Fill Inputs
+            const typeData = globalGalleryConfig[type] || { images: [], videos: [] };
+            
+            // Join arrays to string
+            document.getElementById('global-images-input').value = (typeData.images || []).join('\n');
+            document.getElementById('global-videos-input').value = (typeData.videos || []).join('\n');
+        }
+
+        function saveCurrentInputToMemory() {
+            const imgText = document.getElementById('global-images-input').value;
+            const vidText = document.getElementById('global-videos-input').value;
+
+            const images = imgText.split('\n').map(l => l.trim()).filter(l => l);
+            const videos = vidText.split('\n').map(l => l.trim()).filter(l => l);
+
+            if (!globalGalleryConfig[currentGalleryType]) globalGalleryConfig[currentGalleryType] = {};
+            
+            globalGalleryConfig[currentGalleryType].images = images;
+            globalGalleryConfig[currentGalleryType].videos = videos;
+        }
+
+        async function saveGlobalGallery() {
+            // Save current TAB first
+            saveCurrentInputToMemory();
+
+            try {
+                const res = await fetch('/api/manage-institutions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        action: 'save_global_gallery', 
+                        master_password: MASTER_PASSWORD,
+                        payload: { config: globalGalleryConfig } 
+                    })
+                });
+
+                if (res.ok) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Başarılı!',
+                        text: 'Merkezi galeri ayarları kaydedildi ve tüm panolara dağıtıldı.',
+                    });
+                    closeGlobalGalleryModal();
+                } else {
+                    Swal.fire('Hata', 'Kaydetme başarısız.', 'error');
+                }
+            } catch (e) {
+                Swal.fire('Hata', 'Sunucu hatası.', 'error');
+            }
+        }
+
         // --- AUTH ---
         let MASTER_PASSWORD = localStorage.getItem('super_admin_pass') || "";
 

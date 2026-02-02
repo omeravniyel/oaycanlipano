@@ -29,8 +29,9 @@ export default async function handler(request, response) {
 
     // --- GLOBAL MERGE LOGIC ---
     // Eğer bu bir 'System' kaydı değilse ve 'institution_type' varsa global veriyi merge et
-    if (slug !== 'system_globals' && config.institution_type) {
+    if (!slug.startsWith('system-') && config.institution_type) {
         try {
+            // 1. GLOBAL HADITHS
             const { data: globalData } = await supabase
                 .from('institutions')
                 .select('config')
@@ -49,6 +50,57 @@ export default async function handler(request, response) {
                     };
                 }
             }
+
+            // 2. GLOBAL GALLERY & VIDEOS
+            const { data: globalGallery } = await supabase
+                .from('institutions')
+                .select('config')
+                .eq('slug', 'system-global-gallery')
+                .single();
+
+            if (globalGallery && globalGallery.config) {
+                const type = config.institution_type;
+                const typeConfig = globalGallery.config[type];
+
+                if (typeConfig) {
+                    // MERGE IMAGES
+                    if (typeConfig.images && Array.isArray(typeConfig.images) && typeConfig.images.length > 0) {
+                        // Ensure local gallery_links is an array
+                        let localGallery = [];
+                        try {
+                            if (Array.isArray(config.gallery_links)) localGallery = config.gallery_links;
+                            else if (typeof config.gallery_links === 'string') localGallery = JSON.parse(config.gallery_links);
+                        } catch (e) { }
+
+                        // Add global images (avoid duplicates if possible, but simplistic concat is safer for now)
+                        // Filter out duplicates
+                        const newImages = typeConfig.images.filter(img => !localGallery.includes(img));
+                        config.gallery_links = [...localGallery, ...newImages];
+                    }
+
+                    // MERGE VIDEOS
+                    if (typeConfig.videos && Array.isArray(typeConfig.videos) && typeConfig.videos.length > 0) {
+                        // Ensure local video_urls is an array
+                        let localVideos = [];
+                        try {
+                            // video_urls or video_url support
+                            if (config.video_urls && Array.isArray(config.video_urls)) localVideos = config.video_urls;
+                            else if (config.video_url) {
+                                const v = config.video_url;
+                                if (v.startsWith('[')) localVideos = JSON.parse(v);
+                                else localVideos = [v];
+                            }
+                        } catch (e) { }
+
+                        // Filter out empty
+                        localVideos = localVideos.filter(v => v && v.length > 5);
+
+                        const newVideos = typeConfig.videos.filter(v => !localVideos.includes(v));
+                        config.video_urls = [...localVideos, ...newVideos];
+                    }
+                }
+            }
+
         } catch (mergeError) {
             console.error("Global merge error:", mergeError);
             // Hata olsa bile normal config dönsün, akışı bozma
