@@ -114,10 +114,16 @@ export default async function handler(request, response) {
                 .order('name');
 
             if (error) throw error;
-            return response.status(200).json({ institutions: data });
+
+            // Filter out hidden institutions (Smart Delete)
+            const visibleInstitutions = data.filter(inst => {
+                const cfg = inst.config || {};
+                return cfg.hidden_from_panel !== true;
+            });
+
+            return response.status(200).json({ institutions: visibleInstitutions });
         }
 
-        // --- EKLEME / GÜNCELLEME ---
         // --- EKLEME / GÜNCELLEME ---
         if (action === 'upsert') {
             let { slug, name, password, type, institution_logo, logo_locked, institution_subtitle, institution_slogan1, institution_slogan2, cover, city, district, weekly_hadiths, admin_contact, module_dorm_active, module_bottom_right_type } = payload || {};
@@ -127,7 +133,7 @@ export default async function handler(request, response) {
             }
             slug = slug.trim(); // Boşlukları temizle
 
-            // Legacy support (eski payload uyumluluğu - frontend düzeltildi ama yine de kalsın)
+            // Legacy support
             const finalSubtitle = institution_subtitle || payload.subtitle;
             const finalSlogan1 = institution_slogan1 || payload.slogan1;
             const finalSlogan2 = institution_slogan2 || payload.slogan2;
@@ -146,6 +152,9 @@ export default async function handler(request, response) {
             if (existing) {
                 // --- GÜNCELLEME (UPDATE) ---
                 const updatedConfig = existing.config || {};
+
+                // RESURRECTION: If it was hidden, bring it back!
+                updatedConfig.hidden_from_panel = false;
 
                 // Gelen değerleri güncelle
                 updatedConfig.institution_title = name;
@@ -185,6 +194,7 @@ export default async function handler(request, response) {
             } else {
                 // --- YENİ KAYIT (INSERT) ---
                 const newConfig = {
+                    hidden_from_panel: false, // Explicitly visible
                     institution_name: name,
                     institution_title: name,
                     institution_type: (type || 'Ortaokul').trim(),
@@ -228,16 +238,60 @@ export default async function handler(request, response) {
             return response.status(200).json({ success: true, data: result });
         }
 
-        // --- SİLME ---
+        // --- SİLME (SMART DELETE) ---
         if (action === 'delete') {
             const { slug } = payload || {};
-            const { error } = await supabase
-                .from('institutions')
-                .delete()
-                .eq('slug', slug);
 
-            if (error) throw error;
-            return response.status(200).json({ success: true });
+            try {
+                // 1. Try Hard Delete First
+                const { error } = await supabase
+                    .from('institutions')
+                    .delete()
+                    .eq('slug', slug);
+
+                if (error) throw error;
+                return response.status(200).json({ success: true });
+
+            } catch (deleteError) {
+                // 2. Fallback to Soft Delete if FK Violation
+                // Postgres Error 23503 is Foreign Key Violation
+                if (deleteError.code === '23503') {
+                    // Fetch current config to wipe it
+                    const { data: existing } = await supabase
+                        .from('institutions')
+                        .select('config')
+                        .eq('slug', slug)
+                        .single();
+
+                    if (existing) {
+                        const wipedConfig = existing.config || {};
+
+                        // WIPE CONTENT
+                        wipedConfig.announcements = [];
+                        wipedConfig.video_urls = [];
+                        wipedConfig.gallery_links = [];
+                        wipedConfig.left_gallery_links = [];
+                        wipedConfig.exam_winners = [];
+                        wipedConfig.dorm1_names = [];
+                        wipedConfig.dorm2_names = [];
+                        wipedConfig.weekly_hadiths = {};
+
+                        // HIDE
+                        wipedConfig.hidden_from_panel = true;
+
+                        const { error: updateError } = await supabase
+                            .from('institutions')
+                            .update({ config: wipedConfig })
+                            .eq('slug', slug);
+
+                        if (updateError) throw updateError;
+
+                        return response.status(200).json({ success: true, message: 'Kurum pano verileri sıfırlandı ve listeden gizlendi (Karne verileri korundu).' });
+                    }
+                }
+
+                throw deleteError; // Re-throw other errors
+            }
         }
 
         // --- HADİS DAĞITIMI (BULK UPDATE) ---
@@ -258,6 +312,11 @@ export default async function handler(request, response) {
                 // Tip Kontrolü (Case-Insensitive ve Trim)
                 const currentType = (cfg.institution_type || "").trim().toLowerCase();
                 const targetType = (type || "").trim().toLowerCase();
+
+                // Sadece GİZLİ OLMAYANLARA dağıt (Opsiyonel? Yoksa gizlilere de dağılsın mı? 
+                // Karne sistemi kullanıyorsa dağıtılması iyi olabilir. 
+                // Ama Pano için gizledik. Pano'da görünmeyecekse hadis de önemsiz.
+                // Yine de veri bütünlüğü için dokunmayalım, dağılsın.)
 
                 if (currentType === targetType) {
                     cfg.weekly_hadiths = hadiths;
