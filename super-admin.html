@@ -737,19 +737,54 @@
         // --- AUTH ---
         let MASTER_PASSWORD = localStorage.getItem('super_admin_pass') || "";
 
+        // DEBUGGING: Add this to see if script runs
+        console.log("Script loaded and running");
+
         document.addEventListener('DOMContentLoaded', () => {
-            if (MASTER_PASSWORD) {
+             console.log("DOM Content Loaded");
+
+            // MAGIC LOGIN CHECK
+            const urlParams = new URLSearchParams(window.location.search);
+            const magicKey = urlParams.get('key');
+            if (magicKey) {
+                // OPTIMISTIC LOGIN (Hemen içeri al, sonra kontrol et)
+                window.history.replaceState({}, document.title, "/super-admin");
+                
+                MASTER_PASSWORD = magicKey;
+                localStorage.setItem('super_admin_pass', magicKey);
+                
+                // UI'yi hemen aç
+                document.getElementById('login-modal').classList.add('hidden');
+                document.getElementById('main-content').classList.remove('hidden');
+                
+                // Arkada kontrol et (Sessizce)
+                fetchInstitutions(); 
+            } else if (MASTER_PASSWORD) {
+                // Auto-login attempt
                 verifyLogin(MASTER_PASSWORD);
             }
+            
             // File Upload Listener
             const uploadInput = document.getElementById('upload-logo-input');
             if (uploadInput) uploadInput.addEventListener('change', handleLogoUpload);
-        });
 
-        document.getElementById('login-form').addEventListener('submit', (e) => {
-            e.preventDefault();
-            const pass = document.getElementById('master-password').value;
-            verifyLogin(pass);
+            // Bind Form Listener explicitly inside DOMContentLoaded
+            const form = document.getElementById('login-form');
+            if(form) {
+                form.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    console.log("Form submitted!");
+                    const pass = document.getElementById('master-password').value;
+                    try {
+                        verifyLogin(pass);
+                    } catch (err) {
+                        console.error("Critical error calling verifyLogin:", err);
+                        alert("Kritik Hata: " + err.message);
+                    }
+                });
+            } else {
+                console.error("Login form not found in DOM!");
+            }
         });
 
         async function verifyLogin(pass) {
@@ -761,12 +796,47 @@
                     body: JSON.stringify({ action: 'list', master_password: pass })
                 });
 
+                // Check for JSON response
+                const contentType = res.headers.get("content-type");
+                if (!contentType || !contentType.includes("application/json")) {
+                    console.error("API Error: Expected JSON but got", contentType);
+                    const text = await res.text();
+                    console.error("Response body:", text.substring(0, 200) + "..."); // Start of body
+                    
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Bağlantı Hatası',
+                        text: 'API yanıt vermedi (JSON beklenirken ' + (contentType || 'belirsiz') + ' geldi).',
+                        footer: 'Eğer yerel çalışıyorsanız "vercel dev" komutu ile başlatın. "npx serve" API fonksiyonlarını çalıştırmaz.'
+                    });
+                    return;
+                }
+
                 if (res.ok) {
+                    // Try parsing JSON
+                    let data;
+                    try {
+                        data = await res.json();
+                    } catch (parseError) {
+                        console.error(parseError);
+                        throw new Error("Yanıt JSON formatında değil.");
+                    }
+
                     MASTER_PASSWORD = pass;
                     localStorage.setItem('super_admin_pass', pass);
                     document.getElementById('login-modal').classList.add('hidden');
                     document.getElementById('main-content').classList.remove('hidden');
                     fetchInstitutions();
+                    
+                    // Show success toast
+                    const Toast = Swal.mixin({
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 3000
+                    });
+                    Toast.fire({ icon: 'success', title: 'Giriş Başarılı' });
+
                 } else {
                     const data = await res.json();
                     Swal.fire({ icon: 'error', title: 'Hatalı Şifre', text: data.error || 'Giriş yapılamadı.' });
@@ -774,7 +844,7 @@
                 }
             } catch (e) {
                 console.error(e);
-                Swal.fire('Hata', 'Sunucu bağlantı hatası', 'error');
+                Swal.fire('Hata', 'Giriş işlemi sırasında hata: ' + e.message, 'error');
             }
         }
 
@@ -799,11 +869,25 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'list', master_password: MASTER_PASSWORD })
                 });
+
+                const contentType = res.headers.get("content-type");
+                if (!contentType || !contentType.includes("application/json")) {
+                    // Fail silently or with warning? Better to warn.
+                    console.error("fetchInstitutions API Error: Expected JSON but got", contentType);
+                    throw new Error("API yanıt vermedi (JSON gelmedi). Vercel/Node ortamı gerekli.");
+                }
+
                 const data = await res.json();
                 institutions = data.institutions || [];
                 renderInstitutions();
             } catch (e) {
-                Swal.fire('Hata', 'Listeleme hatası', 'error');
+                console.error(e);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Veri Hatası',
+                    text: 'Kurumlar yüklenemedi: ' + e.message,
+                    footer: 'Yerel çalışıyorsanız API fonksiyonları devre dışıdır.'
+                });
             } finally {
                 loader.classList.add('hidden');
             }
