@@ -65,25 +65,22 @@ export default async function handler(request, response) {
                 if (typeConfig) {
                     // MERGE IMAGES
                     if (typeConfig.images && Array.isArray(typeConfig.images) && typeConfig.images.length > 0) {
-                        // Ensure local gallery_links is an array
                         let localGallery = [];
                         try {
                             if (Array.isArray(config.gallery_links)) localGallery = config.gallery_links;
                             else if (typeof config.gallery_links === 'string') localGallery = JSON.parse(config.gallery_links);
                         } catch (e) { }
 
-                        // Add global images (avoid duplicates if possible, but simplistic concat is safer for now)
-                        // Filter out duplicates
-                        const newImages = typeConfig.images.filter(img => !localGallery.includes(img));
-                        config.gallery_links = [...localGallery, ...newImages];
+                        // Robust Deduplication using Set
+                        // We trim URLs to avoid whitespace issues matching
+                        const combined = [...localGallery, ...typeConfig.images].map(url => typeof url === 'string' ? url.trim() : url);
+                        config.gallery_links = [...new Set(combined)];
                     }
 
                     // MERGE VIDEOS
                     if (typeConfig.videos && Array.isArray(typeConfig.videos) && typeConfig.videos.length > 0) {
-                        // Ensure local video_urls is an array
                         let localVideos = [];
                         try {
-                            // video_urls or video_url support
                             if (config.video_urls && Array.isArray(config.video_urls)) localVideos = config.video_urls;
                             else if (config.video_url) {
                                 const v = config.video_url;
@@ -92,11 +89,12 @@ export default async function handler(request, response) {
                             }
                         } catch (e) { }
 
-                        // Filter out empty
+                        // Filter out empty and small strings
                         localVideos = localVideos.filter(v => v && v.length > 5);
 
-                        const newVideos = typeConfig.videos.filter(v => !localVideos.includes(v));
-                        config.video_urls = [...localVideos, ...newVideos];
+                        // Robust Deduplication using Set
+                        const combinedVideos = [...localVideos, ...typeConfig.videos].map(v => typeof v === 'string' ? v.trim() : v);
+                        config.video_urls = [...new Set(combinedVideos)];
                     }
                 }
             }
