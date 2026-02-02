@@ -584,9 +584,19 @@
                         <div>
                             <div class="flex items-center justify-between mb-2">
                                 <label class="block text-sm font-bold text-gray-700">Ortak Görseller (Slayt)</label>
-                                <span class="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded">Her satıra 1
-                                    link</span>
+                                <div class="flex gap-2">
+                                    <input type="file" id="upload-global-image-input" class="hidden"
+                                        accept="image/png, image/jpeg, image/webp">
+                                    <button type="button"
+                                        onclick="document.getElementById('upload-global-image-input').click()"
+                                        class="bg-purple-100 hover:bg-purple-200 text-purple-700 px-3 py-1 rounded text-xs font-bold transition-colors flex items-center gap-1">
+                                        <i class="fas fa-upload"></i> Görsel Yükle
+                                    </button>
+                                </div>
                             </div>
+                            <span class="text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded block mb-2 w-max">Her satıra
+                                1 link</span>
+
                             <textarea id="global-images-input" rows="12"
                                 class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 font-mono text-sm leading-relaxed"
                                 placeholder="https://ornek.com/resim1.jpg&#10;https://ornek.com/resim2.png"></textarea>
@@ -766,8 +776,7 @@
             }
 
             // File Upload Listener
-            const uploadInput = document.getElementById('upload-logo-input');
-            if (uploadInput) uploadInput.addEventListener('change', handleLogoUpload);
+            registerUploadListeners();
 
             // Bind Form Listener explicitly inside DOMContentLoaded
             const form = document.getElementById('login-form');
@@ -1182,6 +1191,84 @@
         });
 
         // --- FILE UPLOAD LOGIC ---
+        function registerUploadListeners() {
+            // Logo Upload
+            const uploadInput = document.getElementById('upload-logo-input');
+            if (uploadInput) uploadInput.addEventListener('change', handleLogoUpload);
+
+            // Global Gallery Upload
+            const globalUploadInput = document.getElementById('upload-global-image-input');
+            if (globalUploadInput) globalUploadInput.addEventListener('change', handleGlobalGalleryUpload);
+        }
+
+        async function handleGlobalGalleryUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Show Loading
+            Swal.fire({
+                title: 'Yükleniyor...',
+                text: 'Görsel galeriye yükleniyor, lütfen bekleyin.',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading() }
+            });
+
+            try {
+                const reader = new FileReader();
+                reader.onerror = () => Swal.fire('Hata', 'Dosya okunamadı.', 'error');
+
+                reader.onload = async (e) => {
+                    try {
+                        const base64Data = e.target.result.split(',')[1];
+                        const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+                        const filename = `gallery-${Date.now()}-${safeName}`;
+
+                        // Upload via API
+                        const res = await fetch('/api/upload', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                filename: filename,
+                                fileBase64: base64Data,
+                                contentType: file.type,
+                                slug: 'system-global-gallery' // Special folder for shared assets
+                            })
+                        });
+
+                        const data = await res.json();
+
+                        if (!res.ok) throw new Error(data.error || 'Yükleme başarısız');
+
+                        // Append URL to Textarea
+                        const textArea = document.getElementById('global-images-input');
+                        const currentVal = textArea.value.trim();
+                        textArea.value = currentVal ? (currentVal + '\n' + data.url) : data.url;
+
+                        // Trigger sync
+                        saveCurrentInputToMemory();
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Yüklendi!',
+                            text: 'Görsel listeye eklendi.',
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+
+                    } catch (uploadError) {
+                        console.error("Gallery Upload Error:", uploadError);
+                        Swal.fire('Hata', 'Yükleme hatası: ' + uploadError.message, 'error');
+                    }
+                };
+                reader.readAsDataURL(file);
+            } catch (error) {
+                console.error(error);
+                Swal.fire('Hata', 'Bir sorun oluştu.', 'error');
+            } finally {
+                event.target.value = ''; // Reset
+            }
+        }
+
         async function handleLogoUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
