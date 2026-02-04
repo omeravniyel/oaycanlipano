@@ -15,10 +15,6 @@
             "destination": "/admin.html"
         },
         {
-            "source": "/([^/]+)/admin",
-            "destination": "/board.html"
-        },
-        {
             "source": "/board",
             "destination": "/board.html"
         },
