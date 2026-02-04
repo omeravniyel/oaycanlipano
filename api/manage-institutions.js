@@ -394,6 +394,79 @@ module.exports = async (request, response) => {
             return response.status(200).json({ success: true, count: updates.length });
         }
 
+        // --- BULK PURGE LOCAL CONTENT (TEMİZLİK) ---
+        if (action === 'bulk_purge_local_content') {
+            const { type, targets } = payload; // targets: ['gallery', 'left_gallery', 'videos']
+            const targetType = (type || "").trim().toLowerCase();
+
+            if (!targetType) return response.status(400).json({ error: 'Type is required' });
+
+            // 1. Fetch relevant institutions
+            const { data: insts, error: fetchError } = await supabase
+                .from('institutions')
+                .select('*');
+
+            if (fetchError) throw fetchError;
+
+            const updates = [];
+            let affectedCount = 0;
+
+            for (const inst of insts) {
+                // Skip system users
+                if (inst.slug.startsWith('system-')) continue;
+
+                const cfg = inst.config || {};
+                const currentType = (cfg.institution_type || "Ortaokul").trim().toLowerCase();
+
+                // Match Type (loose check defaults to Ortaokul if missing)
+                if (currentType === targetType) {
+                    let changed = false;
+
+                    if (targets.includes('gallery_links')) {
+                        if (cfg.gallery_links && cfg.gallery_links.length > 0) {
+                            cfg.gallery_links = [];
+                            changed = true;
+                        }
+                    }
+
+                    if (targets.includes('left_gallery_links')) {
+                        if (cfg.left_gallery_links && cfg.left_gallery_links.length > 0) {
+                            cfg.left_gallery_links = [];
+                            changed = true;
+                        }
+                    }
+
+                    if (targets.includes('video_urls')) {
+                        // Check array or string
+                        let hasVid = false;
+                        if (Array.isArray(cfg.video_urls) && cfg.video_urls.length > 0) hasVid = true;
+                        else if (typeof cfg.video_url === 'string' && cfg.video_url.length > 5) hasVid = true;
+
+                        if (hasVid) {
+                            cfg.video_urls = [];
+                            cfg.video_url = ""; // Clear legacy string too
+                            changed = true;
+                        }
+                    }
+
+                    if (changed) {
+                        const p = supabase
+                            .from('institutions')
+                            .update({ config: cfg })
+                            .eq('slug', inst.slug);
+                        updates.push(p);
+                        affectedCount++;
+                    }
+                }
+            }
+
+            if (updates.length > 0) {
+                await Promise.all(updates);
+            }
+
+            return response.status(200).json({ success: true, count: affectedCount });
+        }
+
         // --- LANDING PAGE CMS (SİSTEM AYARLARI) ---
         // Özel bir "system-landing-config" slug'ı kullanarak ayarları saklarız.
         const SYSTEM_CONFIG_SLUG = 'system-landing-config';
