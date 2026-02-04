@@ -1241,6 +1241,27 @@
                 module_dorm_active: document.getElementById('form-dorm-active').checked
             };
 
+            // --- INJECT LOCAL HADITHS (FALLBACK) ---
+            // If creating a new institution, ensure it inherits the current admin's hadith config
+            // regardless of whether "Distribute" was clicked previously.
+            try {
+                const type = payload.type || 'Ortaokul';
+                const storedHadiths = localStorage.getItem(`super_admin_hadiths_${type}`);
+                if (storedHadiths) {
+                    const parsedWeeks = JSON.parse(storedHadiths);
+                    const savedDate = localStorage.getItem(`super_admin_start_date_${type}`) || '2025-09-08';
+
+                    if (Array.isArray(parsedWeeks) && parsedWeeks.length > 0) {
+                        payload.weekly_hadiths = {
+                            startDate: savedDate,
+                            weeks: parsedWeeks
+                        };
+                    }
+                }
+            } catch (err) {
+                console.warn("Could not inject local hadiths:", err);
+            }
+
             try {
                 const res = await fetch('/api/manage-institutions', {
                     method: 'POST',
