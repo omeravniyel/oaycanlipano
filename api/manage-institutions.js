@@ -131,7 +131,7 @@ module.exports = async (request, response) => {
 
         // --- EKLEME / GÜNCELLEME ---
         if (action === 'upsert') {
-            let { slug, name, password, type, institution_logo, logo_locked, institution_subtitle, institution_slogan1, institution_slogan2, cover, city, district, weekly_hadiths, admin_contact, module_dorm_active, module_bottom_right_type } = payload || {};
+            let { slug, name, password, type, institution_logo, logo_locked, institution_subtitle, institution_slogan1, institution_slogan2, cover, city, district, region, weekly_hadiths, admin_contact, module_dorm_active, module_bottom_right_type } = payload || {};
 
             if (!slug) {
                 return response.status(400).json({ error: 'Kurum URL (Slug) alanı zorunludur!' });
@@ -174,6 +174,7 @@ module.exports = async (request, response) => {
 
                 if (city) updatedConfig.city = city;
                 if (district) updatedConfig.district = district;
+                if (region) updatedConfig.region = region; // NEW
 
                 if (cover) updatedConfig.institution_cover = cover;
 
@@ -212,6 +213,7 @@ module.exports = async (request, response) => {
                     institution_cover: cover || '',
                     city: city || 'İstanbul',
                     district: district || 'Üsküdar',
+                    region: region || '', // NEW
 
                     // Arrays
                     dorm1_names: [],
