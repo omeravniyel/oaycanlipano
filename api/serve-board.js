@@ -6,10 +6,12 @@ import path from 'path';
 export default async function handler(request, response) {
     const { url } = request;
 
-    // Extract slug from URL (e.g., "/enderun" -> "enderun")
+    // Extract slug from URL (e.g., "/enderun" -> "enderun" or "/enderun/admin" -> "enderun" + admin mode)
     // Remove query params if any
     const cleanUrl = url.split('?')[0];
-    const slug = cleanUrl.replace(/^\//, ''); // Remove leading slash
+    const pathParts = cleanUrl.replace(/^\//, '').split('/'); // Remove leading slash and split
+    const slug = pathParts[0]; // First part is always the slug
+    const isAdminMode = pathParts[1] === 'admin'; // Check if second part is "admin"
 
     // If slug is empty (should be handled by other rewrites, but safety check)
     if (!slug) {
@@ -17,9 +19,15 @@ export default async function handler(request, response) {
     }
 
     try {
-        // 1. Read board.html
-        // In Vercel serverless environment, process.cwd() is usually the project root
-        const filePath = path.join(process.cwd(), 'board.html');
+        // 1. Determine which HTML file to serve
+        const fileName = isAdminMode ? 'panel.html' : 'board.html';
+        const filePath = path.join(process.cwd(), fileName);
+
+        // If panel.html doesn't exist and it's admin mode, return 404
+        if (isAdminMode && !fs.existsSync(filePath)) {
+            return response.status(404).send('Admin panel not found');
+        }
+
         let html = fs.readFileSync(filePath, 'utf-8');
 
         // 2. Fetch Institution Config

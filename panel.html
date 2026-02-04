@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dijital Pano</title>
+
+    <!-- Social Media Preview (WhatsApp/OG) -->
+    <meta property="og:title" content="Dijital Pano Sistemi" />
+    <meta property="og:description" content="Kurumsal Bilgilendirme ve Duyuru Ekranı" />
+    <meta property="og:image" content="https://kartaltepepano.com/logo-share.png" />
+    <meta property="og:url" content="https://kartaltepepano.com" />
+    <meta property="og:type" content="website" />
+
+    <!-- Twitter Card (WhatsApp Fallback) -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Dijital Pano Sistemi" />
+    <meta name="twitter:description" content="Kurumsal Bilgilendirme ve Duyuru Ekranı" />
+    <meta name="twitter:image" content="https://kartaltepepano.com/logo-share.png" />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Dancing+Script:wght@600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Amiri:wght@400;700&family=Scheherazade+New:wght@400;700&display=swap"
+        rel="stylesheet">
+    <!-- Swiper CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+    <style>
+        body {
+            font-family: 'Montserrat', sans-serif;
+            overflow: hidden;
+            background-color: #e2e8f0;
+        }
+
+        .font-script {
+            font-family: 'Dancing Script', cursive;
+        }
+
+        .font-serif-tr {
+            font-family: 'Playfair Display', serif;
+        }
+
+        .font-arabic {
+            font-family: 'Scheherazade New', serif;
+        }
+
+        /* Marquee */
+        .marquee-container {
+            overflow: hidden;
+            white-space: nowrap;
+            width: 100%;
+            position: relative;
+        }
+
+        .marquee-content {
+            display: inline-block;
+            white-space: nowrap;
+            /* Start completely off-screen to the right using padding */
+            padding-left: 100%;
+            /* Animasyonu biraz yavaşlat (40s) ve lineer yap */
+            animation: marquee 100s linear infinite;
+        }
+
+        @keyframes marquee {
+            0% {
+                transform: translate3d(0, 0, 0);
+            }
+
+            100% {
+                transform: translate3d(-100%, 0, 0);
+            }
+        }
+
+
+
+        /* Dot Pattern Background for Hadith */
+        .bg-dots {
+            background-color: #f0fdf9;
+            background-image: radial-gradient(#ccfbf1 2px, transparent 2px);
+            background-size: 20px 20px;
+        }
+
+        /* --- NEW LIGHT THEME HADITH CSS --- */
+        .card-modern-islamic {
+            /* White Background as requested */
+            background: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            color: #1e293b;
+            border: 4px solid #fff;
+        }
+
+        .corner-decor {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border: 3px solid #0284c7;
+            /* Sky 600 */
+            transition: all 0.3s ease;
+            z-index: 6;
+        }
+
+        .top-left {
+            top: 15px;
+            left: 15px;
+            border-right: none;
+            border-bottom: none;
+            border-radius: 16px 0 0 0;
+        }
+
+        .top-right {
+            top: 15px;
+            right: 15px;
+            border-left: none;
+            border-bottom: none;
+            border-radius: 0 16px 0 0;
+        }
+
+        .bottom-left {
+            bottom: 15px;
+            left: 15px;
+            border-right: none;
+            border-top: none;
+            border-radius: 0 0 0 16px;
+        }
+
+        .bottom-right {
+            bottom: 15px;
+            right: 15px;
+            border-left: none;
+            border-top: none;
+            border-radius: 0 0 16px 0;
+        }
+
+        .corner-decor::after {
+            content: '';
+            position: absolute;
+            width: 35px;
+            height: 35px;
+            border: 1px solid #f59e0b;
+            /* Amber 500 */
+            opacity: 0.6;
+        }
+
+        .top-left::after {
+            top: 4px;
+            left: 4px;
+            border-right: none;
+            border-bottom: none;
+            border-radius: 10px 0 0 0;
+        }
+
+        .top-right::after {
+            top: 4px;
+            right: 4px;
+            border-left: none;
+            border-bottom: none;
+            border-radius: 0 10px 0 0;
+        }
+
+        .bottom-left::after {
+            bottom: 4px;
+            left: 4px;
+            border-right: none;
+            border-top: none;
+            border-radius: 0 0 0 10px;
+        }
+
+        .bottom-right::after {
+            bottom: 4px;
+            right: 4px;
+            border-left: none;
+            border-top: none;
+            border-radius: 0 0 10px 0;
+        }
+
+        .pattern-overlay-bg {
+            position: absolute;
+            inset: 0;
+            background-image: url('https://www.transparenttextures.com/patterns/arabesque.png');
+            opacity: 0.1;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .header-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: #e0f2fe;
+            padding: 8px 32px;
+            border-radius: 100px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+            border: 1px solid #bae6fd;
+        }
+
+        .header-title {
+            color: #0369a1;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            font-size: 0.85rem;
+            text-transform: uppercase;
+        }
+
+        .header-icon {
+            color: #f59e0b;
+            font-size: 1.1rem;
+        }
+
+        .arabic-text {
+            font-family: 'Amiri', serif;
+            font-size: 3.5rem;
+            color: #1e3a8a;
+            line-height: 1.4;
+            text-align: center;
+            margin-bottom: 10px;
+            font-weight: 400;
+        }
+
+        .turkish-text {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            color: #334155;
+            text-align: center;
+            line-height: 1.3;
+            font-weight: 700;
+            max-width: 95%;
+            position: relative;
+            margin-top: 35px;
+        }
+
+        .quote-icon {
+            position: absolute;
+            top: -25px;
+            left: -15px;
+            font-size: 4rem;
+            color: #bae6fd;
+            opacity: 0.5;
+            font-family: serif;
+            z-index: -1;
+        }
+
+        .date-box {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            padding: 6px 25px;
+            border-radius: 50px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 15px -3px rgba(0, 0, 0, 0.05);
+        }
+
+        .date-text {
+            color: #0369a1;
+            font-weight: 700;
+            font-size: 0.8rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        .date-icon-svg {
+            color: #f59e0b;
+        }
+
+        /* --- WEATHER ANIMATIONS --- */
+        /* RAIN - Glass Effect (Cama Yağmış Gibi) */
+        .anim-rain {
+            background-color: #3b82f6 !important;
+            /* Blue-500 */
+            position: relative;
+            overflow: hidden;
+        }
+
+        .anim-rain::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            opacity: 0.7;
+            z-index: 1;
+            /* Performance Optimization */
+            will-change: opacity;
+            /* Drop Set 1: Two drops in different positions */
+            background-image:
+                radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.8) 1.5px, transparent 2.5px),
+                radial-gradient(circle at 75% 30%, rgba(255, 255, 255, 0.7) 2px, transparent 3px),
+                radial-gradient(circle at 40% 70%, rgba(255, 255, 255, 0.8) 1.5px, transparent 2.5px),
+                radial-gradient(circle at 85% 60%, rgba(255, 255, 255, 0.8) 1px, transparent 2px),
+                radial-gradient(circle at 20% 80%, rgba(255, 255, 255, 0.7) 2px, transparent 3px),
+                radial-gradient(circle at 55% 45%, rgba(255, 255, 255, 0.8) 1.5px, transparent 2.5px),
+                radial-gradient(circle at 90% 10%, rgba(255, 255, 255, 0.7) 1px, transparent 2px),
+                radial-gradient(circle at 30% 40%, rgba(255, 255, 255, 0.7) 1.5px, transparent 2.5px),
+                /* Extra drops */
+                radial-gradient(circle at 15% 55%, rgba(255, 255, 255, 0.8) 1.5px, transparent 2.5px),
+                radial-gradient(circle at 65% 15%, rgba(255, 255, 255, 0.7) 2px, transparent 3px),
+                radial-gradient(circle at 50% 85%, rgba(255, 255, 255, 0.8) 1px, transparent 2px),
+                /* Even MORE drops for density */
+                radial-gradient(circle at 5% 5%, rgba(255, 255, 255, 0.7) 1px, transparent 2px),
+                radial-gradient(circle at 95% 95%, rgba(255, 255, 255, 0.7) 1.5px, transparent 2.5px),
+                radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.6) 1.2px, transparent 2.2px),
+                radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.8) 1.5px, transparent 2.5px),
+                radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.7) 1.5px, transparent 2.5px);
+            z-index: 1;
+        }
+
+        .anim-rain::after {
+            content: "";
+            position: absolute;
+            top: -100%;
+            left: 0;
+            width: 100%;
+            height: 300%;
+            /* Falling rounded drops (Not lines) */
+            background-image:
+                radial-gradient(ellipse at center, rgba(255, 255, 255, 0.7) 0%, transparent 60%),
+                radial-gradient(ellipse at center, rgba(255, 255, 255, 0.6) 0%, transparent 60%),
+                radial-gradient(ellipse at center, rgba(255, 255, 255, 0.8) 0%, transparent 60%),
+                radial-gradient(ellipse at center, rgba(255, 255, 255, 0.6) 0%, transparent 60%),
+                radial-gradient(ellipse at center, rgba(255, 255, 255, 0.7) 0%, transparent 60%);
+
+            background-size:
+                5px 25px,
+                4px 18px,
+                6px 22px,
+                4px 20px,
+                5px 28px;
+
+            background-position:
+                20% 0,
+                60% 40%,
+                80% 10%,
+                40% 70%,
+                10% 90%;
+
+            background-repeat: repeat-y;
+            animation: glass-drips 1.5s linear infinite;
+            /* Fast falling */
+            will-change: transform;
+            opacity: 0.7;
+            z-index: 2;
+        }
+
+        @keyframes glass-drips {
+            0% {
+                transform: translateY(0);
+            }
+
+            100% {
+                transform: translateY(33.33%);
+            }
+        }
+
+        @keyframes rain-fall {
+
+            /* Legacy Keyframe kept to avoid breaking other refs if any (safeguard) */
+            0% {
+                transform: translateY(0);
+            }
+
+            100% {
+                transform: translateY(50%);
+            }
+        }
+
+        /* SNOW */
+        .anim-snow {
+            background-color: #60a5fa !important;
+            /* Lighter Blue */
+        }
+
+        .anim-snow::after {
+            content: "❄";
+            position: absolute;
+            top: -20px;
+            left: 10%;
+            color: white;
+            opacity: 0.6;
+            font-size: 10px;
+            animation: snow-fall 3s linear infinite;
+            box-shadow:
+                20px 20px 0 white,
+                50px -50px 0 white,
+                80px 50px 0 white,
+                150px -20px 0 white,
+                200px 30px 0 white;
+            /* Inadequate for a full snow effect but simple. */
+        }
+
+        .anim-snow::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='2' cy='2' r='2' fill='%23ffffff' fill-opacity='0.4'/%3E%3C/svg%3E");
+            animation: snow-fall 5s linear infinite;
+            height: 200%;
+            top: -100%;
+        }
+
+        @keyframes snow-fall {
+            0% {
+                transform: translateY(0);
+            }
+
+            100% {
+                transform: translateY(50%);
+            }
+        }
+
+        /* STORM */
+        .anim-storm {
+            background-color: #1e3a8a !important;
+            /* Dark Blue */
+            animation: thunder 4s infinite;
+        }
+
+        @keyframes thunder {
+
+            0%,
+            95%,
+            100% {
+                filter: brightness(1);
+            }
+
+            96% {
+                filter: brightness(2);
+            }
+
+            /* Flash */
+            98% {
+                filter: brightness(1.5);
+            }
+        }
+
+        /* CLOUDY */
+        .anim-cloud {
+            background-color: #64748b !important;
+            /* Slate-500 */
+        }
+
+        /* --- GLOBAL FULLSCREEN WEATHER OVERLAYS --- */
+        /* Common Overlay Base */
+        #global-weather-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        /* GLOBAL RAIN (Intermittent Realistic Screen Drops - More Frequent) */
+        .global-rain-overlay::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            z-index: 9999;
+            /* Performance Optimization */
+            will-change: transform, opacity;
+            backface-visibility: hidden;
+            /* Drop Set 1: Single optimized drop */
+            background-image:
+                /* Drop A Body */
+                radial-gradient(circle at center, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 40%, rgba(0, 0, 0, 0.2) 60%, transparent 70%),
+                /* Drop A Highlight */
+                radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.9) 0%, transparent 10%);
+
+            background-size: 150px 150px, 150px 150px;
+            background-repeat: no-repeat;
+            background-position: 20% 40%, 20% 40%;
+
+            /* Intermittent animation: faster loop (10s) */
+            animation: rain-hit-1 10s infinite ease-out;
+        }
+
+        .global-rain-overlay::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            z-index: 9999;
+            /* Drop Set 2: Single optimized drop */
+            background-image:
+                /* Drop C Body */
+                radial-gradient(circle at center, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 40%, rgba(0, 0, 0, 0.2) 60%, transparent 70%),
+                /* Drop C Highlight */
+                radial-gradient(circle at 35% 35%, rgba(255, 255, 255, 0.9) 0%, transparent 10%);
+
+            background-size: 100px 100px, 100px 100px;
+            background-repeat: no-repeat;
+            background-position: 30% 80%, 30% 80%;
+
+            animation: rain-hit-2 12s infinite ease-out;
+            animation-delay: 3s;
+        }
+
+        @keyframes rain-hit-1 {
+
+            0%,
+            80% {
+                opacity: 0;
+                transform: scale(3);
+            }
+
+            85% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            /* Hit */
+            92% {
+                opacity: 0.8;
+                transform: scale(1) translateY(30px);
+            }
+
+            /* Slide/Drip */
+            100% {
+                opacity: 0;
+                transform: scale(1) translateY(50px);
+            }
+        }
+
+        @keyframes rain-hit-2 {
+
+            0%,
+            80% {
+                opacity: 0;
+                transform: scale(2);
+            }
+
+            85% {
+                opacity: 1;
+                transform: scale(1);
+            }
+
+            92% {
+                opacity: 0.7;
+                transform: scale(1) translateY(40px);
+            }
+
+            100% {
+                opacity: 0;
+                transform: scale(0.9) translateY(60px);
+            }
+        }
+
+        /* GLOBAL SNOW (Optimized for TV) */
+        .global-snow-overlay::before {
+            content: "";
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            z-index: 9999;
+            /* Performance Optimization */
+            will-change: transform, opacity;
+            backface-visibility: hidden;
+
+            /* Use Background Images instead of Text Shadow */
+            background-image:
+                url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='50' y='50' font-size='60' fill='white' fill-opacity='0.4'%3E❄%3C/text%3E%3C/svg%3E"),
+                url("data:image/svg+xml,%3Csvg width='80' height='80' viewBox='0 0 80 80' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='40' y='40' font-size='40' fill='white' fill-opacity='0.3'%3E❄%3C/text%3E%3C/svg%3E");
+
+            background-repeat: no-repeat;
+            background-position: 20% 50%, 70% 30%;
+            background-size: 200px 200px, 150px 150px;
+
+            animation: snow-drift-1 12s infinite linear;
+            pointer-events: none;
+        }
+
+        .global-snow-overlay::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            z-index: 9999;
+            will-change: transform, opacity;
+            backface-visibility: hidden;
+
+            /* Second Set of Flakes */
+            background-image:
+                url("data:image/svg+xml,%3Csvg width='90' height='90' viewBox='0 0 90 90' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='45' y='45' font-size='50' fill='white' fill-opacity='0.3'%3E❄%3C/text%3E%3C/svg%3E"),
+                url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Ctext x='60' y='60' font-size='80' fill='white' fill-opacity='0.4'%3E❄%3C/text%3E%3C/svg%3E");
+
+            background-repeat: no-repeat;
+            background-position: 80% 60%, 30% 20%;
+            background-size: 180px 180px, 240px 240px;
+
+            animation: snow-drift-2 15s infinite linear;
+            animation-delay: 5s;
+            pointer-events: none;
+        }
+
+        @keyframes snow-drift-1 {
+
+            0%,
+            60% {
+                opacity: 0;
+                transform: translate3d(-50px, -50px, 0) rotate(0deg);
+            }
+
+            70% {
+                opacity: 0.6;
+            }
+
+            90% {
+                opacity: 0.4;
+            }
+
+            100% {
+                opacity: 0;
+                transform: translate3d(50px, 100px, 0) rotate(45deg);
+            }
+        }
+
+        @keyframes snow-drift-2 {
+
+            0%,
+            60% {
+                opacity: 0;
+                transform: translate3d(20px, -20px, 0) rotate(0deg);
+            }
+
+            70% {
+                opacity: 0.5;
+            }
+
+            90% {
+                opacity: 0.3;
+            }
+
+            100% {
+                opacity: 0;
+                transform: translate3d(-50px, 120px, 0) rotate(-30deg);
+            }
+        }
+    </style>
+</head>
+
+<body class="fixed inset-0 w-screen h-screen flex flex-col p-3 gap-3 box-border bg-[#eef2f6] overflow-hidden">
+
+    <!-- Global Fullscreen Weather Overlay -->
+    <div id="global-weather-overlay"></div>
+
+    <!-- Ana İçerik Grid -->
+    <div class="flex flex-col lg:grid lg:grid-cols-12 gap-3 flex-grow lg:h-[calc(100%-4rem)] h-auto">
+
+        <!-- SOL SÜTUN (5 Birim) -->
+        <div class="w-full lg:col-span-5 flex flex-col gap-3 lg:h-full h-auto">
+
+            <!-- HEADER -->
+            <div class="bg-[#1e1f35] rounded-xl shadow-lg p-3 flex items-center justify-between text-white flex-[0.8]">
+                <div class="flex items-center gap-4">
+                    <div class="w-20 h-20 flex items-center justify-center relative overflow-hidden">
+                        <img id="header-logo" src="logo.png" alt="Kurum Logo"
+                            class="w-full h-full object-contain brightness-0 invert">
+                    </div>
+                    <div>
+                        <h1 id="header-title" class="text-xl font-extrabold tracking-tight leading-tight">YÜKLENİYOR...
+                        </h1>
+                        <p id="header-subtitle"
+                            class="text-[0.65rem] tracking-[0.2em] font-medium text-gray-400 uppercase">
+                            Dijital Pano Sistemi
+                        </p>
+                    </div>
+                </div>
+                <div class="text-right">
+                    <p id="header-slogan1" class="font-script text-lg text-gray-300 leading-none">...</p>
+                    <p id="header-slogan2" class="font-script text-lg text-white leading-none">...</p>
+                </div>
+            </div>
+
+
+            <!-- HADİS VE YATAKHANE BİRLEŞİK ALAN (Galeri için) -->
+            <div class="flex-[7.2] relative rounded-xl overflow-hidden min-h-[400px] lg:min-h-0">
+
+                <!-- Sol Galeri (Tek Kutu) -->
+                <div id="left-gallery-container"
+                    class="absolute inset-0 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-xl hidden z-20 flex items-center justify-center">
+                    <img id="left-gallery-image" src=""
+                        class="w-full h-full object-contain rounded-xl transition-all duration-700 ease-in-out" />
+                </div>
+
+                <!-- Normal İçerik (Galeri yokken veya gösterilmiyorken) -->
+                <div id="left-normal-content" class="flex flex-col gap-3 h-full">
+
+                    <!-- HADİS KARTI (LIGHT THEME - NEW DESIGN) -->
+                    <div id="hadith-card"
+                        class="card-modern-islamic flex-[3] transition-all duration-500 flex flex-col justify-between items-center p-0 relative group">
+
+                        <!-- Pattern Overlay -->
+                        <div class="pattern-overlay-bg"></div>
+
+                        <!-- Corners -->
+                        <div class="corner-decor top-left"></div>
+                        <div class="corner-decor top-right"></div>
+                        <div class="corner-decor bottom-left"></div>
+                        <div class="corner-decor bottom-right"></div>
+
+                        <div class="header-area mt-4 w-full flex justify-center">
+                            <div
+                                class="header-badge px-4 py-1.5 bg-blue-100/90 rounded-full border border-blue-200/50 shadow-sm flex items-center justify-center gap-2 max-w-[90%]">
+                                <span class="header-icon text-blue-400 text-xs shrink-0">✦</span>
+                                <span
+                                    class="header-title font-bold text-blue-900 uppercase tracking-wide text-center leading-tight whitespace-normal text-[0.65rem] md:text-xs break-words">HAFTANIN
+                                    HADİS-İ ŞERİFİ</span>
+                                <span class="header-icon text-blue-400 text-xs shrink-0">✦</span>
+                            </div>
+                        </div>
+
+                        <div
+                            class="content-area flex-grow flex flex-col justify-evenly items-center p-2 relative z-10 w-full overflow-hidden">
+                            <div id="hadith-arabic" class="arabic-text w-full text-center leading-relaxed">
+                                <!-- JS Doldurur -->
+                            </div>
+
+                            <div class="turkish-text w-full flex items-center justify-center">
+                                <div id="hadith-content" class="text-center leading-snug">Yükleniyor...</div>
+                            </div>
+
+                            <!-- Image Support -->
+                            <img id="hadith-image" src=""
+                                class="hidden max-h-40 object-contain rounded-lg shadow-lg border-2 border-white/80 z-20" />
+                        </div>
+
+                        <div class="footer-area mb-4">
+                            <div class="date-box">
+                                <svg class="w-5 h-5 date-icon-svg" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
+                                    </path>
+                                </svg>
+                                <span class="date-text">
+                                    <span id="hadith-week"></span> <span id="week-date-range"></span>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Hidden elements for compatibility -->
+                        <div id="hijri-date" class="hidden"></div>
+                    </div>
+
+                    <!-- YURT KARTI -->
+                    <div id="dorm-card"
+                        class="bg-gradient-to-r from-red-400 to-orange-300 rounded-xl shadow-md p-0 flex flex-col relative overflow-hidden flex-[1.7] transition-all duration-500">
+
+                        <!-- ORTAK BAŞLIK -->
+                        <div class="w-full text-center py-1.5 border-b border-white/20 bg-white/10">
+                            <h2
+                                class="text-white font-black tracking-widest text-xs flex items-center justify-center gap-2">
+                                <span class="text-yellow-200 text-sm">♛</span> <span id="dorm-section-title">GÜNÜN
+                                    KAZANAN YATAKHANESİ</span> <span class="text-yellow-200 text-sm">♛</span>
+                            </h2>
+                        </div>
+
+                        <div class="flex-1 flex w-full overflow-hidden">
+
+                            <!-- YURT 1 (SOL) -->
+                            <div id="dorm1-container"
+                                class="flex-1 flex flex-col items-center justify-start border-r border-white/20 p-1 relative">
+                                <!-- Başlık -->
+                                <div id="dorm1-custom-title"
+                                    class="text-[0.6rem] text-yellow-100/90 uppercase font-bold tracking-wider mb-0.5">
+                                </div>
+                                <div class="flex w-full items-center justify-center relative mb-1 px-1">
+                                    <div class="text-xl md:text-2xl font-black text-white text-center leading-none drop-shadow-md truncate max-w-[80%]"
+                                        id="dorm1-name">---</div>
+                                    <div class="absolute right-0 top-1/2 -translate-y-1/2 bg-yellow-400 text-yellow-900 px-1.5 py-0.5 rounded text-[0.6rem] font-bold shadow-sm transform rotate-3"
+                                        id="dorm1-count">0.KEZ</div>
+                                </div>
+                                <!-- Liste -->
+                                <div class="w-full flex-grow flex flex-col justify-center px-2">
+                                    <div id="dorm1-students"
+                                        class="w-full grid grid-cols-2 gap-x-2 gap-y-1 text-sm font-bold text-white text-center leading-tight">
+                                        <!-- Dynamic Content -->
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- YURT 2 (SAĞ) -->
+                            <div id="dorm2-container"
+                                class="flex-1 flex flex-col items-center justify-start p-1 relative">
+                                <!-- Başlık -->
+                                <div id="dorm2-custom-title"
+                                    class="text-[0.6rem] text-yellow-100/90 uppercase font-bold tracking-wider mb-0.5">
+                                </div>
+                                <div class="flex w-full items-center justify-center relative mb-1 px-1">
+                                    <div class="text-xl md:text-2xl font-black text-white text-center leading-none drop-shadow-md truncate max-w-[80%]"
+                                        id="dorm2-name">---</div>
+                                    <div class="absolute right-0 top-1/2 -translate-y-1/2 bg-yellow-400 text-yellow-900 px-1.5 py-0.5 rounded text-[0.6rem] font-bold shadow-sm transform rotate-3"
+                                        id="dorm2-count">0.KEZ</div>
+                                </div>
+                                <!-- Liste -->
+                                <div class="w-full flex-grow flex flex-col justify-center px-2">
+                                    <div id="dorm2-students"
+                                        class="w-full grid grid-cols-2 gap-x-2 gap-y-1 text-sm font-bold text-white text-center leading-tight">
+                                        <!-- Dynamic Content -->
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+
+        </div>
+
+        <!-- SAĞ SÜTUN (7 Birim) -->
+        <div class="w-full lg:col-span-7 flex flex-col gap-3 lg:h-full h-auto">
+
+            <!-- VİDEO ALANI -->
+            <div
+                class="bg-black rounded-xl shadow-lg overflow-hidden flex-[2.5] relative group border-4 border-[#1e1f35] min-h-[250px] lg:min-h-0">
+                <div id="player" class="absolute inset-0 w-full h-full"></div>
+                <div class="swiper mySwiper absolute inset-0 w-full h-full hidden">
+                    <div class="swiper-wrapper" id="slide-wrapper"></div>
+                </div>
+            </div>
+
+            <!-- ALT BİLGİ ŞERİDİ (Grid yapısı ekran görüntüsündeki gibi 2 parça alt alta solda, büyük parça sağda) -->
+            <div class="flex gap-3 flex-[1.2]">
+
+                <!-- Sol Kısım (Saat & Hava) -->
+                <div class="flex flex-col gap-3 w-1/3">
+                    <!-- Saat -->
+                    <div
+                        class="bg-[#1e293b] rounded-xl shadow-lg text-white flex flex-col items-center justify-center flex-1 p-2">
+                        <div class="text-5xl font-extrabold tracking-tighter" id="clock">12:00</div>
+                        <div class="text-xs font-semibold text-blue-200 mt-1 uppercase tracking-wide" id="date">12
+                            ARALIK CUMA</div>
+                    </div>
+                    <!-- Hava -->
+                    <div id="weather-card"
+                        class="bg-blue-500 rounded-xl shadow-lg text-white flex items-center justify-between flex-1 px-6 relative overflow-hidden transition-colors duration-1000">
+                        <div class="z-10">
+                            <div class="text-[0.65rem] font-bold opacity-80 uppercase tracking-widest mb-1"
+                                id="weather-desc">İSTANBUL</div>
+                            <div class="text-3xl font-bold flex items-start leading-none">
+                                <span id="weather-temp">--</span><span class="text-lg mt-0.5">°</span>
+                            </div>
+                            <div class="text-[0.65rem] opacity-70 mt-1" id="weather-condition">Açık</div>
+                        </div>
+                        <svg class="w-12 h-12 text-white/80 z-10" fill="currentColor" viewBox="0 0 24 24">
+                            <path
+                                d="M19.36 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.64-4.96z" />
+                        </svg>
+                        <!-- Cloud decoration -->
+                        <div
+                            class="absolute -right-4 -bottom-4 text-white/10 w-24 h-24 rounded-full bg-white/20 blur-xl">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sağ Kısım (Dönen Kart: Duyuru / Sınav) -->
+                <div
+                    class="w-2/3 bg-gradient-to-br from-[#4c1d95] to-[#7c3aed] rounded-xl shadow-lg p-5 flex flex-col relative overflow-hidden text-white border border-purple-800">
+
+                    <!-- Dönen Alan -->
+                    <div id="info-carousel"
+                        class="transition-all duration-700 ease-in-out h-full flex flex-col justify-center">
+
+                        <!-- Header -->
+                        <div class="relative flex items-center justify-center mb-4 w-full">
+                            <!-- Title Group restricted to 70% width to avoid badge overlap -->
+                            <div class="flex items-center justify-center gap-2 max-w-[70%] z-10">
+                                <span class="text-yellow-400 text-xl drop-shadow-md shrink-0">🏆</span>
+                                <h3 class="font-bold text-lg leading-tight tracking-normal uppercase drop-shadow-sm text-center break-words"
+                                    id="info-title">
+                                    Yükleniyor...</h3>
+                            </div>
+                            <!-- Badge on the right -->
+                            <span
+                                class="absolute right-0 top-1/2 -translate-y-1/2 bg-white/20 text-[0.6rem] px-2 py-1 rounded-full uppercase tracking-wider font-bold text-white shadow-sm whitespace-nowrap"
+                                id="info-badge">...</span>
+                        </div>
+
+                        <!-- Content Container (Vertical Stack for maximum width) -->
+                        <div
+                            class="flex-grow flex flex-col items-center justify-center p-2 relative overflow-hidden w-full">
+
+                            <!-- Icon -->
+                            <div class="w-20 h-20 rounded-full bg-yellow-500 flex items-center justify-center text-white font-bold text-lg shadow-lg border-4 border-yellow-300 transform transition-transform duration-500 hover:scale-110 mb-2 shrink-0"
+                                id="info-circle-badge">
+                                <!-- JS fills this -->
+                            </div>
+
+                            <!-- Label -->
+                            <div class="text-[0.7rem] text-purple-200 uppercase tracking-widest font-bold mb-1 opacity-80"
+                                id="info-top-label">BİLGİLENDİRME</div>
+
+                            <!-- Text -->
+                            <div class="text-2xl font-bold tracking-tight text-center w-full px-2 leading-tight"
+                                id="info-main-text">
+                                ---
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <div
+        class="h-16 bg-[#312e81] text-white flex items-center rounded-lg shadow-lg overflow-hidden relative border-t-2 border-indigo-400">
+        <div class="bg-[#4338ca] px-6 h-full flex items-center justify-center z-10 shadow-md">
+            <svg class="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z">
+                </path>
+            </svg>
+            <span class="font-bold text-sm tracking-wider ml-3">GÜNÜN SÖZÜ</span>
+        </div>
+        <div class="marquee-container flex-1 min-w-0 h-full flex items-center bg-[#312e81]">
+            <div class="marquee-content px-4 text-2xl font-semibold tracking-wide text-indigo-100 whitespace-nowrap"
+                style="white-space: nowrap !important;" id="marquee-text">
+                Dijital Pano sistemine hoşgeldiniz...
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <script src="https://www.youtube.com/iframe_api"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/js/supabase.js"></script>
+    <script src="/js/main.js?v=20251230_3"></script>
+</body>
+
+</html>
