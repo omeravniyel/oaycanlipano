@@ -31,23 +31,32 @@ module.exports = async (request, response) => {
     // Eğer bu bir 'System' kaydı değilse ve 'institution_type' varsa global veriyi merge et
     if (!slug.startsWith('system-') && config.institution_type) {
         try {
-            // HELPER: Process Central Items (Handle Exclusion + Extraction)
-            const processCentralItems = (items, currentSlug) => {
+            // Helper to process central items (exclusion logic + REGION FILTER)
+            function processCentralItems(items, currentSlug, institutionConfig = {}) {
                 if (!items || !Array.isArray(items)) return [];
+
                 return items
                     .filter(item => {
-                        // Objeyse ve exclude listesinde bu kurum varsa atla
-                        if (typeof item === 'object' && item !== null && item.exclude && Array.isArray(item.exclude)) {
+                        if (typeof item !== 'object') return true; // String items are always shown (legacy)
+                        if (!item.url) return false;
+
+                        // 1. EXCLUSION CHECK
+                        if (item.exclude && Array.isArray(item.exclude)) {
                             if (item.exclude.includes(currentSlug)) return false;
                         }
+
+                        // 2. REGION FILTER CHECK (NEW)
+                        // If item has a region_filter, it must match the institution's region.
+                        // If institution has NO region, it cannot see filtered items (Safe Default).
+                        if (item.region_filter && item.region_filter.trim().length > 0) {
+                            const requiredRegion = item.region_filter.trim().toLowerCase();
+                            const myRegion = (institutionConfig.region || "").trim().toLowerCase();
+
+                            if (myRegion !== requiredRegion) return false;
+                        }
+
                         return true;
                     })
-                    .map(item => {
-                        // URL stringini çek
-                        if (typeof item === 'object' && item !== null) return item.url;
-                        return item;
-                    })
-                    .filter(url => typeof url === 'string' && url.length > 5);
             };
 
             // 1. GLOBAL HADITHS
@@ -87,7 +96,7 @@ module.exports = async (request, response) => {
                             else if (typeof config.gallery_links === 'string') localGallery = JSON.parse(config.gallery_links);
                         } catch (e) { }
 
-                        const centralImages = processCentralItems(typeConfig.images, slug);
+                        const centralImages = processCentralItems(typeConfig.images, slug, config);
 
                         // Deduplicate: Local overrides central if exact duplicate? checking URL uniqueness
                         const combined = [...centralImages, ...localGallery].map(url => typeof url === 'string' ? url.trim() : url);
@@ -107,7 +116,7 @@ module.exports = async (request, response) => {
                         } catch (e) { }
 
                         localVideos = localVideos.filter(v => v && v.length > 5);
-                        const centralVideos = processCentralItems(typeConfig.videos, slug);
+                        const centralVideos = processCentralItems(typeConfig.videos, slug, config);
 
                         const combinedVideos = [...centralVideos, ...localVideos].map(v => typeof v === 'string' ? v.trim() : v);
                         config.video_urls = [...new Set(combinedVideos)];
@@ -121,7 +130,7 @@ module.exports = async (request, response) => {
                             else if (typeof config.left_gallery_links === 'string') localLeft = JSON.parse(config.left_gallery_links);
                         } catch (e) { }
 
-                        const centralLeft = processCentralItems(typeConfig.left_images, slug);
+                        const centralLeft = processCentralItems(typeConfig.left_images, slug, config);
 
                         const combinedLeft = [...centralLeft, ...localLeft].map(url => typeof url === 'string' ? url.trim() : url);
                         config.left_gallery_links = [...new Set(combinedLeft)];
