@@ -89,6 +89,10 @@
                         class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2.5 rounded-lg shadow-md hover:shadow-lg transition-all flex items-center gap-2 font-medium">
                         <i class="fas fa-images"></i> Merkezi Galeri
                     </button>
+                    <button onclick="openCentralAnnouncementsModal()"
+                        class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-2.5 rounded-lg shadow-md hover:shadow-lg transition-all flex items-center gap-2 font-medium">
+                        <i class="fas fa-bullhorn"></i> Merkezi Duyuru
+                    </button>
                     <button onclick="openModal()"
                         class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-lg shadow-md hover:shadow-lg transition-all flex items-center gap-2 font-medium">
                         <i class="fas fa-plus"></i> Yeni Kurum Ekle
@@ -679,319 +683,490 @@
                 </div>
             </div>
         </div>
-    </div>
+        <!-- CENTRAL ANNOUNCEMENTS MODAL -->
+        <div id="central-announcements-modal"
+            class="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col h-[90vh]">
+                <!-- Header -->
+                <div
+                    class="border-b border-gray-100 px-6 py-4 flex justify-between items-center bg-gray-50 rounded-t-2xl flex-shrink-0">
+                    <div class="flex items-center gap-3">
+                        <div class="bg-orange-100 p-2 rounded-lg">
+                            <i class="fas fa-bullhorn text-orange-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-gray-800">Merkezi Duyuru Yönetimi</h3>
+                            <p class="text-xs text-gray-500">Seçilen tipteki tüm kurumlara ortak duyuru ekleyin.</p>
+                        </div>
+                    </div>
+                    <button onclick="closeCentralAnnouncementsModal()"
+                        class="text-gray-400 hover:text-gray-600 transition-colors">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
 
-    <script>
-        // --- GLOBAL GALLERY LOGIC ---
-        let globalGalleryConfig = {}; // Stores all types: { 'Ortaokul': { images: [], videos: [] }, ... }
-        let currentGalleryType = 'Ortaokul';
+                <!-- Body -->
+                <div class="p-6 overflow-y-auto flex-1 bg-gray-50/50">
 
-        async function openGlobalGalleryModal() {
-            document.getElementById('global-gallery-modal').classList.remove('hidden');
+                    <!-- Type Selector -->
+                    <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm mb-6">
+                        <label class="block text-sm font-semibold text-gray-700 mb-2">Hangi Kurum Tipi İçin Duyuru
+                            Ekliyorsunuz?</label>
+                        <div class="flex gap-2 flex-wrap" id="announcement-type-tabs">
+                            <button onclick="switchAnnouncementType('Ortaokul')"
+                                class="announcement-tab px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 hover:bg-gray-50 transition-colors active-tab-orange"
+                                data-type="Ortaokul">Ortaokul</button>
+                            <button onclick="switchAnnouncementType('Lise')"
+                                class="announcement-tab px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 hover:bg-gray-50 transition-colors"
+                                data-type="Lise">Lise</button>
+                            <button onclick="switchAnnouncementType('Üniversite Hazırlık')"
+                                class="announcement-tab px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 hover:bg-gray-50 transition-colors"
+                                data-type="Üniversite Hazırlık">Üniversite Hazırlık</button>
+                            <button onclick="switchAnnouncementType('Üniversite')"
+                                class="announcement-tab px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 hover:bg-gray-50 transition-colors"
+                                data-type="Üniversite">Üniversite</button>
+                            <button onclick="switchAnnouncementType('Daimi')"
+                                class="announcement-tab px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 hover:bg-gray-50 transition-colors"
+                                data-type="Daimi">Daimi</button>
+                            <button onclick="switchAnnouncementType('Tekamül')"
+                                class="announcement-tab px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 hover:bg-gray-50 transition-colors"
+                                data-type="Tekamül">Tekamül</button>
+                        </div>
+                    </div>
 
-            // Load Fresh Data
-            try {
-                const res = await fetch('/api/manage-institutions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'get_global_gallery', master_password: MASTER_PASSWORD })
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                Duyurular (Her satıra bir duyuru)
+                            </label>
+                            <textarea id="central_announcements_text"
+                                class="w-full h-64 border border-gray-200 rounded-xl p-4 text-sm font-sans focus:ring-2 focus:ring-orange-500 focus:outline-none resize-y shadow-sm"
+                                placeholder="Örn: 29 Ekim Cumhuriyet Bayramı Kutlu Olsun...&#10;Yarın tatil..."></textarea>
+                            <div
+                                class="mt-3 flex gap-2 items-start bg-orange-50 p-3 rounded-lg border border-orange-100">
+                                <i class="fas fa-info-circle text-orange-500 mt-0.5"></i>
+                                <p class="text-xs text-orange-700">Bu duyurular, seçili tipteki kurumlara (örn:
+                                    Ortaokul) ait tüm panolarda, kurumun kendi duyurularının sonuna eklenerek
+                                    gösterilir.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div
+                    class="border-t border-gray-100 px-6 py-4 bg-white rounded-b-2xl flex justify-end gap-3 flex-shrink-0">
+                    <button onclick="closeCentralAnnouncementsModal()"
+                        class="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors">İptal</button>
+                    <button onclick="saveCentralAnnouncements()"
+                        class="px-5 py-2.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 shadow-md hover:shadow-lg font-medium transition-all flex items-center gap-2">
+                        <i class="fas fa-save"></i> Duyuruları Kaydet
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // --- CENTRAL ANNOUNCEMENTS LOGIC ---
+            let centralAnnouncementsConfig = {}; // { 'Ortaokul': ["Duuyuru 1"], ... }
+            let currentAnnouncementType = 'Ortaokul';
+
+            async function openCentralAnnouncementsModal() {
+                document.getElementById('central-announcements-modal').classList.remove('hidden');
+
+                // Load Data
+                try {
+                    const res = await fetch('/api/manage-institutions', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'get_central_announcements', master_password: MASTER_PASSWORD })
+                    });
+
+                    if (res.ok) {
+                        const data = await res.json();
+                        centralAnnouncementsConfig = data.config || {};
+                    } else {
+                        centralAnnouncementsConfig = {};
+                    }
+                } catch (e) {
+                    console.error('Announcements Load Error:', e);
+                    centralAnnouncementsConfig = {};
+                }
+
+                // Init UI
+                switchAnnouncementType('Ortaokul');
+            }
+
+            function closeCentralAnnouncementsModal() {
+                document.getElementById('central-announcements-modal').classList.add('hidden');
+            }
+
+            function switchAnnouncementType(type) {
+                // Save memory
+                const text = document.getElementById('central_announcements_text').value;
+                const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+                if (!centralAnnouncementsConfig[currentAnnouncementType]) centralAnnouncementsConfig[currentAnnouncementType] = [];
+                centralAnnouncementsConfig[currentAnnouncementType] = lines;
+
+                // Update Type
+                currentAnnouncementType = type;
+
+                // Update Tabs
+                document.querySelectorAll('.announcement-tab').forEach(btn => {
+                    if (btn.dataset.type === type) {
+                        btn.classList.add('bg-orange-50', 'text-orange-700', 'border-orange-200', 'ring-2', 'ring-orange-200');
+                        btn.classList.remove('bg-white', 'text-gray-700', 'border-gray-200');
+                    } else {
+                        btn.classList.remove('bg-orange-50', 'text-orange-700', 'border-orange-200', 'ring-2', 'ring-orange-200');
+                        btn.classList.add('bg-white', 'text-gray-700', 'border-gray-200');
+                    }
                 });
 
-                if (res.ok) {
-                    const data = await res.json();
-                    globalGalleryConfig = data.config || {};
-                } else {
+                // Fill Input
+                const announcements = centralAnnouncementsConfig[type] || [];
+                document.getElementById('central_announcements_text').value = announcements.join('\n');
+            }
+
+            async function saveCentralAnnouncements() {
+                // Save current memory
+                switchAnnouncementType(currentAnnouncementType); // Triggers save logic inside
+
+                try {
+                    const res = await fetch('/api/manage-institutions', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'save_central_announcements',
+                            master_password: MASTER_PASSWORD,
+                            payload: { config: centralAnnouncementsConfig }
+                        })
+                    });
+
+                    if (res.ok) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Başarılı!',
+                            text: 'Merkezi duyurular kaydedildi.',
+                        });
+                        closeCentralAnnouncementsModal();
+                    } else {
+                        Swal.fire('Hata', 'Kaydetme başarısız.', 'error');
+                    }
+                } catch (e) {
+                    Swal.fire('Hata', 'Sunucu hatası.', 'error');
+                }
+            }
+
+            // --- GLOBAL GALLERY LOGIC ---
+            let globalGalleryConfig = {}; // Stores all types: { 'Ortaokul': { images: [], videos: [] }, ... }
+            let currentGalleryType = 'Ortaokul';
+
+            async function openGlobalGalleryModal() {
+                document.getElementById('global-gallery-modal').classList.remove('hidden');
+
+                // Load Fresh Data
+                try {
+                    const res = await fetch('/api/manage-institutions', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'get_global_gallery', master_password: MASTER_PASSWORD })
+                    });
+
+                    if (res.ok) {
+                        const data = await res.json();
+                        globalGalleryConfig = data.config || {};
+                    } else {
+                        globalGalleryConfig = {};
+                    }
+                } catch (e) {
+                    console.error('Gallery Load Error:', e);
                     globalGalleryConfig = {};
                 }
-            } catch (e) {
-                console.error('Gallery Load Error:', e);
-                globalGalleryConfig = {};
+
+                // Init UI
+                switchGalleryType('Ortaokul');
             }
 
-            // Init UI
-            switchGalleryType('Ortaokul');
-        }
-
-        function closeGlobalGalleryModal() {
-            document.getElementById('global-gallery-modal').classList.add('hidden');
-        }
-
-        function switchGalleryType(type) {
-            // 1. Save current input to memory before switching
-            saveCurrentInputToMemory();
-
-            // 2. Update Type
-            currentGalleryType = type;
-
-            // 3. Update Tabs UI
-            document.querySelectorAll('.gallery-tab').forEach(btn => {
-                if (btn.dataset.type === type) {
-                    btn.classList.add('bg-purple-50', 'text-purple-700', 'border-purple-200', 'ring-2', 'ring-purple-200');
-                    btn.classList.remove('bg-white', 'text-gray-700', 'border-gray-200');
-                } else {
-                    btn.classList.remove('bg-purple-50', 'text-purple-700', 'border-purple-200', 'ring-2', 'ring-purple-200');
-                    btn.classList.add('bg-white', 'text-gray-700', 'border-gray-200');
-                }
-            });
-
-            // 4. Fill Inputs
-            const typeData = globalGalleryConfig[type] || { images: [], videos: [], left_images: [] };
-
-            // Join arrays to string
-            document.getElementById('global-images-input').value = (typeData.images || []).join('\n');
-            document.getElementById('global-left-images-input').value = (typeData.left_images || []).join('\n');
-            document.getElementById('global-videos-input').value = (typeData.videos || []).join('\n');
-
-            // Render Previews
-            if (window.renderGalleryPreviews) renderGalleryPreviews();
-        }
-
-        function saveCurrentInputToMemory() {
-            const imgText = document.getElementById('global-images-input').value;
-            const leftImgText = document.getElementById('global-left-images-input').value;
-            const vidText = document.getElementById('global-videos-input').value;
-
-            const images = imgText.split('\n').map(l => l.trim()).filter(l => l);
-            const leftImages = leftImgText.split('\n').map(l => l.trim()).filter(l => l);
-            const videos = vidText.split('\n').map(l => l.trim()).filter(l => l);
-
-            if (!globalGalleryConfig[currentGalleryType]) globalGalleryConfig[currentGalleryType] = {};
-
-            globalGalleryConfig[currentGalleryType].images = images;
-            globalGalleryConfig[currentGalleryType].left_images = leftImages;
-            globalGalleryConfig[currentGalleryType].videos = videos;
-        }
-
-        // --- PREVIEW RENDERER ---
-        window.renderGalleryPreviews = function () {
-            renderPreviewForArea('global-images-input', 'gallery-preview-container');
-            renderPreviewForArea('global-left-images-input', 'left-gallery-preview-container');
-        }
-
-        function renderPreviewForArea(inputId, containerId) {
-            const lines = document.getElementById(inputId).value.split('\n').filter(l => l.length > 5);
-            const container = document.getElementById(containerId);
-            container.innerHTML = '';
-
-            if (lines.length === 0) {
-                container.innerHTML = '<span class="text-xs text-gray-400 w-full text-center py-4">Önizleme</span>';
-                return;
+            function closeGlobalGalleryModal() {
+                document.getElementById('global-gallery-modal').classList.add('hidden');
             }
 
-            lines.forEach(url => {
-                // Basic check if logic
-                const isImg = url.match(/\.(jpeg|jpg|gif|png|webp)/i) != null;
+            function switchGalleryType(type) {
+                // 1. Save current input to memory before switching
+                saveCurrentInputToMemory();
 
-                if (isImg) {
-                    const div = document.createElement('div');
-                    div.className = 'relative w-16 h-16 group';
-                    div.innerHTML = `<img src="${url}" class="w-full h-full object-cover rounded-lg border border-gray-200 shadow-sm">`;
-                    container.appendChild(div);
-                }
-            });
-        }
+                // 2. Update Type
+                currentGalleryType = type;
 
-        async function saveGlobalGallery() {
-            // Save current TAB first
-            saveCurrentInputToMemory();
-
-            try {
-                const res = await fetch('/api/manage-institutions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'save_global_gallery',
-                        master_password: MASTER_PASSWORD,
-                        payload: { config: globalGalleryConfig }
-                    })
+                // 3. Update Tabs UI
+                document.querySelectorAll('.gallery-tab').forEach(btn => {
+                    if (btn.dataset.type === type) {
+                        btn.classList.add('bg-purple-50', 'text-purple-700', 'border-purple-200', 'ring-2', 'ring-purple-200');
+                        btn.classList.remove('bg-white', 'text-gray-700', 'border-gray-200');
+                    } else {
+                        btn.classList.remove('bg-purple-50', 'text-purple-700', 'border-purple-200', 'ring-2', 'ring-purple-200');
+                        btn.classList.add('bg-white', 'text-gray-700', 'border-gray-200');
+                    }
                 });
 
-                if (res.ok) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Başarılı!',
-                        text: 'Merkezi galeri ayarları kaydedildi ve tüm panolara dağıtıldı.',
-                    });
-                    closeGlobalGalleryModal();
-                } else {
-                    Swal.fire('Hata', 'Kaydetme başarısız.', 'error');
-                }
-            } catch (e) {
-                Swal.fire('Hata', 'Sunucu hatası.', 'error');
+                // 4. Fill Inputs
+                const typeData = globalGalleryConfig[type] || { images: [], videos: [], left_images: [] };
+
+                // Join arrays to string
+                document.getElementById('global-images-input').value = (typeData.images || []).join('\n');
+                document.getElementById('global-left-images-input').value = (typeData.left_images || []).join('\n');
+                document.getElementById('global-videos-input').value = (typeData.videos || []).join('\n');
+
+                // Render Previews
+                if (window.renderGalleryPreviews) renderGalleryPreviews();
             }
-        }
 
-        // --- AUTH ---
-        let MASTER_PASSWORD = localStorage.getItem('super_admin_pass') || "";
+            function saveCurrentInputToMemory() {
+                const imgText = document.getElementById('global-images-input').value;
+                const leftImgText = document.getElementById('global-left-images-input').value;
+                const vidText = document.getElementById('global-videos-input').value;
 
-        // DEBUGGING: Add this to see if script runs
-        console.log("Script loaded and running");
+                const images = imgText.split('\n').map(l => l.trim()).filter(l => l);
+                const leftImages = leftImgText.split('\n').map(l => l.trim()).filter(l => l);
+                const videos = vidText.split('\n').map(l => l.trim()).filter(l => l);
 
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log("DOM Content Loaded");
+                if (!globalGalleryConfig[currentGalleryType]) globalGalleryConfig[currentGalleryType] = {};
 
-            // MAGIC LOGIN CHECK
-            const urlParams = new URLSearchParams(window.location.search);
-            const magicKey = urlParams.get('key');
-            if (magicKey) {
-                // OPTIMISTIC LOGIN (Hemen içeri al, sonra kontrol et)
-                window.history.replaceState({}, document.title, "/super-admin");
+                globalGalleryConfig[currentGalleryType].images = images;
+                globalGalleryConfig[currentGalleryType].left_images = leftImages;
+                globalGalleryConfig[currentGalleryType].videos = videos;
+            }
 
-                MASTER_PASSWORD = magicKey;
-                localStorage.setItem('super_admin_pass', magicKey);
+            // --- PREVIEW RENDERER ---
+            window.renderGalleryPreviews = function () {
+                renderPreviewForArea('global-images-input', 'gallery-preview-container');
+                renderPreviewForArea('global-left-images-input', 'left-gallery-preview-container');
+            }
 
-                // UI'yi hemen aç
+            function renderPreviewForArea(inputId, containerId) {
+                const lines = document.getElementById(inputId).value.split('\n').filter(l => l.length > 5);
+                const container = document.getElementById(containerId);
+                container.innerHTML = '';
+
+                if (lines.length === 0) {
+                    container.innerHTML = '<span class="text-xs text-gray-400 w-full text-center py-4">Önizleme</span>';
+                    return;
+                }
+
+                lines.forEach(url => {
+                    // Basic check if logic
+                    const isImg = url.match(/\.(jpeg|jpg|gif|png|webp)/i) != null;
+
+                    if (isImg) {
+                        const div = document.createElement('div');
+                        div.className = 'relative w-16 h-16 group';
+                        div.innerHTML = `<img src="${url}" class="w-full h-full object-cover rounded-lg border border-gray-200 shadow-sm">`;
+                        container.appendChild(div);
+                    }
+                });
+            }
+
+            async function saveGlobalGallery() {
+                // Save current TAB first
+                saveCurrentInputToMemory();
+
+                try {
+                    const res = await fetch('/api/manage-institutions', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'save_global_gallery',
+                            master_password: MASTER_PASSWORD,
+                            payload: { config: globalGalleryConfig }
+                        })
+                    });
+
+                    if (res.ok) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Başarılı!',
+                            text: 'Merkezi galeri ayarları kaydedildi ve tüm panolara dağıtıldı.',
+                        });
+                        closeGlobalGalleryModal();
+                    } else {
+                        Swal.fire('Hata', 'Kaydetme başarısız.', 'error');
+                    }
+                } catch (e) {
+                    Swal.fire('Hata', 'Sunucu hatası.', 'error');
+                }
+            }
+
+            // --- AUTH ---
+            let MASTER_PASSWORD = localStorage.getItem('super_admin_pass') || "";
+
+            // DEBUGGING: Add this to see if script runs
+            console.log("Script loaded and running");
+
+            document.addEventListener('DOMContentLoaded', () => {
+                console.log("DOM Content Loaded");
+
+                // MAGIC LOGIN CHECK
+                const urlParams = new URLSearchParams(window.location.search);
+                const magicKey = urlParams.get('key');
+                if (magicKey) {
+                    // OPTIMISTIC LOGIN (Hemen içeri al, sonra kontrol et)
+                    window.history.replaceState({}, document.title, "/super-admin");
+
+                    MASTER_PASSWORD = magicKey;
+                    localStorage.setItem('super_admin_pass', magicKey);
+
+                    // UI'yi hemen aç
+                    document.getElementById('login-modal').classList.add('hidden');
+                    document.getElementById('main-content').classList.remove('hidden');
+
+                    // Arkada kontrol et (Sessizce)
+                    fetchInstitutions();
+                } else if (MASTER_PASSWORD) {
+                    // Auto-login attempt
+                    verifyLogin(MASTER_PASSWORD);
+                }
+
+                // File Upload Listener
+                registerUploadListeners();
+
+                // Bind Form Listener explicitly inside DOMContentLoaded
+                const form = document.getElementById('login-form');
+                if (form) {
+                    form.addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        console.log("Form submitted!");
+                        const pass = document.getElementById('master-password').value;
+                        try {
+                            verifyLogin(pass);
+                        } catch (err) {
+                            console.error("Critical error calling verifyLogin:", err);
+                            alert("Kritik Hata: " + err.message);
+                        }
+                    });
+                } else {
+                    console.error("Login form not found in DOM!");
+                }
+            });
+
+            async function verifyLogin(pass) {
+                // CLIENT-SIDE BYPASS (Fail-Safe)
+                const VALID_LOCAL = ["283353", "283353.", "kartaltepe-master", "admin"];
+
+                // 1. Check Local API
+                try {
+                    // Şifreyi doğrulamak için bir "list" isteği atalım
+                    const res = await fetch('/api/manage-institutions', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'list', master_password: pass })
+                    });
+
+                    if (res.ok) {
+                        finalizeLogin(pass);
+                        return;
+                    } else {
+                        // API reached but rejected
+                        const data = await res.json();
+                        // If 401/403, really wrong password. But check local just in case key rotation issue.
+                        if (!VALID_LOCAL.includes(pass) && pass !== localStorage.getItem('super_admin_pass')) {
+                            Swal.fire({ icon: 'error', title: 'Hatalı Şifre', text: data.error || 'Giriş yapılamadı.' });
+                            localStorage.removeItem('super_admin_pass');
+                            return;
+                        }
+                    }
+                } catch (e) {
+                    console.warn("API Login Failed, trying local check", e);
+                }
+
+                // 2. Fallback: Local Check (Network Error or API Reject but valid local)
+                if (VALID_LOCAL.includes(pass) || pass === localStorage.getItem('super_admin_pass')) {
+                    console.log("Local Login Success");
+                    finalizeLogin(pass);
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Çevrimdışı Giriş',
+                        text: 'Sunucu yanıt vermediği için yerel doğrulama ile giriş yapıldı.',
+                        timer: 3000,
+                        showConfirmButton: false
+                    });
+                } else {
+                    Swal.fire({ icon: 'error', title: 'Hatalı Şifre', text: 'Giriş yapılamadı.' });
+                    localStorage.removeItem('super_admin_pass');
+                }
+            }
+
+            function finalizeLogin(pass) {
+                MASTER_PASSWORD = pass;
+                localStorage.setItem('super_admin_pass', pass);
                 document.getElementById('login-modal').classList.add('hidden');
                 document.getElementById('main-content').classList.remove('hidden');
-
-                // Arkada kontrol et (Sessizce)
                 fetchInstitutions();
-            } else if (MASTER_PASSWORD) {
-                // Auto-login attempt
-                verifyLogin(MASTER_PASSWORD);
+
+                const Toast = Swal.mixin({
+                    toast: true, position: 'top-end', showConfirmButton: false, timer: 3000
+                });
+                Toast.fire({ icon: 'success', title: 'Giriş Başarılı' });
             }
 
-            // File Upload Listener
-            registerUploadListeners();
-
-            // Bind Form Listener explicitly inside DOMContentLoaded
-            const form = document.getElementById('login-form');
-            if (form) {
-                form.addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    console.log("Form submitted!");
-                    const pass = document.getElementById('master-password').value;
-                    try {
-                        verifyLogin(pass);
-                    } catch (err) {
-                        console.error("Critical error calling verifyLogin:", err);
-                        alert("Kritik Hata: " + err.message);
-                    }
-                });
-            } else {
-                console.error("Login form not found in DOM!");
-            }
-        });
-
-        async function verifyLogin(pass) {
-            // CLIENT-SIDE BYPASS (Fail-Safe)
-            const VALID_LOCAL = ["283353", "283353.", "kartaltepe-master", "admin"];
-
-            // 1. Check Local API
-            try {
-                // Şifreyi doğrulamak için bir "list" isteği atalım
-                const res = await fetch('/api/manage-institutions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'list', master_password: pass })
-                });
-
-                if (res.ok) {
-                    finalizeLogin(pass);
-                    return;
-                } else {
-                    // API reached but rejected
-                    const data = await res.json();
-                    // If 401/403, really wrong password. But check local just in case key rotation issue.
-                    if (!VALID_LOCAL.includes(pass) && pass !== localStorage.getItem('super_admin_pass')) {
-                        Swal.fire({ icon: 'error', title: 'Hatalı Şifre', text: data.error || 'Giriş yapılamadı.' });
-                        localStorage.removeItem('super_admin_pass');
-                        return;
-                    }
-                }
-            } catch (e) {
-                console.warn("API Login Failed, trying local check", e);
-            }
-
-            // 2. Fallback: Local Check (Network Error or API Reject but valid local)
-            if (VALID_LOCAL.includes(pass) || pass === localStorage.getItem('super_admin_pass')) {
-                console.log("Local Login Success");
-                finalizeLogin(pass);
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Çevrimdışı Giriş',
-                    text: 'Sunucu yanıt vermediği için yerel doğrulama ile giriş yapıldı.',
-                    timer: 3000,
-                    showConfirmButton: false
-                });
-            } else {
-                Swal.fire({ icon: 'error', title: 'Hatalı Şifre', text: 'Giriş yapılamadı.' });
+            function logout() {
                 localStorage.removeItem('super_admin_pass');
+                window.location.reload();
             }
-        }
 
-        function finalizeLogin(pass) {
-            MASTER_PASSWORD = pass;
-            localStorage.setItem('super_admin_pass', pass);
-            document.getElementById('login-modal').classList.add('hidden');
-            document.getElementById('main-content').classList.remove('hidden');
-            fetchInstitutions();
+            // --- MAIN LOGIC ---
+            let institutions = [];
 
-            const Toast = Swal.mixin({
-                toast: true, position: 'top-end', showConfirmButton: false, timer: 3000
-            });
-            Toast.fire({ icon: 'success', title: 'Giriş Başarılı' });
-        }
+            async function fetchInstitutions() {
+                const grid = document.getElementById('institutions-grid');
+                const loader = document.getElementById('loader');
 
-        function logout() {
-            localStorage.removeItem('super_admin_pass');
-            window.location.reload();
-        }
+                grid.innerHTML = '';
+                loader.classList.remove('hidden');
 
-        // --- MAIN LOGIC ---
-        let institutions = [];
+                try {
+                    const res = await fetch('/api/manage-institutions', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'list', master_password: MASTER_PASSWORD })
+                    });
 
-        async function fetchInstitutions() {
-            const grid = document.getElementById('institutions-grid');
-            const loader = document.getElementById('loader');
+                    const contentType = res.headers.get("content-type");
+                    if (!contentType || !contentType.includes("application/json")) {
+                        // Fail silently or with warning? Better to warn.
+                        console.error("fetchInstitutions API Error: Expected JSON but got", contentType);
+                        throw new Error("API yanıt vermedi (JSON gelmedi). Vercel/Node ortamı gerekli.");
+                    }
 
-            grid.innerHTML = '';
-            loader.classList.remove('hidden');
-
-            try {
-                const res = await fetch('/api/manage-institutions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'list', master_password: MASTER_PASSWORD })
-                });
-
-                const contentType = res.headers.get("content-type");
-                if (!contentType || !contentType.includes("application/json")) {
-                    // Fail silently or with warning? Better to warn.
-                    console.error("fetchInstitutions API Error: Expected JSON but got", contentType);
-                    throw new Error("API yanıt vermedi (JSON gelmedi). Vercel/Node ortamı gerekli.");
+                    const data = await res.json();
+                    institutions = data.institutions || [];
+                    renderInstitutions();
+                } catch (e) {
+                    console.error(e);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Veri Hatası',
+                        text: 'Kurumlar yüklenemedi: ' + e.message,
+                        footer: 'Yerel çalışıyorsanız API fonksiyonları devre dışıdır.'
+                    });
+                } finally {
+                    loader.classList.add('hidden');
                 }
-
-                const data = await res.json();
-                institutions = data.institutions || [];
-                renderInstitutions();
-            } catch (e) {
-                console.error(e);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Veri Hatası',
-                    text: 'Kurumlar yüklenemedi: ' + e.message,
-                    footer: 'Yerel çalışıyorsanız API fonksiyonları devre dışıdır.'
-                });
-            } finally {
-                loader.classList.add('hidden');
             }
-        }
 
-        function renderInstitutions() {
-            const grid = document.getElementById('institutions-grid');
-            grid.innerHTML = '';
+            function renderInstitutions() {
+                const grid = document.getElementById('institutions-grid');
+                grid.innerHTML = '';
 
-            institutions.forEach(inst => {
-                const card = document.createElement('div');
-                card.className = 'bg-white rounded-xl shadow border border-gray-100 p-5 hover:shadow-lg transition-all group relative';
+                institutions.forEach(inst => {
+                    const card = document.createElement('div');
+                    card.className = 'bg-white rounded-xl shadow border border-gray-100 p-5 hover:shadow-lg transition-all group relative';
 
-                // Config extraction safe checks
-                const cfg = inst.config || {};
-                const logo = cfg.institution_logo || 'https://via.placeholder.com/50?text=Logo';
-                const type = cfg.institution_type || 'Bilinmiyor';
+                    // Config extraction safe checks
+                    const cfg = inst.config || {};
+                    const logo = cfg.institution_logo || 'https://via.placeholder.com/50?text=Logo';
+                    const type = cfg.institution_type || 'Bilinmiyor';
 
-                card.innerHTML = `
+                    card.innerHTML = `
                     <div class="flex items-start gap-4">
                         <div class="w-16 h-16 rounded-lg bg-gray-50 border border-gray-200 flex items-center justify-center p-2 flex-shrink-0">
                             <img src="${logo}" class="max-w-full max-h-full object-contain" onerror="this.src='https://via.placeholder.com/50?text=Error'">
@@ -1017,87 +1192,87 @@
                         </button>
                     </div>
                 `;
-                grid.appendChild(card);
-            });
-        }
+                    grid.appendChild(card);
+                });
+            }
 
 
-        // --- APPLICATIONS LOGIC ---
-        async function openApplicationsModal() {
-            document.getElementById('applications-modal').classList.remove('hidden');
-            // Loader shows automatically in fetchApplications but let's refresh data first
-            const loader = document.getElementById('applications-loader');
-            const list = document.getElementById('applications-list');
-            const empty = document.getElementById('applications-empty');
+            // --- APPLICATIONS LOGIC ---
+            async function openApplicationsModal() {
+                document.getElementById('applications-modal').classList.remove('hidden');
+                // Loader shows automatically in fetchApplications but let's refresh data first
+                const loader = document.getElementById('applications-loader');
+                const list = document.getElementById('applications-list');
+                const empty = document.getElementById('applications-empty');
 
-            list.innerHTML = '';
-            empty.classList.add('hidden');
-            loader.classList.remove('hidden');
+                list.innerHTML = '';
+                empty.classList.add('hidden');
+                loader.classList.remove('hidden');
 
-            // Refresh global data to get new requests
-            await fetchInstitutions();
+                // Refresh global data to get new requests
+                await fetchInstitutions();
 
-            // Now render
-            fetchApplications();
-        }
+                // Now render
+                fetchApplications();
+            }
 
-        function closeApplicationsModal() {
-            document.getElementById('applications-modal').classList.add('hidden');
-        }
+            function closeApplicationsModal() {
+                document.getElementById('applications-modal').classList.add('hidden');
+            }
 
-        async function fetchApplications() {
-            const listContainer = document.getElementById('applications-list');
-            const loader = document.getElementById('applications-loader');
-            const emptyState = document.getElementById('applications-empty');
+            async function fetchApplications() {
+                const listContainer = document.getElementById('applications-list');
+                const loader = document.getElementById('applications-loader');
+                const emptyState = document.getElementById('applications-empty');
 
-            listContainer.innerHTML = '';
-            loader.classList.remove('hidden');
-            emptyState.classList.add('hidden');
+                listContainer.innerHTML = '';
+                loader.classList.remove('hidden');
+                emptyState.classList.add('hidden');
 
-            try {
-                // Fetch 'system-requests' config via existing list/filter or direct get
-                // Since we don't have a direct "get slug" in frontend yet, likely need to find it from list or get_landing_config equivalent?
-                // Actually API `list` returns all. We can find 'system-requests' in `institutions` array.
-                // Re-using fetchInstitutions data might be stale, let's refresh or find in current.
+                try {
+                    // Fetch 'system-requests' config via existing list/filter or direct get
+                    // Since we don't have a direct "get slug" in frontend yet, likely need to find it from list or get_landing_config equivalent?
+                    // Actually API `list` returns all. We can find 'system-requests' in `institutions` array.
+                    // Re-using fetchInstitutions data might be stale, let's refresh or find in current.
 
-                // Better approach: Let's assume fetchInstitutions was called. But 'system-requests' might be filtered if we change API?
-                // Currently API `list` returns ALL. 
-                const sysReqParams = institutions.find(i => i.slug === 'system-requests');
-                let requests = [];
+                    // Better approach: Let's assume fetchInstitutions was called. But 'system-requests' might be filtered if we change API?
+                    // Currently API `list` returns ALL. 
+                    const sysReqParams = institutions.find(i => i.slug === 'system-requests');
+                    let requests = [];
 
-                if (sysReqParams && sysReqParams.config) {
-                    if (Array.isArray(sysReqParams.config)) {
-                        requests = sysReqParams.config;
-                    } else if (typeof sysReqParams.config === 'string') {
-                        try {
-                            requests = JSON.parse(sysReqParams.config);
-                        } catch (e) { requests = []; }
+                    if (sysReqParams && sysReqParams.config) {
+                        if (Array.isArray(sysReqParams.config)) {
+                            requests = sysReqParams.config;
+                        } else if (typeof sysReqParams.config === 'string') {
+                            try {
+                                requests = JSON.parse(sysReqParams.config);
+                            } catch (e) { requests = []; }
+                        }
                     }
-                }
 
-                // If not found in current list (maybe lazy load?), try refetching list silently or specific.
-                // For now, relies on `institutions` global.
+                    // If not found in current list (maybe lazy load?), try refetching list silently or specific.
+                    // For now, relies on `institutions` global.
 
-                loader.classList.add('hidden');
+                    loader.classList.add('hidden');
 
-                if (requests.length === 0) {
-                    emptyState.classList.remove('hidden');
-                    return;
-                }
+                    if (requests.length === 0) {
+                        emptyState.classList.remove('hidden');
+                        return;
+                    }
 
-                requests.forEach(req => {
-                    const date = new Date(req.date).toLocaleString('tr-TR');
-                    const note = req.note ? `<p class="text-sm text-gray-600 mt-2 bg-gray-50 p-2 rounded border border-gray-100 italic">"${req.note}"</p>` : '';
+                    requests.forEach(req => {
+                        const date = new Date(req.date).toLocaleString('tr-TR');
+                        const note = req.note ? `<p class="text-sm text-gray-600 mt-2 bg-gray-50 p-2 rounded border border-gray-100 italic">"${req.note}"</p>` : '';
 
-                    // Format Phone for WhatsApp
-                    let cleanPhone = req.phone.replace(/[^0-9]/g, '');
-                    if (cleanPhone.length === 10) cleanPhone = '90' + cleanPhone;
-                    else if (cleanPhone.length === 11 && cleanPhone.startsWith('0')) cleanPhone = '90' + cleanPhone.substring(1);
-                    const waLink = `https://wa.me/${cleanPhone}`;
+                        // Format Phone for WhatsApp
+                        let cleanPhone = req.phone.replace(/[^0-9]/g, '');
+                        if (cleanPhone.length === 10) cleanPhone = '90' + cleanPhone;
+                        else if (cleanPhone.length === 11 && cleanPhone.startsWith('0')) cleanPhone = '90' + cleanPhone.substring(1);
+                        const waLink = `https://wa.me/${cleanPhone}`;
 
-                    const item = document.createElement('div');
-                    item.className = 'p-6 hover:bg-gray-50 transition-colors flex flex-col md:flex-row gap-4 items-start';
-                    item.innerHTML = `
+                        const item = document.createElement('div');
+                        item.className = 'p-6 hover:bg-gray-50 transition-colors flex flex-col md:flex-row gap-4 items-start';
+                        item.innerHTML = `
                         <div class="flex-1">
                             <div class="flex items-center gap-2 mb-1">
                                 <span class="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-0.5 rounded uppercase tracking-wide">Yeni</span>
@@ -1120,376 +1295,229 @@
                             </a>
                         </div>
                     `;
-                    listContainer.appendChild(item);
+                        listContainer.appendChild(item);
+                    });
+
+                } catch (e) {
+                    console.error(e);
+                    loader.classList.add('hidden');
+                    emptyState.classList.remove('hidden'); // Fallback
+                }
+            }
+
+            // --- CRUD ACTIONS ---
+            function openModal() {
+                document.getElementById('form-slug').value = '';
+                document.getElementById('form-slug').readOnly = false;
+                document.getElementById('form-name').value = '';
+                document.getElementById('form-password').value = '';
+                document.getElementById('form-type').value = 'Ortaokul';
+                document.getElementById('form-city').value = '';
+                document.getElementById('form-district').value = '';
+                document.getElementById('form-logo').value = '';
+                document.getElementById('form-logo-locked').checked = false;
+                document.getElementById('form-dorm-active').checked = true;
+
+                // Reset Contact
+                document.getElementById('form-contact-name').value = '';
+                document.getElementById('form-contact-phone').value = '';
+                document.getElementById('form-contact-email').value = '';
+
+                document.getElementById('modal-title').innerText = 'Yeni Kurum Ekle';
+                document.getElementById('edit-modal').classList.remove('hidden');
+            }
+
+            function closeModal() {
+                document.getElementById('edit-modal').classList.add('hidden');
+            }
+
+            function editInst(slug) {
+                const inst = institutions.find(i => i.slug === slug);
+                if (!inst) return;
+                const cfg = inst.config || {};
+
+                document.getElementById('form-slug').value = inst.slug;
+                document.getElementById('form-slug').readOnly = true; // Slug cannot be changed on edit
+                document.getElementById('form-name').value = inst.name;
+                document.getElementById('form-password').value = inst.password;
+                document.getElementById('form-type').value = cfg.institution_type || 'Ortaokul';
+                document.getElementById('form-city').value = cfg.city || '';
+                document.getElementById('form-district').value = cfg.district || '';
+
+                // Advanced
+                document.getElementById('form-logo').value = cfg.institution_logo || '';
+                document.getElementById('form-logo-locked').checked = cfg.logo_locked || false;
+                document.getElementById('form-dorm-active').checked = (cfg.module_dorm_active !== undefined) ? cfg.module_dorm_active : true;
+
+                // Populate Contact
+                const contact = cfg.admin_contact || {};
+                document.getElementById('form-contact-name').value = contact.name || '';
+                document.getElementById('form-contact-phone').value = contact.phone || '';
+                document.getElementById('form-contact-email').value = contact.email || '';
+
+                document.getElementById('modal-title').innerText = 'Kurumu Düzenle';
+                document.getElementById('edit-modal').classList.remove('hidden');
+            }
+
+            async function deleteInst(slug) {
+                const result = await Swal.fire({
+                    title: 'Emin misiniz?',
+                    text: `${slug} kurumunu silmek üzeresiniz. Bu işlem geri alınamaz!`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Evet, Sil!',
+                    cancelButtonText: 'Vazgeç'
                 });
 
-            } catch (e) {
-                console.error(e);
-                loader.classList.add('hidden');
-                emptyState.classList.remove('hidden'); // Fallback
+                if (result.isConfirmed) {
+                    try {
+                        const res = await fetch('/api/manage-institutions', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ action: 'delete', master_password: MASTER_PASSWORD, payload: { slug: slug } })
+                        });
+
+                        const data = await res.json();
+
+                        if (res.ok) {
+                            Swal.fire('Silindi!', 'Kurum başarıyla silindi.', 'success');
+                            fetchInstitutions();
+                        } else {
+                            // Show specific error from server
+                            Swal.fire('Hata', data.error || 'Silme işlemi başarısız.', 'error');
+                        }
+                    } catch (e) {
+                        Swal.fire('Hata', 'Sunucu hatası.', 'error');
+                    }
+                }
             }
-        }
 
-        // --- CRUD ACTIONS ---
-        function openModal() {
-            document.getElementById('form-slug').value = '';
-            document.getElementById('form-slug').readOnly = false;
-            document.getElementById('form-name').value = '';
-            document.getElementById('form-password').value = '';
-            document.getElementById('form-type').value = 'Ortaokul';
-            document.getElementById('form-city').value = '';
-            document.getElementById('form-district').value = '';
-            document.getElementById('form-logo').value = '';
-            document.getElementById('form-logo-locked').checked = false;
-            document.getElementById('form-dorm-active').checked = true;
+            document.getElementById('institution-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
 
-            // Reset Contact
-            document.getElementById('form-contact-name').value = '';
-            document.getElementById('form-contact-phone').value = '';
-            document.getElementById('form-contact-email').value = '';
+                const payload = {
+                    slug: document.getElementById('form-slug').value,
+                    name: document.getElementById('form-name').value,
+                    password: document.getElementById('form-password').value,
+                    type: document.getElementById('form-type').value,
+                    city: document.getElementById('form-city').value,
+                    district: document.getElementById('form-district').value,
+                    // Contact
+                    admin_contact: {
+                        name: document.getElementById('form-contact-name').value,
+                        phone: document.getElementById('form-contact-phone').value,
+                        email: document.getElementById('form-contact-email').value
+                    },
+                    // Advanced
+                    institution_logo: document.getElementById('form-logo').value,
+                    logo_locked: document.getElementById('form-logo-locked').checked,
+                    module_dorm_active: document.getElementById('form-dorm-active').checked
+                };
 
-            document.getElementById('modal-title').innerText = 'Yeni Kurum Ekle';
-            document.getElementById('edit-modal').classList.remove('hidden');
-        }
+                // --- INJECT LOCAL HADITHS (FALLBACK) ---
+                // If creating a new institution, ensure it inherits the current admin's hadith config
+                // regardless of whether "Distribute" was clicked previously.
+                try {
+                    const type = payload.type || 'Ortaokul';
+                    const storedHadiths = localStorage.getItem(`super_admin_hadiths_${type}`);
+                    if (storedHadiths) {
+                        const parsedWeeks = JSON.parse(storedHadiths);
+                        const savedDate = localStorage.getItem(`super_admin_start_date_${type}`) || '2025-09-08';
 
-        function closeModal() {
-            document.getElementById('edit-modal').classList.add('hidden');
-        }
+                        if (Array.isArray(parsedWeeks) && parsedWeeks.length > 0) {
+                            payload.weekly_hadiths = {
+                                startDate: savedDate,
+                                weeks: parsedWeeks
+                            };
+                        }
+                    }
+                } catch (err) {
+                    console.warn("Could not inject local hadiths:", err);
+                }
 
-        function editInst(slug) {
-            const inst = institutions.find(i => i.slug === slug);
-            if (!inst) return;
-            const cfg = inst.config || {};
-
-            document.getElementById('form-slug').value = inst.slug;
-            document.getElementById('form-slug').readOnly = true; // Slug cannot be changed on edit
-            document.getElementById('form-name').value = inst.name;
-            document.getElementById('form-password').value = inst.password;
-            document.getElementById('form-type').value = cfg.institution_type || 'Ortaokul';
-            document.getElementById('form-city').value = cfg.city || '';
-            document.getElementById('form-district').value = cfg.district || '';
-
-            // Advanced
-            document.getElementById('form-logo').value = cfg.institution_logo || '';
-            document.getElementById('form-logo-locked').checked = cfg.logo_locked || false;
-            document.getElementById('form-dorm-active').checked = (cfg.module_dorm_active !== undefined) ? cfg.module_dorm_active : true;
-
-            // Populate Contact
-            const contact = cfg.admin_contact || {};
-            document.getElementById('form-contact-name').value = contact.name || '';
-            document.getElementById('form-contact-phone').value = contact.phone || '';
-            document.getElementById('form-contact-email').value = contact.email || '';
-
-            document.getElementById('modal-title').innerText = 'Kurumu Düzenle';
-            document.getElementById('edit-modal').classList.remove('hidden');
-        }
-
-        async function deleteInst(slug) {
-            const result = await Swal.fire({
-                title: 'Emin misiniz?',
-                text: `${slug} kurumunu silmek üzeresiniz. Bu işlem geri alınamaz!`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Evet, Sil!',
-                cancelButtonText: 'Vazgeç'
-            });
-
-            if (result.isConfirmed) {
                 try {
                     const res = await fetch('/api/manage-institutions', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ action: 'delete', master_password: MASTER_PASSWORD, payload: { slug: slug } })
-                    });
-
-                    const data = await res.json();
-
-                    if (res.ok) {
-                        Swal.fire('Silindi!', 'Kurum başarıyla silindi.', 'success');
-                        fetchInstitutions();
-                    } else {
-                        // Show specific error from server
-                        Swal.fire('Hata', data.error || 'Silme işlemi başarısız.', 'error');
-                    }
-                } catch (e) {
-                    Swal.fire('Hata', 'Sunucu hatası.', 'error');
-                }
-            }
-        }
-
-        document.getElementById('institution-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const payload = {
-                slug: document.getElementById('form-slug').value,
-                name: document.getElementById('form-name').value,
-                password: document.getElementById('form-password').value,
-                type: document.getElementById('form-type').value,
-                city: document.getElementById('form-city').value,
-                district: document.getElementById('form-district').value,
-                // Contact
-                admin_contact: {
-                    name: document.getElementById('form-contact-name').value,
-                    phone: document.getElementById('form-contact-phone').value,
-                    email: document.getElementById('form-contact-email').value
-                },
-                // Advanced
-                institution_logo: document.getElementById('form-logo').value,
-                logo_locked: document.getElementById('form-logo-locked').checked,
-                module_dorm_active: document.getElementById('form-dorm-active').checked
-            };
-
-            // --- INJECT LOCAL HADITHS (FALLBACK) ---
-            // If creating a new institution, ensure it inherits the current admin's hadith config
-            // regardless of whether "Distribute" was clicked previously.
-            try {
-                const type = payload.type || 'Ortaokul';
-                const storedHadiths = localStorage.getItem(`super_admin_hadiths_${type}`);
-                if (storedHadiths) {
-                    const parsedWeeks = JSON.parse(storedHadiths);
-                    const savedDate = localStorage.getItem(`super_admin_start_date_${type}`) || '2025-09-08';
-
-                    if (Array.isArray(parsedWeeks) && parsedWeeks.length > 0) {
-                        payload.weekly_hadiths = {
-                            startDate: savedDate,
-                            weeks: parsedWeeks
-                        };
-                    }
-                }
-            } catch (err) {
-                console.warn("Could not inject local hadiths:", err);
-            }
-
-            try {
-                const res = await fetch('/api/manage-institutions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'upsert',
-                        master_password: MASTER_PASSWORD,
-                        payload: payload
-                    })
-                });
-
-                if (res.ok) {
-                    Swal.fire('Başarılı', 'Kurum kaydedildi.', 'success');
-                    closeModal();
-                    fetchInstitutions();
-                } else {
-                    const data = await res.json();
-                    Swal.fire('Hata', data.error || 'Kaydedilemedi', 'error');
-                }
-            } catch (e) {
-                Swal.fire('Hata', 'Sunucu hatası', 'error');
-            }
-        });
-
-        // --- FILE UPLOAD LOGIC ---
-        function registerUploadListeners() {
-            // Logo Upload
-            const uploadInput = document.getElementById('upload-logo-input');
-            if (uploadInput) uploadInput.addEventListener('change', handleLogoUpload);
-
-            // Global Gallery Upload
-            const globalUploadInput = document.getElementById('upload-global-image-input');
-            if (globalUploadInput) globalUploadInput.addEventListener('change', handleGlobalGalleryUpload);
-        }
-
-        async function handleGlobalGalleryUpload(event) {
-            const files = event.target.files;
-            if (!files || files.length === 0) return;
-
-            const totalFiles = files.length;
-            let successCount = 0;
-            let errorCount = 0;
-            const newUrls = [];
-
-            // Helper to read file as Base64
-            const readFileAsBase64 = (file) => {
-                return new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = () => resolve(reader.result.split(',')[1]);
-                    reader.onerror = reject;
-                    reader.readAsDataURL(file);
-                });
-            };
-
-            // Show Loading
-            Swal.fire({
-                title: 'Yükleniyor...',
-                html: `Lütfen bekleyin, görseller yükleniyor.<br><b>0/${totalFiles}</b> tamamlandı.`,
-                allowOutsideClick: false,
-                didOpen: () => { Swal.showLoading() }
-            });
-
-            for (let i = 0; i < totalFiles; i++) {
-                const file = files[i];
-
-                // Limit check (2.5MB)
-                if (file.size > 2.5 * 1024 * 1024) {
-                    errorCount++;
-                    // Show warning for individual file failure? Or just log?
-                    // Let's log and maybe show a toast if possible, but loop continues.
-                    console.warn(`File ${file.name} is too big.`);
-                    continue;
-                }
-
-                // Update Progress
-                Swal.getHtmlContainer().querySelector('b').textContent = `${i}/${totalFiles}`;
-
-                try {
-                    const base64Data = await readFileAsBase64(file);
-                    const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-                    const filename = `gallery-${Date.now()}-${i}-${safeName}`;
-
-                    // Upload via API
-                    const res = await fetch('/api/upload', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            filename: filename,
-                            fileBase64: base64Data,
-                            contentType: file.type,
-                            slug: 'system-global-gallery'
+                            action: 'upsert',
+                            master_password: MASTER_PASSWORD,
+                            payload: payload
                         })
                     });
 
-                    const data = await res.json();
-                    if (!res.ok) throw new Error(data.error || 'Yükleme başarısız');
-
-                    newUrls.push(data.url);
-                    successCount++;
-
-                } catch (err) {
-                    console.error(`File ${file.name} failed:`, err);
-                    errorCount++;
+                    if (res.ok) {
+                        Swal.fire('Başarılı', 'Kurum kaydedildi.', 'success');
+                        closeModal();
+                        fetchInstitutions();
+                    } else {
+                        const data = await res.json();
+                        Swal.fire('Hata', data.error || 'Kaydedilemedi', 'error');
+                    }
+                } catch (e) {
+                    Swal.fire('Hata', 'Sunucu hatası', 'error');
                 }
-            }
-
-            // Finished
-            if (successCount > 0) {
-                // Append URLs to Textarea
-                const textArea = document.getElementById('global-images-input');
-                const currentVal = textArea.value.trim();
-                const newContent = newUrls.join('\n');
-                textArea.value = currentVal ? (currentVal + '\n' + newContent) : newContent;
-
-                // Trigger sync
-                saveCurrentInputToMemory();
-
-                // Render Previews
-                renderGalleryPreviews();
-            }
-
-            // Result Message
-            if (errorCount === 0) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Harika!',
-                    text: `${successCount} görsel başarıyla eklendi.`,
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-            } else {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Tamamlandı',
-                    text: `${successCount} yüklendi, ${errorCount} dosya başarısız oldu.`,
-                });
-            }
-
-            // Reset input
-            event.target.value = '';
-        }
-
-        // --- PREVIEW LOGIC ---
-        function renderGalleryPreviews() {
-            const textArea = document.getElementById('global-images-input');
-            const container = document.getElementById('gallery-preview-container');
-            const lines = textArea.value.split('\n').map(l => l.trim()).filter(l => l);
-
-            container.innerHTML = '';
-
-            if (lines.length === 0) {
-                container.innerHTML = '<span class="text-xs text-gray-400 w-full text-center py-4">Önizleme alanı (Henüz görsel yok)</span>';
-                return;
-            }
-
-            lines.forEach((url, index) => {
-                const wrapper = document.createElement('div');
-                wrapper.className = 'relative group w-20 h-20 bg-gray-200 rounded-lg overflow-hidden border border-gray-200 shadow-sm transition-transform hover:scale-105';
-
-                const img = document.createElement('img');
-                img.src = url;
-                img.className = 'w-full h-full object-cover';
-                img.onerror = () => { img.src = 'https://via.placeholder.com/80?text=Hata'; img.classList.add('opacity-50'); };
-
-                // Delete Overlay
-                const deleteBtn = document.createElement('button');
-                deleteBtn.className = 'absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 flex items-center justify-center transition-all cursor-pointer';
-                deleteBtn.innerHTML = '<i class="fas fa-trash text-white opacity-0 group-hover:opacity-100 transform scale-0 group-hover:scale-100 transition-all"></i>';
-                deleteBtn.onclick = () => removeImageByIndex(index);
-
-                wrapper.appendChild(img);
-                wrapper.appendChild(deleteBtn);
-                container.appendChild(wrapper);
-            });
-        }
-
-        function removeImageByIndex(index) {
-            const textArea = document.getElementById('global-images-input');
-            let lines = textArea.value.split('\n');
-
-            // Remove specific line
-            lines.splice(index, 1);
-
-            textArea.value = lines.join('\n');
-            saveCurrentInputToMemory(); // Sync
-            renderGalleryPreviews(); // Re-render
-        }
-
-        async function handleLogoUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            // Limit file size to 2.5MB
-            if (file.size > 2.5 * 1024 * 1024) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Dosya Çok Büyük',
-                    text: `Logo dosyası 2.5MB'dan büyük. Lütfen küçültüp tekrar deneyin.`
-                });
-                event.target.value = ''; // Reset
-                return;
-            }
-
-            // Slug checks for folder organization
-            const slug = document.getElementById('form-slug').value || 'common';
-
-            // Better: Swal loading
-            Swal.fire({
-                title: 'Yükleniyor...',
-                text: 'Logo sunucuya yükleniyor, lütfen bekleyin.',
-                allowOutsideClick: false,
-                didOpen: () => { Swal.showLoading() }
             });
 
-            try {
-                // Convert to Base64
-                const reader = new FileReader();
+            // --- FILE UPLOAD LOGIC ---
+            function registerUploadListeners() {
+                // Logo Upload
+                const uploadInput = document.getElementById('upload-logo-input');
+                if (uploadInput) uploadInput.addEventListener('change', handleLogoUpload);
 
-                reader.onerror = () => {
-                    Swal.fire('Hata', 'Dosya okunamadı.', 'error');
+                // Global Gallery Upload
+                const globalUploadInput = document.getElementById('upload-global-image-input');
+                if (globalUploadInput) globalUploadInput.addEventListener('change', handleGlobalGalleryUpload);
+            }
+
+            async function handleGlobalGalleryUpload(event) {
+                const files = event.target.files;
+                if (!files || files.length === 0) return;
+
+                const totalFiles = files.length;
+                let successCount = 0;
+                let errorCount = 0;
+                const newUrls = [];
+
+                // Helper to read file as Base64
+                const readFileAsBase64 = (file) => {
+                    return new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = () => resolve(reader.result.split(',')[1]);
+                        reader.onerror = reject;
+                        reader.readAsDataURL(file);
+                    });
                 };
 
-                reader.onload = async (e) => {
+                // Show Loading
+                Swal.fire({
+                    title: 'Yükleniyor...',
+                    html: `Lütfen bekleyin, görseller yükleniyor.<br><b>0/${totalFiles}</b> tamamlandı.`,
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading() }
+                });
+
+                for (let i = 0; i < totalFiles; i++) {
+                    const file = files[i];
+
+                    // Limit check (2.5MB)
+                    if (file.size > 2.5 * 1024 * 1024) {
+                        errorCount++;
+                        // Show warning for individual file failure? Or just log?
+                        // Let's log and maybe show a toast if possible, but loop continues.
+                        console.warn(`File ${file.name} is too big.`);
+                        continue;
+                    }
+
+                    // Update Progress
+                    Swal.getHtmlContainer().querySelector('b').textContent = `${i}/${totalFiles}`;
+
                     try {
-                        const base64Data = e.target.result.split(',')[1];
-                        // Safe filename
+                        const base64Data = await readFileAsBase64(file);
                         const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-                        const filename = `logo-${Date.now()}-${safeName}`;
+                        const filename = `gallery-${Date.now()}-${i}-${safeName}`;
 
                         // Upload via API
                         const res = await fetch('/api/upload', {
@@ -1499,296 +1527,443 @@
                                 filename: filename,
                                 fileBase64: base64Data,
                                 contentType: file.type,
-                                slug: slug
+                                slug: 'system-global-gallery'
                             })
                         });
 
                         const data = await res.json();
+                        if (!res.ok) throw new Error(data.error || 'Yükleme başarısız');
 
-                        if (!res.ok) {
-                            throw new Error(data.error || 'Yükleme başarısız');
-                        }
+                        newUrls.push(data.url);
+                        successCount++;
 
-                        // Set URL to input
-                        document.getElementById('form-logo').value = data.url;
-
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Yüklendi!',
-                            text: 'Logo başarıyla yüklendi.',
-                            timer: 1500,
-                            showConfirmButton: false
-                        });
-
-                    } catch (uploadError) {
-                        console.error("Upload error details:", uploadError);
-                        Swal.fire('Hata', 'Yükleme sırasında hata oluştu: ' + uploadError.message, 'error');
+                    } catch (err) {
+                        console.error(`File ${file.name} failed:`, err);
+                        errorCount++;
                     }
-                };
+                }
 
-                reader.readAsDataURL(file);
+                // Finished
+                if (successCount > 0) {
+                    // Append URLs to Textarea
+                    const textArea = document.getElementById('global-images-input');
+                    const currentVal = textArea.value.trim();
+                    const newContent = newUrls.join('\n');
+                    textArea.value = currentVal ? (currentVal + '\n' + newContent) : newContent;
 
-            } catch (error) {
-                console.error(error);
-                Swal.fire('Hata', 'Dosya işlenirken bir sorun oluştu.', 'error');
-            } finally {
-                event.target.value = ''; // Reset input to allow re-selection
-            }
-        }
+                    // Trigger sync
+                    saveCurrentInputToMemory();
 
-        // --- HADITH MANAGEMENT LOGIC ---
-        // --- HADITH MANAGEMENT LOGIC ---
-        let hadithWeeks = [];
-        const DEFAULT_START_DATE = '2025-09-08'; // Revize: 8 Eylül 2025
+                    // Render Previews
+                    renderGalleryPreviews();
+                }
 
-        function openHadithModal() {
-            document.getElementById('hadith-modal').classList.remove('hidden');
-            loadLocalHadiths();
-        }
-
-        function closeHadithModal() {
-            document.getElementById('hadith-modal').classList.add('hidden');
-        }
-
-        // --- LANDING CMS LOGIC ---
-        function openLandingModal() {
-            document.getElementById('landing-modal').classList.remove('hidden');
-            loadLandingConfig();
-        }
-
-        function closeLandingModal() {
-            document.getElementById('landing-modal').classList.add('hidden');
-        }
-
-        async function loadLandingConfig() {
-            Swal.fire({
-                title: 'Yükleniyor...',
-                didOpen: () => Swal.showLoading(),
-                allowOutsideClick: false,
-                Timer: 1000
-            });
-
-            try {
-                const res = await fetch('/api/manage-institutions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'get_landing_config', master_password: MASTER_PASSWORD })
-                });
-
-                if (res.ok) {
-                    const { config } = await res.json();
-                    if (config) populateCMSForm(config);
-                    Swal.close();
+                // Result Message
+                if (errorCount === 0) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Harika!',
+                        text: `${successCount} görsel başarıyla eklendi.`,
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
                 } else {
-                    Swal.close();
-                    // İlk kez açılıyorsa boş gelir, sorun yok.
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Tamamlandı',
+                        text: `${successCount} yüklendi, ${errorCount} dosya başarısız oldu.`,
+                    });
                 }
-            } catch (e) {
-                console.error(e);
-                Swal.close();
-            }
-        }
 
-        function populateCMSForm(cfg) {
-            // Hero
-            if (cfg.hero) {
-                document.getElementById('cms-hero-badge').value = cfg.hero.badge || '';
-                document.getElementById('cms-hero-title1').value = cfg.hero.title1 || '';
-                document.getElementById('cms-hero-title2').value = cfg.hero.title2 || '';
-                document.getElementById('cms-hero-desc').value = cfg.hero.desc || '';
+                // Reset input
+                event.target.value = '';
             }
-            // Solutions
-            if (cfg.solutions) {
-                ['sol1', 'sol2', 'sol3'].forEach((key, idx) => {
-                    const item = cfg.solutions[idx];
-                    if (item) {
-                        document.getElementById(`cms-${key}-title`).value = item.title || '';
-                        document.getElementById(`cms-${key}-desc`).value = item.desc || '';
-                        document.getElementById(`cms-${key}-icon`).value = item.icon || '';
-                    }
+
+            // --- PREVIEW LOGIC ---
+            function renderGalleryPreviews() {
+                const textArea = document.getElementById('global-images-input');
+                const container = document.getElementById('gallery-preview-container');
+                const lines = textArea.value.split('\n').map(l => l.trim()).filter(l => l);
+
+                container.innerHTML = '';
+
+                if (lines.length === 0) {
+                    container.innerHTML = '<span class="text-xs text-gray-400 w-full text-center py-4">Önizleme alanı (Henüz görsel yok)</span>';
+                    return;
+                }
+
+                lines.forEach((url, index) => {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'relative group w-20 h-20 bg-gray-200 rounded-lg overflow-hidden border border-gray-200 shadow-sm transition-transform hover:scale-105';
+
+                    const img = document.createElement('img');
+                    img.src = url;
+                    img.className = 'w-full h-full object-cover';
+                    img.onerror = () => { img.src = 'https://via.placeholder.com/80?text=Hata'; img.classList.add('opacity-50'); };
+
+                    // Delete Overlay
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.className = 'absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 flex items-center justify-center transition-all cursor-pointer';
+                    deleteBtn.innerHTML = '<i class="fas fa-trash text-white opacity-0 group-hover:opacity-100 transform scale-0 group-hover:scale-100 transition-all"></i>';
+                    deleteBtn.onclick = () => removeImageByIndex(index);
+
+                    wrapper.appendChild(img);
+                    wrapper.appendChild(deleteBtn);
+                    container.appendChild(wrapper);
                 });
             }
-            // Contact
-            if (cfg.contact) {
-                document.getElementById('cms-contact-email').value = cfg.contact.email || '';
-                document.getElementById('cms-contact-phone').value = cfg.contact.phone || '';
+
+            function removeImageByIndex(index) {
+                const textArea = document.getElementById('global-images-input');
+                let lines = textArea.value.split('\n');
+
+                // Remove specific line
+                lines.splice(index, 1);
+
+                textArea.value = lines.join('\n');
+                saveCurrentInputToMemory(); // Sync
+                renderGalleryPreviews(); // Re-render
             }
-        }
 
-        async function saveLandingConfig() {
-            const config = {
-                hero: {
-                    badge: document.getElementById('cms-hero-badge').value,
-                    title1: document.getElementById('cms-hero-title1').value,
-                    title2: document.getElementById('cms-hero-title2').value,
-                    desc: document.getElementById('cms-hero-desc').value
-                },
-                solutions: [
-                    {
-                        title: document.getElementById('cms-sol1-title').value,
-                        desc: document.getElementById('cms-sol1-desc').value,
-                        icon: document.getElementById('cms-sol1-icon').value
-                    },
-                    {
-                        title: document.getElementById('cms-sol2-title').value,
-                        desc: document.getElementById('cms-sol2-desc').value,
-                        icon: document.getElementById('cms-sol2-icon').value
-                    },
-                    {
-                        title: document.getElementById('cms-sol3-title').value,
-                        desc: document.getElementById('cms-sol3-desc').value,
-                        icon: document.getElementById('cms-sol3-icon').value
-                    }
-                ],
-                contact: {
-                    email: document.getElementById('cms-contact-email').value,
-                    phone: document.getElementById('cms-contact-phone').value
+            async function handleLogoUpload(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+
+                // Limit file size to 2.5MB
+                if (file.size > 2.5 * 1024 * 1024) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Dosya Çok Büyük',
+                        text: `Logo dosyası 2.5MB'dan büyük. Lütfen küçültüp tekrar deneyin.`
+                    });
+                    event.target.value = ''; // Reset
+                    return;
                 }
-            };
 
-            Swal.fire({
-                title: 'Kaydediliyor...',
-                didOpen: () => Swal.showLoading()
-            });
+                // Slug checks for folder organization
+                const slug = document.getElementById('form-slug').value || 'common';
 
-            try {
-                const res = await fetch('/api/manage-institutions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'save_landing_config',
-                        master_password: MASTER_PASSWORD,
-                        payload: { config: config }
-                    })
+                // Better: Swal loading
+                Swal.fire({
+                    title: 'Yükleniyor...',
+                    text: 'Logo sunucuya yükleniyor, lütfen bekleyin.',
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading() }
                 });
 
-                if (res.ok) {
-                    Swal.fire('Başarılı', 'Site ayarları güncellendi.', 'success');
-                    closeLandingModal();
-                } else {
-                    Swal.fire('Hata', 'Kaydedilemedi.', 'error');
-                }
-            } catch (e) {
-                Swal.fire('Hata', 'Sunucu hatası.', 'error');
-            }
-        }
-
-        function loadLocalHadiths() {
-            const type = document.getElementById('hadith-target-type').value;
-            const storageKey = `super_admin_hadiths_${type}`;
-            let stored = localStorage.getItem(storageKey);
-
-            // Eğer LocalStorage boşsa, mevcut kurumlardan birinin verisini çekmeyi dene
-            if (!stored) {
-                const sampleInst = institutions.find(i => {
-                    const t = i.config?.institution_type || 'Ortaokul';
-                    return t === type && i.config?.hadith;
-                });
-
-                if (sampleInst) {
-                    try {
-                        const hData = typeof sampleInst.config.hadith === 'string'
-                            ? JSON.parse(sampleInst.config.hadith)
-                            : sampleInst.config.hadith;
-
-                        // Tekil hadis formatındaysa listeye çevirip kaydet
-                        if (hData) {
-                            // Mevcut tekil hadisi 1. eleman olarak ekle
-                            // Ama listede "hafta" bilgisi varsa ona uygun sıraya da koyabiliriz.
-                            // Şimdilik basitçe tek elemanlı liste yapıyoruz.
-                            const list = [hData];
-                            stored = JSON.stringify(list);
-                            localStorage.setItem(storageKey, stored); // Sonraki sefer için cache
-                        }
-                    } catch (e) { console.log('Hadith extract err', e); }
-                }
-            }
-
-            const container = document.getElementById('weeks-container');
-            container.innerHTML = '';
-            hadithWeeks = [];
-
-            // Tarih ayarını önce yükle (Hesaplama için gerekli)
-            const dateKey = `super_admin_start_date_${type}`;
-            const savedDate = localStorage.getItem(dateKey);
-            let activeStartDate = savedDate || DEFAULT_START_DATE;
-
-            // PAZARTESİ'YE SABİTLEME
-            try {
-                const d = new Date(activeStartDate);
-                const day = d.getDay();
-                const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-                activeStartDate = new Date(d.setDate(diff)).toISOString().split('T')[0];
-            } catch (e) { }
-
-            const dateInput = document.getElementById('semester-start-date');
-            dateInput.value = activeStartDate;
-
-            dateInput.onchange = function () {
-                const val = this.value;
-                if (!val) return;
-                const d = new Date(val);
-                const day = d.getDay();
-                const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-                const mStr = new Date(d.setDate(diff)).toISOString().split('T')[0];
-                if (this.value !== mStr) this.value = mStr;
-                recalculateWeekLabels();
-            };
-
-            if (stored) {
                 try {
-                    const parsed = JSON.parse(stored);
-                    if (Array.isArray(parsed) && parsed.length > 0) {
-                        parsed.forEach(w => addNewWeek(w));
+                    // Convert to Base64
+                    const reader = new FileReader();
+
+                    reader.onerror = () => {
+                        Swal.fire('Hata', 'Dosya okunamadı.', 'error');
+                    };
+
+                    reader.onload = async (e) => {
+                        try {
+                            const base64Data = e.target.result.split(',')[1];
+                            // Safe filename
+                            const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+                            const filename = `logo-${Date.now()}-${safeName}`;
+
+                            // Upload via API
+                            const res = await fetch('/api/upload', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    filename: filename,
+                                    fileBase64: base64Data,
+                                    contentType: file.type,
+                                    slug: slug
+                                })
+                            });
+
+                            const data = await res.json();
+
+                            if (!res.ok) {
+                                throw new Error(data.error || 'Yükleme başarısız');
+                            }
+
+                            // Set URL to input
+                            document.getElementById('form-logo').value = data.url;
+
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Yüklendi!',
+                                text: 'Logo başarıyla yüklendi.',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+
+                        } catch (uploadError) {
+                            console.error("Upload error details:", uploadError);
+                            Swal.fire('Hata', 'Yükleme sırasında hata oluştu: ' + uploadError.message, 'error');
+                        }
+                    };
+
+                    reader.readAsDataURL(file);
+
+                } catch (error) {
+                    console.error(error);
+                    Swal.fire('Hata', 'Dosya işlenirken bir sorun oluştu.', 'error');
+                } finally {
+                    event.target.value = ''; // Reset input to allow re-selection
+                }
+            }
+
+            // --- HADITH MANAGEMENT LOGIC ---
+            // --- HADITH MANAGEMENT LOGIC ---
+            let hadithWeeks = [];
+            const DEFAULT_START_DATE = '2025-09-08'; // Revize: 8 Eylül 2025
+
+            function openHadithModal() {
+                document.getElementById('hadith-modal').classList.remove('hidden');
+                loadLocalHadiths();
+            }
+
+            function closeHadithModal() {
+                document.getElementById('hadith-modal').classList.add('hidden');
+            }
+
+            // --- LANDING CMS LOGIC ---
+            function openLandingModal() {
+                document.getElementById('landing-modal').classList.remove('hidden');
+                loadLandingConfig();
+            }
+
+            function closeLandingModal() {
+                document.getElementById('landing-modal').classList.add('hidden');
+            }
+
+            async function loadLandingConfig() {
+                Swal.fire({
+                    title: 'Yükleniyor...',
+                    didOpen: () => Swal.showLoading(),
+                    allowOutsideClick: false,
+                    Timer: 1000
+                });
+
+                try {
+                    const res = await fetch('/api/manage-institutions', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'get_landing_config', master_password: MASTER_PASSWORD })
+                    });
+
+                    if (res.ok) {
+                        const { config } = await res.json();
+                        if (config) populateCMSForm(config);
+                        Swal.close();
                     } else {
-                        // Kayıtlı ama boş liste
-                        addCurrentWeek(activeStartDate);
+                        Swal.close();
+                        // İlk kez açılıyorsa boş gelir, sorun yok.
                     }
                 } catch (e) {
                     console.error(e);
-                    addCurrentWeek(activeStartDate);
+                    Swal.close();
                 }
-            } else {
-                // Hiç kayıt yoksa, BUGÜNKÜ haftayı ekle
-                addCurrentWeek(activeStartDate);
             }
 
-            recalculateWeekLabels();
-        }
+            function populateCMSForm(cfg) {
+                // Hero
+                if (cfg.hero) {
+                    document.getElementById('cms-hero-badge').value = cfg.hero.badge || '';
+                    document.getElementById('cms-hero-title1').value = cfg.hero.title1 || '';
+                    document.getElementById('cms-hero-title2').value = cfg.hero.title2 || '';
+                    document.getElementById('cms-hero-desc').value = cfg.hero.desc || '';
+                }
+                // Solutions
+                if (cfg.solutions) {
+                    ['sol1', 'sol2', 'sol3'].forEach((key, idx) => {
+                        const item = cfg.solutions[idx];
+                        if (item) {
+                            document.getElementById(`cms-${key}-title`).value = item.title || '';
+                            document.getElementById(`cms-${key}-desc`).value = item.desc || '';
+                            document.getElementById(`cms-${key}-icon`).value = item.icon || '';
+                        }
+                    });
+                }
+                // Contact
+                if (cfg.contact) {
+                    document.getElementById('cms-contact-email').value = cfg.contact.email || '';
+                    document.getElementById('cms-contact-phone').value = cfg.contact.phone || '';
+                }
+            }
 
-        function addCurrentWeek(startDateStr) {
-            // Şimdiki zaman ile başlangıç arasındaki hafta farkını bul
-            const start = new Date(startDateStr);
-            const now = new Date();
-            let weekDiff = Math.floor((now - start) / (1000 * 60 * 60 * 24 * 7));
-            if (weekDiff < 0) weekDiff = 0;
+            async function saveLandingConfig() {
+                const config = {
+                    hero: {
+                        badge: document.getElementById('cms-hero-badge').value,
+                        title1: document.getElementById('cms-hero-title1').value,
+                        title2: document.getElementById('cms-hero-title2').value,
+                        desc: document.getElementById('cms-hero-desc').value
+                    },
+                    solutions: [
+                        {
+                            title: document.getElementById('cms-sol1-title').value,
+                            desc: document.getElementById('cms-sol1-desc').value,
+                            icon: document.getElementById('cms-sol1-icon').value
+                        },
+                        {
+                            title: document.getElementById('cms-sol2-title').value,
+                            desc: document.getElementById('cms-sol2-desc').value,
+                            icon: document.getElementById('cms-sol2-icon').value
+                        },
+                        {
+                            title: document.getElementById('cms-sol3-title').value,
+                            desc: document.getElementById('cms-sol3-desc').value,
+                            icon: document.getElementById('cms-sol3-icon').value
+                        }
+                    ],
+                    contact: {
+                        email: document.getElementById('cms-contact-email').value,
+                        phone: document.getElementById('cms-contact-phone').value
+                    }
+                };
 
-            // Hafta numarası 1'den başlar (fark + 1)
-            // Ama biz kullanıcının önüne boş bir form getireceğiz, başlığı da o haftaya ayarlayacağız
+                Swal.fire({
+                    title: 'Kaydediliyor...',
+                    didOpen: () => Swal.showLoading()
+                });
 
-            // Eğer boş bir hafta ekliyorsak, hafta başlığını otomatik ayarla
-            addNewWeek({
-                week: `${weekDiff + 1}. HAFTA`,
-                text: '',
-                arabic: ''
-            });
-        }
+                try {
+                    const res = await fetch('/api/manage-institutions', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'save_landing_config',
+                            master_password: MASTER_PASSWORD,
+                            payload: { config: config }
+                        })
+                    });
 
-        function addNewWeek(data = null) {
-            const index = hadithWeeks.length;
-            const weekNum = index + 1;
+                    if (res.ok) {
+                        Swal.fire('Başarılı', 'Site ayarları güncellendi.', 'success');
+                        closeLandingModal();
+                    } else {
+                        Swal.fire('Hata', 'Kaydedilemedi.', 'error');
+                    }
+                } catch (e) {
+                    Swal.fire('Hata', 'Sunucu hatası.', 'error');
+                }
+            }
 
-            const div = document.createElement('div');
-            div.className = 'bg-white p-5 rounded-xl border border-gray-200 shadow-sm relative group transition-all hover:shadow-md hover:border-emerald-200';
-            div.id = `week-card-${index}`;
+            function loadLocalHadiths() {
+                const type = document.getElementById('hadith-target-type').value;
+                const storageKey = `super_admin_hadiths_${type}`;
+                let stored = localStorage.getItem(storageKey);
 
-            const weekData = data || {
-                week: `${weekNum}. HAFTA`,
-                text: '',
-                arabic: ''
-            };
+                // Eğer LocalStorage boşsa, mevcut kurumlardan birinin verisini çekmeyi dene
+                if (!stored) {
+                    const sampleInst = institutions.find(i => {
+                        const t = i.config?.institution_type || 'Ortaokul';
+                        return t === type && i.config?.hadith;
+                    });
 
-            div.innerHTML = `
+                    if (sampleInst) {
+                        try {
+                            const hData = typeof sampleInst.config.hadith === 'string'
+                                ? JSON.parse(sampleInst.config.hadith)
+                                : sampleInst.config.hadith;
+
+                            // Tekil hadis formatındaysa listeye çevirip kaydet
+                            if (hData) {
+                                // Mevcut tekil hadisi 1. eleman olarak ekle
+                                // Ama listede "hafta" bilgisi varsa ona uygun sıraya da koyabiliriz.
+                                // Şimdilik basitçe tek elemanlı liste yapıyoruz.
+                                const list = [hData];
+                                stored = JSON.stringify(list);
+                                localStorage.setItem(storageKey, stored); // Sonraki sefer için cache
+                            }
+                        } catch (e) { console.log('Hadith extract err', e); }
+                    }
+                }
+
+                const container = document.getElementById('weeks-container');
+                container.innerHTML = '';
+                hadithWeeks = [];
+
+                // Tarih ayarını önce yükle (Hesaplama için gerekli)
+                const dateKey = `super_admin_start_date_${type}`;
+                const savedDate = localStorage.getItem(dateKey);
+                let activeStartDate = savedDate || DEFAULT_START_DATE;
+
+                // PAZARTESİ'YE SABİTLEME
+                try {
+                    const d = new Date(activeStartDate);
+                    const day = d.getDay();
+                    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+                    activeStartDate = new Date(d.setDate(diff)).toISOString().split('T')[0];
+                } catch (e) { }
+
+                const dateInput = document.getElementById('semester-start-date');
+                dateInput.value = activeStartDate;
+
+                dateInput.onchange = function () {
+                    const val = this.value;
+                    if (!val) return;
+                    const d = new Date(val);
+                    const day = d.getDay();
+                    const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+                    const mStr = new Date(d.setDate(diff)).toISOString().split('T')[0];
+                    if (this.value !== mStr) this.value = mStr;
+                    recalculateWeekLabels();
+                };
+
+                if (stored) {
+                    try {
+                        const parsed = JSON.parse(stored);
+                        if (Array.isArray(parsed) && parsed.length > 0) {
+                            parsed.forEach(w => addNewWeek(w));
+                        } else {
+                            // Kayıtlı ama boş liste
+                            addCurrentWeek(activeStartDate);
+                        }
+                    } catch (e) {
+                        console.error(e);
+                        addCurrentWeek(activeStartDate);
+                    }
+                } else {
+                    // Hiç kayıt yoksa, BUGÜNKÜ haftayı ekle
+                    addCurrentWeek(activeStartDate);
+                }
+
+                recalculateWeekLabels();
+            }
+
+            function addCurrentWeek(startDateStr) {
+                // Şimdiki zaman ile başlangıç arasındaki hafta farkını bul
+                const start = new Date(startDateStr);
+                const now = new Date();
+                let weekDiff = Math.floor((now - start) / (1000 * 60 * 60 * 24 * 7));
+                if (weekDiff < 0) weekDiff = 0;
+
+                // Hafta numarası 1'den başlar (fark + 1)
+                // Ama biz kullanıcının önüne boş bir form getireceğiz, başlığı da o haftaya ayarlayacağız
+
+                // Eğer boş bir hafta ekliyorsak, hafta başlığını otomatik ayarla
+                addNewWeek({
+                    week: `${weekDiff + 1}. HAFTA`,
+                    text: '',
+                    arabic: ''
+                });
+            }
+
+            function addNewWeek(data = null) {
+                const index = hadithWeeks.length;
+                const weekNum = index + 1;
+
+                const div = document.createElement('div');
+                div.className = 'bg-white p-5 rounded-xl border border-gray-200 shadow-sm relative group transition-all hover:shadow-md hover:border-emerald-200';
+                div.id = `week-card-${index}`;
+
+                const weekData = data || {
+                    week: `${weekNum}. HAFTA`,
+                    text: '',
+                    arabic: ''
+                };
+
+                div.innerHTML = `
                 <div class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
                     <button onclick="removeWeek(${index})" class="text-red-400 hover:text-red-600 p-2" title="Haftayı Sil">
                         <i class="fas fa-trash"></i>
@@ -1820,135 +1995,135 @@
                 <div class="absolute left-0 top-6 w-1 h-12 bg-emerald-500 rounded-r"></div>
             `;
 
-            document.getElementById('weeks-container').appendChild(div);
-            hadithWeeks.push(weekData);
-            recalculateWeekLabels();
-        }
+                document.getElementById('weeks-container').appendChild(div);
+                hadithWeeks.push(weekData);
+                recalculateWeekLabels();
+            }
 
-        function updateWeekData(index, key, value) {
-            if (hadithWeeks[index]) {
-                hadithWeeks[index][key] = value;
-                // Auto-save to localstorage silently
+            function updateWeekData(index, key, value) {
+                if (hadithWeeks[index]) {
+                    hadithWeeks[index][key] = value;
+                    // Auto-save to localstorage silently
+                    const type = document.getElementById('hadith-target-type').value;
+                    localStorage.setItem(`super_admin_hadiths_${type}`, JSON.stringify(hadithWeeks));
+                }
+            }
+
+            function removeWeek(index) {
+                hadithWeeks.splice(index, 1);
                 const type = document.getElementById('hadith-target-type').value;
                 localStorage.setItem(`super_admin_hadiths_${type}`, JSON.stringify(hadithWeeks));
+                loadLocalHadiths();
             }
-        }
 
-        function removeWeek(index) {
-            hadithWeeks.splice(index, 1);
-            const type = document.getElementById('hadith-target-type').value;
-            localStorage.setItem(`super_admin_hadiths_${type}`, JSON.stringify(hadithWeeks));
-            loadLocalHadiths();
-        }
+            function recalculateWeekLabels() {
+                const startDateVal = document.getElementById('semester-start-date').value;
+                if (!startDateVal) return;
 
-        function recalculateWeekLabels() {
-            const startDateVal = document.getElementById('semester-start-date').value;
-            if (!startDateVal) return;
+                // Save date selection
+                const type = document.getElementById('hadith-target-type').value;
+                localStorage.setItem(`super_admin_start_date_${type}`, startDateVal);
 
-            // Save date selection
-            const type = document.getElementById('hadith-target-type').value;
-            localStorage.setItem(`super_admin_start_date_${type}`, startDateVal);
+                const start = new Date(startDateVal);
 
-            const start = new Date(startDateVal);
+                hadithWeeks.forEach((w, i) => {
+                    const label = document.getElementById(`week-date-label-${i}`);
+                    if (label) {
+                        const weekStart = new Date(start);
+                        weekStart.setDate(start.getDate() + (i * 7));
 
-            hadithWeeks.forEach((w, i) => {
-                const label = document.getElementById(`week-date-label-${i}`);
-                if (label) {
-                    const weekStart = new Date(start);
-                    weekStart.setDate(start.getDate() + (i * 7));
+                        const weekEnd = new Date(weekStart);
+                        weekEnd.setDate(weekStart.getDate() + 6);
 
-                    const weekEnd = new Date(weekStart);
-                    weekEnd.setDate(weekStart.getDate() + 6);
+                        // Format: 15-21 Eylül
+                        const options = { day: 'numeric', month: 'long' };
+                        const sStr = weekStart.toLocaleDateString('tr-TR', options);
+                        const eStr = weekEnd.toLocaleDateString('tr-TR', options);
 
-                    // Format: 15-21 Eylül
-                    const options = { day: 'numeric', month: 'long' };
-                    const sStr = weekStart.toLocaleDateString('tr-TR', options);
-                    const eStr = weekEnd.toLocaleDateString('tr-TR', options);
+                        label.innerHTML = `Otomatik Tarih: <span class="font-bold text-gray-600">${sStr} - ${eStr}</span>`;
+                    }
+                });
+            }
 
-                    label.innerHTML = `Otomatik Tarih: <span class="font-bold text-gray-600">${sStr} - ${eStr}</span>`;
+            async function saveAndDistributeHadiths() {
+                const type = document.getElementById('hadith-target-type').value;
+
+                // Validate
+                if (hadithWeeks.length === 0) {
+                    Swal.fire('Uyarı', 'En az bir hadis girmelisiniz.', 'warning');
+                    return;
                 }
-            });
-        }
 
-        async function saveAndDistributeHadiths() {
-            const type = document.getElementById('hadith-target-type').value;
-
-            // Validate
-            if (hadithWeeks.length === 0) {
-                Swal.fire('Uyarı', 'En az bir hadis girmelisiniz.', 'warning');
-                return;
-            }
-
-            Swal.fire({
-                title: 'Dağıtım Yapılıyor...',
-                text: `${type} türündeki tüm kurumlar güncelleniyor.`,
-                didOpen: () => Swal.showLoading()
-            });
-
-            try {
-                // Prepare payload with start date to help client calculation if needed
-                const payload = {
-                    startDate: document.getElementById('semester-start-date').value,
-                    weeks: hadithWeeks
-                };
-
-                const res = await fetch('/api/manage-institutions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'distribute_hadiths',
-                        master_password: MASTER_PASSWORD,
-                        payload: {
-                            type: type,
-                            hadiths: payload // Save the whole object
-                        }
-                    })
+                Swal.fire({
+                    title: 'Dağıtım Yapılıyor...',
+                    text: `${type} türündeki tüm kurumlar güncelleniyor.`,
+                    didOpen: () => Swal.showLoading()
                 });
 
-                if (res.ok) {
-                    const d = await res.json();
-                    Swal.fire('Başarılı', `${d.count} adet kurum güncellendi.`, 'success');
-                    closeHadithModal();
-                } else {
-                    throw new Error('API Error');
-                }
-            } catch (e) {
-                console.error(e);
-                Swal.fire('Hata', 'Dağıtım sırasında hata oluştu.', 'error');
-            }
-        }
+                try {
+                    // Prepare payload with start date to help client calculation if needed
+                    const payload = {
+                        startDate: document.getElementById('semester-start-date').value,
+                        weeks: hadithWeeks
+                    };
 
-        // --- FORCE LOGIN (DEBUG) ---
-        window.forceLogin = function () {
-            Swal.fire({
-                title: 'Zorla Giriş',
-                text: 'Master şifreyi onaylamadan panele girmek üzeresiniz. Bu işlem sadece yetkili olduğunuzdan eminseniz yapılmalıdır.',
-                icon: 'warning',
-                input: 'password',
-                inputPlaceholder: 'Master Şifre',
-                showCancelButton: true,
-                confirmButtonText: 'Giriş Yap',
-                cancelButtonText: 'İptal'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const pass = result.value;
-                    if (pass) {
-                        MASTER_PASSWORD = pass;
-                        localStorage.setItem('super_admin_pass', pass);
-                        document.getElementById('login-modal').classList.add('hidden');
-                        document.getElementById('main-content').classList.remove('hidden');
-                        fetchInstitutions(); // Arka planda dene
+                    const res = await fetch('/api/manage-institutions', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'distribute_hadiths',
+                            master_password: MASTER_PASSWORD,
+                            payload: {
+                                type: type,
+                                hadiths: payload // Save the whole object
+                            }
+                        })
+                    });
 
-                        const Toast = Swal.mixin({
-                            toast: true, position: 'top-end', showConfirmButton: false, timer: 3000
-                        });
-                        Toast.fire({ icon: 'success', title: 'Zorla Giriş Yapıldı' });
+                    if (res.ok) {
+                        const d = await res.json();
+                        Swal.fire('Başarılı', `${d.count} adet kurum güncellendi.`, 'success');
+                        closeHadithModal();
+                    } else {
+                        throw new Error('API Error');
                     }
+                } catch (e) {
+                    console.error(e);
+                    Swal.fire('Hata', 'Dağıtım sırasında hata oluştu.', 'error');
                 }
-            });
-        }
+            }
 
-    </script>
+            // --- FORCE LOGIN (DEBUG) ---
+            window.forceLogin = function () {
+                Swal.fire({
+                    title: 'Zorla Giriş',
+                    text: 'Master şifreyi onaylamadan panele girmek üzeresiniz. Bu işlem sadece yetkili olduğunuzdan eminseniz yapılmalıdır.',
+                    icon: 'warning',
+                    input: 'password',
+                    inputPlaceholder: 'Master Şifre',
+                    showCancelButton: true,
+                    confirmButtonText: 'Giriş Yap',
+                    cancelButtonText: 'İptal'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const pass = result.value;
+                        if (pass) {
+                            MASTER_PASSWORD = pass;
+                            localStorage.setItem('super_admin_pass', pass);
+                            document.getElementById('login-modal').classList.add('hidden');
+                            document.getElementById('main-content').classList.remove('hidden');
+                            fetchInstitutions(); // Arka planda dene
+
+                            const Toast = Swal.mixin({
+                                toast: true, position: 'top-end', showConfirmButton: false, timer: 3000
+                            });
+                            Toast.fire({ icon: 'success', title: 'Zorla Giriş Yapıldı' });
+                        }
+                    }
+                });
+            }
+
+        </script>
 </body>
 
 </html>

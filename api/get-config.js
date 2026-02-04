@@ -1,10 +1,10 @@
-import { createClient } from '@supabase/supabase-js';
+const { createClient } = require('@supabase/supabase-js');
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_ANON_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-export default async function handler(request, response) {
+module.exports = async (request, response) => {
     // URL'den slug'ı al (örn: /api/get-config?slug=omeravniyel)
     const { slug } = request.query;
 
@@ -35,19 +35,16 @@ export default async function handler(request, response) {
             const { data: globalData } = await supabase
                 .from('institutions')
                 .select('config')
-                .eq('slug', 'system_globals')
+                .eq('slug', 'system-hadiths')
                 .single();
 
-            if (globalData && globalData.config && globalData.config.weekly_hadiths) {
-                const globalHadiths = globalData.config.weekly_hadiths;
-                const type = config.institution_type; // 'Ortaokul', 'Lise', etc.
+            if (globalData && globalData.config) {
+                const type = config.institution_type || 'Ortaokul'; // Default to Ortaokul if missing
+                const hadithData = globalData.config[type];
 
-                // Eğer bu tip için tanımlı bir hadis varsa, local config'in üzerine yaz
-                if (globalHadiths[type] && globalHadiths[type].content) {
-                    // Mevcut hadith yapısını ez (veya oluştur)
-                    config.hadith = {
-                        text: globalHadiths[type].content
-                    };
+                if (hadithData && hadithData.weeks && hadithData.weeks.length > 0) {
+                    // Pass the FULL structure so frontend can calculate date ranges and week index correctly
+                    config.weekly_hadiths = hadithData;
                 }
             }
 
@@ -71,8 +68,7 @@ export default async function handler(request, response) {
                             else if (typeof config.gallery_links === 'string') localGallery = JSON.parse(config.gallery_links);
                         } catch (e) { }
 
-                        // Robust Deduplication using Set
-                        // We trim URLs to avoid whitespace issues matching
+                        // Robust Deduplication
                         const combined = [...localGallery, ...typeConfig.images].map(url => typeof url === 'string' ? url.trim() : url);
                         config.gallery_links = [...new Set(combined)];
                     }
@@ -89,13 +85,45 @@ export default async function handler(request, response) {
                             }
                         } catch (e) { }
 
-                        // Filter out empty and small strings
                         localVideos = localVideos.filter(v => v && v.length > 5);
-
-                        // Robust Deduplication using Set
                         const combinedVideos = [...localVideos, ...typeConfig.videos].map(v => typeof v === 'string' ? v.trim() : v);
                         config.video_urls = [...new Set(combinedVideos)];
                     }
+
+                    // MERGE LEFT GALLERY (NEW)
+                    if (typeConfig.left_images && Array.isArray(typeConfig.left_images) && typeConfig.left_images.length > 0) {
+                        let localLeft = [];
+                        try {
+                            if (Array.isArray(config.left_gallery_links)) localLeft = config.left_gallery_links;
+                            else if (typeof config.left_gallery_links === 'string') localLeft = JSON.parse(config.left_gallery_links);
+                        } catch (e) { }
+
+                        const combinedLeft = [...localLeft, ...typeConfig.left_images].map(url => typeof url === 'string' ? url.trim() : url);
+                        config.left_gallery_links = [...new Set(combinedLeft)];
+                    }
+                }
+            }
+
+            // 3. CENTRAL ANNOUNCEMENTS (NEW)
+            const { data: centralAnnouncements } = await supabase
+                .from('institutions')
+                .select('config')
+                .eq('slug', 'system-announcements')
+                .single();
+
+            if (centralAnnouncements && centralAnnouncements.config) {
+                const type = config.institution_type;
+                const announcements = centralAnnouncements.config[type];
+
+                if (announcements && Array.isArray(announcements) && announcements.length > 0) {
+                    let localAnnouncements = [];
+                    if (config.announcements && Array.isArray(config.announcements)) {
+                        localAnnouncements = config.announcements;
+                    }
+
+                    // Merge and Deduplicate
+                    const combined = [...localAnnouncements, ...announcements].map(a => typeof a === 'string' ? a.trim() : a);
+                    config.announcements = [...new Set(combined)];
                 }
             }
 
@@ -106,4 +134,4 @@ export default async function handler(request, response) {
     }
 
     return response.status(200).json(config);
-}
+};

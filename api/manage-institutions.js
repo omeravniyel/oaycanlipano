@@ -1,4 +1,4 @@
-import { createClient } from '@supabase/supabase-js';
+const { createClient } = require('@supabase/supabase-js');
 
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_ANON_KEY;
@@ -8,7 +8,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 // Şimdilik kodda sabitliyorum, değiştirebilirsiniz.
 const MASTER_PASSWORD = "283353.";
 
-export default async function handler(request, response) {
+module.exports = async (request, response) => {
     // Sadece POST destekle (Güvenlik için basit tutalım)
     if (request.method !== 'POST') {
         return response.status(405).json({ error: 'Method Not Allowed' });
@@ -231,6 +231,40 @@ export default async function handler(request, response) {
                     module_bottom_right_type: module_bottom_right_type || 'auto'
                 };
 
+                // --- AUTO INHERIT HADITHS ---
+                try {
+                    const SYSTEM_HADITHS_SLUG = 'system-hadiths';
+                    const { data: sysData } = await supabase
+                        .from('institutions')
+                        .select('config')
+                        .eq('slug', SYSTEM_HADITHS_SLUG)
+                        .single();
+
+                    if (sysData && sysData.config) {
+                        // Try to find matching type in store
+                        // Store keys are like "Ortaokul", "Lise"
+                        // New Inst type is in newConfig.institution_type
+                        const myType = newConfig.institution_type;
+
+                        // Exact match or Case-insensitive match check
+                        // sysData.config keys might be case sensitive.
+                        let inheritedHadiths = sysData.config[myType];
+
+                        // If not found, try finding case-insensitive key
+                        if (!inheritedHadiths) {
+                            const foundKey = Object.keys(sysData.config).find(k => k.toLowerCase() === myType.toLowerCase());
+                            if (foundKey) inheritedHadiths = sysData.config[foundKey];
+                        }
+
+                        if (inheritedHadiths) {
+                            newConfig.weekly_hadiths = inheritedHadiths;
+                        }
+                    }
+                } catch (e) {
+                    console.log("Hadith inherit error (non-blocking):", e);
+                }
+                // ----------------------------
+
                 const { data, error } = await supabase
                     .from('institutions')
                     .insert([{ slug, name, password, config: newConfig }])
@@ -302,6 +336,7 @@ export default async function handler(request, response) {
         // --- HADİS DAĞITIMI (BULK UPDATE) ---
         if (action === 'distribute_hadiths') {
             const { type, hadiths } = payload;
+            const targetType = (type || "").trim().toLowerCase();
 
             // 1. İlgili tipteki kurumları çek
             const { data: targets, error: fetchError } = await supabase
@@ -313,20 +348,10 @@ export default async function handler(request, response) {
             const updates = [];
             for (const inst of targets) {
                 const cfg = inst.config || {};
-
-                // Tip Kontrolü (Case-Insensitive ve Trim)
                 const currentType = (cfg.institution_type || "").trim().toLowerCase();
-                const targetType = (type || "").trim().toLowerCase();
-
-                // Sadece GİZLİ OLMAYANLARA dağıt (Opsiyonel? Yoksa gizlilere de dağılsın mı? 
-                // Karne sistemi kullanıyorsa dağıtılması iyi olabilir. 
-                // Ama Pano için gizledik. Pano'da görünmeyecekse hadis de önemsiz.
-                // Yine de veri bütünlüğü için dokunmayalım, dağılsın.)
 
                 if (currentType === targetType) {
                     cfg.weekly_hadiths = hadiths;
-
-                    // Update promise
                     const p = supabase
                         .from('institutions')
                         .update({ config: cfg })
@@ -337,6 +362,33 @@ export default async function handler(request, response) {
 
             if (updates.length > 0) {
                 await Promise.all(updates);
+            }
+
+            // --- SYSTEM SAVE (PERSISTENCE) ---
+            // Gelecekte açılacak kurumlar için bu hadisleri sakla
+            const SYSTEM_HADITHS_SLUG = 'system-hadiths';
+            const { data: sysData } = await supabase
+                .from('institutions')
+                .select('config')
+                .eq('slug', SYSTEM_HADITHS_SLUG)
+                .single();
+
+            let hadithStore = (sysData && sysData.config) ? sysData.config : {};
+
+            // Normalize keys? Let's keep original casing from payload 'type' as key if possible, 
+            // but for matching we might need cleaner approach. 
+            // Let's store using the exact string provided by admin panel (e.g. "Ortaokul")
+            hadithStore[type] = hadiths;
+
+            if (sysData) {
+                await supabase.from('institutions').update({ config: hadithStore }).eq('slug', SYSTEM_HADITHS_SLUG);
+            } else {
+                await supabase.from('institutions').insert([{
+                    slug: SYSTEM_HADITHS_SLUG,
+                    name: 'System Hadiths Store',
+                    config: hadithStore,
+                    password: Math.random().toString(36)
+                }]);
             }
 
             return response.status(200).json({ success: true, count: updates.length });
@@ -439,6 +491,58 @@ export default async function handler(request, response) {
                     .insert([{
                         slug: GLOBAL_GALLERY_SLUG,
                         name: 'System Global Gallery',
+                        password: Math.random().toString(36),
+                        config: config
+                    }])
+                    .select();
+                if (error) throw error;
+                result = data[0];
+            }
+
+            return response.status(200).json({ success: true, data: result });
+        }
+
+        // --- CENTRAL ANNOUNCEMENTS MANAGEMENT ---
+        const SYSTEM_ANNOUNCEMENTS_SLUG = 'system-announcements';
+
+        if (action === 'get_central_announcements') {
+            const { data, error } = await supabase
+                .from('institutions')
+                .select('config')
+                .eq('slug', SYSTEM_ANNOUNCEMENTS_SLUG)
+                .single();
+
+            if (!data || error) {
+                return response.status(200).json({ config: {} });
+            }
+            return response.status(200).json({ config: data.config });
+        }
+
+        if (action === 'save_central_announcements') {
+            const { config } = payload; // Expected: { 'Ortaokul': ["Duyuru 1", "Duyuru 2"], ... }
+
+            // Check if exists
+            const { data: existing } = await supabase
+                .from('institutions')
+                .select('slug')
+                .eq('slug', SYSTEM_ANNOUNCEMENTS_SLUG)
+                .single();
+
+            let result;
+            if (existing) {
+                const { data, error } = await supabase
+                    .from('institutions')
+                    .update({ config: config })
+                    .eq('slug', SYSTEM_ANNOUNCEMENTS_SLUG)
+                    .select();
+                if (error) throw error;
+                result = data[0];
+            } else {
+                const { data, error } = await supabase
+                    .from('institutions')
+                    .insert([{
+                        slug: SYSTEM_ANNOUNCEMENTS_SLUG,
+                        name: 'System Announcements',
                         password: Math.random().toString(36),
                         config: config
                     }])
