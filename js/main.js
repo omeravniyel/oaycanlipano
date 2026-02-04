@@ -216,20 +216,27 @@ async function fetchConfig() {
         fetchWeather();
 
         // --- 0. Header Bilgileri ---
-        if (config.institution_title) document.getElementById('header-title').innerText = config.institution_title;
-        else document.getElementById('header-title').innerText = 'ÖMER AVNİ YEL';
+        // --- 0. Header Bilgileri ---
+        const title = config.institution_title || config.name || 'Dijital Pano';
+        document.getElementById('header-title').innerText = title;
+        document.title = title; // Browser Tab Title
 
         if (config.institution_subtitle !== undefined) document.getElementById('header-subtitle').innerText = config.institution_subtitle;
-        else document.getElementById('header-subtitle').innerText = 'ÖĞRENCİ YURDU - DİJİTAL PANO';
+        else document.getElementById('header-subtitle').innerText = 'DİJİTAL PANO SİSTEMİ';
 
         if (config.institution_slogan1 !== undefined) document.getElementById('header-slogan1').innerText = config.institution_slogan1;
-        else document.getElementById('header-slogan1').innerText = 'ilgiyle bilginin';
+        else document.getElementById('header-slogan1').innerText = 'İlgiyle bilginin';
 
         if (config.institution_slogan2 !== undefined) document.getElementById('header-slogan2').innerText = config.institution_slogan2;
         else document.getElementById('header-slogan2').innerText = 'buluştuğu yer';
 
         if (config.institution_logo && config.institution_logo.trim() !== "") {
             document.getElementById('header-logo').src = config.institution_logo;
+        } else {
+            // Fallback to default logo if specific one is missing, 
+            // or keep the HTML default (src="logo.png")
+            // Here we ensure it matches the config if provided, otherwise generic.
+            document.getElementById('header-logo').src = 'logo.png';
         }
 
         // --- 1. Başlıklar ---
@@ -842,11 +849,25 @@ async function fetchConfig() {
         startDormNameRotation();
 
         // --- 9. Bilgi Kartı Rotasyonunu Başlat ---
-        if (infoRotationInterval) clearInterval(infoRotationInterval);
+        // if (infoRotationInterval) clearInterval(infoRotationInterval); // ARTIK SIFIRLAMIYORUZ
+
         if (infoData && infoData.length > 0) {
-            infoIndex = 0; // Her config güncellemesinde 1. sıradan başla
-            rotateInfo(); // İlkini hemen göster
-            infoRotationInterval = setInterval(rotateInfo, 10000); // 10 saniyede bir değiştir
+            // Eğer index tanımlı değilse veya yeni veri sayısından büyükse başa al
+            if (typeof infoIndex === 'undefined' || infoIndex >= infoData.length) {
+                infoIndex = 0;
+            }
+
+            // Eğer rotenasyon zaten çalışıyorsa DOKUNMA, çalışmıyorsa başlat
+            if (!infoRotationInterval) {
+                rotateInfo(); // İlkini hemen göster
+                infoRotationInterval = setInterval(rotateInfo, 10000); // 10 saniyede bir değiştir
+            }
+        } else {
+            // Veri yoksa durdur
+            if (infoRotationInterval) {
+                clearInterval(infoRotationInterval);
+                infoRotationInterval = null;
+            }
         }
 
     } catch (error) {
@@ -1339,40 +1360,40 @@ async function fetchWeather() {
             return await r.json();
         };
 
+        // Strategy 1: "District + City + Turkey" (Most Precise)
+        let searchQueries = [
+            `${district} ${city} Turkey`,
+            `${district} Turkey`,
+            `${city} Turkey`
+        ];
+
+        // Display Name Preference: District > City > Istanbul
+        let displayName = (district || city || 'ISTANBUL').toUpperCase();
         let location = null;
-        let displayName = district.toUpperCase();
 
-        // Strategy 1: Search District only (Most precise usually)
-        let geoData = await getGeo(district);
-        if (geoData.results && geoData.results.length > 0) {
-            location = geoData.results[0];
+        for (const q of searchQueries) {
+            try {
+                const geoData = await getGeo(q);
+                if (geoData.results && geoData.results.length > 0) {
+                    location = geoData.results[0];
+                    break;
+                }
+            } catch (e) { console.log("Geo search err:", e); }
         }
 
-        // Strategy 2: Search "District City"
+        // Fallback: Istanbul (Reliable)
         if (!location) {
-            geoData = await getGeo(`${district} ${city}`);
-            if (geoData.results && geoData.results.length > 0) {
-                location = geoData.results[0];
-            }
-        }
-
-        // Strategy 3: Search City only
-        if (!location) {
-            geoData = await getGeo(city);
-            if (geoData.results && geoData.results.length > 0) {
-                location = geoData.results[0];
-                displayName = city.toUpperCase();
-            }
-        }
-
-        // Strategy 4: Fallback Istanbul
-        if (!location) {
-            console.warn("Konum bulunamadı, varsayılana dönülüyor.");
-            geoData = await getGeo("Istanbul");
-            if (geoData.results && geoData.results.length > 0) {
-                location = geoData.results[0];
-                displayName = "ISTANBUL";
-            }
+            console.warn("Konum bulunamadı, varsayılana (Istanbul) dönülüyor.");
+            try {
+                // Direct fallback to coordinates if search fails to avoid loop
+                location = {
+                    latitude: 41.0082,
+                    longitude: 28.9784,
+                    name: 'Istanbul',
+                    country: 'Turkey'
+                };
+                // Do NOT overwrite displayName here, keep user's preference
+            } catch (e) { }
         }
 
         if (!location) throw new Error("Konum servisi yanıt vermiyor.");
