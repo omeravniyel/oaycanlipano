@@ -11,10 +11,6 @@
             "destination": "/api/$1"
         },
         {
-            "source": "/([^/]+)/admin",
-            "destination": "/yonetim.html"
-        },
-        {
             "source": "/admin",
             "destination": "/admin.html"
         },
