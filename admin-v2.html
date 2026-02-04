@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Süper Yönetici Paneli v2</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Clash+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Clash Display', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#4f46e5', // Indigo-600
+                        secondary: '#8b5cf6', // Violet-500
+                        dark: '#0f172a', // Slate-900
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+
+        h1,
+        h2,
+        h3,
+        h4,
+        h5 {
+            font-family: 'Clash Display', sans-serif;
+        }
+
+        .sidebar-link {
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .sidebar-link:hover,
+        .sidebar-link.active {
+            background: rgba(79, 70, 229, 0.1);
+            color: #4f46e5;
+        }
+
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+
+<body class="text-slate-800 antialiased h-screen overflow-hidden flex">
+
+    <!-- LOGIN OVERLAY -->
+    <div id="login-modal" class="fixed inset-0 z-[100] bg-dark flex flex-col items-center justify-center p-4">
+        <div class="w-full max-w-md bg-white rounded-2xl p-8 shadow-2xl text-center">
+            <div
+                class="mb-6 inline-flex items-center justify-center w-16 h-16 rounded-full bg-indigo-50 text-indigo-600">
+                <i class="fas fa-shield-alt text-3xl"></i>
+            </div>
+            <h2 class="text-2xl font-bold mb-2 text-dark">Güvenli Giriş</h2>
+            <p class="text-slate-500 mb-6 text-sm">Süper Yönetici paneline erişmek için anahtar kodunu girin.</p>
+
+            <form id="login-form" class="space-y-4">
+                <input type="password" id="master-password"
+                    class="w-full px-4 py-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition"
+                    placeholder="Master Key" required>
+                <button type="submit"
+                    class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg transition-all shadow-lg shadow-indigo-200">
+                    Giriş Yap
+                </button>
+            </form>
+        </div>
+        <p class="mt-8 text-slate-500 text-xs font-mono">v2.0.0 &bull; Secure Environment</p>
+    </div>
+
+    <!-- SIDEBAR -->
+    <aside class="w-64 bg-white border-r border-slate-200 flex flex-col h-full flex-shrink-0 z-20">
+        <!-- Brand -->
+        <div class="h-16 flex items-center px-6 border-b border-slate-100">
+            <div class="flex items-center gap-2 text-indigo-600">
+                <i class="fas fa-layer-group text-2xl"></i>
+                <span class="font-bold text-lg tracking-tight text-slate-900">Süper<span
+                        class="text-indigo-600">Pano</span></span>
+            </div>
+        </div>
+
+        <!-- Nav -->
+        <div class="flex-1 overflow-y-auto p-4 space-y-1">
+            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider px-3 mb-2 mt-2">Yönetim</p>
+            <button onclick="router.navigate('dashboard')" class="sidebar-link w-full" id="nav-dashboard">
+                <i class="fas fa-chart-pie w-5"></i> Genel Bakış
+            </button>
+            <button onclick="router.navigate('institutions')" class="sidebar-link w-full" id="nav-institutions">
+                <i class="fas fa-school w-5"></i> Kurumlar
+            </button>
+
+            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider px-3 mb-2 mt-6">Merkezi İçerik</p>
+            <button onclick="router.navigate('gallery')" class="sidebar-link w-full" id="nav-gallery">
+                <i class="fas fa-images w-5"></i> Galeri Yönetimi
+            </button>
+            <button onclick="router.navigate('announcements')" class="sidebar-link w-full" id="nav-announcements">
+                <i class="fas fa-bullhorn w-5"></i> Duyurular
+            </button>
+            <button onclick="router.navigate('hadiths')" class="sidebar-link w-full" id="nav-hadiths">
+                <i class="fas fa-book-open w-5"></i> Haftalık Hadis
+            </button>
+
+            <p class="text-xs font-bold text-slate-400 uppercase tracking-wider px-3 mb-2 mt-6">Sistem</p>
+            <button onclick="router.navigate('cms')" class="sidebar-link w-full" id="nav-cms">
+                <i class="fas fa-desktop w-5"></i> Site / CMS
+            </button>
+            <button onclick="router.navigate('settings')" class="sidebar-link w-full" id="nav-settings">
+                <i class="fas fa-cog w-5"></i> Ayarlar
+            </button>
+        </div>
+
+        <!-- User Footer -->
+        <div class="p-4 border-t border-slate-100 bg-slate-50">
+            <div class="flex items-center gap-3">
+                <div
+                    class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">
+                    A</div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-bold text-slate-700 truncate">Admin</p>
+                    <p class="text-xs text-slate-500 truncate">Süper Yetkili</p>
+                </div>
+                <button onclick="logout()" class="text-slate-400 hover:text-red-500 transition-colors" title="Çıkış">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden bg-[#f8fafc] relative">
+
+        <!-- Top Bar -->
+        <header
+            class="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 flex-shrink-0 z-10 shadow-sm">
+            <h2 id="page-title" class="text-xl font-medium text-slate-800">Genel Bakış</h2>
+            <div class="flex items-center gap-4">
+                <button
+                    class="w-8 h-8 flex items-center justify-center text-slate-400 hover:text-indigo-600 transition-colors">
+                    <i class="fas fa-bell"></i>
+                </button>
+                <a href="/" target="_blank"
+                    class="px-4 py-2 bg-indigo-50 text-indigo-600 text-sm font-medium rounded-lg hover:bg-indigo-100 transition-colors">
+                    Siteye Git <i class="fas fa-external-link-alt ml-1"></i>
+                </a>
+            </div>
+        </header>
+
+        <!-- Content Area -->
+        <div id="app-content" class="flex-1 overflow-y-auto p-6 relative">
+
+            <!-- VIEW: DASHBOARD -->
+            <div id="view-dashboard" class="space-y-6">
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-slate-500 text-sm font-medium mb-1">Toplam Kurum</p>
+                                <h3 class="text-3xl font-bold text-slate-800" id="stat-total-inst">-</h3>
+                            </div>
+                            <div class="p-3 rounded-xl bg-blue-50 text-blue-600"><i class="fas fa-school text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-slate-500 text-sm font-medium mb-1">Toplam Görsel</p>
+                                <h3 class="text-3xl font-bold text-slate-800" id="stat-total-img">-</h3>
+                            </div>
+                            <div class="p-3 rounded-xl bg-purple-50 text-purple-600"><i
+                                    class="fas fa-images text-xl"></i></div>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-slate-500 text-sm font-medium mb-1">Toplam Video</p>
+                                <h3 class="text-3xl font-bold text-slate-800" id="stat-total-video">-</h3>
+                            </div>
+                            <div class="p-3 rounded-xl bg-pink-50 text-pink-600"><i class="fas fa-video text-xl"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+                        <div class="flex justify-between items-start">
+                            <div>
+                                <p class="text-slate-500 text-sm font-medium mb-1">İstekler</p>
+                                <h3 class="text-3xl font-bold text-slate-800" id="stat-requests">-</h3>
+                            </div>
+                            <div class="p-3 rounded-xl bg-orange-50 text-orange-600"><i
+                                    class="fas fa-inbox text-xl"></i></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity / Shortcut -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
+                        <h4 class="font-bold text-lg mb-4 text-slate-800">Hızlı İşlemler</h4>
+                        <div class="grid grid-cols-2 gap-4">
+                            <button onclick="router.navigate('institutions')"
+                                class="p-4 rounded-xl bg-slate-50 hover:bg-indigo-50 border border-slate-100 hover:border-indigo-100 transition-all text-left group">
+                                <div
+                                    class="w-10 h-10 rounded-lg bg-white flex items-center justify-center shadow-sm mb-3 group-hover:text-indigo-600 transition-colors">
+                                    <i class="fas fa-plus"></i>
+                                </div>
+                                <h5 class="font-bold text-slate-700 group-hover:text-indigo-700">Yeni Kurum Ekle</h5>
+                                <p class="text-xs text-slate-500 mt-1">Sisteme yeni bir okul tanımla.</p>
+                            </button>
+                            <button onclick="router.navigate('gallery')"
+                                class="p-4 rounded-xl bg-slate-50 hover:bg-purple-50 border border-slate-100 hover:border-purple-100 transition-all text-left group">
+                                <div
+                                    class="w-10 h-10 rounded-lg bg-white flex items-center justify-center shadow-sm mb-3 group-hover:text-purple-600 transition-colors">
+                                    <i class="fas fa-cloud-upload-alt"></i>
+                                </div>
+                                <h5 class="font-bold text-slate-700 group-hover:text-purple-700">Merkezi Yükleme</h5>
+                                <p class="text-xs text-slate-500 mt-1">Tüm panellere medya gönder.</p>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: INSTITUTIONS -->
+            <div id="view-institutions" class="hidden space-y-6">
+                <!-- Toolbar -->
+                <div
+                    class="flex flex-col md:flex-row gap-4 justify-between items-center bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                    <div class="relative w-full md:w-96">
+                        <i class="fas fa-search absolute left-3 top-3 text-slate-400"></i>
+                        <input type="text" id="inst-search" oninput="renderInstitutions()"
+                            class="w-full pl-10 pr-4 py-2.5 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none"
+                            placeholder="Kurum adı, şehir veya slug ara...">
+                    </div>
+                    <div class="flex gap-3 w-full md:w-auto">
+                        <select id="inst-filter-type" onchange="renderInstitutions()"
+                            class="px-4 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-sm font-medium outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="all">Tüm Tipler</option>
+                            <option value="Ortaokul">Ortaokul</option>
+                            <option value="Lise">Lise</option>
+                            <option value="Üniversite">Üniversite</option>
+                            <option value="Üniversite Hazırlık">Üniversite Hazırlık</option>
+                            <option value="Daimi">Daimi</option>
+                        </select>
+                        <select id="inst-filter-region" onchange="renderInstitutions()"
+                            class="px-4 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-sm font-medium outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="all">Tüm Bölgeler</option>
+                            <!-- Populated by JS -->
+                        </select>
+                        <button onclick="router.openModal('edit')"
+                            class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-bold shadow-md hover:shadow-lg transition-all flex items-center gap-2 whitespace-nowrap">
+                            <i class="fas fa-plus"></i> <span class="hidden md:inline">Yeni Ekle</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Table -->
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr
+                                    class="bg-slate-50 border-b border-slate-200 text-xs uppercase text-slate-500 font-bold tracking-wider">
+                                    <th class="px-6 py-4">Kurum</th>
+                                    <th class="px-6 py-4">Konum</th>
+                                    <th class="px-6 py-4">Tip</th>
+                                    <th class="px-6 py-4 text-right">İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody id="inst-table-body" class="divide-y divide-slate-100 text-sm">
+                                <!-- JS Injection -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Pagination (Static for now) -->
+                    <div class="p-4 border-t border-slate-100 flex justify-between items-center text-xs text-slate-500">
+                        <span id="inst-count-label">0 kurum gösteriliyor</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: GALLERY -->
+            <div id="view-gallery" class="hidden h-full flex flex-col space-y-6">
+                <!-- Header / Tabs -->
+                <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm flex flex-wrap gap-2"
+                    id="gallery-type-tabs">
+                    <button onclick="switchGalleryType('Ortaokul')"
+                        class="gallery-tab px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-indigo-50 text-indigo-700"
+                        data-type="Ortaokul">Ortaokul</button>
+                    <button onclick="switchGalleryType('Lise')"
+                        class="gallery-tab px-4 py-2 rounded-lg text-sm font-medium transition-colors text-slate-600 hover:bg-slate-50"
+                        data-type="Lise">Lise</button>
+                    <button onclick="switchGalleryType('Üniversite Hazırlık')"
+                        class="gallery-tab px-4 py-2 rounded-lg text-sm font-medium transition-colors text-slate-600 hover:bg-slate-50"
+                        data-type="Üniversite Hazırlık">Üniversite Hazırlık</button>
+                    <button onclick="switchGalleryType('Üniversite')"
+                        class="gallery-tab px-4 py-2 rounded-lg text-sm font-medium transition-colors text-slate-600 hover:bg-slate-50"
+                        data-type="Üniversite">Üniversite</button>
+                    <button onclick="switchGalleryType('Daimi')"
+                        class="gallery-tab px-4 py-2 rounded-lg text-sm font-medium transition-colors text-slate-600 hover:bg-slate-50"
+                        data-type="Daimi">Daimi</button>
+                    <button onclick="switchGalleryType('Tekamül')"
+                        class="gallery-tab px-4 py-2 rounded-lg text-sm font-medium transition-colors text-slate-600 hover:bg-slate-50"
+                        data-type="Tekamül">Tekamül</button>
+                </div>
+
+                <!-- Main Gallery Area -->
+                <div class="flex-1 overflow-y-auto space-y-8">
+
+                    <!-- Section: Main Gallery -->
+                    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                            <div>
+                                <h3 class="font-bold text-slate-800">Ana Galeri (Sağ)</h3>
+                                <p class="text-xs text-slate-500">Ana slaytta dönecek görseller.</p>
+                            </div>
+                            <div class="flex gap-2">
+                                <label
+                                    class="cursor-pointer px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-medium shadow-sm active:transform active:scale-95 transition-all">
+                                    <i class="fas fa-cloud-upload-alt mr-1"></i> Yeni Yükle
+                                    <input type="file" multiple class="hidden"
+                                        onchange="uploadFiles(this.files, 'images')">
+                                </label>
+                                <button onclick="saveGallery()"
+                                    class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium shadow-sm">
+                                    <i class="fas fa-save mr-1"></i> Kaydet
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="p-6">
+                            <!-- Textarea Hidden Source of Truth -->
+                            <textarea id="gallery-input-main" class="hidden"></textarea>
+
+                            <!-- Grid -->
+                            <div id="gallery-grid-main"
+                                class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 min-h-[100px]">
+                                <!-- Injected -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section: Left Gallery -->
+                    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                        <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                            <div>
+                                <h3 class="font-bold text-slate-800">Sol Galeri (Dikey)</h3>
+                                <p class="text-xs text-slate-500">Sol taraftaki dikey alanda dönecek görseller.</p>
+                            </div>
+                            <label
+                                class="cursor-pointer px-4 py-2 bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-lg text-sm font-medium shadow-sm transition-all">
+                                <i class="fas fa-plus mr-1"></i> Ekle
+                                <input type="file" multiple class="hidden"
+                                    onchange="uploadFiles(this.files, 'left_images')">
+                            </label>
+                        </div>
+                        <div class="p-6">
+                            <textarea id="gallery-input-left" class="hidden"></textarea>
+                            <div id="gallery-grid-left"
+                                class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 min-h-[100px]"></div>
+                        </div>
+                    </div>
+
+                    <!-- Section: Videos -->
+                    <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden mb-10">
+                        <div class="px-6 py-4 border-b border-slate-100 bg-slate-50">
+                            <h3 class="font-bold text-slate-800">Videolar</h3>
+                            <p class="text-xs text-slate-500">Her satıra bir video URL'si girin.</p>
+                        </div>
+                        <div class="p-6">
+                            <textarea id="gallery-input-video"
+                                class="w-full h-32 p-3 border border-slate-200 rounded-lg text-sm font-mono focus:ring-2 focus:ring-indigo-500 outline-none"
+                                placeholder="https://..."></textarea>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- VIEW: ANNOUNCEMENTS -->
+            <div id="view-announcements" class="hidden h-full flex flex-col space-y-6">
+                <!-- Header / Tabs -->
+                <div class="bg-white p-2 rounded-xl border border-slate-200 shadow-sm flex flex-wrap gap-2">
+                    <button onclick="switchAnnouncementType('Ortaokul')"
+                        class="ann-tab px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-orange-50 text-orange-700 border border-orange-200"
+                        data-type="Ortaokul">Ortaokul</button>
+                    <button onclick="switchAnnouncementType('Lise')"
+                        class="ann-tab px-4 py-2 rounded-lg text-sm font-medium transition-colors text-slate-600 hover:bg-slate-50"
+                        data-type="Lise">Lise</button>
+                    <button onclick="switchAnnouncementType('Üniversite Hazırlık')"
+                        class="ann-tab px-4 py-2 rounded-lg text-sm font-medium transition-colors text-slate-600 hover:bg-slate-50"
+                        data-type="Üniversite Hazırlık">Üniversite Hazırlık</button>
+                    <button onclick="switchAnnouncementType('Üniversite')"
+                        class="ann-tab px-4 py-2 rounded-lg text-sm font-medium transition-colors text-slate-600 hover:bg-slate-50"
+                        data-type="Üniversite">Üniversite</button>
+                    <button onclick="switchAnnouncementType('Daimi')"
+                        class="ann-tab px-4 py-2 rounded-lg text-sm font-medium transition-colors text-slate-600 hover:bg-slate-50"
+                        data-type="Daimi">Daimi</button>
+                    <button onclick="switchAnnouncementType('Tekamül')"
+                        class="ann-tab px-4 py-2 rounded-lg text-sm font-medium transition-colors text-slate-600 hover:bg-slate-50"
+                        data-type="Tekamül">Tekamül</button>
+                </div>
+
+                <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden flex-1 flex flex-col">
+                    <div
+                        class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50 flex-shrink-0">
+                        <div>
+                            <h3 class="font-bold text-slate-800">Duyurular</h3>
+                            <p class="text-xs text-slate-500">Seçili tipteki tüm kurumların panosunda yayınlanacak
+                                metinler.</p>
+                        </div>
+                        <button onclick="saveAnnouncements()"
+                            class="px-6 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm font-medium shadow-sm transition-all hover:shadow-md">
+                            <i class="fas fa-save mr-1"></i> Kaydet
+                        </button>
+                    </div>
+                    <div class="p-6 flex-1 flex flex-col">
+                        <textarea id="announcements-input"
+                            class="w-full flex-1 p-4 border border-slate-200 rounded-xl text-sm font-sans focus:ring-2 focus:ring-orange-500 outline-none resize-none bg-slate-50 focus:bg-white transition-colors"
+                            placeholder="Her satıra bir duyuru girin..."></textarea>
+
+                        <div class="mt-4 flex gap-2 items-start bg-orange-50 p-4 rounded-xl border border-orange-100">
+                            <i class="fas fa-info-circle text-orange-500 mt-0.5"></i>
+                            <p class="text-xs text-orange-700 leading-relaxed">
+                                Bu duyurular, seçili kurum tipine (örn: Ortaokul) ait tüm panolarda, kurumun <b>yerel
+                                    duyurularının sonuna</b> eklenerek gösterilir.
+                                <br>Acil durumlar, genel bilgilendirmeler veya bayram mesajları için kullanabilirsiniz.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VIEW: SETTINGS -->
+            <div id="view-settings" class="hidden h-full flex flex-col items-center justify-center p-10 text-center">
+                <div class="bg-indigo-50 p-6 rounded-full mb-4">
+                    <i class="fas fa-tools text-4xl text-indigo-300"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-700">Sistem Ayarları</h3>
+                <p class="text-slate-500 mt-2">Genel sistem yapılandırması burada olacak.</p>
+            </div>
+
+            <!-- VIEW: HADITHS -->
+            <div id="view-hadiths" class="hidden h-full flex flex-col items-center justify-center p-10 text-center">
+                <div class="bg-indigo-50 p-6 rounded-full mb-4">
+                    <i class="fas fa-book-open text-4xl text-indigo-300"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-700">Hadis Yönetimi Taşınıyor</h3>
+                <p class="text-slate-500 mt-2">Bu modül v2 tasarımına uyarlanmaktadır. <br>Lütfen şimdilik eski paneli
+                    kullanın.</p>
+            </div>
+
+            <!-- VIEW: CMS -->
+            <div id="view-cms" class="hidden h-full flex flex-col items-center justify-center p-10 text-center">
+                <div class="bg-indigo-50 p-6 rounded-full mb-4">
+                    <i class="fas fa-desktop text-4xl text-indigo-300"></i>
+                </div>
+                <h3 class="text-xl font-bold text-slate-700">CMS & Site Ayarları</h3>
+                <p class="text-slate-500 mt-2">Site içerik yönetimi buraya taşınacak.</p>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- SETTINGS MODAL (Exclusion/Region) -->
+    <div id="settings-modal"
+        class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-dark/80 backdrop-blur-sm">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="p-5 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 class="font-bold text-slate-800">Görünürlük Ayarları</h3>
+                <button onclick="document.getElementById('settings-modal').classList.add('hidden')"
+                    class="text-slate-400 hover:text-slate-600">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+
+            <div class="p-6 overflow-y-auto">
+                <input type="hidden" id="set-area-key"> <!-- images, left_images -->
+                <input type="hidden" id="set-index">
+
+                <!-- Preview -->
+                <div class="flex justify-center mb-6">
+                    <img id="set-preview-img"
+                        class="h-32 rounded-lg border border-slate-200 shadow-sm object-cover bg-slate-100">
+                </div>
+
+                <!-- Region Filter -->
+                <div class="mb-6 bg-blue-50 p-4 rounded-xl border border-blue-100">
+                    <label class="block text-sm font-bold text-blue-800 mb-1">
+                        <i class="fas fa-map-marker-alt mr-1"></i> Bölge Kısıtlaması
+                    </label>
+                    <p class="text-xs text-blue-600 mb-2">Bu görseli sadece belirli bir bölgedeki kurumlar görsün.</p>
+                    <input type="text" id="set-region-filter"
+                        class="w-full px-3 py-2 border border-blue-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 placeholder-blue-300 outline-none"
+                        placeholder="Örn: Esenyurt">
+                </div>
+
+                <!-- Exclusion List -->
+                <h4 class="text-sm font-bold text-slate-700 mb-2">Gizle (Hariç Tut)</h4>
+                <p class="text-xs text-slate-500 mb-3">Seçilen kurumlarda bu görsel <b>gösterilmez</b>.</p>
+
+                <input type="text" id="set-search" oninput="filterSettingsList()"
+                    class="w-full px-4 py-2 border border-slate-200 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none mb-3 text-sm"
+                    placeholder="Kurum ara...">
+
+                <div id="set-list"
+                    class="h-64 overflow-y-auto border border-slate-200 rounded-lg divide-y divide-slate-100 bg-white">
+                    <!-- Checkboxes -->
+                </div>
+            </div>
+
+            <div class="p-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+                <button onclick="document.getElementById('settings-modal').classList.add('hidden')"
+                    class="px-4 py-2 bg-white border border-slate-300 rounded-lg text-slate-700 hover:bg-slate-50 font-medium">İptal</button>
+                <button onclick="saveSettingsModal()"
+                    class="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow font-medium">Kaydet</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CORE JS -->
+    <script>
+        // GLOBAL STATE
+        let MASTER_PASSWORD = null;
+        let institutions = [];
+
+        let currentSettingsTarget = null; // { areaKey, index, originalUrl }
+
+        function openExclusion(areaKey, index) {
+            // Get URL from TEXTAREA (View Source)
+            const inputId = (areaKey === 'images') ? 'gallery-input-main' : 'gallery-input-left';
+            const lines = document.getElementById(inputId).value.split('\n').filter(l => l.length > 5);
+            const url = lines[index].trim();
+
+            // Get Config Object (Data Source)
+            const configArr = (globalGalleryConfig[currentGalleryType] && globalGalleryConfig[currentGalleryType][areaKey]) || [];
+            let confItem = configArr.find(i => {
+                const u = (typeof i === 'object') ? i.url : i;
+                return u === url;
+            });
+
+            // Default
+            if (!confItem) confItem = { url: url, exclude: [] };
+            else if (typeof confItem === 'string') confItem = { url: confItem, exclude: [] };
+
+            currentSettingsTarget = { areaKey, index, originalUrl: url };
+
+            // UI Init
+            document.getElementById('set-area-key').value = areaKey;
+            document.getElementById('set-index').value = index;
+            document.getElementById('set-preview-img').src = url;
+            document.getElementById('set-region-filter').value = confItem.region_filter || '';
+
+            // Render List
+            const list = document.getElementById('set-list');
+            list.innerHTML = '';
+
+            institutions.forEach(inst => {
+                const type = inst.config?.institution_type || 'Ortaokul';
+                if (type !== currentGalleryType) return; // Only show same type
+
+                const isExcluded = (confItem.exclude || []).includes(inst.slug);
+                const div = document.createElement('div');
+                div.className = "px-4 py-3 hover:bg-slate-50 flex items-center gap-3 label-container cursor-pointer transition-colors";
+                div.onclick = (e) => { if (e.target.type !== 'checkbox') div.querySelector('input').click(); };
+
+                div.innerHTML = `
+                    <input type="checkbox" value="${inst.slug}" class="w-5 h-5 text-indigo-600 rounded focus:ring-indigo-500 border-slate-300 cursor-pointer" ${isExcluded ? 'checked' : ''}>
+                    <div>
+                        <div class="font-bold text-slate-800 text-sm">${inst.name}</div>
+                        <div class="text-xs text-slate-400 font-mono">${inst.slug}</div>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+
+            filterSettingsList();
+            document.getElementById('settings-modal').classList.remove('hidden');
+        }
+
+        function filterSettingsList() {
+            const term = document.getElementById('set-search').value.toLowerCase();
+            const items = document.querySelectorAll('#set-list .label-container');
+            items.forEach(el => {
+                const text = el.innerText.toLowerCase();
+                el.style.display = text.includes(term) ? 'flex' : 'none';
+            });
+        }
+
+        function saveSettingsModal() {
+            if (!currentSettingsTarget) return;
+
+            const checkboxes = document.querySelectorAll('#set-list input:checked');
+            const newExclude = Array.from(checkboxes).map(cb => cb.value);
+            const region = document.getElementById('set-region-filter').value.trim();
+
+            // Create New Item Object
+            const newItem = {
+                url: currentSettingsTarget.originalUrl,
+                exclude: newExclude
+            };
+            if (region) newItem.region_filter = region;
+
+            // Update Config Array
+            // Same logic as saveGalleryToMemory: We need to update the entry in the array that matches the URL
+            const areaKey = currentSettingsTarget.areaKey;
+
+            if (!globalGalleryConfig[currentGalleryType]) globalGalleryConfig[currentGalleryType] = {};
+            if (!globalGalleryConfig[currentGalleryType][areaKey]) globalGalleryConfig[currentGalleryType][areaKey] = [];
+
+            const arr = globalGalleryConfig[currentGalleryType][areaKey];
+
+            // Note: Since we might have duplicates in URL, finding by index is tricky if array mutated? 
+            // But modal is blocking, so index is effectively stable relative to View.
+            // Let's rely on URL matching because View is derived from URL.
+
+            // Find existing index in Config Array ? No, config array might be desynced from View order.
+            // But we have sync logic in saveGalleryToMemory.
+            // Let's Manual Update: 
+            // 1. Find the item in `arr` by URL (first match?).
+            // 2. Replace it.
+            // 3. If not found (new unsaved item), push it? No, saveGalleryToMemory handles that.
+
+            // Better strategy:
+            // Locate the item in `arr` that matches `originalUrl`.
+            // Update its properties.
+
+            const existingIdx = arr.findIndex(i => {
+                const u = (typeof i === 'object') ? i.url : i;
+                return u === currentSettingsTarget.originalUrl;
+            });
+
+            if (existingIdx !== -1) {
+                arr[existingIdx] = newItem;
+            } else {
+                // If not found in config (e.g. fresh upload not saved), we must add it?
+                // But `arr` is the Config. If it's not in config, where is it?
+                // It's in the textarea!
+                // We should force a sync first? No, we just updated the object to be saved.
+                // If it's not in `arr`, we can't update `arr`.
+                // Implicitly, saveGalleryToMemory updates `arr` from textarea.
+                // We need to ensure that when saveGalleryToMemory runs next, it uses OUR new object.
+
+                // Hack: We can temporarily inject it into `arr` so sync picks it up?
+                // Actually, sync uses `map` (Url -> Object). If we put it in `arr` now, map will pick it up.
+                arr.push(newItem);
+            }
+
+            document.getElementById('settings-modal').classList.add('hidden');
+            renderGalleryAll(); // Re-render badges
+        }
+
+        // --- ROUTER ---
+        const router = {
+            activeView: 'dashboard',
+            navigate: (viewId) => {
+                // Update Sidebar
+                document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active', 'bg-indigo-50', 'text-indigo-600'));
+                const navBtn = document.getElementById(`nav-${viewId}`);
+                if (navBtn) navBtn.classList.add('active', 'bg-indigo-50', 'text-indigo-600');
+
+                // Hide All Views
+                document.querySelectorAll('[id^=view-]').forEach(el => el.classList.add('hidden'));
+
+                // Show Target
+                const target = document.getElementById(`view-${viewId}`);
+                if (target) target.classList.remove('hidden');
+
+                // Update Title
+                const titles = {
+                    'dashboard': 'Genel Bakış',
+                    'institutions': 'Kurum Yönetimi',
+                    'gallery': 'Merkezi Galeri',
+                    'announcements': 'Duyurular',
+                    'hadiths': 'Hadis Yönetimi',
+                    'cms': 'Site İçerik (CMS)',
+                    'settings': 'Sistem Ayarları'
+                };
+                document.getElementById('page-title').innerText = titles[viewId] || 'Panel';
+
+                router.activeView = viewId;
+
+                // Hooks
+                if (viewId === 'institutions') renderInstitutions();
+            }
+        };
+
+        // --- AUTH & INIT ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const storedPass = localStorage.getItem('super_admin_pass');
+            if (storedPass) {
+                verifyLogin(storedPass);
+            }
+
+            document.getElementById('login-form').addEventListener('submit', (e) => {
+                e.preventDefault();
+                verifyLogin(document.getElementById('master-password').value);
+            });
+        });
+
+        async function verifyLogin(pass) {
+            try {
+                // Optimistic UI
+                const res = await fetch('/api/manage-institutions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'list', master_password: pass })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    institutions = data.institutions || [];
+                    MASTER_PASSWORD = pass;
+                    localStorage.setItem('super_admin_pass', pass);
+
+                    document.getElementById('login-modal').classList.add('hidden');
+                    initDashboard();
+                } else {
+                    Swal.fire('Hata', 'Giriş başarısız.', 'error');
+                }
+            } catch (e) {
+                console.error(e);
+                // Fallback for dev/offline if needed, but strict for production
+                Swal.fire('Bağlantı Hatası', 'Sunucuya erişilemiyor.', 'error');
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('super_admin_pass');
+            window.location.reload();
+        }
+
+        function initDashboard() {
+            // Stats
+            document.getElementById('stat-total-inst').innerText = institutions.length;
+
+            // Populate Regions for Filter
+            const regions = [...new Set(institutions.map(i => (i.config?.region || '').trim()).filter(r => r))].sort();
+            const regSelect = document.getElementById('inst-filter-region');
+            regions.forEach(r => {
+                const opt = document.createElement('option');
+                opt.value = r;
+                opt.innerText = r;
+                regSelect.appendChild(opt);
+            });
+
+            renderInstitutions();
+        }
+
+        // --- INSTITUTIONS VIEW ---
+        function renderInstitutions() {
+            const tbody = document.getElementById('inst-table-body');
+            tbody.innerHTML = '';
+
+            const term = document.getElementById('inst-search').value.toLowerCase();
+            const filterType = document.getElementById('inst-filter-type').value;
+            const filterRegion = document.getElementById('inst-filter-region').value;
+
+            const filtered = institutions.filter(i => {
+                const cfg = i.config || {};
+                // Text Search
+                const matchText = i.name.toLowerCase().includes(term) ||
+                    i.slug.toLowerCase().includes(term) ||
+                    (cfg.city || '').toLowerCase().includes(term);
+
+                // Type Filter
+                const type = (cfg.institution_type || 'Ortaokul');
+                const matchType = (filterType === 'all') || (type === filterType);
+
+                // Region Filter
+                const reg = (cfg.region || 'Yok').trim();
+                const matchRegion = (filterRegion === 'all') || (reg === filterRegion);
+
+                return matchText && matchType && matchRegion;
+            });
+
+            document.getElementById('inst-count-label').innerText = `${filtered.length} kurum listeleniyor`;
+
+            filtered.forEach(i => {
+                const cfg = i.config || {};
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition-colors group";
+                tr.innerHTML = `
+                    <td class="px-6 py-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-lg border border-indigo-100">
+                                ${i.name.substring(0, 1)}
+                            </div>
+                            <div>
+                                <div class="font-bold text-slate-900">${i.name}</div>
+                                <div class="text-xs text-slate-400 font-mono">/${i.slug}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm text-slate-600 font-medium">${cfg.city || '-'} / ${cfg.district || '-'}</div>
+                        ${cfg.region ? `<div class="text-xs text-blue-500 font-medium bg-blue-50 inline-block px-1.5 py-0.5 rounded border border-blue-100 mt-1">${cfg.region}</div>` : ''}
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-slate-100 text-slate-800 border border-slate-200">
+                            ${cfg.institution_type || 'Tanımsız'}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-right">
+                        <div class="flex items-center justify-end gap-2 opacity-60 group-hover:opacity-100 transition-opacity">
+                            <a href="/${i.slug}" target="_blank" class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-white rounded-lg transition-colors" title="Siteye Git">
+                                <i class="fas fa-external-link-alt"></i>
+                            </a>
+                             <a href="/panel/${i.slug}" target="_blank" class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-white rounded-lg transition-colors" title="Kurum Paneli">
+                                <i class="fas fa-desktop"></i>
+                            </a>
+                            <button onclick="editInst('${i.slug}')" class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-white rounded-lg transition-colors" title="Düzenle">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button onclick="deleteInst('${i.slug}')" class="p-2 text-slate-400 hover:text-red-600 hover:bg-white rounded-lg transition-colors" title="Sil">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        // --- GALLERY LOGIC ---
+        let globalGalleryConfig = {};
+        let currentGalleryType = 'Ortaokul';
+
+        async function initGallery() {
+            // Load Fresh Data
+            try {
+                const res = await fetch('/api/manage-institutions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'get_global_gallery', master_password: MASTER_PASSWORD })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    globalGalleryConfig = data.config || {};
+                    // Update Stats
+                    let totalImg = 0;
+                    Object.values(globalGalleryConfig).forEach(t => {
+                        totalImg += (t.images?.length || 0) + (t.left_images?.length || 0);
+                    });
+                    document.getElementById('stat-total-img').innerText = totalImg;
+                } else {
+                    globalGalleryConfig = {};
+                }
+            } catch (e) {
+                console.error(e);
+                globalGalleryConfig = {};
+            }
+            switchGalleryType('Ortaokul');
+        }
+
+        function switchGalleryType(type) {
+            // 1. Sync current inputs to memory before switching
+            saveGalleryToMemory();
+
+            currentGalleryType = type;
+
+            // Tabs UI
+            document.querySelectorAll('.gallery-tab').forEach(btn => {
+                const isMatch = btn.dataset.type === type;
+                btn.className = isMatch ?
+                    'gallery-tab px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-indigo-50 text-indigo-700 border border-indigo-200' :
+                    'gallery-tab px-4 py-2 rounded-lg text-sm font-medium transition-colors text-slate-600 hover:bg-slate-50 border border-transparent';
+            });
+
+            // Populate Inputs
+            const data = globalGalleryConfig[type] || { images: [], videos: [], left_images: [] };
+
+            // Keep object structure logic
+            const mapToString = (arr) => (arr || []).map(i => (typeof i === 'object' && i !== null) ? i.url : i).join('\n');
+
+            document.getElementById('gallery-input-main').value = mapToString(data.images);
+            document.getElementById('gallery-input-left').value = mapToString(data.left_images);
+            document.getElementById('gallery-input-video').value = mapToString(data.videos);
+
+            renderGalleryAll();
+        }
+
+        function renderGalleryAll() {
+            renderGalleryGrid('gallery-input-main', 'gallery-grid-main', 'images');
+            renderGalleryGrid('gallery-input-left', 'gallery-grid-left', 'left_images');
+        }
+
+        function renderGalleryGrid(inputId, containerId, areaKey) {
+            const lines = document.getElementById(inputId).value.split('\n').filter(l => l.length > 5);
+            const container = document.getElementById(containerId);
+            container.innerHTML = '';
+
+            // Config array for badges
+            const configArr = (globalGalleryConfig[currentGalleryType] && globalGalleryConfig[currentGalleryType][areaKey]) || [];
+
+            lines.forEach((url, idx) => {
+                const confItem = configArr.find(i => {
+                    const u = (typeof i === 'object') ? i.url : i;
+                    return u === url.trim();
+                });
+
+                const isObj = (typeof confItem === 'object' && confItem !== null);
+                const excludedCount = (isObj && confItem.exclude) ? confItem.exclude.length : 0;
+                const region = (isObj && confItem.region_filter) ? confItem.region_filter : null;
+
+                const wrapper = document.createElement('div');
+                wrapper.className = "relative aspect-square group bg-slate-100 rounded-lg overflow-hidden border border-slate-200 shadow-sm transition-all hover:shadow-md";
+
+                let badgeHtml = '';
+                if (excludedCount > 0) badgeHtml += `<span class="absolute top-2 right-2 bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded shadow z-10" title="${excludedCount} kurumda gizli"><i class="fas fa-eye-slash"></i> ${excludedCount}</span>`;
+                if (region) badgeHtml += `<span class="absolute top-2 left-2 bg-blue-500 text-white text-[10px] px-1.5 py-0.5 rounded shadow z-10" title="Bölge: ${region}"><i class="fas fa-map-marker-alt"></i> ${region}</span>`;
+
+                wrapper.innerHTML = `
+                    <img src="${url}" class="w-full h-full object-cover">
+                    ${badgeHtml}
+                    <!-- Overlay -->
+                    <div class="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
+                         <button onclick="openExclusion('${areaKey}', ${idx})" class="w-8 h-8 rounded-full bg-white text-slate-700 hover:text-indigo-600 shadow-lg flex items-center justify-center transition-transform hover:scale-110" title="Ayarlar">
+                            <i class="fas fa-cog"></i>
+                         </button>
+                         <button onclick="removeGalleryItem('${areaKey}', ${idx})" class="w-8 h-8 rounded-full bg-white text-red-500 hover:bg-red-50 shadow-lg flex items-center justify-center transition-transform hover:scale-110" title="Sil">
+                            <i class="fas fa-trash"></i>
+                         </button>
+                    </div>
+                `;
+                container.appendChild(wrapper);
+            });
+
+            if (lines.length === 0) {
+                container.innerHTML = `<div class="col-span-full py-8 text-center text-slate-400 text-sm border-2 border-dashed border-slate-200 rounded-xl">Görsel bulunamadı. Yüklemek için butonu kullanın veya sürükleyin.</div>`;
+            }
+        }
+
+        function saveGalleryToMemory() {
+            // Helper to sync textarea lines -> config objects
+            const sync = (inputId, areaKey) => {
+                const text = document.getElementById(inputId).value;
+                const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+                const currentArr = (globalGalleryConfig[currentGalleryType] && globalGalleryConfig[currentGalleryType][areaKey]) || [];
+
+                // Map old objects
+                const map = new Map();
+                currentArr.forEach(i => {
+                    const u = (typeof i === 'object') ? i.url : i;
+                    const obj = (typeof i === 'object') ? i : { url: u, exclude: [] };
+                    map.set(u.trim(), obj);
+                });
+
+                return lines.map(url => {
+                    if (map.has(url)) {
+                        const obj = map.get(url);
+                        obj.url = url; // Ensure fresh URL
+                        return obj;
+                    }
+                    return url; // New string
+                });
+            };
+
+            if (!globalGalleryConfig[currentGalleryType]) globalGalleryConfig[currentGalleryType] = {};
+            globalGalleryConfig[currentGalleryType].images = sync('gallery-input-main', 'images');
+            globalGalleryConfig[currentGalleryType].left_images = sync('gallery-input-left', 'left_images');
+            globalGalleryConfig[currentGalleryType].videos = sync('gallery-input-video', 'videos');
+        }
+
+        async function saveGallery() {
+            saveGalleryToMemory(); // Sync last state
+
+            try {
+                const res = await fetch('/api/manage-institutions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'save_global_gallery',
+                        master_password: MASTER_PASSWORD,
+                        payload: { config: globalGalleryConfig }
+                    })
+                });
+
+                if (res.ok) {
+                    Swal.fire({ icon: 'success', title: 'Kaydedildi', timer: 1500, showConfirmButton: false });
+                } else {
+                    Swal.fire('Hata', 'Kaydetme başarısız.', 'error');
+                }
+            } catch (e) {
+                Swal.fire('Hata', 'Sunucu hatası.', 'error');
+            }
+        }
+
+        function removeGalleryItem(areaKey, idx) {
+            const inputId = (areaKey === 'images') ? 'gallery-input-main' : 'gallery-input-left';
+            const ta = document.getElementById(inputId);
+            let lines = ta.value.split('\n').filter(l => l.length > 5);
+            lines.splice(idx, 1);
+            ta.value = lines.join('\n');
+            saveGalleryToMemory(); // Update config state immediately so grid re-render finds correct metadata
+            renderGalleryAll();
+        }
+
+        // --- ANNOUNCEMENTS LOGIC ---
+        let centralAnnouncementsConfig = {};
+        let currentAnnouncementType = 'Ortaokul';
+
+        async function initAnnouncements() {
+            try {
+                const res = await fetch('/api/manage-institutions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'get_central_announcements', master_password: MASTER_PASSWORD })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    centralAnnouncementsConfig = data.config || {};
+                } else {
+                    centralAnnouncementsConfig = {};
+                }
+            } catch (e) {
+                console.error(e);
+                centralAnnouncementsConfig = {};
+            }
+            switchAnnouncementType('Ortaokul');
+        }
+
+        function switchAnnouncementType(type) {
+            // Save current inputs to memory
+            const text = document.getElementById('announcements-input').value;
+            const lines = text.split('\n').map(l => l.trim()).filter(l => l);
+            centralAnnouncementsConfig[currentAnnouncementType] = lines;
+
+            currentAnnouncementType = type;
+
+            // Tabs UI
+            document.querySelectorAll('.ann-tab').forEach(btn => {
+                const isMatch = btn.dataset.type === type;
+                btn.className = isMatch ?
+                    'ann-tab px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-orange-50 text-orange-700 border border-orange-200' :
+                    'ann-tab px-4 py-2 rounded-lg text-sm font-medium transition-colors text-slate-600 hover:bg-slate-50 border border-transparent';
+            });
+
+            // Populate Input
+            const items = centralAnnouncementsConfig[type] || [];
+            document.getElementById('announcements-input').value = items.join('\n');
+        }
+
+        async function saveAnnouncements() {
+            // Sync last state
+            const text = document.getElementById('announcements-input').value;
+            centralAnnouncementsConfig[currentAnnouncementType] = text.split('\n').map(l => l.trim()).filter(l => l);
+
+            try {
+                const res = await fetch('/api/manage-institutions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'save_central_announcements',
+                        master_password: MASTER_PASSWORD,
+                        payload: { config: centralAnnouncementsConfig }
+                    })
+                });
+
+                if (res.ok) {
+                    Swal.fire({ icon: 'success', title: 'Kaydedildi', text: 'Merkezi duyurular güncellendi.', timer: 1500, showConfirmButton: false });
+                } else {
+                    Swal.fire('Hata', 'Kaydetme başarısız.', 'error');
+                }
+            } catch (e) {
+                Swal.fire('Hata', 'Sunucu hatası.', 'error');
+            }
+        }
+
+        // --- UPLOAD LOGIC ---
+        async function uploadFiles(files, areaKey) {
+            if (!files || files.length === 0) return;
+
+            // Show Loading
+            Swal.fire({
+                title: 'Yükleniyor...',
+                html: 'Lütfen bekleyin, görseller işleniyor.',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading() }
+            });
+
+            const formData = new FormData();
+            for (let i = 0; i < files.length; i++) {
+                formData.append('files', files[i]);
+            }
+
+            try {
+                const res = await fetch('/api/upload', {
+                    method: 'POST',
+                    body: formData // No Content-Type header (browser sets boundary)
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.files) {
+                    // Append URLs to textarea
+                    const inputId = (areaKey === 'images') ? 'gallery-input-main' : 'gallery-input-left';
+                    const ta = document.getElementById(inputId);
+                    const newUrls = data.files.map(f => f.url).join('\n');
+
+                    if (ta.value.trim().length > 0) ta.value += '\n' + newUrls;
+                    else ta.value = newUrls;
+
+                    saveGalleryToMemory();
+                    renderGalleryAll();
+                    Swal.close();
+                    Swal.fire({ icon: 'success', title: 'Yüklendi', text: `${data.files.length} görsel eklendi. Kaydetmeyi unutmayın.`, timer: 2000 });
+                } else {
+                    Swal.fire('Hata', 'Yükleme başarısız.', 'error');
+                }
+            } catch (e) {
+                console.error(e);
+                Swal.fire('Hata', 'Yükleme sırasında hata.', 'error');
+            }
+        }
+
+        // Hook init into router
+        const originalNavigate = router.navigate;
+        router.navigate = (viewId) => {
+            originalNavigate(viewId);
+            if (viewId === 'gallery') {
+                // Only init if empty? Or refresh? Refresh is safer.
+                initGallery();
+            }
+            if (viewId === 'announcements') initAnnouncements();
+        };
+</body >
+
+</html >
