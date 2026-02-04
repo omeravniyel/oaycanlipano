@@ -232,11 +232,25 @@ async function fetchConfig() {
 
         if (config.institution_logo && config.institution_logo.trim() !== "") {
             document.getElementById('header-logo').src = config.institution_logo;
+
+            // --- DYNAMIC FAVICON ---
+            let link = document.querySelector("link[rel~='icon']");
+            if (!link) {
+                link = document.createElement('link');
+                link.rel = 'icon';
+                document.head.appendChild(link);
+            }
+            link.href = config.institution_logo;
+
         } else {
             // Fallback to default logo if specific one is missing, 
             // or keep the HTML default (src="logo.png")
             // Here we ensure it matches the config if provided, otherwise generic.
             document.getElementById('header-logo').src = 'logo.png';
+
+            // Reset favicon to default if logo is missing
+            let link = document.querySelector("link[rel~='icon']");
+            if (link) link.href = 'logo.png';
         }
 
         // --- 1. Başlıklar ---
