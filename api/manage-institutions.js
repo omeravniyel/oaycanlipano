@@ -395,11 +395,14 @@ module.exports = async (request, response) => {
         }
 
         // --- BULK PURGE LOCAL CONTENT (TEMİZLİK) ---
-        if (action === 'bulk_purge_local_content') {
-            const { type, targets } = payload; // targets: ['gallery', 'left_gallery', 'videos']
+        // --- BULK REMOVE ITEMS (SMART CLEANUP) ---
+        if (action === 'bulk_remove_items') {
+            const { type, targets, items } = payload; // targets: ['gallery_links', ...], items: ["url1", "url2"]
             const targetType = (type || "").trim().toLowerCase();
+            const itemsToRemove = (items && Array.isArray(items)) ? items : [];
 
             if (!targetType) return response.status(400).json({ error: 'Type is required' });
+            if (itemsToRemove.length === 0) return response.status(200).json({ success: true, count: 0 });
 
             // 1. Fetch relevant institutions
             const { data: insts, error: fetchError } = await supabase
@@ -422,32 +425,25 @@ module.exports = async (request, response) => {
                 if (currentType === targetType) {
                     let changed = false;
 
-                    if (targets.includes('gallery_links')) {
-                        if (cfg.gallery_links && cfg.gallery_links.length > 0) {
-                            cfg.gallery_links = [];
-                            changed = true;
+                    targets.forEach(targetKey => {
+                        let currentList = [];
+                        // Parse current list
+                        if (Array.isArray(cfg[targetKey])) currentList = cfg[targetKey];
+                        else if (typeof cfg[targetKey] === 'string') {
+                            try { currentList = JSON.parse(cfg[targetKey]); } catch (e) { }
                         }
-                    }
 
-                    if (targets.includes('left_gallery_links')) {
-                        if (cfg.left_gallery_links && cfg.left_gallery_links.length > 0) {
-                            cfg.left_gallery_links = [];
-                            changed = true;
+                        if (currentList && currentList.length > 0) {
+                            const originalLen = currentList.length;
+                            // FILTER: Remove if URL is in itemsToRemove
+                            currentList = currentList.filter(url => !itemsToRemove.includes(url));
+
+                            if (currentList.length !== originalLen) {
+                                cfg[targetKey] = currentList;
+                                changed = true;
+                            }
                         }
-                    }
-
-                    if (targets.includes('video_urls')) {
-                        // Check array or string
-                        let hasVid = false;
-                        if (Array.isArray(cfg.video_urls) && cfg.video_urls.length > 0) hasVid = true;
-                        else if (typeof cfg.video_url === 'string' && cfg.video_url.length > 5) hasVid = true;
-
-                        if (hasVid) {
-                            cfg.video_urls = [];
-                            cfg.video_url = ""; // Clear legacy string too
-                            changed = true;
-                        }
-                    }
+                    });
 
                     if (changed) {
                         const p = supabase

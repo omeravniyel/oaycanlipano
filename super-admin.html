@@ -680,17 +680,22 @@
                             <i class="fas fa-trash-alt"></i> Temizlik
                         </button>
                         <div id="cleanup-dropdown"
-                            class="absolute bottom-full right-0 mb-2 w-64 bg-white rounded-xl shadow-xl border border-gray-100 hidden flex flex-col p-2 z-50">
+                            class="absolute bottom-full right-0 mb-2 w-72 bg-white rounded-xl shadow-xl border border-gray-100 hidden flex flex-col p-2 z-50">
                             <p class="text-xs text-gray-400 px-3 py-2 border-b border-gray-50 mb-1 font-bold">SEÇİLİ TİP
                                 İÇİN (${currentGalleryType})</p>
-                            <button onclick="purgeLocalGalleries()"
-                                class="text-left px-3 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-700 rounded-lg transition-colors">
-                                <i class="fas fa-images w-5"></i> Yerel Galerileri Sıfırla
+                            <button onclick="cleanLocalCopies('gallery')"
+                                class="text-left px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-700 rounded-lg transition-colors">
+                                <i class="fas fa-magic w-5"></i> Yerelden Kopyaları Temizle (Galeri)
                             </button>
-                            <button onclick="purgeLocalVideos()"
-                                class="text-left px-3 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-700 rounded-lg transition-colors">
-                                <i class="fas fa-video w-5"></i> Yerel Videoları Sıfırla
+                            <button onclick="cleanLocalCopies('left_gallery')"
+                                class="text-left px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-700 rounded-lg transition-colors">
+                                <i class="fas fa-magic w-5"></i> Yerelden Kopyaları Temizle (Sol)
                             </button>
+                            <div class="border-t border-gray-100 my-1"></div>
+                            <p class="text-[10px] text-gray-400 px-3 italic leading-tight mb-2">
+                                Listede şu an görünen (merkezi) görseller, kurumların kendi hafızalarından silinir.
+                                Kurumun özel yükledikleri KORUNUR.
+                            </p>
                         </div>
                     </div>
 
@@ -705,57 +710,59 @@
         </div>
 
         <script>
-            async function purgeLocalGalleries() {
+            async function cleanLocalCopies(targetArea) { // targetArea: 'gallery' or 'left_gallery'
                 document.getElementById('cleanup-dropdown').classList.add('hidden');
+
+                // Get Items from Textarea
+                let inputId = 'global-images-input';
+                let dbKey = 'gallery_links';
+
+                if (targetArea === 'left_gallery') {
+                    inputId = 'global-left-images-input';
+                    dbKey = 'left_gallery_links';
+                }
+
+                const text = document.getElementById(inputId).value;
+                // Extract URLs even if they are just strings in textarea
+                const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 5);
+
+                if (lines.length === 0) {
+                    Swal.fire('Uyarı', 'Listede görsel yok. Temizlenecek bir şey bulunamadı.', 'info');
+                    return;
+                }
+
                 const confirmed = await Swal.fire({
-                    title: 'DİKKAT! Yerel Galeriler Silinecek',
-                    html: `<b class="text-red-600">${currentGalleryType}</b> tipindeki TÜM kurumların kendi yükledikleri görseller silinecek.<br>Sadece merkezi galeri kalacak.<br><br>Bu işlem geri alınamaz!`,
-                    icon: 'warning',
+                    title: 'Akıllı Temizlik',
+                    html: `<b class="text-orange-600">${currentGalleryType}</b> tipindeki kurumların yerel hafızaları taranacak.<br><br>Şu an listede bulunan <b>${lines.length} adet</b> merkezi görsel, yerel hafızalardan silinecek.<br><br>Kurumun kendine özel yüklediği görseller <b>KORUNACAK</b>.`,
+                    icon: 'question',
                     showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    confirmButtonText: 'Evet, Hepsini Sil!',
+                    confirmButtonColor: '#f97316',
+                    confirmButtonText: 'Evet, Kopyaları Temizle',
                     cancelButtonText: 'Vazgeç'
                 });
 
                 if (confirmed.isConfirmed) {
-                    performPurge(['gallery_links', 'left_gallery_links']);
+                    performSmartCleanup([dbKey], lines);
                 }
             }
 
-            async function purgeLocalVideos() {
-                document.getElementById('cleanup-dropdown').classList.add('hidden');
-                const confirmed = await Swal.fire({
-                    title: 'Yerel Videolar Silinecek',
-                    html: `<b class="text-red-600">${currentGalleryType}</b> tipindeki TÜM kurumların kendi eklediği videolar silinecek.<br><br>Bu işlem geri alınamaz!`,
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    confirmButtonText: 'Evet, Sil!',
-                    cancelButtonText: 'Vazgeç'
-                });
-
-                if (confirmed.isConfirmed) {
-                    performPurge(['video_urls']);
-                }
-            }
-
-            async function performPurge(targets) {
-                Swal.fire({ title: 'Temizleniyor...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            async function performSmartCleanup(targets, items) {
+                Swal.fire({ title: 'Taranıyor ve Temizleniyor...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
                 try {
                     const res = await fetch('/api/manage-institutions', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            action: 'bulk_purge_local_content',
+                            action: 'bulk_remove_items',
                             master_password: MASTER_PASSWORD,
-                            payload: { type: currentGalleryType, targets: targets }
+                            payload: { type: currentGalleryType, targets: targets, items: items }
                         })
                     });
 
                     const data = await res.json();
                     if (res.ok) {
-                        Swal.fire('Başarılı', `${data.count} kurum temizlendi.`, 'success');
+                        Swal.fire('Harika!', `${data.count} kurum başarıyla optimize edildi. Gereksiz kopyalar silindi.`, 'success');
                     } else {
                         Swal.fire('Hata', data.error || 'İşlem başarısız.', 'error');
                     }
