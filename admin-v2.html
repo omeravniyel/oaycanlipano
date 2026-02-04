@@ -748,29 +748,50 @@
         });
 
         async function verifyLogin(pass) {
+            const trimmedPass = pass ? pass.trim() : '';
+            if (!trimmedPass) {
+                Swal.fire('Uyarı', 'Lütfen şifre girin.', 'warning');
+                return;
+            }
+
             try {
-                // Optimistic UI
                 const res = await fetch('/api/manage-institutions', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'list', master_password: pass })
+                    body: JSON.stringify({ action: 'list', master_password: trimmedPass })
                 });
 
+                const contentType = res.headers.get("content-type");
+                let data = {};
+
+                if (contentType && contentType.indexOf("application/json") !== -1) {
+                    data = await res.json();
+                } else {
+                    const text = await res.text();
+                    console.error("Non-JSON Response:", text);
+                    throw new Error(`Sunucu JSON döndürmedi. (Durum: ${res.status})`);
+                }
+
                 if (res.ok) {
-                    const data = await res.json();
                     institutions = data.institutions || [];
-                    MASTER_PASSWORD = pass;
-                    localStorage.setItem('super_admin_pass', pass);
+                    MASTER_PASSWORD = trimmedPass;
+                    localStorage.setItem('super_admin_pass', trimmedPass);
 
                     document.getElementById('login-modal').classList.add('hidden');
                     initDashboard();
+
+                    const Toast = Swal.mixin({
+                        toast: true, position: 'top-end', showConfirmButton: false, timer: 3000,
+                        timerProgressBar: true
+                    });
+                    Toast.fire({ icon: 'success', title: 'Giriş Başarılı' });
+
                 } else {
-                    Swal.fire('Hata', 'Giriş başarısız.', 'error');
+                    Swal.fire('Giriş Başarısız', data.error || 'Şifre yanlış veya sunucu hatası.', 'error');
                 }
             } catch (e) {
                 console.error(e);
-                // Fallback for dev/offline if needed, but strict for production
-                Swal.fire('Bağlantı Hatası', 'Sunucuya erişilemiyor.', 'error');
+                Swal.fire('Bağlantı Hatası', e.message || 'Sunucuya erişilemiyor.', 'error');
             }
         }
 
