@@ -15,8 +15,12 @@
             "destination": "/super-admin.html"
         },
         {
-            "source": "/([^/]+)/admin",
+            "source": "/admin",
             "destination": "/admin.html"
+        },
+        {
+            "source": "/([^/]+)/admin",
+            "destination": "/yonetim.html"
         },
         {
             "source": "/board",
