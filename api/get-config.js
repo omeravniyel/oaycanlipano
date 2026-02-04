@@ -31,6 +31,25 @@ module.exports = async (request, response) => {
     // Eğer bu bir 'System' kaydı değilse ve 'institution_type' varsa global veriyi merge et
     if (!slug.startsWith('system-') && config.institution_type) {
         try {
+            // HELPER: Process Central Items (Handle Exclusion + Extraction)
+            const processCentralItems = (items, currentSlug) => {
+                if (!items || !Array.isArray(items)) return [];
+                return items
+                    .filter(item => {
+                        // Objeyse ve exclude listesinde bu kurum varsa atla
+                        if (typeof item === 'object' && item !== null && item.exclude && Array.isArray(item.exclude)) {
+                            if (item.exclude.includes(currentSlug)) return false;
+                        }
+                        return true;
+                    })
+                    .map(item => {
+                        // URL stringini çek
+                        if (typeof item === 'object' && item !== null) return item.url;
+                        return item;
+                    })
+                    .filter(url => typeof url === 'string' && url.length > 5);
+            };
+
             // 1. GLOBAL HADITHS
             const { data: globalData } = await supabase
                 .from('institutions')
@@ -60,7 +79,7 @@ module.exports = async (request, response) => {
                 const typeConfig = globalGallery.config[type];
 
                 if (typeConfig) {
-                    // MERGE IMAGES
+                    // MERGE IMAGES (Central FIRST)
                     if (typeConfig.images && Array.isArray(typeConfig.images) && typeConfig.images.length > 0) {
                         let localGallery = [];
                         try {
@@ -68,12 +87,14 @@ module.exports = async (request, response) => {
                             else if (typeof config.gallery_links === 'string') localGallery = JSON.parse(config.gallery_links);
                         } catch (e) { }
 
-                        // Robust Deduplication
-                        const combined = [...localGallery, ...typeConfig.images].map(url => typeof url === 'string' ? url.trim() : url);
+                        const centralImages = processCentralItems(typeConfig.images, slug);
+
+                        // Deduplicate: Local overrides central if exact duplicate? checking URL uniqueness
+                        const combined = [...centralImages, ...localGallery].map(url => typeof url === 'string' ? url.trim() : url);
                         config.gallery_links = [...new Set(combined)];
                     }
 
-                    // MERGE VIDEOS
+                    // MERGE VIDEOS (Central FIRST)
                     if (typeConfig.videos && Array.isArray(typeConfig.videos) && typeConfig.videos.length > 0) {
                         let localVideos = [];
                         try {
@@ -86,11 +107,13 @@ module.exports = async (request, response) => {
                         } catch (e) { }
 
                         localVideos = localVideos.filter(v => v && v.length > 5);
-                        const combinedVideos = [...localVideos, ...typeConfig.videos].map(v => typeof v === 'string' ? v.trim() : v);
+                        const centralVideos = processCentralItems(typeConfig.videos, slug);
+
+                        const combinedVideos = [...centralVideos, ...localVideos].map(v => typeof v === 'string' ? v.trim() : v);
                         config.video_urls = [...new Set(combinedVideos)];
                     }
 
-                    // MERGE LEFT GALLERY (NEW)
+                    // MERGE LEFT GALLERY (Central FIRST)
                     if (typeConfig.left_images && Array.isArray(typeConfig.left_images) && typeConfig.left_images.length > 0) {
                         let localLeft = [];
                         try {
@@ -98,13 +121,15 @@ module.exports = async (request, response) => {
                             else if (typeof config.left_gallery_links === 'string') localLeft = JSON.parse(config.left_gallery_links);
                         } catch (e) { }
 
-                        const combinedLeft = [...localLeft, ...typeConfig.left_images].map(url => typeof url === 'string' ? url.trim() : url);
+                        const centralLeft = processCentralItems(typeConfig.left_images, slug);
+
+                        const combinedLeft = [...centralLeft, ...localLeft].map(url => typeof url === 'string' ? url.trim() : url);
                         config.left_gallery_links = [...new Set(combinedLeft)];
                     }
                 }
             }
 
-            // 3. CENTRAL ANNOUNCEMENTS (NEW)
+            // 3. CENTRAL ANNOUNCEMENTS (Central FIRST)
             const { data: centralAnnouncements } = await supabase
                 .from('institutions')
                 .select('config')
@@ -121,8 +146,12 @@ module.exports = async (request, response) => {
                         localAnnouncements = config.announcements;
                     }
 
-                    // Merge and Deduplicate
-                    const combined = [...localAnnouncements, ...announcements].map(a => typeof a === 'string' ? a.trim() : a);
+                    // Central items don't have exclusion logic currently (simple strings), but logic is safe
+                    // If we want exclude for announcements later, we need to adapt schema there too.
+                    // For now, assuming string array.
+                    const cleanAnnouncements = announcements.map(a => typeof a === 'string' ? a.trim() : a); // If obj logic needed, replicate processCentralItems
+
+                    const combined = [...cleanAnnouncements, ...localAnnouncements];
                     config.announcements = [...new Set(combined)];
                 }
             }

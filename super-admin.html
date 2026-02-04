@@ -766,6 +766,148 @@
             </div>
         </div>
 
+        <!-- EXCLUSION SETTINGS MODAL -->
+        <div id="exclusion-modal"
+            class="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
+            <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-[80vh] flex flex-col">
+                <div class="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-2xl">
+                    <h3 class="text-lg font-bold text-gray-800">Görünürlük Ayarları</h3>
+                    <button onclick="document.getElementById('exclusion-modal').classList.add('hidden')"
+                        class="text-gray-400 hover:text-gray-600 transition-colors">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                <div class="p-6 overflow-y-auto flex-1">
+                    <p class="text-sm text-gray-600 mb-4">Bu görselin <b>yayınlanmayacağı</b> kurumları seçin:</p>
+                    <div class="mb-4">
+                        <input type="text" id="exclusion-search" onkeyup="filterExclusionList()"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"
+                            placeholder="Kurum ara...">
+                    </div>
+                    <div id="exclusion-list" class="space-y-2 max-h-64 overflow-y-auto pr-2">
+                        <!-- Checkboxes injected by JS -->
+                    </div>
+                </div>
+                <div class="p-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50 rounded-b-2xl">
+                    <button onclick="document.getElementById('exclusion-modal').classList.add('hidden')"
+                        class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium hover:bg-gray-50">İptal</button>
+                    <button onclick="saveExclusionSettings()"
+                        class="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 shadow-sm">Seçili
+                        Haricinde Göster</button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // --- EXCLUSION LOGIC ---
+            let currentExclusionTarget = {
+                type: null, // 'images' | 'left_images' | 'videos'
+                index: null,
+                url: null
+            };
+
+            function openExclusionSettings(area, index) {
+                // Get URL from preview or config
+                const configArea = globalGalleryConfig[currentGalleryType][area];
+                const rawItem = configArea[index];
+                const url = (typeof rawItem === 'object' && rawItem !== null) ? rawItem.url : rawItem;
+
+                currentExclusionTarget = { type: area, index: index, url: url };
+
+                // Sync memory first to ensure we have latest structure (but don't overwrite with textarea yet if we want to read objects)
+                // Wait: saveCurrentInputToMemory overwrites objects with strings from textarea!
+                // We must rely on globalGalleryConfig having the objects.
+                // But if user typed a NEW url, globalGalleryConfig won't have it yet.
+                // Strategy: Run saveCurrentInputToMemory FIRST to sync added URLs, but preserve existing objects.
+                saveCurrentInputToMemory();
+
+                // Re-fetch item after sync
+                const syncedItem = globalGalleryConfig[currentGalleryType][area][index];
+                const itemObj = (typeof syncedItem === 'object' && syncedItem !== null) ? syncedItem : { url: syncedItem, exclude: [] };
+                const excludedSlugs = itemObj.exclude || [];
+
+                const list = document.getElementById('exclusion-list');
+                list.innerHTML = '';
+
+                // Filter institutions by currentGalleryType
+                const targets = institutions.filter(i => {
+                    const iType = (i.config && i.config.institution_type) ? i.config.institution_type : 'Ortaokul';
+                    return iType === currentGalleryType;
+                });
+
+                if (targets.length === 0) {
+                    list.innerHTML = '<p class="text-xs text-gray-400 text-center italic">Bu tipte kurum bulunamadı.</p>';
+                } else {
+                    targets.forEach(inst => {
+                        const isExcluded = excludedSlugs.includes(inst.slug);
+                        const div = document.createElement('div');
+                        div.className = 'exclusion-item flex items-center justify-between p-3 rounded-lg border border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors';
+                        div.onclick = (e) => {
+                            if (e.target.type !== 'checkbox') {
+                                div.querySelector('input').click();
+                            }
+                        };
+
+                        div.innerHTML = `
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-xs font-bold text-gray-600">
+                                ${inst.name.substring(0, 2).toUpperCase()}
+                            </div>
+                            <div>
+                                <h5 class="text-sm font-bold text-gray-800">${inst.name}</h5>
+                                <p class="text-xs text-gray-400">/${inst.slug}</p>
+                            </div>
+                        </div>
+                        <input type="checkbox" value="${inst.slug}" ${isExcluded ? 'checked' : ''} class="w-5 h-5 text-red-600 rounded focus:ring-red-500 border-gray-300">
+                    `;
+                        list.appendChild(div);
+                    });
+                }
+
+                document.getElementById('exclusion-modal').classList.remove('hidden');
+            }
+
+            function filterExclusionList() {
+                const term = document.getElementById('exclusion-search').value.toLowerCase();
+                document.querySelectorAll('#exclusion-list .exclusion-item').forEach(item => {
+                    const text = item.innerText.toLowerCase();
+                    item.style.display = text.includes(term) ? 'flex' : 'none';
+                });
+            }
+
+            function saveExclusionSettings() {
+                const checked = Array.from(document.querySelectorAll('#exclusion-list input:checked')).map(cb => cb.value);
+                const { type, index, url } = currentExclusionTarget;
+
+                // Update Config
+                const currentItem = globalGalleryConfig[currentGalleryType][type][index];
+
+                // If it was string, convert to object
+                if (typeof currentItem === 'string') {
+                    globalGalleryConfig[currentGalleryType][type][index] = { url: currentItem, exclude: checked };
+                } else {
+                    // Keep other props if any
+                    currentItem.exclude = checked;
+                    currentItem.url = url;
+                }
+
+                // Force Re-render of previews
+                renderGalleryPreviews();
+
+                document.getElementById('exclusion-modal').classList.add('hidden');
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Ayarlar Güncellendi',
+                    text: `${checked.length} kurum bu görseli görmeyecek.`,
+                    timer: 1500,
+                    showConfirmButton: false,
+                    position: 'top-end',
+                    toast: true
+                });
+            }
+        </script>
+
         <script>
             // --- CENTRAL ANNOUNCEMENTS LOGIC ---
             let centralAnnouncementsConfig = {}; // { 'Ortaokul': ["Duuyuru 1"], ... }
@@ -912,10 +1054,11 @@
                 // 4. Fill Inputs
                 const typeData = globalGalleryConfig[type] || { images: [], videos: [], left_images: [] };
 
-                // Join arrays to string
-                document.getElementById('global-images-input').value = (typeData.images || []).join('\n');
-                document.getElementById('global-left-images-input').value = (typeData.left_images || []).join('\n');
-                document.getElementById('global-videos-input').value = (typeData.videos || []).join('\n');
+                const mapToString = (arr) => (arr || []).map(i => (typeof i === 'object' && i !== null) ? i.url : i).join('\n');
+
+                document.getElementById('global-images-input').value = mapToString(typeData.images);
+                document.getElementById('global-left-images-input').value = mapToString(typeData.left_images);
+                document.getElementById('global-videos-input').value = mapToString(typeData.videos);
 
                 // Render Previews
                 if (window.renderGalleryPreviews) renderGalleryPreviews();
@@ -926,24 +1069,53 @@
                 const leftImgText = document.getElementById('global-left-images-input').value;
                 const vidText = document.getElementById('global-videos-input').value;
 
+                // Helper to preserve objects
+                const syncLinesWithConfig = (newLines, areaKey) => {
+                    const currentArray = globalGalleryConfig[currentGalleryType][areaKey] || [];
+                    const resultMap = new Map();
+
+                    // Map existing objects by URL for quick lookup
+                    currentArray.forEach(item => {
+                        const url = (typeof item === 'object' && item !== null) ? item.url : item;
+                        const obj = (typeof item === 'object' && item !== null) ? item : { url: url, exclude: [] };
+                        // Use URL as key. If duplicates, this might overwrite, but acceptable for now.
+                        resultMap.set(url.trim(), obj);
+                    });
+
+                    // Build new array based on TEXTAREA lines
+                    return newLines.map(line => {
+                        const url = line.trim();
+                        if (resultMap.has(url)) {
+                            // URL exists in memory -> keep the object (preserves exclusions)
+                            const existingObj = resultMap.get(url);
+                            // Ensure URL is synced in case of minor diffs (not possible due to key, but good practice)
+                            existingObj.url = url;
+                            return existingObj;
+                        } else {
+                            // New item -> simple string or default object
+                            return url; // Return string for simplicity, converted to object only when editing
+                        }
+                    });
+                };
+
                 const images = imgText.split('\n').map(l => l.trim()).filter(l => l);
                 const leftImages = leftImgText.split('\n').map(l => l.trim()).filter(l => l);
                 const videos = vidText.split('\n').map(l => l.trim()).filter(l => l);
 
                 if (!globalGalleryConfig[currentGalleryType]) globalGalleryConfig[currentGalleryType] = {};
 
-                globalGalleryConfig[currentGalleryType].images = images;
-                globalGalleryConfig[currentGalleryType].left_images = leftImages;
-                globalGalleryConfig[currentGalleryType].videos = videos;
+                globalGalleryConfig[currentGalleryType].images = syncLinesWithConfig(images, 'images');
+                globalGalleryConfig[currentGalleryType].left_images = syncLinesWithConfig(leftImages, 'left_images');
+                globalGalleryConfig[currentGalleryType].videos = syncLinesWithConfig(videos, 'videos');
             }
 
             // --- PREVIEW RENDERER ---
             window.renderGalleryPreviews = function () {
-                renderPreviewForArea('global-images-input', 'gallery-preview-container');
-                renderPreviewForArea('global-left-images-input', 'left-gallery-preview-container');
+                renderPreviewForArea('global-images-input', 'gallery-preview-container', 'images');
+                renderPreviewForArea('global-left-images-input', 'left-gallery-preview-container', 'left_images');
             }
 
-            function renderPreviewForArea(inputId, containerId) {
+            function renderPreviewForArea(inputId, containerId, areaType) {
                 const lines = document.getElementById(inputId).value.split('\n').filter(l => l.length > 5);
                 const container = document.getElementById(containerId);
                 container.innerHTML = '';
@@ -953,14 +1125,48 @@
                     return;
                 }
 
-                lines.forEach(url => {
+                // We need to access the CONFIG to check for exclusions, matching by index
+                // Note: The textarea might be desynced from config until 'switch' or 'save' is called.
+                // But for accurate preview of settings, we should ideally sync first?
+                // If we sync on every input, it might be heavy. 
+                // Let's rely on index. Logic: `lines[i]` matches `config[area][i]` IF synced.
+                // We'll trust the user to save/sync. Or we can just look up by URL in the current config.
+
+                const currentConfigArray = (globalGalleryConfig[currentGalleryType] && globalGalleryConfig[currentGalleryType][areaType]) || [];
+
+                lines.forEach((url, index) => {
+                    // Try to find metadata
+                    // Simple index matching is risky if textarea changed but not synced.
+                    // Let's try to match by URL in the config array.
+                    const matchedItem = currentConfigArray.find(item => {
+                        const iUrl = (typeof item === 'object') ? item.url : item;
+                        return iUrl === url.trim();
+                    });
+
+                    const isObj = (typeof matchedItem === 'object' && matchedItem !== null);
+                    const excludedCount = (isObj && matchedItem.exclude) ? matchedItem.exclude.length : 0;
+
                     // Basic check if logic
                     const isImg = url.match(/\.(jpeg|jpg|gif|png|webp)/i) != null;
 
                     if (isImg) {
                         const div = document.createElement('div');
                         div.className = 'relative w-16 h-16 group';
-                        div.innerHTML = `<img src="${url}" class="w-full h-full object-cover rounded-lg border border-gray-200 shadow-sm">`;
+
+                        let badgeHtml = '';
+                        if (excludedCount > 0) {
+                            badgeHtml = `<span class="absolute -top-2 -right-2 bg-red-100 text-red-600 text-[10px] font-bold px-1.5 py-0.5 rounded-full border border-red-200 shadow-sm" title="${excludedCount} kurumda gizli">-${excludedCount}</span>`;
+                        }
+
+                        div.innerHTML = `
+                            <img src="${url}" class="w-full h-full object-cover rounded-lg border border-gray-200 shadow-sm">
+                            ${badgeHtml}
+                            <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all rounded-lg flex items-center justify-center">
+                                <button onclick="openExclusionSettings('${areaType}', ${index})" class="opacity-0 group-hover:opacity-100 bg-white text-gray-700 p-1.5 rounded-full shadow-lg hover:bg-gray-100 transform scale-75 hover:scale-100 transition-all" title="Görünürlük Ayarları">
+                                    <i class="fas fa-cog text-xs"></i>
+                                </button>
+                            </div>
+                        `;
                         container.appendChild(div);
                     }
                 });
@@ -1467,14 +1673,23 @@
                 const uploadInput = document.getElementById('upload-logo-input');
                 if (uploadInput) uploadInput.addEventListener('change', handleLogoUpload);
 
-                // Global Gallery Upload
+                // Global Gallery Upload (Main)
                 const globalUploadInput = document.getElementById('upload-global-image-input');
                 if (globalUploadInput) globalUploadInput.addEventListener('change', handleGlobalGalleryUpload);
+
+                // Global Gallery Upload (Left)
+                const globalLeftInput = document.getElementById('upload-global-left-input');
+                if (globalLeftInput) globalLeftInput.addEventListener('change', handleGlobalGalleryUpload);
             }
 
             async function handleGlobalGalleryUpload(event) {
                 const files = event.target.files;
                 if (!files || files.length === 0) return;
+
+                // Determine Target
+                const inputId = event.target.id;
+                let targetTextAreaId = 'global-images-input';
+                if (inputId === 'upload-global-left-input') targetTextAreaId = 'global-left-images-input';
 
                 const totalFiles = files.length;
                 let successCount = 0;
@@ -1505,8 +1720,6 @@
                     // Limit check (2.5MB)
                     if (file.size > 2.5 * 1024 * 1024) {
                         errorCount++;
-                        // Show warning for individual file failure? Or just log?
-                        // Let's log and maybe show a toast if possible, but loop continues.
                         console.warn(`File ${file.name} is too big.`);
                         continue;
                     }
@@ -1545,8 +1758,8 @@
 
                 // Finished
                 if (successCount > 0) {
-                    // Append URLs to Textarea
-                    const textArea = document.getElementById('global-images-input');
+                    // Append URLs to Target Textarea
+                    const textArea = document.getElementById(targetTextAreaId);
                     const currentVal = textArea.value.trim();
                     const newContent = newUrls.join('\n');
                     textArea.value = currentVal ? (currentVal + '\n' + newContent) : newContent;
