@@ -735,4 +735,13 @@ module.exports = async (request, response) => {
             console.error('Admin API Hatası:', err);
             return response.status(500).json({ error: err.message });
         }
+    } catch (globalError) {
+        console.error('=== GLOBAL ERROR ===');
+        console.error('Error:', globalError);
+        console.error('Stack:', globalError.stack);
+        return response.status(500).json({
+            error: 'Kritik Hata: ' + globalError.message,
+            details: globalError.stack
+        });
     }
+};
