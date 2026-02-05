@@ -4,14 +4,22 @@ import fs from 'fs';
 import path from 'path';
 
 export default async function handler(request, response) {
-    const { url } = request;
+    const { url, query } = request;
 
-    // Extract slug from URL (e.g., "/enderun" -> "enderun" or "/enderun/admin" -> "enderun" + admin mode)
-    // Remove query params if any
-    const cleanUrl = url.split('?')[0];
+    // Vercel rewrite support: prefer 'path' query param if available
+    let pathStr = url;
+    if (query && query.path) {
+        pathStr = query.path;
+    }
+
+    // Clean up
+    const cleanUrl = pathStr.split('?')[0];
     const pathParts = cleanUrl.replace(/^\//, '').split('/'); // Remove leading slash and split
+
+    // Logic: [slug, optional_mode]
     const slug = pathParts[0]; // First part is always the slug
-    const isAdminMode = pathParts[1] === 'admin'; // Check if second part is "admin"
+    // Check if *any* subsequent part is 'admin' (to be safe e.g. /slug/admin/dashboard) or just the second part
+    const isAdminMode = pathParts[1] === 'admin';
 
     // If slug is empty (should be handled by other rewrites, but safety check)
     if (!slug) {

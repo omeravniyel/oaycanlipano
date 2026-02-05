@@ -48,7 +48,7 @@
         },
         {
             "source": "/(.*)",
-            "destination": "/api/serve-board"
+            "destination": "/api/serve-board?path=$1"
         }
     ]
 }
