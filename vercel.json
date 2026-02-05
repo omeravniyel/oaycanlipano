@@ -23,6 +23,30 @@
             "destination": "/index.html"
         },
         {
+            "source": "/admin.html",
+            "destination": "/admin.html"
+        },
+        {
+            "source": "/super-admin",
+            "destination": "/super-admin.html"
+        },
+        {
+            "source": "/super-admin.html",
+            "destination": "/super-admin.html"
+        },
+        {
+            "source": "/panel.html",
+            "destination": "/panel.html"
+        },
+        {
+            "source": "/setup-db.html",
+            "destination": "/setup-db.html"
+        },
+        {
+            "source": "/debug_db.html",
+            "destination": "/debug_db.html"
+        },
+        {
             "source": "/(.*)",
             "destination": "/api/serve-board"
         }

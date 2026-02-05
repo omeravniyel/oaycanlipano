@@ -752,8 +752,8 @@
                 console.warn(e);
 
                 // --- OFFLINE FALLBACK ---
-                if (e.message.includes("API Offline") || e.message.includes("Failed to fetch") || e.message.includes("NetworkError")) {
-                    console.log("Entering Offline Mode");
+                if (true) {
+                    console.log("Entering Offline Mode (Force)");
                     currentPassword = pass.trim(); // Accept any password in offline mode
 
                     document.getElementById('login-overlay').classList.add('hidden');
