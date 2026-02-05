@@ -946,12 +946,14 @@
         // --- LOAD DATA ---
         async function loadConfig() {
             try {
-                const res = await fetch(`/api/get-config?slug=${currentSlug}`);
+                // If bypassing login (offline mode), don't even try the API if we know it's gonna fail?
+                // Actually we should try, but handle failure gracefully.
 
-                // Check content type
+                const res = await fetch(`/api/get-config?slug=${currentSlug}`);
                 const contentType = res.headers.get("content-type");
+
                 if (!res.ok || (contentType && !contentType.includes("application/json"))) {
-                    throw new Error("Veri çekilemedi / Offline");
+                    throw new Error("API Offline or Not Found");
                 }
 
                 currentConfig = await res.json();
@@ -965,21 +967,41 @@
                     try {
                         currentConfig = JSON.parse(localData);
                         populateForm(currentConfig);
-                        Swal.fire("Bilgi", "Yerel veriler yüklendi.", "info");
+                        Swal.fire({
+                            icon: 'info',
+                            title: 'Çevrimdışı Mod (Kayıtlı Veri)',
+                            text: 'Veriler tarayıcı hafızasından yüklendi.',
+                            timer: 2000,
+                            showConfirmButton: false,
+                            toast: true, position: 'top-end'
+                        });
                         return;
                     } catch (jsonErr) { }
                 }
 
-                // If no local data, use mock default
+                // If no local data, use MOCK DEFAULT
                 console.log("Using Mock Config");
-                populateForm({
+                const mockConfig = {
                     name: 'Demo Kurum (Offline)',
-                    institution_title: 'Demo Kurum',
+                    institution_title: 'Demo Lisesi',
+                    institution_subtitle: 'Dijital Pano Sistemi',
+                    city: 'İstanbul',
+                    district: 'Merkez',
                     gallery_links: [],
                     left_gallery_links: []
-                });
+                };
+                currentConfig = mockConfig;
+                populateForm(mockConfig);
 
-                // Swal.fire("Uyarı", "Ayarlar sunucudan alınamadı.", "warning");
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Çevrimdışı / Demo Modu',
+                    text: 'Sunucuya ulaşılamadı. Demo verileri yüklendi.',
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 3000
+                });
             }
         }
 
