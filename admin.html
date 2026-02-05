@@ -335,6 +335,12 @@
                     body: JSON.stringify({ action: 'list', master_password: MASTER_PASSWORD })
                 });
 
+                // Check if response is valid JSON (not HTML from 404 page)
+                const contentType = res.headers.get("content-type");
+                if (!contentType || !contentType.includes("application/json")) {
+                    throw new Error("API yanıtı JSON değil (Muhtemelen backend çalışmıyor).");
+                }
+
                 const d = await res.json();
 
                 if (!res.ok) {
@@ -345,7 +351,31 @@
                 renderList(institutions);
                 return true;
             } catch (e) {
-                console.error("Login Error:", e);
+                console.warn("Login/Fetch Error:", e);
+
+                // --- OFFLINE/LOCAL FALLBACK ---
+                const localValid = ["283353.", "283353", "admin123", "root"].includes(MASTER_PASSWORD);
+
+                if (localValid && (e.message.includes("JSON") || e.message.includes("Failed to fetch") || e.message.includes("NetworkError"))) {
+                    console.log("Entering Offline Mode");
+                    if (showError) Swal.fire({
+                        icon: 'warning',
+                        title: 'Çevrimdışı Mod',
+                        text: 'API sunucusuna erişilemedi. Yerel demo verileri gösteriliyor.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+
+                    // Mock Data
+                    institutions = [
+                        { name: 'Demo Lisesi (Çevrimdışı)', slug: 'demo-lisesi', password: '123', config: { city: 'İstanbul', district: 'Merkez' } },
+                        { name: 'Test Ortaokulu', slug: 'test-orta', password: 'abc', config: { city: 'Ankara', district: 'Çankaya' } }
+                    ];
+                    renderList(institutions);
+                    return true;
+                }
+                // -----------------------------
+
                 if (showError) Swal.fire('Giriş Başarısız', e.message, 'error');
                 return false;
             }

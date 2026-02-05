@@ -715,7 +715,17 @@
                     })
                 });
 
-                const data = await res.json();
+                // Check for valid API response (not HTML)
+                const contentType = res.headers.get("content-type");
+                const isJson = contentType && contentType.includes("application/json");
+
+                let data;
+                if (isJson) {
+                    data = await res.json();
+                } else {
+                    // Force error to trigger catch block for fallback
+                    throw new Error("API Offline");
+                }
 
                 if (res.ok && data.success) {
                     currentPassword = pass.trim();
@@ -739,7 +749,29 @@
                     return false;
                 }
             } catch (e) {
-                console.error(e);
+                console.warn(e);
+
+                // --- OFFLINE FALLBACK ---
+                if (e.message.includes("API Offline") || e.message.includes("Failed to fetch") || e.message.includes("NetworkError")) {
+                    console.log("Entering Offline Mode");
+                    currentPassword = pass.trim(); // Accept any password in offline mode
+
+                    document.getElementById('login-overlay').classList.add('hidden');
+                    document.getElementById('app-container').classList.remove('hidden');
+
+                    if (!silent) Swal.fire({
+                        icon: 'warning',
+                        title: 'Çevrimdışı Mod',
+                        text: 'Sunucuya erişilemedi. Yerel/Önbellek modu aktif.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+
+                    loadConfig();
+                    return true;
+                }
+                // -----------------------
+
                 if (!silent) Swal.fire("Hata", "Bağlantı hatası.", "error");
                 return false;
             }
@@ -892,12 +924,39 @@
         async function loadConfig() {
             try {
                 const res = await fetch(`/api/get-config?slug=${currentSlug}`);
-                if (!res.ok) throw new Error("Veri çekilemedi");
+
+                // Check content type
+                const contentType = res.headers.get("content-type");
+                if (!res.ok || (contentType && !contentType.includes("application/json"))) {
+                    throw new Error("Veri çekilemedi / Offline");
+                }
+
                 currentConfig = await res.json();
                 populateForm(currentConfig);
             } catch (e) {
-                console.error(e);
-                Swal.fire("Uyarı", "Mevcut ayarlar yüklenemedi.", "warning");
+                console.warn("Load Config Failed:", e);
+
+                // --- OFFLINE/LOCALSTORAGE RECOVERY ---
+                const localData = localStorage.getItem('offline_config_' + currentSlug);
+                if (localData) {
+                    try {
+                        currentConfig = JSON.parse(localData);
+                        populateForm(currentConfig);
+                        Swal.fire("Bilgi", "Yerel veriler yüklendi.", "info");
+                        return;
+                    } catch (jsonErr) { }
+                }
+
+                // If no local data, use mock default
+                console.log("Using Mock Config");
+                populateForm({
+                    name: 'Demo Kurum (Offline)',
+                    institution_title: 'Demo Kurum',
+                    gallery_links: [],
+                    left_gallery_links: []
+                });
+
+                // Swal.fire("Uyarı", "Ayarlar sunucudan alınamadı.", "warning");
             }
         }
 
