@@ -47,6 +47,10 @@
             "destination": "/debug_db.html"
         },
         {
+            "source": "/:slug/admin",
+            "destination": "/panel.html"
+        },
+        {
             "source": "/(.*)",
             "destination": "/api/serve-board?path=$1"
         }

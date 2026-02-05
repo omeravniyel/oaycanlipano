@@ -118,6 +118,11 @@
                             <p id="detail-location" class="text-sm opacity-70"></p>
                         </div>
                         <div class="absolute top-4 right-4 flex gap-2">
+                            <a id="detail-link" target="_blank"
+                                class="w-8 h-8 bg-white/20 rounded flex items-center justify-center text-white hover:bg-white hover:text-blue-600 transition-colors"
+                                title="Panale Git">
+                                <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                            </a>
                             <button onclick="editSelectedInstitution()"
                                 class="w-8 h-8 bg-white/20 rounded flex items-center justify-center text-white"><i
                                     class="fa-solid fa-pen"></i></button>
@@ -403,7 +408,7 @@
         }
 
         function renderList(list) { const c = document.getElementById('institution-list'); c.innerHTML = ''; list.filter(i => !i.slug.startsWith('system-')).forEach(i => { const d = document.createElement('div'); d.className = "flex items-center gap-4 p-4 border rounded-xl mb-2 cursor-pointer hover:bg-slate-100 bg-white"; d.onclick = () => selectInst(i); d.innerHTML = `<div class="flex-1"><h4 class="font-bold">${i.name}</h4><span class="text-xs bg-slate-100 p-1 rounded">${i.config?.city || '-'} / ${i.config?.district || '-'}</span></div>`; c.appendChild(d); }); }
-        function selectInst(i) { selectedInstitution = i; document.getElementById('detail-panel').classList.remove('translate-x-full'); document.getElementById('detail-content').classList.remove('hidden'); document.getElementById('detail-content').classList.add('flex'); document.getElementById('detail-name').innerText = i.name; document.getElementById('detail-location').innerText = `${i.config?.city || ''} / ${i.config?.district || ''}`; document.getElementById('detail-password').innerText = i.password; document.getElementById('detail-contact-name').innerText = i.config?.admin_contact?.name || '-'; document.getElementById('detail-contact-phone').innerText = i.config?.admin_contact?.phone || '-'; }
+        function selectInst(i) { selectedInstitution = i; document.getElementById('detail-panel').classList.remove('translate-x-full'); document.getElementById('detail-content').classList.remove('hidden'); document.getElementById('detail-content').classList.add('flex'); document.getElementById('detail-name').innerText = i.name; document.getElementById('detail-location').innerText = `${i.config?.city || ''} / ${i.config?.district || ''}`; document.getElementById('detail-password').innerText = i.password; document.getElementById('detail-contact-name').innerText = i.config?.admin_contact?.name || '-'; document.getElementById('detail-contact-phone').innerText = i.config?.admin_contact?.phone || '-'; document.getElementById('detail-link').href = `/${i.slug}/admin`; }
 
         // --- CRUD ---
         function openModal() { document.getElementById('edit-modal').classList.remove('hidden'); }
