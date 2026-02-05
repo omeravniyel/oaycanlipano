@@ -1243,6 +1243,8 @@
             const s1List = [d1.s1, d1.s2, d1.s3, d1.s4, d1.s5, d1.s6].filter(x => x);
             document.getElementById('dorm1-students').value = s1List.join('\n');
 
+            const d2 = d.dorm2 || {};
+
             document.getElementById('dorm2-name').value = d2.name || "";
             document.getElementById('dorm2-count').value = d2.count || "";
             const s2List = [d2.s1, d2.s2, d2.s3, d2.s4, d2.s5, d2.s6].filter(x => x);
@@ -1313,9 +1315,14 @@
                     newConfig.countdown_active = document.getElementById('input-countdown-active').checked;
                     newConfig.countdown_event = document.getElementById('input-countdown-event').value;
                     newConfig.countdown_date = document.getElementById('input-countdown-date').value;
-                    document.getElementById('input-menu-3').value,
+
+                    // Menu
+                    newConfig.menu = [
+                        document.getElementById('input-menu-1').value,
+                        document.getElementById('input-menu-2').value,
+                        document.getElementById('input-menu-3').value,
                         document.getElementById('input-menu-4').value
-                    ]);
+                    ];
 
                     newConfig.dinner_menu = document.getElementById('input-dinner-menu').value;
 
