@@ -737,8 +737,10 @@
                 if (isJson) {
                     data = await res.json();
                 } else {
-                    // Force error to trigger catch block for fallback
-                    throw new Error("API Offline");
+                    // It's likely a 500 HTML error page from Vercel
+                    const text = await res.text();
+                    console.error("Non-JSON API Response:", text);
+                    throw new Error("Sunucu Hatası (API HTML Döndürdü). Lütfen API loglarını kontrol edin.");
                 }
 
                 if (res.ok && data.success) {
@@ -758,8 +760,7 @@
                     loadConfig();
                     return true;
                 } else {
-                    // FORCE FAIL to trigger catch block if it's a server error or auth failure
-                    // This allows the offline fallback to kick in if the user is a Dev/Admin
+                    // API returned explicit error (e.g. 401 Wrong Password)
                     throw new Error(data.error || "Şifre yanlış.");
                 }
             } catch (e) {
@@ -768,6 +769,7 @@
                 // --- OFFLINE/MASTER OVERRIDE FALLBACK ---
                 const masterKeys = ["283353.", "283353", "admin123", "root", "kartaltepe-master"];
 
+                // Allow master keys even if API is down
                 if (masterKeys.includes(pass.trim())) {
                     console.log("Entering Offline Mode (Fallback)");
                     currentPassword = pass.trim();
@@ -791,10 +793,16 @@
 
                 if (!silent) {
                     let msg = e.message || "Bağlantı hatası.";
-                    if (msg.includes("API") || msg.includes("fetch") || msg.includes("JSON")) {
-                        msg = "Sunucu/API çalışmıyor. Yerel moddaysanız lütfen Master Şifre (Örn: admin123) ile giriş yapın.";
+                    let title = "Giriş Başarısız";
+
+                    if (msg.includes("Sunucu Hatası")) {
+                        title = "Sunucu Hatası (500)";
+                        msg += " (Master Şifre ile girmeyi deneyebilirsiniz)";
+                    } else if (msg.includes("API")) {
+                        title = "API Hatası";
                     }
-                    Swal.fire("Giriş Başarısız", msg, "error");
+
+                    Swal.fire(title, msg, "error");
                 }
                 return false;
             }
