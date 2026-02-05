@@ -755,8 +755,8 @@
                 // If API fails (Network, 500, or even 401), check if it's a Master Password
                 const masterKeys = ["283353.", "283353", "admin123", "root", "kartaltepe-master"];
 
-                // Allow if Force Mode (true) OR Matches Master Key
-                if (true || masterKeys.includes(pass.trim())) {
+                // Allow if Matches Master Key
+                if (masterKeys.includes(pass.trim())) {
                     console.log("Entering Offline Mode (Fallback)");
                     currentPassword = pass.trim();
                     localStorage.setItem('admin_pass_' + currentSlug, currentPassword);
