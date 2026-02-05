@@ -635,7 +635,7 @@
                             </div>
 
                             <div>
-                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Başlık</label>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Başlık</label>
                                 <input type="text" id="input-emergency-title"
                                     class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-lg text-slate-800"
                                     placeholder="Örn: OKULLAR TATİL">
@@ -683,12 +683,26 @@
         let galleryLeft = [];
 
         // --- AUTH & INIT ---
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             document.getElementById('sidebar-slug').innerText = '/' + currentSlug;
 
             // Show slug in login screen for debugging
             const slugDebug = document.getElementById('slug-debug');
             if (slugDebug) slugDebug.innerText = "Kurum ID: " + currentSlug;
+
+            // FETCH PUBLIC NAME (NEW)
+            try {
+                const res = await fetch(`/api/get-config?slug=${currentSlug}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    const name = data.institution_title || data.institution_name || data.name;
+                    if (name) {
+                        const loginTitle = document.querySelector('#login-modal h2');
+                        if (loginTitle) loginTitle.innerText = name + "\nGiriş Paneli";
+                        document.title = name + " | Yönetim Paneli";
+                    }
+                }
+            } catch (err) { console.warn("Name fetch failed", err); }
 
             // Auto Login if saved
             const savedPass = localStorage.getItem('admin_pass_' + currentSlug);
