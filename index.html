@@ -61,10 +61,9 @@
         }
 
         html:not(.dark) body {
-            background-color: #f8fafc;
-            /* Slate-50 */
+            background-color: #eef2f6;
+            /* Softer Blue-Gray */
             color: #1e293b;
-            /* Slate-800 */
         }
 
         .hero-glow {
@@ -112,7 +111,7 @@
 </head>
 
 <body
-    class="bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white selection:bg-blue-500 selection:text-white transition-colors duration-300">
+    class="bg-[#eef2f6] dark:bg-slate-900 text-slate-900 dark:text-white selection:bg-blue-500 selection:text-white transition-colors duration-300">
 
     <!-- Decorative Glow -->
     <div class="hero-glow"></div>
@@ -207,11 +206,7 @@
                 <i class="fa-solid fa-rocket text-blue-600"></i>
                 Canlı Demoyu İncele
             </a>
-            <a href="admin.html"
-                class="w-full sm:w-auto px-8 py-4 bg-slate-100 dark:bg-slate-800/50 hover:bg-slate-200 dark:hover:bg-slate-800 text-slate-700 dark:text-white border border-slate-200 dark:border-slate-700/50 rounded-xl font-semibold transition-all flex items-center justify-center gap-3 backdrop-blur-sm">
-                <i class="fa-solid fa-sliders"></i>
-                Yönetim Paneli
-            </a>
+
         </div>
 
         <!-- PRODUCT SHOWCASE VISUAL -->
@@ -289,7 +284,7 @@
 
     <!-- VALUE PROPOSITIONS -->
     <section id="solutions"
-        class="py-20 bg-white dark:bg-slate-900/50 border-y border-slate-200 dark:border-white/5 relative overflow-hidden transition-colors">
+        class="py-20 bg-slate-50 dark:bg-slate-900/50 border-y border-slate-200 dark:border-white/5 relative overflow-hidden transition-colors">
         <!-- Background Decoration -->
         <div class="absolute top-0 left-0 w-full h-full overflow-hidden opacity-30 pointer-events-none">
             <div class="absolute top-10 left-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
@@ -489,7 +484,7 @@
 
     <!-- REGISTRATION / APPLICATION FORM -->
     <section id="register"
-        class="py-20 bg-white dark:bg-slate-800 relative border-t border-slate-200 dark:border-white/5">
+        class="py-20 bg-slate-50 dark:bg-slate-800 relative border-t border-slate-200 dark:border-white/5">
         <div class="max-w-4xl mx-auto px-4">
             <div class="text-center mb-12">
                 <span class="text-blue-500 font-bold tracking-wider uppercase text-sm">Hemen Başlayın</span>
@@ -568,7 +563,8 @@
 
             <div class="mb-8 flex justify-center gap-8">
                 <!-- Twitter & Instagram Removed -->
-                <a href="#" id="whatsapp-link" target="_blank"
+                <a href="https://wa.me/905368129353?text=Merhaba,%20Dijital%20Pano%20hakkında%20bilgi%20almak%20istiyorum."
+                    id="whatsapp-link" target="_blank"
                     class="text-slate-400 dark:text-gray-500 hover:text-green-500 transition-colors text-3xl">
                     <i class="fa-brands fa-whatsapp"></i>
                 </a>
@@ -582,12 +578,14 @@
                 <!-- ID updated for easy JS access -->
                 <div class="flex items-center justify-center gap-2">
                     <i class="fa-solid fa-phone text-blue-500"></i>
-                    <span id="footer-phone">0850 123 45 67</span>
+                    <span id="footer-phone">0536 812 93 53</span>
                 </div>
             </div>
 
             <p class="text-slate-400 dark:text-gray-600 text-sm">
-                &copy; 2026 Kartaltepe Dijital Pano Sistemleri. Tüm hakları saklıdır.
+                &copy; 2026 Kartaltepe Dijital Pano Sistemleri. Tüm hakları saklıdır. <br class="md:hidden">
+                <span class="opacity-60 block mt-1 md:inline md:mt-0 md:ml-2">Geliştirici: <span
+                        class="font-bold">İBRAHİM BUĞRA ÇOPUR</span></span>
             </p>
         </div>
     </footer>

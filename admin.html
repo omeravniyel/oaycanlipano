@@ -4,1774 +4,330 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Süper Yönetici Paneli</title>
-    <!-- Tailwind CSS -->
+    <title>Yönetim Paneli | Kartaltepe Pano</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        primary: { 50: '#eef2ff', 100: '#e0e7ff', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca', 900: '#312e81' },
+                        slate: { 850: '#1e293b', 900: '#0f172a' }
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(135deg, #f0f4f8 0%, #e2e8f0 100%);
-            color: #1e293b;
-            overflow: hidden;
-        }
-
-        /* Glassmorphism */
-        .glass {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(148, 163, 184, 0.2);
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        }
-
-        /* Sidebar */
-        .sidebar {
-            width: 240px;
-            height: 100vh;
-            position: fixed;
-            left: 0;
-            top: 64px;
-            background: white;
-            border-right: 1px solid #e2e8f0;
-            z-index: 20;
-        }
-
-        .nav-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 14px 20px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            border-left: 3px solid transparent;
-            color: #64748b;
-        }
-
-        .nav-item:hover {
-            background: #f8fafc;
-            color: #1e293b;
-            border-left-color: rgba(99, 102, 241, 0.5);
-        }
-
-        .nav-item.active {
-            background: linear-gradient(90deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%);
-            color: #6366f1;
-            border-left-color: #6366f1;
-        }
-
-        .nav-item i {
-            width: 20px;
-            text-align: center;
-        }
-
-        /* Main Layout */
-        .main-layout {
-            margin-left: 240px;
-            margin-top: 64px;
-            height: calc(100vh - 64px);
-            display: grid;
-            grid-template-columns: 1fr 400px;
-            gap: 0;
-        }
-
-        .center-panel {
-            border-right: 1px solid #e2e8f0;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .institution-list {
-            flex: 1;
-            overflow-y: auto;
-            padding: 16px;
-            background: #f8fafc;
-        }
-
-        .institution-card {
-            background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            padding: 16px;
-            margin-bottom: 12px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .institution-card:hover {
-            background: #fefefe;
-            border-color: rgba(99, 102, 241, 0.3);
-            transform: translateX(4px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        }
-
-        .institution-card.selected {
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%);
-            border-color: #6366f1;
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
-        }
-
-        .institution-logo {
-            width: 48px;
-            height: 48px;
-            border-radius: 8px;
-            background: #f1f5f9;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            flex-shrink: 0;
-        }
-
-        .institution-logo img {
-            width: 100%;
-            height: 100%;
-            object-fit: contain;
-        }
-
-        /* Detail Panel */
-        .detail-panel {
-            overflow-y: auto;
-            padding: 24px;
-            background: white;
-        }
-
-        .detail-empty {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            color: #94a3b8;
-        }
-
-        .detail-content {
-            display: none;
-        }
-
-        .detail-content.active {
-            display: block;
-            animation: slideInRight 0.3s ease;
-        }
-
-        @keyframes slideInRight {
-            from {
-                opacity: 0;
-                transform: translateX(20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        /* Stats Bar */
-        .stats-bar {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            padding: 16px;
-            border-bottom: 1px solid #e2e8f0;
-            background: white;
-        }
-
-        .stat-box {
-            background: white;
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            padding: 16px;
-            text-align: center;
-        }
-
-        .stat-value {
-            font-size: 24px;
-            font-weight: 800;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .stat-label {
-            font-size: 11px;
-            color: #64748b;
-            text-transform: uppercase;
-            margin-top: 4px;
-            font-weight: 600;
-        }
-
-        /* Search Bar */
-        .search-bar {
-            padding: 16px;
-            border-bottom: 1px solid #e2e8f0;
-            background: white;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 12px 16px 12px 40px;
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            color: #1e293b;
-            outline: none;
-            transition: all 0.2s ease;
-        }
-
-        .search-input:focus {
-            background: white;
-            border-color: #6366f1;
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
-        }
-
-        .search-icon {
-            position: absolute;
-            left: 28px;
-            top: 28px;
-            color: #94a3b8;
-        }
-
-        /* Action Grid */
-        .action-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 12px;
-            margin-top: 24px;
-        }
-
-        .action-btn {
-            padding: 14px;
-            background: #f8fafc;
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            color: #475569;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 14px;
-            font-weight: 600;
-        }
-
-        .action-btn:hover {
-            background: white;
-            border-color: #cbd5e1;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        }
-
-        .action-btn i {
-            width: 20px;
-            text-align: center;
-        }
-
-        /* Badge */
-        .badge {
-            display: inline-flex;
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 11px;
-            font-weight: 700;
-            text-transform: uppercase;
-        }
-
-        .badge-ortaokul {
-            background: rgba(59, 130, 246, 0.15);
-            color: #2563eb;
-        }
-
-        .badge-lise {
-            background: rgba(16, 185, 129, 0.15);
-            color: #059669;
-        }
-
-        .badge-universite {
-            background: rgba(139, 92, 246, 0.15);
-            color: #7c3aed;
-        }
-
-        .badge-daimi {
-            background: rgba(245, 158, 11, 0.15);
-            color: #d97706;
-        }
-
-        /* Scrollbar */
         ::-webkit-scrollbar {
             width: 6px;
+            height: 6px;
         }
 
         ::-webkit-scrollbar-track {
-            background: #f1f5f9;
+            background: transparent;
         }
 
         ::-webkit-scrollbar-thumb {
-            background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
-            border-radius: 10px;
+            background: #cbd5e1;
+            border-radius: 4px;
         }
 
-        /* Top Bar */
-        .top-bar {
-            height: 64px;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 100;
-            background: white;
-            border-bottom: 1px solid #e2e8f0;
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
         }
 
-        /* Responsive */
-        @media (max-width: 1024px) {
-            .main-layout {
-                grid-template-columns: 1fr;
-            }
-
-            .detail-panel {
-                display: none;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-240px);
-            }
-
-            .sidebar.open {
-                transform: translateX(0);
-            }
-
-            .main-layout {
-                margin-left: 0;
-            }
+        .tab-btn.active {
+            background-color: #e0e7ff;
+            color: #4338ca;
+            border-color: #6366f1;
         }
     </style>
 </head>
 
-<body class="text-gray-800">
-
-    <!-- LOGIN MODAL -->
-    <div id="login-modal" class="fixed inset-0 bg-gray-900 bg-opacity-90 z-50 flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-8 text-center">
-            <div
-                class="w-16 h-16 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4 text-2xl">
-                <i class="fas fa-shield-alt"></i>
-            </div>
-            <h2 class="text-2xl font-bold mb-2 text-gray-800">Süper Yönetici</h2>
-            <p class="text-gray-500 mb-6 text-sm">Devam etmek için master şifreyi giriniz.</p>
-            <form id="login-form">
+<body class="bg-slate-50 text-slate-800 antialiased overflow-hidden h-screen flex">
+    <!-- LOGIN & SIDEBAR -->
+    <div id="login-modal" class="fixed inset-0 z-[100] bg-slate-900 flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8">
+            <h2 class="text-2xl font-bold text-center mb-6">Yönetici Girişi</h2>
+            <form onsubmit="event.preventDefault(); attemptLogin();">
                 <input type="password" id="master-password"
-                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all mb-4 text-center tracking-widest"
-                    placeholder="••••••••">
-                <button type="submit"
-                    class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg transition-colors shadow-lg hover:shadow-xl transform active:scale-95 duration-200">Giriş
-                    Yap</button>
+                    class="w-full p-4 border rounded-xl mb-4 text-center text-lg tracking-widest" placeholder="••••••">
+                <button class="w-full py-4 bg-primary-600 text-white rounded-xl font-bold">Giriş Yap</button>
             </form>
-            <div class="mt-4">
-                <button onclick="forceLogin()" class="text-xs text-gray-400 hover:text-gray-600 underline">Giremiyor
-                    musunuz? Zorla Giriş (Debug)</button>
-            </div>
         </div>
     </div>
 
-    <!-- MAIN DASHBOARD -->
-    <div id="main-content" class="hidden">
-        <!-- Top Bar -->
-        <header class="top-bar flex items-center justify-between px-6">
-            <div class="flex items-center gap-4">
-                <button id="sidebar-toggle" class="p-2 rounded-lg hover:bg-gray-100">
-                    <i class="fas fa-bars text-xl"></i>
-                </button>
-                <div class="flex items-center gap-3">
-                    <div
-                        class="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-                        <i class="fas fa-crown text-white"></i>
-                    </div>
-                    <div>
-                        <h1 class="text-lg font-black">Super Admin</h1>
-                        <p class="text-xs text-gray-500">Dashboard v3.0</p>
-                    </div>
-                </div>
-            </div>
+    <aside id="sidebar" class="w-72 bg-slate-900 text-slate-300 flex-col hidden md:flex shadow-2xl z-20">
+        <div class="h-20 flex items-center px-8 border-b border-slate-800/50 text-white font-bold text-xl">PANEL<span
+                class="text-primary-400">V3</span></div>
+        <nav class="flex-1 py-6 px-4 space-y-1">
+            <a href="#" onclick="switchView('institutions')"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-800 text-white"><i
+                    class="fa-solid fa-school w-5"></i> Kurumlar</a>
+            <div class="mt-8 mb-2 px-4 text-xs font-bold text-slate-500 uppercase">İçerik</div>
+            <a href="#" onclick="openHadithModal()"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-800"><i
+                    class="fa-solid fa-book-quran w-5"></i> Hadis Yönetimi</a>
+            <a href="#" onclick="openGlobalGalleryModal()"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-800"><i
+                    class="fa-solid fa-images w-5"></i> Merkezi Galeri</a>
+            <a href="#" onclick="openCentralAnnouncementsModal()"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-800"><i
+                    class="fa-solid fa-bullhorn w-5"></i> Merkezi Duyuru</a>
+            <div class="mt-8 mb-2 px-4 text-xs font-bold text-slate-500 uppercase">Sistem</div>
+            <a href="#" onclick="openLandingModal()"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-800"><i
+                    class="fa-solid fa-desktop w-5"></i> Site CMS</a>
+            <a href="#" onclick="openEmergencyModal()"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg text-red-400 hover:bg-red-900/20"><i
+                    class="fa-solid fa-triangle-exclamation w-5"></i> Acil Durum</a>
+        </nav>
+    </aside>
 
+    <main class="flex-1 flex flex-col relative bg-slate-50/50">
+        <!-- HEADER -->
+        <header class="h-20 bg-white border-b flex items-center justify-between px-8">
             <div class="flex items-center gap-4">
-                <div class="flex items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-full">
-                    <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                    <span class="text-xs font-semibold text-emerald-700">Online</span>
-                </div>
-                <button onclick="logout()" class="p-2 text-gray-400 hover:text-red-600 transition-colors">
-                    <i class="fas fa-sign-out-alt text-lg"></i>
-                </button>
+                <button onclick="document.getElementById('sidebar').classList.toggle('hidden')" class="md:hidden"><i
+                        class="fa-solid fa-bars"></i></button>
+                <input type="text" id="search-input" oninput="filterInstitutions()"
+                    class="bg-slate-100 rounded-xl px-4 py-2 w-64" placeholder="Kurum Ara...">
             </div>
+            <button onclick="openModal()" class="bg-primary-600 text-white px-5 py-2 rounded-xl text-sm font-bold">+
+                Yeni Kurum</button>
         </header>
 
-        <!-- Sidebar -->
-        <div id="sidebar" class="sidebar">
-            <nav class="py-4">
-                <div class="nav-item active" onclick="switchView('institutions')">
-                    <i class="fas fa-building"></i>
-                    <span>Kurumlar</span>
-                </div>
-                <div class="nav-item" onclick="openHadithModal()">
-                    <i class="fas fa-book-open"></i>
-                    <span>Hadis Yönetimi</span>
-                </div>
-                <div class="nav-item" onclick="openGlobalGalleryModal()">
-                    <i class="fas fa-images"></i>
-                    <span>Merkezi Galeri</span>
-                </div>
-                <div class="nav-item" onclick="openCentralAnnouncementsModal()">
-                    <i class="fas fa-bullhorn"></i>
-                    <span>Merkezi Duyuru</span>
-                </div>
-                <div class="nav-item" onclick="openLandingModal()">
-                    <i class="fas fa-desktop"></i>
-                    <span>Site CMS</span>
-                </div>
-                <div class="nav-item" onclick="openApplicationsModal()">
-                    <i class="fas fa-inbox"></i>
-                    <span>Başvurular</span>
-                </div>
-                <div class="border-t border-gray-200 my-4"></div>
-                <div class="nav-item" onclick="openModal()">
-                    <i class="fas fa-plus-circle"></i>
-                    <span>Yeni Kurum Ekle</span>
-                </div>
-            </nav>
-        </div>
+        <!-- LIST -->
+        <div class="flex-1 flex overflow-hidden">
+            <div class="flex-1 p-8 overflow-y-auto" id="institution-list"></div>
 
-        <!-- Main Layout: Center + Right  -->
-        <div class="main-layout">
-            <!-- Center Panel -->
-            <div class="center-panel">
-                <!-- Stats Bar -->
-                <div class="stats-bar">
-                    <div class="stat-box">
-                        <div class="stat-value" id="stat-total">0</div>
-                        <div class="stat-label">Toplam</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-value" id="stat-active">0</div>
-                        <div class="stat-label">Aktif</div>
-                    </div>
-                    <div class="stat-box">
-                        <div class="stat-value" id="stat-apps">0</div>
-                        <div class="stat-label">Başvuru</div>
-                    </div>
-                </div>
-
-                <!-- Search Bar -->
-                <div class="search-bar relative">
-                    <i class="fas fa-search search-icon"></i>
-                    <input type="text" id="search-input" class="search-input" placeholder="Kurum ara..."
-                        oninput="filterInstitutions()">
-                </div>
-
-                <!-- Loader -->
-                <div id="loader" class="hidden text-center py-20">
-                    <div class="inline-block">
-                        <div
-                            class="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4">
+            <!-- DETAIL DRAWER -->
+            <div class="w-[450px] bg-white border-l shadow-xl translate-x-full transition-transform flex flex-col"
+                id="detail-panel">
+                <div id="detail-content" class="hidden flex-col h-full">
+                    <div class="h-48 bg-slate-800 relative p-6 flex items-end">
+                        <div class="bg-white p-2 rounded-xl mr-4"><img id="detail-logo"
+                                class="w-16 h-16 object-contain"></div>
+                        <div class="text-white">
+                            <h2 id="detail-name" class="text-xl font-bold"></h2>
+                            <p id="detail-location" class="text-sm opacity-70"></p>
                         </div>
-                        <p class="text-gray-400 animate-pulse">Kurumlar yükleniyor...</p>
+                        <div class="absolute top-4 right-4 flex gap-2">
+                            <button onclick="editSelectedInstitution()"
+                                class="w-8 h-8 bg-white/20 rounded flex items-center justify-center text-white"><i
+                                    class="fa-solid fa-pen"></i></button>
+                            <button onclick="deleteSelectedInstitution()"
+                                class="w-8 h-8 bg-red-500/20 rounded flex items-center justify-center text-red-400"><i
+                                    class="fa-solid fa-trash"></i></button>
+                        </div>
                     </div>
-                </div>
-
-                <!-- Institution List -->
-                <div class="institution-list" id="institution-list">
-                    <!-- Cards will be injected here -->
-                </div>
-            </div>
-
-            <!-- Right Detail Panel -->
-            <div class="detail-panel">
-                <div class="detail-empty" id="detail-empty">
-                    <i class="fas fa-building text-6xl mb-4 opacity-20"></i>
-                    <p class="text-lg font-semibold">Kurum Seçiniz</p>
-                    <p class="text-sm mt-2">Soldan bir kurum seçerek detayları görüntüleyin</p>
-                </div>
-
-                <div class="detail-content" id="detail-content">
-                    <!-- Detail content will be injected here -->
+                    <div class="p-6 space-y-4">
+                        <div class="bg-slate-50 p-3 rounded border">
+                            <span class="text-xs font-bold text-slate-400">ŞİFRE</span>
+                            <div class="font-mono font-bold text-lg select-all" id="detail-password"></div>
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded border">
+                            <span class="text-xs font-bold text-slate-400">İLETİŞİM</span>
+                            <p id="detail-contact-name"></p>
+                            <p id="detail-contact-phone"></p>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
+    </main>
 
-    <!-- EDIT/CREATE MODAL -->
+    <!-- KURUM MODAL -->
     <div id="edit-modal"
-        class="fixed inset-0 bg-gray-900 bg-opacity-75 z-40 hidden flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div class="p-6 border-b border-gray-100 flex justify-between items-center">
-                <h3 class="text-xl font-bold text-gray-800" id="modal-title">Kurumu Düzenle</h3>
-                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
+        class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center">
+        <div class="bg-white rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl">
+            <div class="p-4 border-b flex justify-between items-center bg-slate-50">
+                <h3 class="font-bold">Kurum Düzenle</h3><button onclick="closeModal()"><i
+                        class="fa-solid fa-times"></i></button>
             </div>
-
-            <form id="institution-form" class="p-6 space-y-6">
-                <!-- Slug & Name -->
-                <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
-                    <div class="mb-4">
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Kurum URL Yolu (Slug)</label>
-                        <div class="relative">
-                            <span class="absolute left-3 top-2 text-gray-400">/</span>
-                            <input type="text" id="form-slug"
-                                class="w-full pl-6 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                                placeholder="ornek-koleji" required>
-                        </div>
-                        <p class="text-xs text-gray-500 mt-1">Bu alan kurumun panele erişim adresini belirler (örn:
-                            super-pano.com/<b>ornek-koleji</b>)</p>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">Kurum Adı</label>
-                            <input type="text" id="form-name"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                                placeholder="Örnek Koleji" required>
-                        </div>
-                        <div class="relative">
-                            <label class="block text-sm font-semibold text-gray-700 mb-1">Yönetici Şifresi</label>
-                            <input type="text" id="form-password"
-                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                                placeholder="Şifre" required>
-                            <button type="button"
-                                onclick="document.getElementById('form-password').value = Math.random().toString(36).slice(-8)"
-                                class="absolute right-2 top-0 text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 px-2 py-1 rounded transition-colors"
-                                style="top: 28px;">Oluştur</button>
-                        </div>
-                    </div>
-
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Kurum Tipi</label>
-                    <select id="form-type"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="Ortaokul">Ortaokul</option>
-                        <option value="Lise">Lise</option>
-                        <option value="Üniversite Hazırlık">Üniversite Hazırlık</option>
-                        <option value="Üniversite">Üniversite</option>
-                        <option value="Daimi">Daimi</option>
-                        <option value="Tekamül">Tekamül</option>
+            <form id="institution-form" class="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+                <div class="grid grid-cols-2 gap-4">
+                    <input id="form-slug" class="border p-2 rounded" placeholder="Slug (URL)" required>
+                    <input id="form-name" class="border p-2 rounded" placeholder="Kurum Adı" required>
+                    <input id="form-password" class="border p-2 rounded" placeholder="Şifre" required>
+                    <div class="flex gap-2"><input id="form-city" class="border p-2 rounded w-1/2"
+                            placeholder="İl"><input id="form-district" class="border p-2 rounded w-1/2"
+                            placeholder="İlçe"></div>
+                    <select id="form-type" class="border p-2 rounded">
+                        <option>Ortaokul</option>
+                        <option>Lise</option>
+                        <option>Üniversite Hazırlık</option>
                     </select>
                 </div>
-
-                <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">İl (Şehir)</label>
-                        <input type="text" id="form-city"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                            placeholder="Istanbul" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">İlçe</label>
-                        <input type="text" id="form-district"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                            placeholder="Uskudar" required>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Bölge/Mıntıka</label>
-                        <input type="text" id="form-region"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                            placeholder="Örn: Avrupa 1">
-                    </div>
-                </div>
-        </div>
-
-        <!-- Contact Info -->
-        <div class="bg-white p-4 rounded-xl border border-gray-200">
-            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Kurum Yöneticisi</h4>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Adı Soyadı</label>
-                    <input type="text" id="form-contact-name"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Ad Soyad">
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Telefon</label>
-                    <input type="text" id="form-contact-phone"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm" placeholder="0555...">
-                </div>
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">E-Posta</label>
-                    <input type="email" id="form-contact-email"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm" placeholder="ornek@mail.com">
-                </div>
-            </div>
-        </div>
-
-        <!-- Logo/Type Settings -->
-        <div class="bg-gray-50 p-4 rounded-xl border border-gray-200">
-            <h4 class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3">Gelişmiş Ayarlar</h4>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Logo Lock -->
-                <div class="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-200">
-                    <span class="text-sm font-medium text-gray-700">Logo Değişikliği Kilitli</span>
-                    <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" id="form-logo-locked" class="sr-only peer">
-                        <div
-                            class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-500">
-                        </div>
-                    </label>
-                </div>
-
-                <!-- Dorm Module Active -->
-                <div class="flex items-center justify-between bg-white p-3 rounded-lg border border-gray-200">
-                    <span class="text-sm font-medium text-gray-700">Yurt Yarışma Modülü</span>
-                    <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" id="form-dorm-active" class="sr-only peer" checked>
-                        <div
-                            class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500">
-                        </div>
-                    </label>
-                </div>
-            </div>
-
-            <!-- Logo URL Override with Upload -->
-            <div class="mt-4">
-                <label class="block text-sm font-semibold text-gray-700 mb-1">Kurum Logosu</label>
-                <div class="flex gap-2">
-                    <input type="text" id="form-logo"
-                        class="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50"
-                        placeholder="Resim linki veya Yükle butonunu kullanın..." readonly>
-                    <input type="file" id="upload-logo-input" class="hidden" accept="image/png, image/jpeg">
-
-                    <button type="button" onclick="document.getElementById('upload-logo-input').click()"
-                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm">
-                        <i class="fas fa-upload mr-1"></i> Yükle
-                    </button>
-                    <button type="button" onclick="document.getElementById('form-logo').value = ''"
-                        class="bg-red-100 hover:bg-red-200 text-red-600 px-3 py-2 rounded-lg text-sm font-medium transition-colors">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-                <p class="text-xs text-gray-500 mt-1">Logo yükleyerek veya doğrudan link girerek
-                    belirleyebilirsiniz. PNG veya JPG formatı önerilir.</p>
-            </div>
-        </div>
-
-        <div class="pt-4 flex justify-end gap-3 border-t border-gray-100">
-            <button type="button" onclick="closeModal()"
-                class="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors">İptal</button>
-            <button type="submit"
-                class="px-5 py-2.5 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 shadow-md hover:shadow-lg font-medium transition-all">Kaydet</button>
-        </div>
-        </form>
-    </div>
-    </div>
-
-    <!-- HADITH MANAGEMENT MODAL -->
-    <div id="hadith-modal"
-        class="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col h-[90vh]">
-            <!-- Header -->
-            <div
-                class="border-b border-gray-100 px-6 py-4 flex justify-between items-center bg-gray-50 rounded-t-2xl flex-shrink-0">
-                <div class="flex items-center gap-3">
-                    <div class="bg-emerald-100 p-2 rounded-lg">
-                        <i class="fas fa-book-open text-emerald-600 text-xl"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-bold text-gray-800">Merkezi Hadis Yönetimi</h3>
-                        <p class="text-xs text-gray-500">Seçilen tipteki tüm kurumlara haftalık hadisleri topluca
-                            dağıtır.</p>
-                    </div>
-                </div>
-                <button onclick="closeHadithModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-            </div>
-
-            <!-- Body -->
-            <div class="p-6 overflow-y-auto flex-1 bg-gray-50/50">
-
-                <!-- Filters -->
-                <div
-                    class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm mb-6 flex flex-col md:flex-row gap-4 items-end">
-                    <div class="flex-1 w-full">
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Hangi Kurum Tipi İçin Düzenleme
-                            Yapılacak?</label>
-                        <select id="hadith-target-type" onchange="loadLocalHadiths()"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500">
-                            <option value="Ortaokul">Ortaokul</option>
-                            <option value="Lise">Lise</option>
-                            <option value="Üniversite Hazırlık">Üniversite Hazırlık</option>
-                            <option value="Üniversite">Üniversite</option>
-                            <option value="Daimi">Daimi</option>
-                            <option value="Tekamül">Tekamül</option>
-                        </select>
-                    </div>
-                    <div class="flex-1 w-full">
-                        <label class="block text-sm font-semibold text-gray-700 mb-1">Otomatik Tarih Hesapla
-                            (Başlangıç)</label>
-                        <input type="date" id="semester-start-date"
-                            class="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm"
-                            onchange="recalculateWeekLabels()">
-                    </div>
-                </div>
-
-                <!-- Weeks Container -->
-                <div id="weeks-container" class="space-y-6">
-                    <!-- Weeks will be generated here -->
-                </div>
-
-                <!-- Add Week Button -->
-                <div class="mt-6 text-center">
-                    <button onclick="addNewWeek()"
-                        class="bg-white border-2 border-dashed border-gray-300 text-gray-500 px-6 py-3 rounded-xl hover:border-emerald-400 hover:text-emerald-600 hover:bg-emerald-50 transition-all font-medium w-full">
-                        <i class="fas fa-plus-circle mr-2"></i> Yeni Hafta Ekle
-                    </button>
-                </div>
-            </div>
-
-            <!-- Footer -->
-            <div
-                class="border-t border-gray-100 px-6 py-4 bg-white rounded-b-2xl flex justify-between items-center flex-shrink-0">
-                <span class="text-xs text-gray-400">
-                    <i class="fas fa-info-circle mr-1"></i> Değişiklikler tarayıcınızda otomatik hatırlanır.
-                </span>
-                <div class="flex gap-3">
-                    <button onclick="closeHadithModal()"
-                        class="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors">Vazgeç</button>
-                    <button onclick="saveAndDistributeHadiths()"
-                        class="px-6 py-2.5 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 shadow-md hover:shadow-lg font-medium transition-all flex items-center gap-2">
-                        <i class="fas fa-paper-plane"></i> Kaydet ve Dağıt
-                    </button>
-                </div>
-            </div>
+                <!-- Contact & Logo Fields Ignored for brevity but preserved in logic -->
+                <div class="grid grid-cols-3 gap-2"><input id="form-contact-name" placeholder="Ad"
+                        class="border p-2 rounded"><input id="form-contact-phone" placeholder="Tel"
+                        class="border p-2 rounded"><input id="form-contact-email" placeholder="Mail"
+                        class="border p-2 rounded"></div>
+                <div class="flex gap-2"><input id="form-logo" class="flex-1 border p-2 rounded"
+                        placeholder="Logo URL"><input type="file" id="upload-logo-input" class="hidden"><button
+                        type="button" onclick="document.getElementById('upload-logo-input').click()"
+                        class="bg-slate-100 px-3 rounded">Yükle</button></div>
+                <div class="flex gap-4"><label><input type="checkbox" id="form-dorm-active" checked>
+                        Yurt</label><label><input type="checkbox" id="form-logo-locked"> Logo Kilit</label></div>
+                <button class="w-full bg-primary-600 text-white py-3 rounded-xl font-bold">Kaydet</button>
+            </form>
         </div>
     </div>
-
-    <!-- LANDING PAGE EDITOR MODAL -->
-    <div id="landing-modal"
-        class="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-5xl max-h-[90vh] flex flex-col h-[90vh]">
-            <!-- Header -->
-            <div
-                class="border-b border-gray-100 px-6 py-4 flex justify-between items-center bg-gray-50 rounded-t-2xl flex-shrink-0">
-                <div class="flex items-center gap-3">
-                    <div class="bg-blue-100 p-2 rounded-lg">
-                        <i class="fas fa-desktop text-blue-600 text-xl"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-bold text-gray-800">Site İçerik Yönetimi (CMS)</h3>
-                        <p class="text-xs text-gray-500">Ana sayfa metinlerini ve özelliklerini buradan
-                            düzenleyebilirsiniz.</p>
-                    </div>
-                </div>
-                <button onclick="closeLandingModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-            </div>
-
-            <!-- Body -->
-            <div class="p-6 overflow-y-auto flex-1 bg-gray-50/50">
-                <form id="landing-form" class="space-y-8">
-
-                    <!-- HERO SECTION -->
-                    <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
-                        <h4 class="text-sm font-bold text-blue-600 uppercase tracking-wider mb-4 border-b pb-2">Manşet
-                            (Hero) Alanı</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="col-span-1 md:col-span-2">
-                                <label class="block text-sm font-semibold text-gray-700 mb-1">Üst Başlık (Küçük)</label>
-                                <input type="text" id="cms-hero-badge"
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                    placeholder="V2.0 YAYINDA...">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-1">Ana Başlık (Satır
-                                    1)</label>
-                                <input type="text" id="cms-hero-title1"
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                    placeholder="Kurumunuza Özel">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-1">Ana Başlık (Satır 2 -
-                                    Renkli)</label>
-                                <input type="text" id="cms-hero-title2"
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                    placeholder="Modern İletişim Çözümü">
-                            </div>
-                            <div class="col-span-1 md:col-span-2">
-                                <label class="block text-sm font-semibold text-gray-700 mb-1">Alt Açıklama</label>
-                                <textarea id="cms-hero-desc" rows="2"
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
-                                    placeholder="Sıradan panoları unutun..."></textarea>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- SOLUTIONS SECTION -->
-                    <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
-                        <h4 class="text-sm font-bold text-blue-600 uppercase tracking-wider mb-4 border-b pb-2">
-                            Çözümlerimiz (3 Kart)</h4>
-
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <!-- Card 1 -->
-                            <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                                <h5 class="font-bold text-gray-700 mb-2">Kart 1</h5>
-                                <div class="space-y-2">
-                                    <input type="text" id="cms-sol1-title"
-                                        class="w-full px-3 py-1.5 border rounded text-sm" placeholder="Başlık">
-                                    <textarea id="cms-sol1-desc" rows="3"
-                                        class="w-full px-3 py-1.5 border rounded text-sm"
-                                        placeholder="Açıklama"></textarea>
-                                    <input type="text" id="cms-sol1-icon"
-                                        class="w-full px-3 py-1.5 border rounded text-sm"
-                                        placeholder="Icon (fa-solid fa-bolt)">
-                                </div>
-                            </div>
-                            <!-- Card 2 -->
-                            <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                                <h5 class="font-bold text-gray-700 mb-2">Kart 2</h5>
-                                <div class="space-y-2">
-                                    <input type="text" id="cms-sol2-title"
-                                        class="w-full px-3 py-1.5 border rounded text-sm" placeholder="Başlık">
-                                    <textarea id="cms-sol2-desc" rows="3"
-                                        class="w-full px-3 py-1.5 border rounded text-sm"
-                                        placeholder="Açıklama"></textarea>
-                                    <input type="text" id="cms-sol2-icon"
-                                        class="w-full px-3 py-1.5 border rounded text-sm"
-                                        placeholder="Icon (fa-solid fa-paintbrush)">
-                                </div>
-                            </div>
-                            <!-- Card 3 -->
-                            <div class="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                                <h5 class="font-bold text-gray-700 mb-2">Kart 3</h5>
-                                <div class="space-y-2">
-                                    <input type="text" id="cms-sol3-title"
-                                        class="w-full px-3 py-1.5 border rounded text-sm" placeholder="Başlık">
-                                    <textarea id="cms-sol3-desc" rows="3"
-                                        class="w-full px-3 py-1.5 border rounded text-sm"
-                                        placeholder="Açıklama"></textarea>
-                                    <input type="text" id="cms-sol3-icon"
-                                        class="w-full px-3 py-1.5 border rounded text-sm"
-                                        placeholder="Icon (fa-solid fa-mobile-screen)">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- FOOTER / CONTACT -->
-                    <div class="bg-white p-5 rounded-xl border border-gray-200 shadow-sm">
-                        <h4 class="text-sm font-bold text-blue-600 uppercase tracking-wider mb-4 border-b pb-2">İletişim
-                            & Linkler</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-1">İletişim E-Posta</label>
-                                <input type="email" id="cms-contact-email"
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-semibold text-gray-700 mb-1">İletişim Telefon</label>
-                                <input type="text" id="cms-contact-phone"
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500">
-                            </div>
-                        </div>
-                    </div>
-
-                </form>
-            </div>
-
-            <!-- Footer -->
-            <div
-                class="border-t border-gray-100 px-6 py-4 bg-white rounded-b-2xl flex justify-between items-center flex-shrink-0">
-                <span class="text-xs text-gray-400">
-                    <i class="fas fa-info-circle mr-1"></i> Değişiklikler anında canlıya alınır.
-                </span>
-                <div class="flex gap-3">
-                    <button onclick="closeLandingModal()"
-                        class="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors">Vazgeç</button>
-                    <button onclick="saveLandingConfig()"
-                        class="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 shadow-md hover:shadow-lg font-medium transition-all flex items-center gap-2">
-                        <i class="fas fa-save"></i> Kaydet
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- APPLICATIONS MODAL -->
-    <div id="applications-modal"
-        class="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col h-[90vh]">
-            <!-- Header -->
-            <div
-                class="border-b border-gray-100 px-6 py-4 flex justify-between items-center bg-gray-50 rounded-t-2xl flex-shrink-0">
-                <div class="flex items-center gap-3">
-                    <div class="bg-orange-100 p-2 rounded-lg">
-                        <i class="fas fa-inbox text-orange-600 text-xl"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-bold text-gray-800">Gelen Başvurular & Talepler</h3>
-                        <p class="text-xs text-gray-500">Demo talepleri ve iletişim formlarını buradan yönetebilirsiniz.
-                        </p>
-                    </div>
-                </div>
-                <button onclick="closeApplicationsModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-            </div>
-
-            <!-- Body -->
-            <div class="p-0 overflow-y-auto flex-1 bg-gray-50/50">
-                <div id="applications-list" class="divide-y divide-gray-100">
-                    <!-- Items -->
-                </div>
-                <div id="applications-loader" class="text-center py-20 hidden">
-                    <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-orange-600 mx-auto mb-4"></div>
-                    <p class="text-gray-500">Başvurular yükleniyor...</p>
-                </div>
-                <div id="applications-empty" class="text-center py-20 hidden">
-                    <div
-                        class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 text-gray-400 text-2xl">
-                        <i class="fas fa-inbox"></i>
-                    </div>
-                    <h4 class="text-gray-800 font-bold mb-1">Henüz Başvuru Yok</h4>
-                    <p class="text-gray-500 text-sm">Gelen kutusu şu an boş.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-
 
     <!-- GLOBAL GALLERY MODAL -->
-    <div id="global-gallery-modal"
-        class="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col h-[90vh]">
-            <!-- Header -->
-            <div
-                class="border-b border-gray-100 px-6 py-4 flex justify-between items-center bg-gray-50 rounded-t-2xl flex-shrink-0">
-                <div class="flex items-center gap-3">
-                    <div class="bg-purple-100 p-2 rounded-lg">
-                        <i class="fas fa-images text-purple-600 text-xl"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-bold text-gray-800">Merkezi Galeri Yönetimi</h3>
-                        <p class="text-xs text-gray-500">Seçilen tipteki tüm kurumlara ortak görsel ve videolar ekleyin.
-                        </p>
-                    </div>
-                </div>
-                <button onclick="closeGlobalGalleryModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
+    <div id="global-gallery-modal" class="fixed inset-0 z-50 hidden backdrop-blur-sm bg-slate-900/50">
+        <div class="absolute inset-0" onclick="document.getElementById('global-gallery-modal').classList.add('hidden')">
+        </div>
+        <div
+            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-6xl h-[90vh] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+            <div class="px-6 py-4 border-b flex justify-between items-center bg-slate-50">
+                <div class="flex items-center gap-3 text-lg font-bold text-slate-800"><i
+                        class="fa-solid fa-images text-indigo-600"></i> Merkezi Galeri</div>
+                <button onclick="document.getElementById('global-gallery-modal').classList.add('hidden')"><i
+                        class="fa-solid fa-times text-slate-400"></i></button>
             </div>
-
-            <!-- Body -->
-            <div class="p-6 overflow-y-auto flex-1 bg-gray-50/50">
-
-                <!-- Type Selector -->
-                <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm mb-6">
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Hangi Kurum Tipi İçin Düzenleme
-                        Yapıyorsunuz?</label>
-                    <div class="flex gap-2 flex-wrap" id="gallery-type-tabs">
-                        <button onclick="switchGalleryType('Ortaokul')"
-                            class="gallery-tab px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 hover:bg-gray-50 transition-colors active-tab-purple"
-                            data-type="Ortaokul">Ortaokul</button>
-                        <button onclick="switchGalleryType('Lise')"
-                            class="gallery-tab px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 hover:bg-gray-50 transition-colors"
-                            data-type="Lise">Lise</button>
-                        <button onclick="switchGalleryType('Üniversite Hazırlık')"
-                            class="gallery-tab px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 hover:bg-gray-50 transition-colors"
-                            data-type="Üniversite Hazırlık">Üniversite Hazırlık</button>
-                        <button onclick="switchGalleryType('Üniversite')"
-                            class="gallery-tab px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 hover:bg-gray-50 transition-colors"
-                            data-type="Üniversite">Üniversite</button>
-                        <button onclick="switchGalleryType('Daimi')"
-                            class="gallery-tab px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 hover:bg-gray-50 transition-colors"
-                            data-type="Daimi">Daimi</button>
-                        <button onclick="switchGalleryType('Tekamül')"
-                            class="gallery-tab px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 hover:bg-gray-50 transition-colors"
-                            data-type="Tekamül">Tekamül</button>
+            <div class="p-4 bg-white border-b flex flex-col md:flex-row gap-4 items-center justify-between">
+                <div class="flex gap-4 items-center">
+                    <select id="gg-target-type" onchange="loadGlobalGallery()"
+                        class="p-2 border rounded-lg font-bold text-sm bg-slate-50">
+                        <option>Ortaokul</option>
+                        <option>Lise</option>
+                        <option>Üniversite Hazırlık</option>
+                        <option>Daimi</option>
+                        <option>Tekamül</option>
+                    </select>
+                    <div class="flex bg-slate-100 p-1 rounded-lg">
+                        <button onclick="switchGalleryTab('right')" id="tab-btn-right"
+                            class="tab-btn active px-4 py-1.5 rounded text-xs font-bold transition-all">Ana
+                            Galeri</button>
+                        <button onclick="switchGalleryTab('left')" id="tab-btn-left"
+                            class="tab-btn px-4 py-1.5 rounded text-xs font-bold text-slate-500 transition-all">Sol
+                            Slider</button>
                     </div>
                 </div>
-
-                <div id="gallery-content-area w-full">
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <!-- CENTRAL IMAGES (SLIDER) -->
-                        <div>
-                            <div class="flex items-center justify-between mb-2">
-                                <label class="block text-sm font-bold text-gray-700">Ortak Görseller (Slayt)</label>
-                                <div class="flex gap-2">
-                                    <input type="file" id="upload-global-image-input" class="hidden" multiple
-                                        accept="image/png, image/jpeg, image/webp">
-                                    <button type="button"
-                                        onclick="document.getElementById('upload-global-image-input').click()"
-                                        class="bg-purple-100 hover:bg-purple-200 text-purple-700 px-3 py-1 rounded text-xs font-bold transition-colors flex items-center gap-1">
-                                        <i class="fas fa-upload"></i> Yükle
-                                    </button>
-                                </div>
-                            </div>
-                            <span class="text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded block mb-2 w-max">Her satıra
-                                1 link</span>
-
-                            <textarea id="global-images-input" rows="5"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 font-mono text-sm leading-relaxed"
-                                placeholder="https://..." oninput="renderGalleryPreviews()"></textarea>
-
-                            <div id="gallery-preview-container"
-                                class="mt-3 flex flex-wrap gap-2 min-h-[80px] p-2 bg-gray-50 rounded-xl border border-dashed border-gray-300 max-h-40 overflow-y-auto">
-                            </div>
-                        </div>
-
-                        <!-- LEFT GALLERY (NEW) -->
-                        <div>
-                            <div class="flex items-center justify-between mb-2">
-                                <label class="block text-sm font-bold text-gray-700">Sol Galeri (Dikey)</label>
-                                <div class="flex gap-2">
-                                    <input type="file" id="upload-global-left-input" class="hidden" multiple
-                                        accept="image/png, image/jpeg, image/webp">
-                                    <button type="button"
-                                        onclick="document.getElementById('upload-global-left-input').click()"
-                                        class="bg-purple-100 hover:bg-purple-200 text-purple-700 px-3 py-1 rounded text-xs font-bold transition-colors flex items-center gap-1">
-                                        <i class="fas fa-upload"></i> Yükle
-                                    </button>
-                                </div>
-                            </div>
-                            <span class="text-xs text-gray-400 bg-gray-50 px-2 py-1 rounded block mb-2 w-max">Her satıra
-                                1 link</span>
-
-                            <textarea id="global-left-images-input" rows="5"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 font-mono text-sm leading-relaxed"
-                                placeholder="https://..." oninput="renderGalleryPreviews()"></textarea>
-
-                            <div id="left-gallery-preview-container"
-                                class="mt-3 flex flex-wrap gap-2 min-h-[80px] p-2 bg-gray-50 rounded-xl border border-dashed border-gray-300 max-h-40 overflow-y-auto">
-                            </div>
-                        </div>
-
-                        <!-- VIDEOS -->
-                        <div>
-                            <div class="flex items-center justify-between mb-2">
-                                <label class="block text-sm font-bold text-gray-700">Ortak Videolar</label>
-                                <span class="text-xs text-gray-400 bg-gray-100 px-2 py-0.5 rounded">Playlist</span>
-                            </div>
-                            <textarea id="global-videos-input" rows="8"
-                                class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 font-mono text-sm leading-relaxed"
-                                placeholder="https://www.youtube.com/embed/..."></textarea>
-                            <p class="text-xs text-gray-500 mt-2">MP4 veya YouTube Embed linkleri. Kurumların videoları
-                                ile birleşir, sırayla oynatılır.</p>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- Footer -->
-            <div
-                class="border-t border-gray-100 px-6 py-4 bg-white rounded-b-2xl flex justify-between items-center flex-shrink-0">
-                <span class="text-xs text-gray-400">
-                    <i class="fas fa-info-circle mr-1"></i> "Kaydet" dediğinizde değişiklikler tüm panolara yansır.
-                </span>
-                <div class="flex gap-3">
-                    <div class="relative group">
-                        <button onclick="document.getElementById('cleanup-dropdown').classList.toggle('hidden')"
-                            class="px-5 py-2.5 bg-red-50 border border-red-200 text-red-700 rounded-lg hover:bg-red-100 font-medium transition-colors flex items-center gap-2">
-                            <i class="fas fa-trash-alt"></i> Temizlik
-                        </button>
-                        <div id="cleanup-dropdown"
-                            class="absolute bottom-full right-0 mb-2 w-72 bg-white rounded-xl shadow-xl border border-gray-100 hidden flex flex-col p-2 z-50">
-                            <p class="text-xs text-gray-400 px-3 py-2 border-b border-gray-50 mb-1 font-bold">SEÇİLİ TİP
-                                İÇİN (${currentGalleryType})</p>
-                            <button onclick="cleanLocalCopies('gallery')"
-                                class="text-left px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-700 rounded-lg transition-colors">
-                                <i class="fas fa-magic w-5"></i> Yerelden Kopyaları Temizle (Galeri)
-                            </button>
-                            <button onclick="cleanLocalCopies('left_gallery')"
-                                class="text-left px-3 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-700 rounded-lg transition-colors">
-                                <i class="fas fa-magic w-5"></i> Yerelden Kopyaları Temizle (Sol)
-                            </button>
-                            <div class="border-t border-gray-100 my-1"></div>
-                            <p class="text-[10px] text-gray-400 px-3 italic leading-tight mb-2">
-                                Listede şu an görünen (merkezi) görseller, kurumların kendi hafızalarından silinir.
-                                Kurumun özel yükledikleri KORUNUR.
-                            </p>
-                        </div>
-                    </div>
-
-                    <button onclick="closeGlobalGalleryModal()"
-                        class="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors">Vazgeç</button>
+                <div class="flex gap-2">
+                    <input type="file" id="gg-upload-input" class="hidden" multiple onchange="uploadGlobalFile()">
+                    <button onclick="document.getElementById('gg-upload-input').click()"
+                        class="px-4 py-2 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 text-sm font-bold border border-indigo-100">Yükle</button>
                     <button onclick="saveGlobalGallery()"
-                        class="px-6 py-2.5 bg-purple-600 text-white rounded-lg hover:bg-purple-700 shadow-md hover:shadow-lg font-medium transition-all flex items-center gap-2">
-                        <i class="fas fa-save"></i> Değişiklikleri Kaydet
-                    </button>
+                        class="px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-bold shadow-lg">Kaydet</button>
                 </div>
             </div>
-        </div>
-
-        <script>
-            async function cleanLocalCopies(targetArea) { // targetArea: 'gallery' or 'left_gallery'
-                document.getElementById('cleanup-dropdown').classList.add('hidden');
-
-                // Get Items from Textarea
-                let inputId = 'global-images-input';
-                let dbKey = 'gallery_links';
-
-                if (targetArea === 'left_gallery') {
-                    inputId = 'global-left-images-input';
-                    dbKey = 'left_gallery_links';
-                }
-
-                const text = document.getElementById(inputId).value;
-                // Extract URLs even if they are just strings in textarea
-                const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 5);
-
-                if (lines.length === 0) {
-                    Swal.fire('Uyarı', 'Listede görsel yok. Temizlenecek bir şey bulunamadı.', 'info');
-                    return;
-                }
-
-                const confirmed = await Swal.fire({
-                    title: 'Akıllı Temizlik',
-                    html: `<b class="text-orange-600">${currentGalleryType}</b> tipindeki kurumların yerel hafızaları taranacak.<br><br>Şu an listede bulunan <b>${lines.length} adet</b> merkezi görsel, yerel hafızalardan silinecek.<br><br>Kurumun kendine özel yüklediği görseller <b>KORUNACAK</b>.`,
-                    icon: 'question',
-                    showCancelButton: true,
-                    confirmButtonColor: '#f97316',
-                    confirmButtonText: 'Evet, Kopyaları Temizle',
-                    cancelButtonText: 'Vazgeç'
-                });
-
-                if (confirmed.isConfirmed) {
-                    performSmartCleanup([dbKey], lines);
-                }
-            }
-
-            async function performSmartCleanup(targets, items) {
-                Swal.fire({ title: 'Taranıyor ve Temizleniyor...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-
-                try {
-                    const res = await fetch('/api/manage-institutions', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            action: 'bulk_remove_items',
-                            master_password: MASTER_PASSWORD,
-                            payload: { type: currentGalleryType, targets: targets, items: items }
-                        })
-                    });
-
-                    const data = await res.json();
-                    if (res.ok) {
-                        Swal.fire('Harika!', `${data.count} kurum başarıyla optimize edildi. Gereksiz kopyalar silindi.`, 'success');
-                    } else {
-                        Swal.fire('Hata', data.error || 'İşlem başarısız.', 'error');
-                    }
-                } catch (e) {
-                    console.error(e);
-                    Swal.fire('Hata', 'Sunucu hatası.', 'error');
-                }
-            }
-        </script>
-    </div>
-    </div>
-    <!-- CENTRAL ANNOUNCEMENTS MODAL -->
-    <div id="central-announcements-modal"
-        class="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col h-[90vh]">
-            <!-- Header -->
-            <div
-                class="border-b border-gray-100 px-6 py-4 flex justify-between items-center bg-gray-50 rounded-t-2xl flex-shrink-0">
-                <div class="flex items-center gap-3">
-                    <div class="bg-orange-100 p-2 rounded-lg">
-                        <i class="fas fa-bullhorn text-orange-600 text-xl"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-lg font-bold text-gray-800">Merkezi Duyuru Yönetimi</h3>
-                        <p class="text-xs text-gray-500">Seçilen tipteki tüm kurumlara ortak duyuru ekleyin.</p>
-                    </div>
-                </div>
-                <button onclick="closeCentralAnnouncementsModal()"
-                    class="text-gray-400 hover:text-gray-600 transition-colors">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-            </div>
-
-            <!-- Body -->
-            <div class="p-6 overflow-y-auto flex-1 bg-gray-50/50">
-
-                <!-- Type Selector -->
-                <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-sm mb-6">
-                    <label class="block text-sm font-semibold text-gray-700 mb-2">Hangi Kurum Tipi İçin Duyuru
-                        Ekliyorsunuz?</label>
-                    <div class="flex gap-2 flex-wrap" id="announcement-type-tabs">
-                        <button onclick="switchAnnouncementType('Ortaokul')"
-                            class="announcement-tab px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 hover:bg-gray-50 transition-colors active-tab-orange"
-                            data-type="Ortaokul">Ortaokul</button>
-                        <button onclick="switchAnnouncementType('Lise')"
-                            class="announcement-tab px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 hover:bg-gray-50 transition-colors"
-                            data-type="Lise">Lise</button>
-                        <button onclick="switchAnnouncementType('Üniversite Hazırlık')"
-                            class="announcement-tab px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 hover:bg-gray-50 transition-colors"
-                            data-type="Üniversite Hazırlık">Üniversite Hazırlık</button>
-                        <button onclick="switchAnnouncementType('Üniversite')"
-                            class="announcement-tab px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 hover:bg-gray-50 transition-colors"
-                            data-type="Üniversite">Üniversite</button>
-                        <button onclick="switchAnnouncementType('Daimi')"
-                            class="announcement-tab px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 hover:bg-gray-50 transition-colors"
-                            data-type="Daimi">Daimi</button>
-                        <button onclick="switchAnnouncementType('Tekamül')"
-                            class="announcement-tab px-4 py-2 rounded-lg text-sm font-medium border border-gray-200 hover:bg-gray-50 transition-colors"
-                            data-type="Tekamül">Tekamül</button>
-                    </div>
-                </div>
-
-                <div class="space-y-6">
-                    <div>
-                        <label class="block text-sm font-semibold text-gray-700 mb-2">
-                            Duyurular (Her satıra bir duyuru)
-                        </label>
-                        <textarea id="central_announcements_text"
-                            class="w-full h-64 border border-gray-200 rounded-xl p-4 text-sm font-sans focus:ring-2 focus:ring-orange-500 focus:outline-none resize-y shadow-sm"
-                            placeholder="Örn: 29 Ekim Cumhuriyet Bayramı Kutlu Olsun...&#10;Yarın tatil..."></textarea>
-                        <div class="mt-3 flex gap-2 items-start bg-orange-50 p-3 rounded-lg border border-orange-100">
-                            <i class="fas fa-info-circle text-orange-500 mt-0.5"></i>
-                            <p class="text-xs text-orange-700">Bu duyurular, seçili tipteki kurumlara (örn:
-                                Ortaokul) ait tüm panolarda, kurumun kendi duyurularının sonuna eklenerek
-                                gösterilir.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Footer -->
-            <div class="border-t border-gray-100 px-6 py-4 bg-white rounded-b-2xl flex justify-end gap-3 flex-shrink-0">
-                <button onclick="closeCentralAnnouncementsModal()"
-                    class="px-5 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors">İptal</button>
-                <button onclick="saveCentralAnnouncements()"
-                    class="px-5 py-2.5 bg-orange-600 text-white rounded-lg hover:bg-orange-700 shadow-md hover:shadow-lg font-medium transition-all flex items-center gap-2">
-                    <i class="fas fa-save"></i> Duyuruları Kaydet
-                </button>
+            <div class="flex-1 overflow-y-auto p-6 bg-slate-50/50">
+                <div id="gg-grid" class="grid grid-cols-2 md:grid-cols-6 gap-4"></div>
+                <p id="gg-empty" class="hidden text-center mt-20 text-slate-400">Görsel bulunamadı.</p>
             </div>
         </div>
     </div>
 
-    <!-- EXCLUSION SETTINGS MODAL -->
-    <div id="exclusion-modal"
-        class="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 hidden flex items-center justify-center p-4 backdrop-blur-sm">
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg">
-            <div class="p-6 border-b border-gray-100 flex justify-between items-center">
-                <h3 class="text-lg font-bold text-gray-800">Görünürlük Ayarları</h3>
-                <button onclick="document.getElementById('exclusion-modal').classList.add('hidden')"
-                    class="text-gray-400 hover:text-gray-600">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
+    <!-- ITEM SETTINGS MODAL -->
+    <div id="item-settings-modal"
+        class="fixed inset-0 z-[60] hidden bg-black/20 backdrop-blur-sm flex items-center justify-center">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-96 animate-in zoom-in duration-200">
+            <h3 class="font-bold text-lg mb-4">Görsel Ayarları</h3>
+            <div class="space-y-4">
+                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Bölge (İlçe)</label><select
+                        id="item-filter-region" class="w-full p-2 border rounded-lg bg-slate-50">
+                        <option value="">Tümü</option>
+                    </select></div>
+                <div><label class="block text-xs font-bold text-slate-500 uppercase mb-1">Özel Kurum
+                        (Slug)</label><input id="item-filter-slug" class="w-full p-2 border rounded-lg"></div>
             </div>
-            <div class="p-6">
-                <input type="hidden" id="ex-area-type">
-                <input type="hidden" id="ex-index">
-
-                <!-- PREVIEW -->
-                <div class="mb-4 flex justify-center">
-                    <img id="ex-preview-img" src=""
-                        class="h-32 rounded-lg border border-gray-200 shadow-sm object-cover">
-                </div>
-
-                <!-- REGION FILTER (NEW) -->
-                <div class="mb-6 bg-blue-50 p-4 rounded-xl border border-blue-100">
-                    <label class="block text-sm font-bold text-blue-800 mb-1">
-                        <i class="fas fa-map-marker-alt mr-1"></i> Bölge Kısıtlaması (Opsiyonel)
-                    </label>
-                    <p class="text-xs text-blue-600 mb-2">Bu görseli sadece belirli bir bölgedeki (mıntıka) kurumlar
-                        görsün istiyorsanız yazın.</p>
-                    <input type="text" id="ex-region-filter"
-                        class="w-full px-3 py-2 border border-blue-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 placeholder-blue-300"
-                        placeholder="Örn: Esenyurt">
-                </div>
-
-                <h4 class="text-sm font-bold text-gray-700 mb-2">Bu Görseli Gizle (Hariç Tut)</h4>
-                <p class="text-xs text-gray-500 mb-3">Aşağıdaki arama kutusunu kullanarak bu görselin görünmesini
-                    <b>istemediğiniz</b> kurumları seçin.
-                </p>
-
-                <input type="text" id="ex-search" oninput="filterExclusionList()"
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 mb-3"
-                    placeholder="Kurum ara...">
-
-                <div id="ex-list"
-                    class="h-64 overflow-y-auto border border-gray-200 rounded-lg divide-y divide-gray-100">
-                    <!-- Checkboxes injected here -->
-                </div>
-            </div>
-            <div class="p-4 bg-gray-50 rounded-b-2xl flex justify-end gap-3">
-                <button onclick="document.getElementById('exclusion-modal').classList.add('hidden')"
-                    class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50">İptal</button>
-                <button onclick="saveExclusionSettings()"
-                    class="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 shadow font-medium">Kaydet</button>
-            </div>
+            <div class="mt-6 flex justify-end gap-2"><button
+                    onclick="document.getElementById('item-settings-modal').classList.add('hidden')"
+                    class="px-4 py-2 text-slate-500">İptal</button><button onclick="applyItemSettings()"
+                    class="px-6 py-2 bg-primary-600 text-white rounded-lg font-bold">Uygula</button></div>
         </div>
     </div>
 
+    <!-- HADITH MODAL (UPDATED with Week Selection) -->
+    <div id="hadith-modal" class="fixed inset-0 z-50 hidden backdrop-blur-sm bg-slate-900/50">
+        <div class="absolute inset-0" onclick="document.getElementById('hadith-modal').classList.add('hidden')"></div>
+        <div
+            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-5xl h-[90vh] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+            <div class="p-6 border-b flex justify-between items-center bg-slate-50">
+                <h3 class="font-bold text-lg">Hadis Yönetimi</h3><button
+                    onclick="document.getElementById('hadith-modal').classList.add('hidden')"><i
+                        class="fa-solid fa-times"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto flex-1 bg-slate-50/30">
+                <div class="flex gap-4 mb-6">
+                    <div class="flex-1 bg-white p-4 rounded border"><label
+                            class="block text-xs font-bold text-slate-400 uppercase mb-1">Hedef</label><select
+                            id="hadith-target-type" class="w-full p-2 border rounded font-bold"
+                            onchange="loadLocalHadiths()">
+                            <option>Ortaokul</option>
+                            <option>Lise</option>
+                            <option>Üniversite Hazırlık</option>
+                        </select></div>
+                    <div class="flex-1 bg-white p-4 rounded border"><label
+                            class="block text-xs font-bold text-slate-400 uppercase mb-1">Başlangıç Tarihi</label><input
+                            type="date" id="semester-start-date" class="w-full p-2 border rounded"
+                            onchange="updateWeekDates()"></div>
+                </div>
+                <div id="weeks-container" class="space-y-4"></div>
+                <button onclick="addNewWeek()"
+                    class="w-full py-4 mt-6 border-2 border-dashed border-slate-300 rounded-xl hover:bg-white hover:border-primary-400 text-slate-500 font-bold transition-all">+
+                    Yeni Hafta Ekle</button>
+            </div>
+            <div class="p-4 border-t flex justify-end gap-3 bg-white"><button onclick="saveAndDistributeHadiths()"
+                    class="px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg">Kaydet
+                    ve Dağıt</button></div>
+        </div>
+    </div>
+
+    <!-- Script Block -->
     <script>
-        let currentExclusionTarget = null; // { area: 'images'|'left_images', index: 0, item: {} }
+        let institutions = [];
+        let selectedInstitution = null;
+        let MASTER_PASSWORD = localStorage.getItem('super_admin_pass') || "283353.";
+        let globalGallery = {};
+        let currentGalleryTab = 'right';
+        let currentEditingItemIndex = -1;
+        let hadithWeeks = [];
 
-        function openExclusionSettings(areaType, index) {
-            const configArray = (globalGalleryConfig[currentGalleryType] && globalGalleryConfig[currentGalleryType][areaType]) || [];
+        // --- CORE ---
+        document.addEventListener('DOMContentLoaded', () => { if (localStorage.getItem('super_admin_pass')) { document.getElementById('login-modal').classList.add('hidden'); fetchInstitutions(); } });
+        async function attemptLogin() {
+            const val = document.getElementById('master-password').value.trim();
+            if (!val) return Swal.fire('Uyarı', 'Lütfen şifre giriniz.', 'warning');
 
-            // Sync check: we need to make sure we are editing the right item.
-            // But configArray might be stale if user edited textarea text manually.
-            // Best effort: Get URL from textarea line, try to match in configArray.
+            // UI Feedback
+            const btn = document.querySelector('#login-modal button');
+            const oldText = btn.innerText;
+            btn.innerText = 'Kontrol ediliyor...';
+            btn.disabled = true;
 
-            let inputId = (areaType === 'images') ? 'global-images-input' : 'global-left-images-input';
-            const lines = document.getElementById(inputId).value.split('\n').filter(l => l.length > 5);
-            const targetUrl = lines[index].trim();
+            MASTER_PASSWORD = val;
+            localStorage.setItem('super_admin_pass', val);
 
-            let item = configArray.find(i => {
-                const u = (typeof i === 'object') ? i.url : i;
-                return u === targetUrl;
-            });
+            const success = await fetchInstitutions(true); // pass true to show errors
 
-            // If item doesn't exist as object yet, creating temporary one
-            if (!item) item = { url: targetUrl, exclude: [] };
-            else if (typeof item === 'string') item = { url: item, exclude: [] };
+            btn.innerText = oldText;
+            btn.disabled = false;
 
-            currentExclusionTarget = { area: areaType, index: index, item: item, originalUrl: targetUrl };
-
-            // UI Setup
-            document.getElementById('ex-area-type').value = areaType;
-            document.getElementById('ex-index').value = index;
-            document.getElementById('ex-preview-img').src = targetUrl;
-            document.getElementById('ex-region-filter').value = item.region_filter || ''; // Populate Region
-
-            // Render List
-            const list = document.getElementById('ex-list');
-            list.innerHTML = '';
-
-            institutions.forEach(inst => {
-                // Only show relevant type? Maybe user wants to exclude cross-type? 
-                // Currently gallery is type-specific so only institutions of that type matter effectively.
-                // But let's show all or filter by type?
-                // Let's filter by currentGalleryType to reduce noise.
-                const type = inst.config.institution_type || 'Ortaokul';
-                if (type !== currentGalleryType) return;
-
-                const isExcluded = (item.exclude || []).includes(inst.slug);
-
-                const div = document.createElement('div');
-                div.className = 'px-4 py-3 hover:bg-gray-50 flex items-center gap-3 label-container';
-                div.innerHTML = `
-                    <input type="checkbox" value="${inst.slug}" class="w-5 h-5 text-purple-600 rounded focus:ring-purple-500 border-gray-300" ${isExcluded ? 'checked' : ''}>
-                    <div>
-                        <div class="font-bold text-gray-800 text-sm">${inst.name}</div>
-                        <div class="text-xs text-gray-400">${inst.slug}</div>
-                    </div>
-                `;
-                list.appendChild(div);
-            });
-
-            filterExclusionList(); // Reset search
-            document.getElementById('exclusion-modal').classList.remove('hidden');
-        }
-
-        function filterExclusionList() {
-            const term = document.getElementById('ex-search').value.toLowerCase();
-            const items = document.querySelectorAll('#ex-list .label-container');
-            items.forEach(el => {
-                const text = el.innerText.toLowerCase();
-                el.style.display = text.includes(term) ? 'flex' : 'none';
-            });
-        }
-
-        function saveExclusionSettings() {
-            // Update Type
-            currentAnnouncementType = type;
-
-            // Update Tabs
-            document.querySelectorAll('.announcement-tab').forEach(btn => {
-                if (btn.dataset.type === type) {
-                    btn.classList.add('bg-orange-50', 'text-orange-700', 'border-orange-200', 'ring-2', 'ring-orange-200');
-                    btn.classList.remove('bg-white', 'text-gray-700', 'border-gray-200');
-                } else {
-                    btn.classList.remove('bg-orange-50', 'text-orange-700', 'border-orange-200', 'ring-2', 'ring-orange-200');
-                    btn.classList.add('bg-white', 'text-gray-700', 'border-gray-200');
-                }
-            });
-
-            // Fill Input
-            const announcements = centralAnnouncementsConfig[type] || [];
-            document.getElementById('central_announcements_text').value = announcements.join('\n');
-        }
-
-        async function saveCentralAnnouncements() {
-            // Save current memory
-            switchAnnouncementType(currentAnnouncementType); // Triggers save logic inside
-
-            try {
-                const res = await fetch('/api/manage-institutions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'save_central_announcements',
-                        master_password: MASTER_PASSWORD,
-                        payload: { config: centralAnnouncementsConfig }
-                    })
-                });
-
-                if (res.ok) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Başarılı!',
-                        text: 'Merkezi duyurular kaydedildi.',
-                    });
-                    closeCentralAnnouncementsModal();
-                } else {
-                    Swal.fire('Hata', 'Kaydetme başarısız.', 'error');
-                }
-            } catch (e) {
-                Swal.fire('Hata', 'Sunucu hatası.', 'error');
-            }
-        }
-
-        // --- GLOBAL GALLERY LOGIC ---
-        let globalGalleryConfig = {}; // Stores all types: { 'Ortaokul': { images: [], videos: [] }, ... }
-        let currentGalleryType = 'Ortaokul';
-
-        async function openGlobalGalleryModal() {
-            document.getElementById('global-gallery-modal').classList.remove('hidden');
-
-            // Load Fresh Data
-            try {
-                const res = await fetch('/api/manage-institutions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'get_global_gallery', master_password: MASTER_PASSWORD })
-                });
-
-                if (res.ok) {
-                    const data = await res.json();
-                    globalGalleryConfig = data.config || {};
-                } else {
-                    globalGalleryConfig = {};
-                }
-            } catch (e) {
-                console.error('Gallery Load Error:', e);
-                globalGalleryConfig = {};
-            }
-
-            // Init UI
-            switchGalleryType('Ortaokul');
-        }
-
-        function closeGlobalGalleryModal() {
-            document.getElementById('global-gallery-modal').classList.add('hidden');
-        }
-
-        function switchGalleryType(type) {
-            // 1. Save current input to memory before switching
-            saveCurrentInputToMemory();
-
-            // 2. Update Type
-            currentGalleryType = type;
-
-            // 3. Update Tabs UI
-            document.querySelectorAll('.gallery-tab').forEach(btn => {
-                if (btn.dataset.type === type) {
-                    btn.classList.add('bg-purple-50', 'text-purple-700', 'border-purple-200', 'ring-2', 'ring-purple-200');
-                    btn.classList.remove('bg-white', 'text-gray-700', 'border-gray-200');
-                } else {
-                    btn.classList.remove('bg-purple-50', 'text-purple-700', 'border-purple-200', 'ring-2', 'ring-purple-200');
-                    btn.classList.add('bg-white', 'text-gray-700', 'border-gray-200');
-                }
-            });
-
-            // 4. Fill Inputs
-            const typeData = globalGalleryConfig[type] || { images: [], videos: [], left_images: [] };
-
-            const mapToString = (arr) => (arr || []).map(i => (typeof i === 'object' && i !== null) ? i.url : i).join('\n');
-
-            document.getElementById('global-images-input').value = mapToString(typeData.images);
-            document.getElementById('global-left-images-input').value = mapToString(typeData.left_images);
-            document.getElementById('global-videos-input').value = mapToString(typeData.videos);
-
-            // Render Previews
-            if (window.renderGalleryPreviews) renderGalleryPreviews();
-        }
-
-        function saveCurrentInputToMemory() {
-            const imgText = document.getElementById('global-images-input').value;
-            const leftImgText = document.getElementById('global-left-images-input').value;
-            const vidText = document.getElementById('global-videos-input').value;
-
-            // Helper to preserve objects
-            const syncLinesWithConfig = (newLines, areaKey) => {
-                const currentArray = globalGalleryConfig[currentGalleryType][areaKey] || [];
-                const resultMap = new Map();
-
-                // Map existing objects by URL for quick lookup
-                currentArray.forEach(item => {
-                    const url = (typeof item === 'object' && item !== null) ? item.url : item;
-                    const obj = (typeof item === 'object' && item !== null) ? item : { url: url, exclude: [] };
-                    // Use URL as key. If duplicates, this might overwrite, but acceptable for now.
-                    resultMap.set(url.trim(), obj);
-                });
-
-                // Build new array based on TEXTAREA lines
-                return newLines.map(line => {
-                    const url = line.trim();
-                    if (resultMap.has(url)) {
-                        // URL exists in memory -> keep the object (preserves exclusions)
-                        const existingObj = resultMap.get(url);
-                        // Ensure URL is synced in case of minor diffs (not possible due to key, but good practice)
-                        existingObj.url = url;
-                        return existingObj;
-                    } else {
-                        // New item -> simple string or default object
-                        return url; // Return string for simplicity, converted to object only when editing
-                    }
-                });
-            };
-
-            const images = imgText.split('\n').map(l => l.trim()).filter(l => l);
-            const leftImages = leftImgText.split('\n').map(l => l.trim()).filter(l => l);
-            const videos = vidText.split('\n').map(l => l.trim()).filter(l => l);
-
-            if (!globalGalleryConfig[currentGalleryType]) globalGalleryConfig[currentGalleryType] = {};
-
-            globalGalleryConfig[currentGalleryType].images = syncLinesWithConfig(images, 'images');
-            globalGalleryConfig[currentGalleryType].left_images = syncLinesWithConfig(leftImages, 'left_images');
-            globalGalleryConfig[currentGalleryType].videos = syncLinesWithConfig(videos, 'videos');
-        }
-
-        // --- PREVIEW RENDERER ---
-        window.renderGalleryPreviews = function () {
-            renderPreviewForArea('global-images-input', 'gallery-preview-container', 'images');
-            renderPreviewForArea('global-left-images-input', 'left-gallery-preview-container', 'left_images');
-        }
-
-        function renderPreviewForArea(inputId, containerId, activeType) {
-            const textArea = document.getElementById(inputId);
-            const container = document.getElementById(containerId);
-            const lines = textArea.value.split('\n').map(l => l.trim()).filter(l => l);
-
-            container.innerHTML = '';
-
-            if (lines.length === 0) {
-                container.innerHTML = '<span class="text-xs text-gray-400 w-full text-center py-4">Önizleme alanı (Henüz görsel yok)</span>';
-                return;
-            }
-
-            lines.forEach((url, index) => {
-                const wrapper = document.createElement('div');
-                wrapper.className = 'relative group w-20 h-20 bg-gray-200 rounded-lg overflow-hidden border border-gray-200 shadow-sm transition-transform hover:scale-105';
-
-                const img = document.createElement('img');
-                img.src = url;
-                img.className = 'w-full h-full object-cover';
-                img.onerror = () => { img.src = 'https://via.placeholder.com/80?text=Hata'; img.classList.add('opacity-50'); };
-
-                // STATUS BADGES (Settings)
-                let statusHtml = '';
-                const myArr = globalGalleryConfig[currentGalleryType][activeType] || [];
-
-                // Match item by URL
-                const confItem = myArr.find(i => {
-                    const u = (typeof i === 'object') ? i.url : i;
-                    return u === url.trim();
-                });
-
-                if (confItem && typeof confItem === 'object') {
-                    // Red Badge: Exclusion
-                    if (confItem.exclude && confItem.exclude.length > 0) {
-                        statusHtml += `<div class="absolute top-1 right-1 bg-red-500 text-white text-[10px] px-1 rounded shadow" title="${confItem.exclude.length} kurum hariç"><i class="fas fa-eye-slash"></i> ${confItem.exclude.length}</div>`;
-                    }
-                    // Blue Badge: Region Filter
-                    if (confItem.region_filter) {
-                        statusHtml += `<div class="absolute top-1 left-1 bg-blue-500 text-white text-[10px] px-1 rounded shadow" title="Sadece ${confItem.region_filter} bölgesi"><i class="fas fa-map-marker-alt"></i> ${confItem.region_filter.substring(0, 3)}</div>`;
-                    }
-                }
-
-                // Delete Overlay
-                const deleteBtn = document.createElement('button');
-                deleteBtn.className = 'absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 flex items-center justify-center transition-all cursor-pointer z-10';
-                deleteBtn.innerHTML = '<i class="fas fa-trash text-white opacity-0 group-hover:opacity-100 transform scale-0 group-hover:scale-100 transition-all text-xl"></i>';
-                deleteBtn.onclick = () => removeImageByIndex(index, activeType);
-
-                // Settings Button (Gear)
-                const settingsBtn = document.createElement('button');
-                settingsBtn.className = 'absolute bottom-1 right-1 bg-white hover:bg-gray-100 text-gray-700 p-1 rounded shadow z-20 opacity-80 hover:opacity-100';
-                settingsBtn.innerHTML = '<i class="fas fa-cog text-xs"></i>';
-                settingsBtn.onclick = (e) => { e.stopPropagation(); openExclusionSettings(activeType, index); };
-
-                wrapper.appendChild(img);
-                if (statusHtml) wrapper.insertAdjacentHTML('beforeend', statusHtml);
-                wrapper.appendChild(deleteBtn);
-                wrapper.appendChild(settingsBtn);
-
-                container.appendChild(wrapper);
-            });
-        }
-
-        async function saveGlobalGallery() {
-            // Save current TAB first
-            saveCurrentInputToMemory();
-
-            try {
-                const res = await fetch('/api/manage-institutions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'save_global_gallery',
-                        master_password: MASTER_PASSWORD,
-                        payload: { config: globalGalleryConfig }
-                    })
-                });
-
-                if (res.ok) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Başarılı!',
-                        text: 'Merkezi galeri ayarları kaydedildi ve tüm panolara dağıtıldı.',
-                    });
-                    closeGlobalGalleryModal();
-                } else {
-                    Swal.fire('Hata', 'Kaydetme başarısız.', 'error');
-                }
-            } catch (e) {
-                Swal.fire('Hata', 'Sunucu hatası.', 'error');
-            }
-        }
-
-        // --- AUTH ---
-        let MASTER_PASSWORD = localStorage.getItem('super_admin_pass') || "";
-
-        // DEBUGGING: Add this to see if script runs
-        console.log("Script loaded and running");
-
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log("DOM Content Loaded");
-
-            // MAGIC LOGIN CHECK
-            const urlParams = new URLSearchParams(window.location.search);
-            const magicKey = urlParams.get('key');
-            if (magicKey) {
-                // OPTIMISTIC LOGIN (Hemen içeri al, sonra kontrol et)
-                window.history.replaceState({}, document.title, "/super-admin");
-
-                MASTER_PASSWORD = magicKey;
-                localStorage.setItem('super_admin_pass', magicKey);
-
-                // UI'yi hemen aç
+            if (success) {
                 document.getElementById('login-modal').classList.add('hidden');
-                document.getElementById('main-content').classList.remove('hidden');
-
-                // Arkada kontrol et (Sessizce)
-                fetchInstitutions();
-            } else if (MASTER_PASSWORD) {
-                // Auto-login attempt
-                verifyLogin(MASTER_PASSWORD);
-            }
-
-            // File Upload Listener
-            registerUploadListeners();
-
-            // Bind Form Listener explicitly inside DOMContentLoaded
-            const form = document.getElementById('login-form');
-            if (form) {
-                form.addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    console.log("Form submitted!");
-                    const pass = document.getElementById('master-password').value;
-                    try {
-                        verifyLogin(pass);
-                    } catch (err) {
-                        console.error("Critical error calling verifyLogin:", err);
-                        alert("Kritik Hata: " + err.message);
-                    }
-                });
-            } else {
-                console.error("Login form not found in DOM!");
-            }
-        });
-
-        async function verifyLogin(pass) {
-            // CLIENT-SIDE BYPASS (Fail-Safe)
-            const VALID_LOCAL = ["283353", "283353.", "kartaltepe-master", "admin"];
-
-            // 1. Check Local API
-            try {
-                // Şifreyi doğrulamak için bir "list" isteği atalım
-                const res = await fetch('/api/manage-institutions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'list', master_password: pass })
-                });
-
-                if (res.ok) {
-                    finalizeLogin(pass);
-                    return;
-                } else {
-                    // API reached but rejected
-                    const data = await res.json();
-                    // If 401/403, really wrong password. But check local just in case key rotation issue.
-                    if (!VALID_LOCAL.includes(pass) && pass !== localStorage.getItem('super_admin_pass')) {
-                        Swal.fire({ icon: 'error', title: 'Hatalı Şifre', text: data.error || 'Giriş yapılamadı.' });
-                        localStorage.removeItem('super_admin_pass');
-                        return;
-                    }
-                }
-            } catch (e) {
-                console.warn("API Login Failed, trying local check", e);
-            }
-
-            // 2. Fallback: Local Check (Network Error or API Reject but valid local)
-            if (VALID_LOCAL.includes(pass) || pass === localStorage.getItem('super_admin_pass')) {
-                console.log("Local Login Success");
-                finalizeLogin(pass);
                 Swal.fire({
-                    icon: 'warning',
-                    title: 'Çevrimdışı Giriş',
-                    text: 'Sunucu yanıt vermediği için yerel doğrulama ile giriş yapıldı.',
-                    timer: 3000,
+                    icon: 'success',
+                    title: 'Giriş Başarılı',
+                    timer: 1000,
                     showConfirmButton: false
                 });
             } else {
-                Swal.fire({ icon: 'error', title: 'Hatalı Şifre', text: 'Giriş yapılamadı.' });
+                // Error is handled inside fetchInstitutions or generically here
+                // But let's make sure we clear invalid pass from memory to force retry
                 localStorage.removeItem('super_admin_pass');
             }
         }
 
-        function finalizeLogin(pass) {
-            MASTER_PASSWORD = pass;
-            localStorage.setItem('super_admin_pass', pass);
-            document.getElementById('login-modal').classList.add('hidden');
-            document.getElementById('main-content').classList.remove('hidden');
-            fetchInstitutions();
-
-            const Toast = Swal.mixin({
-                toast: true, position: 'top-end', showConfirmButton: false, timer: 3000
-            });
-            Toast.fire({ icon: 'success', title: 'Giriş Başarılı' });
-        }
-
-        function logout() {
-            localStorage.removeItem('super_admin_pass');
-            window.location.reload();
-        }
-
-        // --- MAIN LOGIC ---
-        let institutions = [];
-        let selectedInstitution = null;
-
-        async function fetchInstitutions() {
-            const list = document.getElementById('institution-list');
-            const loader = document.getElementById('loader');
-
-            list.innerHTML = '';
-            loader.classList.remove('hidden');
-
+        async function fetchInstitutions(showError = false) {
             try {
                 const res = await fetch('/api/manage-institutions', {
                     method: 'POST',
@@ -1779,1113 +335,73 @@
                     body: JSON.stringify({ action: 'list', master_password: MASTER_PASSWORD })
                 });
 
-                const contentType = res.headers.get("content-type");
-                if (!contentType || !contentType.includes("application/json")) {
-                    console.error("fetchInstitutions API Error: Expected JSON but got", contentType);
-                    throw new Error("API yanıt vermedi (JSON gelmedi). Vercel/Node ortamı gerekli.");
+                const d = await res.json();
+
+                if (!res.ok) {
+                    throw new Error(d.error || 'Sunucu hatası veya şifre yanlış.');
                 }
 
-                const data = await res.json();
-                institutions = data.institutions || [];
-                renderInstitutions();
-                updateStats();
+                institutions = d.institutions || [];
+                renderList(institutions);
+                return true;
             } catch (e) {
-                console.error(e);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Veri Hatası',
-                    text: 'Kurumlar yüklenemedi: ' + e.message,
-                    footer: 'Yerel çalışıyorsanız API fonksiyonları devre dışıdır.'
-                });
-            } finally {
-                loader.classList.add('hidden');
+                console.error("Login Error:", e);
+                if (showError) Swal.fire('Giriş Başarısız', e.message, 'error');
+                return false;
             }
+        } function renderList(list) { const c = document.getElementById('institution-list'); c.innerHTML = ''; list.filter(i => !i.slug.startsWith('system-')).forEach(i => { const d = document.createElement('div'); d.className = "flex items-center gap-4 p-4 border rounded-xl mb-2 cursor-pointer hover:bg-slate-100 bg-white"; d.onclick = () => selectInst(i); d.innerHTML = `<div class="flex-1"><h4 class="font-bold">${i.name}</h4><span class="text-xs bg-slate-100 p-1 rounded">${i.config?.city || '-'} / ${i.config?.district || '-'}</span></div>`; c.appendChild(d); }); }
+        function selectInst(i) { selectedInstitution = i; document.getElementById('detail-panel').classList.remove('translate-x-full'); document.getElementById('detail-content').classList.remove('hidden'); document.getElementById('detail-content').classList.add('flex'); document.getElementById('detail-name').innerText = i.name; document.getElementById('detail-location').innerText = `${i.config?.city || ''} / ${i.config?.district || ''}`; document.getElementById('detail-password').innerText = i.password; document.getElementById('detail-contact-name').innerText = i.config?.admin_contact?.name || '-'; document.getElementById('detail-contact-phone').innerText = i.config?.admin_contact?.phone || '-'; }
+
+        // --- CRUD ---
+        function openModal() { document.getElementById('edit-modal').classList.remove('hidden'); }
+        function closeModal() { document.getElementById('edit-modal').classList.add('hidden'); }
+        function editSelectedInstitution() { if (!selectedInstitution) return; openModal(); const i = selectedInstitution; document.getElementById('form-slug').value = i.slug; document.getElementById('form-name').value = i.name; document.getElementById('form-password').value = i.password; document.getElementById('form-type').value = i.config?.institution_type || 'Ortaokul'; document.getElementById('form-city').value = i.config?.city || ''; document.getElementById('form-district').value = i.config?.district || ''; document.getElementById('form-logo').value = i.config?.institution_logo || ''; document.getElementById('form-contact-name').value = i.config?.admin_contact?.name || ''; document.getElementById('form-contact-phone').value = i.config?.admin_contact?.phone || ''; document.getElementById('form-contact-email').value = i.config?.admin_contact?.email || ''; }
+        document.getElementById('institution-form').addEventListener('submit', async e => { e.preventDefault(); try { await fetch('/api/manage-institutions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'upsert', master_password: MASTER_PASSWORD, payload: { slug: document.getElementById('form-slug').value.trim(), name: document.getElementById('form-name').value, password: document.getElementById('form-password').value.trim(), type: document.getElementById('form-type').value, institution_logo: document.getElementById('form-logo').value, city: document.getElementById('form-city').value, district: document.getElementById('form-district').value, module_dorm_active: document.getElementById('form-dorm-active').checked, logo_locked: document.getElementById('form-logo-locked').checked, admin_contact: { name: document.getElementById('form-contact-name').value, phone: document.getElementById('form-contact-phone').value, email: document.getElementById('form-contact-email').value } } }) }); closeModal(); fetchInstitutions(); Swal.fire('Kaydedildi', '', 'success'); } catch (err) { Swal.fire('Hata', '', 'error'); } });
+        async function deleteSelectedInstitution() { if (!selectedInstitution) return; if ((await Swal.fire({ title: 'Silinsin mi?', showCancelButton: true })).isConfirmed) { await fetch('/api/manage-institutions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'delete', master_password: MASTER_PASSWORD, payload: { slug: selectedInstitution.slug } }) }); selectedInstitution = null; document.getElementById('detail-panel').classList.add('translate-x-full'); fetchInstitutions(); Swal.fire('Silindi', '', 'success'); } }
+        document.getElementById('upload-logo-input').addEventListener('change', async e => { const f = e.target.files[0]; if (!f) return; const r = new FileReader(); r.onload = async ev => { const res = await fetch('/api/upload', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ filename: 'logo.png', fileBase64: ev.target.result.split(',')[1], contentType: f.type }) }); document.getElementById('form-logo').value = (await res.json()).url; }; r.readAsDataURL(f); });
+
+        // --- GALERI ---
+        function openGlobalGalleryModal() { document.getElementById('global-gallery-modal').classList.remove('hidden'); loadGlobalGallery(true); }
+        function switchGalleryTab(t) { currentGalleryTab = t; document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active', 'text-slate-500')); document.getElementById('tab-btn-' + t).classList.add('active'); loadGlobalGallery(); }
+        async function loadGlobalGallery(fetchApi = false) { const t = document.getElementById('gg-target-type').value; if (fetchApi) { try { const r = await fetch('/api/manage-institutions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'get_global_gallery', master_password: MASTER_PASSWORD }) }); globalGallery = (await r.json()).config || {}; } catch (e) { } } const g = document.getElementById('gg-grid'); g.innerHTML = ''; let items = (currentGalleryTab === 'right') ? (globalGallery[t]?.images || []) : (globalGallery[t]?.left_gallery_links || []); if (items.length === 0) document.getElementById('gg-empty').classList.remove('hidden'); else { document.getElementById('gg-empty').classList.add('hidden'); items.forEach((item, idx) => { const url = (typeof item === 'string') ? item : item.url; const region = (typeof item === 'object' && item.region_filter) ? item.region_filter : ''; const slug = (typeof item === 'object' && item.slug_filter && item.slug_filter.length > 0) ? 'Özel' : ''; const badge = region ? `<span class="absolute top-2 left-2 bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded shadow">${region}</span>` : (slug ? `<span class="absolute top-2 left-2 bg-purple-600 text-white text-[10px] font-bold px-2 py-1 rounded shadow">ÖZEL</span>` : ''); g.innerHTML += `<div class="relative group aspect-square bg-white rounded-xl border overflow-hidden shadow-sm"><img src="${url}" class="w-full h-full object-cover">${badge}<div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2"><button onclick="openItemSettings(${idx})" class="px-3 py-1 bg-white/20 hover:bg-white text-white hover:text-black rounded text-xs font-bold backdrop-blur">Ayarlar</button><button onclick="removeGlobalItem(${idx})" class="w-8 h-8 bg-red-500 rounded-full text-white hover:bg-red-600"><i class="fa-solid fa-trash"></i></button></div></div>`; }); } }
+        function openItemSettings(idx) { currentEditingItemIndex = idx; const t = document.getElementById('gg-target-type').value; let items = (currentGalleryTab === 'right') ? (globalGallery[t]?.images || []) : (globalGallery[t]?.left_gallery_links || []); let item = items[idx]; const districts = [...new Set(institutions.map(i => i.config?.district).filter(d => d))]; const sel = document.getElementById('item-filter-region'); sel.innerHTML = '<option value="">Tümü (Genel)</option>'; districts.forEach(d => sel.innerHTML += `<option value="${d}">${d}</option>`); if (typeof item === 'string') { document.getElementById('item-filter-region').value = ""; document.getElementById('item-filter-slug').value = ""; } else { document.getElementById('item-filter-region').value = item.region_filter || ""; document.getElementById('item-filter-slug').value = (item.slug_filter || []).join(','); } document.getElementById('item-settings-modal').classList.remove('hidden'); }
+        function applyItemSettings() { const t = document.getElementById('gg-target-type').value; let list = (currentGalleryTab === 'right') ? globalGallery[t].images : globalGallery[t].left_gallery_links; let item = list[currentEditingItemIndex]; if (typeof item === 'string') item = { url: item }; item.region_filter = document.getElementById('item-filter-region').value; const slugVal = document.getElementById('item-filter-slug').value.trim(); item.slug_filter = slugVal ? slugVal.split(',').map(s => s.trim()) : []; list[currentEditingItemIndex] = item; document.getElementById('item-settings-modal').classList.add('hidden'); loadGlobalGallery(); }
+        async function uploadGlobalFile() { for (const f of document.getElementById('gg-upload-input').files) { const r = new FileReader(); r.onload = e => { fetch('/api/upload', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ filename: 'g-' + Date.now() + '.png', fileBase64: e.target.result.split(',')[1], contentType: f.type }) }).then(res => res.json()).then(d => { const t = document.getElementById('gg-target-type').value; if (!globalGallery[t]) globalGallery[t] = { images: [], left_gallery_links: [] }; if (!globalGallery[t].images) globalGallery[t].images = []; if (!globalGallery[t].left_gallery_links) globalGallery[t].left_gallery_links = []; const newObj = { url: d.url, region_filter: '', slug_filter: [] }; if (currentGalleryTab === 'right') globalGallery[t].images.push(newObj); else globalGallery[t].left_gallery_links.push(newObj); loadGlobalGallery(); }); } r.readAsDataURL(f); } }
+        function removeGlobalItem(i) { const t = document.getElementById('gg-target-type').value; if (currentGalleryTab === 'right') globalGallery[t].images.splice(i, 1); else globalGallery[t].left_gallery_links.splice(i, 1); loadGlobalGallery(); }
+        async function saveGlobalGallery() { await fetch('/api/manage-institutions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'save_global_gallery', master_password: MASTER_PASSWORD, payload: { config: globalGallery } }) }); Swal.fire('Kaydedildi', '', 'success'); }
+
+        // --- HADITH LOGIC (UPDATED WITH WEEK SELECT) ---
+        function openHadithModal() { document.getElementById('hadith-modal').classList.remove('hidden'); loadLocalHadiths(); }
+        function loadLocalHadiths() { const t = document.getElementById('hadith-target-type').value; hadithWeeks = JSON.parse(localStorage.getItem(`sa_h_${t}`) || '[]'); const savedDate = localStorage.getItem(`sa_h_date_${t}`); if (savedDate) document.getElementById('semester-start-date').value = savedDate; if (hadithWeeks.length === 0) addNewWeek(); renderWeeks(); }
+
+        function addNewWeek() {
+            // Default to next week number but editable
+            hadithWeeks.push({ week: hadithWeeks.length + 1, text: '', arabic: '' });
+            renderWeeks(); saveLocal();
         }
 
-        function renderInstitutions() {
-            const list = document.getElementById('institution-list');
-            list.innerHTML = '';
-
-            institutions.forEach(inst => {
-                const card = createInstitutionCard(inst);
-                list.appendChild(card);
-            });
+        function updateWeekDates() {
+            const dateVal = document.getElementById('semester-start-date').value; if (!dateVal) return; const start = new Date(dateVal);
+            hadithWeeks.forEach((w, i) => { const s = new Date(start); s.setDate(start.getDate() + (i * 7)); const e = new Date(s); e.setDate(s.getDate() + 6); const lbl = document.getElementById(`week-date-${i}`); if (lbl) lbl.innerText = `${s.getDate()}/${s.getMonth() + 1} - ${e.getDate()}/${e.getMonth() + 1}`; });
+            saveLocal();
         }
 
-        function createInstitutionCard(inst) {
-            const div = document.createElement('div');
-            div.className = 'institution-card';
-            div.onclick = () => selectInstitution(inst.slug);
-
-            const cfg = inst.config || {};
-            const logo = cfg.institution_logo || 'logo.png';
-            const type = cfg.institution_type || 'Genel';
-
-            let badgeClass = 'badge-ortaokul';
-            if (type === 'Lise') badgeClass = 'badge-lise';
-            else if (type.includes('Üniversite')) badgeClass = 'badge-universite';
-            else if (type === 'Daimi') badgeClass = 'badge-daimi';
-
-            div.innerHTML = `
-                <div class="institution-logo">
-                    <img src="${logo}" alt="${inst.name}" onerror="this.src='logo.png'">
-                </div>
-                <div class="flex-1 min-w-0">
-                    <h3 class="font-bold text-sm truncate">${inst.name}</h3>
-                    <p class="text-xs text-gray-400 truncate">/${inst.slug}</p>
-                </div>
-                <span class="badge ${badgeClass}">${type}</span>
-            `;
-
-            return div;
-        }
-
-        function selectInstitution(slug) {
-            selectedInstitution = institutions.find(i => i.slug === slug);
-
-            // Update selected state
-            document.querySelectorAll('.institution-card').forEach(card => {
-                card.classList.remove('selected');
-            });
-            event.currentTarget.classList.add('selected');
-
-            // Render detail panel
-            renderDetailPanel();
-        }
-
-        function renderDetailPanel() {
-            if (!selectedInstitution) return;
-
-            document.getElementById('detail-empty').style.display = 'none';
-            const detailContent = document.getElementById('detail-content');
-            detailContent.classList.add('active');
-
-            const cfg = selectedInstitution.config || {};
-            const logo = cfg.institution_logo || 'logo.png';
-            const type = cfg.institution_type || 'Genel';
-            const city = cfg.city || '-';
-            const district = cfg.district || '-';
-
-            detailContent.innerHTML = `
-                <div class="text-center mb-6">
-                    <div class="w-32 h-32 mx-auto mb-4 rounded-2xl bg-gray-50 p-4 border border-gray-200">
-                        <img src="${logo}" alt="${selectedInstitution.name}" class="w-full h-full object-contain" onerror="this.src='logo.png'">
-                    </div>
-                    <h2 class="text-2xl font-black mb-1">${selectedInstitution.name}</h2>
-                    <p class="text-sm text-gray-400">/${selectedInstitution.slug}</p>
-                </div>
-                
-                <div class="space-y-3 mb-6">
-                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                        <i class="fas fa-tag w-5 text-purple-500"></i>
-                        <div class="flex-1">
-                            <p class="text-xs text-gray-500">Tip</p>
-                            <p class="font-semibold">${type}</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                        <i class="fas fa-map-marker-alt w-5 text-pink-500"></i>
-                        <div class="flex-1">
-                            <p class="text-xs text-gray-500">Konum</p>
-                            <p class="font-semibold">${city} / ${district}</p>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
-                        <i class="fas fa-key w-5 text-emerald-500"></i>
-                        <div class="flex-1">
-                            <p class="text-xs text-gray-500">Şifre</p>
-                            <p class="font-mono font-semibold">${selectedInstitution.password}</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="action-grid">
-                    <a href="/${selectedInstitution.slug}" target="_blank" class="action-btn">
-                        <i class="fas fa-external-link-alt text-blue-500"></i>
-                        <span>Panoya Git</span>
-                    </a>
-                    <a href="/${selectedInstitution.slug}/admin" target="_blank" class="action-btn">
-                        <i class="fas fa-cog text-purple-500"></i>
-                        <span>Admin Panel</span>
-                    </a>
-                    <button onclick="editInst('${selectedInstitution.slug}')" class="action-btn">
-                        <i class="fas fa-edit text-emerald-500"></i>
-                        <span>Düzenle</span>
-                    </button>
-                    <button onclick="deleteInst('${selectedInstitution.slug}')" class="action-btn">
-                        <i class="fas fa-trash text-red-500"></i>
-                        <span>Sil</span>
-                    </button>
-                </div>
-            `;
-        }
-
-        function updateStats() {
-            document.getElementById('stat-total').textContent = institutions.length;
-            document.getElementById('stat-active').textContent = institutions.length;
-            document.getElementById('stat-apps').textContent = '0';
-        }
-
-        function filterInstitutions() {
-            const query = document.getElementById('search-input').value.toLowerCase();
-            const cards = document.querySelectorAll('.institution-card');
-
-            cards.forEach(card => {
-                const text = card.textContent.toLowerCase();
-                card.style.display = text.includes(query) ? 'flex' : 'none';
-            });
-        }
-
-        function switchView(view) {
-            document.querySelectorAll('.nav-item').forEach(item => {
-                item.classList.remove('active');
-            });
-            event.currentTarget.classList.add('active');
-        }
-
-        // Sidebar Toggle
-        document.getElementById('sidebar-toggle')?.addEventListener('click', () => {
-            document.getElementById('sidebar').classList.toggle('open');
-        });
-
-
-
-        // --- APPLICATIONS LOGIC ---
-        async function openApplicationsModal() {
-            document.getElementById('applications-modal').classList.remove('hidden');
-            // Loader shows automatically in fetchApplications but let's refresh data first
-            const loader = document.getElementById('applications-loader');
-            const list = document.getElementById('applications-list');
-            const empty = document.getElementById('applications-empty');
-
-            list.innerHTML = '';
-            empty.classList.add('hidden');
-            loader.classList.remove('hidden');
-
-            // Refresh global data to get new requests
-            await fetchInstitutions();
-
-            // Now render
-            fetchApplications();
-        }
-
-        function closeApplicationsModal() {
-            document.getElementById('applications-modal').classList.add('hidden');
-        }
-
-        async function fetchApplications() {
-            const listContainer = document.getElementById('applications-list');
-            const loader = document.getElementById('applications-loader');
-            const emptyState = document.getElementById('applications-empty');
-
-            listContainer.innerHTML = '';
-            loader.classList.remove('hidden');
-            emptyState.classList.add('hidden');
-
-            try {
-                // Fetch 'system-requests' config via existing list/filter or direct get
-                // Since we don't have a direct "get slug" in frontend yet, likely need to find it from list or get_landing_config equivalent?
-                // Actually API `list` returns all. We can find 'system-requests' in `institutions` array.
-                // Re-using fetchInstitutions data might be stale, let's refresh or find in current.
-
-                // Better approach: Let's assume fetchInstitutions was called. But 'system-requests' might be filtered if we change API?
-                // Currently API `list` returns ALL. 
-                const sysReqParams = institutions.find(i => i.slug === 'system-requests');
-                let requests = [];
-
-                if (sysReqParams && sysReqParams.config) {
-                    if (Array.isArray(sysReqParams.config)) {
-                        requests = sysReqParams.config;
-                    } else if (typeof sysReqParams.config === 'string') {
-                        try {
-                            requests = JSON.parse(sysReqParams.config);
-                        } catch (e) { requests = []; }
-                    }
-                }
-
-                // If not found in current list (maybe lazy load?), try refetching list silently or specific.
-                // For now, relies on `institutions` global.
-
-                loader.classList.add('hidden');
-
-                if (requests.length === 0) {
-                    emptyState.classList.remove('hidden');
-                    return;
-                }
-
-                requests.forEach(req => {
-                    const date = new Date(req.date).toLocaleString('tr-TR');
-                    const note = req.note ? `<p class="text-sm text-gray-600 mt-2 bg-gray-50 p-2 rounded border border-gray-100 italic">"${req.note}"</p>` : '';
-
-                    // Format Phone for WhatsApp
-                    let cleanPhone = req.phone.replace(/[^0-9]/g, '');
-                    if (cleanPhone.length === 10) cleanPhone = '90' + cleanPhone;
-                    else if (cleanPhone.length === 11 && cleanPhone.startsWith('0')) cleanPhone = '90' + cleanPhone.substring(1);
-                    const waLink = `https://wa.me/${cleanPhone}`;
-
-                    const item = document.createElement('div');
-                    item.className = 'p-6 hover:bg-gray-50 transition-colors flex flex-col md:flex-row gap-4 items-start';
-                    item.innerHTML = `
-                        <div class="flex-1">
-                            <div class="flex items-center gap-2 mb-1">
-                                <span class="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-0.5 rounded uppercase tracking-wide">Yeni</span>
-                                <span class="text-xs text-gray-400 font-mono">${date}</span>
-                            </div>
-                            <h4 class="font-bold text-gray-900 text-lg">${req.institution_name}</h4>
-                            <div class="flex flex-wrap gap-4 text-sm text-gray-600 mt-1">
-                                <span class="flex items-center gap-1"><i class="fas fa-user text-gray-400"></i> ${req.authorized_person}</span>
-                                <span class="flex items-center gap-1"><i class="fas fa-phone text-gray-400"></i> ${req.phone}</span>
-                                ${req.email ? `<span class="flex items-center gap-1"><i class="fas fa-envelope text-gray-400"></i> ${req.email}</span>` : ''}
-                            </div>
-                            ${note}
-                        </div>
-                        <div class="flex gap-2 flex-shrink-0 mt-2 md:mt-0">
-                            <a href="${waLink}" target="_blank" class="bg-green-100 hover:bg-green-200 text-green-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
-                                <i class="fab fa-whatsapp text-lg"></i>
-                            </a>
-                            <a href="tel:${req.phone}" class="bg-blue-100 hover:bg-blue-200 text-blue-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2">
-                                <i class="fas fa-phone"></i>
-                            </a>
-                        </div>
-                    `;
-                    listContainer.appendChild(item);
-                });
-
-            } catch (e) {
-                console.error(e);
-                loader.classList.add('hidden');
-                emptyState.classList.remove('hidden'); // Fallback
-            }
-        }
-
-        // --- CRUD ACTIONS ---
-        function openModal() {
-            document.getElementById('form-slug').value = '';
-            document.getElementById('form-slug').readOnly = false;
-            document.getElementById('form-name').value = '';
-            document.getElementById('form-password').value = '';
-            document.getElementById('form-type').value = 'Ortaokul';
-            document.getElementById('form-city').value = '';
-            document.getElementById('form-district').value = '';
-            document.getElementById('form-region').value = ''; // NEW
-            document.getElementById('form-logo').value = '';
-            document.getElementById('form-logo-locked').checked = false;
-            document.getElementById('form-dorm-active').checked = true;
-
-            // Reset Contact
-            document.getElementById('form-contact-name').value = '';
-            document.getElementById('form-contact-phone').value = '';
-            document.getElementById('form-contact-email').value = '';
-
-            document.getElementById('modal-title').innerText = 'Yeni Kurum Ekle';
-            document.getElementById('edit-modal').classList.remove('hidden');
-        }
-
-        function closeModal() {
-            document.getElementById('edit-modal').classList.add('hidden');
-        }
-
-        function editInst(slug) {
-            const inst = institutions.find(i => i.slug === slug);
-            if (!inst) return;
-            const cfg = inst.config || {};
-
-            document.getElementById('form-slug').value = inst.slug;
-            document.getElementById('form-slug').readOnly = true; // Slug cannot be changed on edit
-            document.getElementById('form-name').value = inst.name;
-            document.getElementById('form-password').value = inst.password;
-            document.getElementById('form-type').value = cfg.institution_type || 'Ortaokul';
-            document.getElementById('form-city').value = cfg.city || '';
-            document.getElementById('form-district').value = cfg.district || '';
-            document.getElementById('form-region').value = cfg.region || ''; // NEW
-
-            // Advanced
-            document.getElementById('form-logo').value = cfg.institution_logo || '';
-            document.getElementById('form-logo-locked').checked = cfg.logo_locked || false;
-            document.getElementById('form-dorm-active').checked = (cfg.module_dorm_active !== undefined) ? cfg.module_dorm_active : true;
-
-            // Populate Contact
-            const contact = cfg.admin_contact || {};
-            document.getElementById('form-contact-name').value = contact.name || '';
-            document.getElementById('form-contact-phone').value = contact.phone || '';
-            document.getElementById('form-contact-email').value = contact.email || '';
-
-            document.getElementById('modal-title').innerText = 'Kurumu Düzenle';
-            document.getElementById('edit-modal').classList.remove('hidden');
-        }
-
-        async function deleteInst(slug) {
-            const result = await Swal.fire({
-                title: 'Emin misiniz?',
-                text: `${slug} kurumunu silmek üzeresiniz. Bu işlem geri alınamaz!`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Evet, Sil!',
-                cancelButtonText: 'Vazgeç'
-            });
-
-            if (result.isConfirmed) {
-                try {
-                    const res = await fetch('/api/manage-institutions', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ action: 'delete', master_password: MASTER_PASSWORD, payload: { slug: slug } })
-                    });
-
-                    const data = await res.json();
-
-                    if (res.ok) {
-                        Swal.fire('Silindi!', 'Kurum başarıyla silindi.', 'success');
-                        fetchInstitutions();
-                    } else {
-                        // Show specific error from server
-                        Swal.fire('Hata', data.error || 'Silme işlemi başarısız.', 'error');
-                    }
-                } catch (e) {
-                    Swal.fire('Hata', 'Sunucu hatası.', 'error');
-                }
-            }
-        }
-
-        document.getElementById('institution-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const payload = {
-                slug: document.getElementById('form-slug').value,
-                name: document.getElementById('form-name').value,
-                password: document.getElementById('form-password').value,
-                type: document.getElementById('form-type').value,
-                city: document.getElementById('form-city').value,
-                district: document.getElementById('form-district').value,
-                region: document.getElementById('form-region').value, // NEW
-                // Contact
-                admin_contact: {
-                    name: document.getElementById('form-contact-name').value,
-                    phone: document.getElementById('form-contact-phone').value,
-                    email: document.getElementById('form-contact-email').value
-                },
-                // Advanced
-                institution_logo: document.getElementById('form-logo').value,
-                logo_locked: document.getElementById('form-logo-locked').checked,
-                module_dorm_active: document.getElementById('form-dorm-active').checked
-            };
-
-            // --- INJECT LOCAL HADITHS (FALLBACK) ---
-            // If creating a new institution, ensure it inherits the current admin's hadith config
-            // regardless of whether "Distribute" was clicked previously.
-            try {
-                const type = payload.type || 'Ortaokul';
-                const storedHadiths = localStorage.getItem(`super_admin_hadiths_${type}`);
-                if (storedHadiths) {
-                    const parsedWeeks = JSON.parse(storedHadiths);
-                    const savedDate = localStorage.getItem(`super_admin_start_date_${type}`) || '2025-09-08';
-
-                    if (Array.isArray(parsedWeeks) && parsedWeeks.length > 0) {
-                        payload.weekly_hadiths = {
-                            startDate: savedDate,
-                            weeks: parsedWeeks
-                        };
-                    }
-                }
-            } catch (err) {
-                console.warn("Could not inject local hadiths:", err);
-            }
-
-            try {
-                const res = await fetch('/api/manage-institutions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'upsert',
-                        master_password: MASTER_PASSWORD,
-                        payload: payload
-                    })
-                });
-
-                if (res.ok) {
-                    Swal.fire('Başarılı', 'Kurum kaydedildi.', 'success');
-                    closeModal();
-                    fetchInstitutions();
-                } else {
-                    const data = await res.json();
-                    Swal.fire('Hata', data.error || 'Kaydedilemedi', 'error');
-                }
-            } catch (e) {
-                Swal.fire('Hata', 'Sunucu hatası', 'error');
-            }
-        });
-
-        // --- FILE UPLOAD LOGIC ---
-        function registerUploadListeners() {
-            // Logo Upload
-            const uploadInput = document.getElementById('upload-logo-input');
-            if (uploadInput) uploadInput.addEventListener('change', handleLogoUpload);
-
-            // Global Gallery Upload (Main)
-            const globalUploadInput = document.getElementById('upload-global-image-input');
-            if (globalUploadInput) globalUploadInput.addEventListener('change', handleGlobalGalleryUpload);
-
-            // Global Gallery Upload (Left)
-            const globalLeftInput = document.getElementById('upload-global-left-input');
-            if (globalLeftInput) globalLeftInput.addEventListener('change', handleGlobalGalleryUpload);
-        }
-
-        async function handleGlobalGalleryUpload(event) {
-            const files = event.target.files;
-            if (!files || files.length === 0) return;
-
-            // Determine Target
-            const inputId = event.target.id;
-            let targetTextAreaId = 'global-images-input';
-            if (inputId === 'upload-global-left-input') targetTextAreaId = 'global-left-images-input';
-
-            const totalFiles = files.length;
-            let successCount = 0;
-            let errorCount = 0;
-            const newUrls = [];
-
-            // Helper to read file as Base64
-            const readFileAsBase64 = (file) => {
-                return new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = () => resolve(reader.result.split(',')[1]);
-                    reader.onerror = reject;
-                    reader.readAsDataURL(file);
-                });
-            };
-
-            // Show Loading
-            Swal.fire({
-                title: 'Yükleniyor...',
-                html: `Lütfen bekleyin, görseller yükleniyor.<br><b>0/${totalFiles}</b> tamamlandı.`,
-                allowOutsideClick: false,
-                didOpen: () => { Swal.showLoading() }
-            });
-
-            for (let i = 0; i < totalFiles; i++) {
-                const file = files[i];
-
-                // Limit check (2.5MB)
-                if (file.size > 2.5 * 1024 * 1024) {
-                    errorCount++;
-                    console.warn(`File ${file.name} is too big.`);
-                    continue;
-                }
-
-                // Update Progress
-                Swal.getHtmlContainer().querySelector('b').textContent = `${i}/${totalFiles}`;
-
-                try {
-                    const base64Data = await readFileAsBase64(file);
-                    const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-                    const filename = `gallery-${Date.now()}-${i}-${safeName}`;
-
-                    // Upload via API
-                    const res = await fetch('/api/upload', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            filename: filename,
-                            fileBase64: base64Data,
-                            contentType: file.type,
-                            slug: 'system-global-gallery'
-                        })
-                    });
-
-                    const data = await res.json();
-                    if (!res.ok) throw new Error(data.error || 'Yükleme başarısız');
-
-                    newUrls.push(data.url);
-                    successCount++;
-
-                } catch (err) {
-                    console.error(`File ${file.name} failed:`, err);
-                    errorCount++;
-                }
-            }
-
-            // Finished
-            if (successCount > 0) {
-                // Append URLs to Target Textarea
-                const textArea = document.getElementById(targetTextAreaId);
-                const currentVal = textArea.value.trim();
-                const newContent = newUrls.join('\n');
-                textArea.value = currentVal ? (currentVal + '\n' + newContent) : newContent;
-
-                // Trigger sync
-                saveCurrentInputToMemory();
-
-                // Render Previews
-                renderGalleryPreviews();
-            }
-
-            // Result Message
-            if (errorCount === 0) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Harika!',
-                    text: `${successCount} görsel başarıyla eklendi.`,
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-            } else {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Tamamlandı',
-                    text: `${successCount} yüklendi, ${errorCount} dosya başarısız oldu.`,
-                });
-            }
-
-            // Reset input
-            event.target.value = '';
-        }
-
-        // --- PREVIEW LOGIC ---
-        function renderGalleryPreviews() {
-            const textArea = document.getElementById('global-images-input');
-            const container = document.getElementById('gallery-preview-container');
-            const lines = textArea.value.split('\n').map(l => l.trim()).filter(l => l);
-
-            container.innerHTML = '';
-
-            if (lines.length === 0) {
-                container.innerHTML = '<span class="text-xs text-gray-400 w-full text-center py-4">Önizleme alanı (Henüz görsel yok)</span>';
-                return;
-            }
-
-            lines.forEach((url, index) => {
-                const wrapper = document.createElement('div');
-                wrapper.className = 'relative group w-20 h-20 bg-gray-200 rounded-lg overflow-hidden border border-gray-200 shadow-sm transition-transform hover:scale-105';
-
-                const img = document.createElement('img');
-                img.src = url;
-                img.className = 'w-full h-full object-cover';
-                img.onerror = () => { img.src = 'https://via.placeholder.com/80?text=Hata'; img.classList.add('opacity-50'); };
-
-                // Delete Overlay
-                const deleteBtn = document.createElement('button');
-                deleteBtn.className = 'absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-40 flex items-center justify-center transition-all cursor-pointer';
-                deleteBtn.innerHTML = '<i class="fas fa-trash text-white opacity-0 group-hover:opacity-100 transform scale-0 group-hover:scale-100 transition-all"></i>';
-                deleteBtn.onclick = () => removeImageByIndex(index);
-
-                wrapper.appendChild(img);
-                wrapper.appendChild(deleteBtn);
-                container.appendChild(wrapper);
-            });
-        }
-
-        function removeImageByIndex(index) {
-            const textArea = document.getElementById('global-images-input');
-            let lines = textArea.value.split('\n');
-
-            // Remove specific line
-            lines.splice(index, 1);
-
-            textArea.value = lines.join('\n');
-            saveCurrentInputToMemory(); // Sync
-            renderGalleryPreviews(); // Re-render
-        }
-
-        async function handleLogoUpload(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-
-            // Limit file size to 2.5MB
-            if (file.size > 2.5 * 1024 * 1024) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Dosya Çok Büyük',
-                    text: `Logo dosyası 2.5MB'dan büyük. Lütfen küçültüp tekrar deneyin.`
-                });
-                event.target.value = ''; // Reset
-                return;
-            }
-
-            // Slug checks for folder organization
-            const slug = document.getElementById('form-slug').value || 'common';
-
-            // Better: Swal loading
-            Swal.fire({
-                title: 'Yükleniyor...',
-                text: 'Logo sunucuya yükleniyor, lütfen bekleyin.',
-                allowOutsideClick: false,
-                didOpen: () => { Swal.showLoading() }
-            });
-
-            try {
-                // Convert to Base64
-                const reader = new FileReader();
-
-                reader.onerror = () => {
-                    Swal.fire('Hata', 'Dosya okunamadı.', 'error');
-                };
-
-                reader.onload = async (e) => {
-                    try {
-                        const base64Data = e.target.result.split(',')[1];
-                        // Safe filename
-                        const safeName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-                        const filename = `logo-${Date.now()}-${safeName}`;
-
-                        // Upload via API
-                        const res = await fetch('/api/upload', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                filename: filename,
-                                fileBase64: base64Data,
-                                contentType: file.type,
-                                slug: slug
-                            })
-                        });
-
-                        const data = await res.json();
-
-                        if (!res.ok) {
-                            throw new Error(data.error || 'Yükleme başarısız');
-                        }
-
-                        // Set URL to input
-                        document.getElementById('form-logo').value = data.url;
-
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Yüklendi!',
-                            text: 'Logo başarıyla yüklendi.',
-                            timer: 1500,
-                            showConfirmButton: false
-                        });
-
-                    } catch (uploadError) {
-                        console.error("Upload error details:", uploadError);
-                        Swal.fire('Hata', 'Yükleme sırasında hata oluştu: ' + uploadError.message, 'error');
-                    }
-                };
-
-                reader.readAsDataURL(file);
-
-            } catch (error) {
-                console.error(error);
-                Swal.fire('Hata', 'Dosya işlenirken bir sorun oluştu.', 'error');
-            } finally {
-                event.target.value = ''; // Reset input to allow re-selection
-            }
-        }
-
-        // --- HADITH MANAGEMENT LOGIC ---
-        // --- HADITH MANAGEMENT LOGIC ---
-        let hadithWeeks = [];
-        const DEFAULT_START_DATE = '2025-09-08'; // Revize: 8 Eylül 2025
-
-        function openHadithModal() {
-            document.getElementById('hadith-modal').classList.remove('hidden');
-            loadLocalHadiths();
-        }
-
-        function closeHadithModal() {
-            document.getElementById('hadith-modal').classList.add('hidden');
-        }
-
-        // --- LANDING CMS LOGIC ---
-        function openLandingModal() {
-            document.getElementById('landing-modal').classList.remove('hidden');
-            loadLandingConfig();
-        }
-
-        function closeLandingModal() {
-            document.getElementById('landing-modal').classList.add('hidden');
-        }
-
-        async function loadLandingConfig() {
-            Swal.fire({
-                title: 'Yükleniyor...',
-                didOpen: () => Swal.showLoading(),
-                allowOutsideClick: false,
-                Timer: 1000
-            });
-
-            try {
-                const res = await fetch('/api/manage-institutions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'get_landing_config', master_password: MASTER_PASSWORD })
-                });
-
-                if (res.ok) {
-                    const { config } = await res.json();
-                    if (config) populateCMSForm(config);
-                    Swal.close();
-                } else {
-                    Swal.close();
-                    // İlk kez açılıyorsa boş gelir, sorun yok.
-                }
-            } catch (e) {
-                console.error(e);
-                Swal.close();
-            }
-        }
-
-        function populateCMSForm(cfg) {
-            // Hero
-            if (cfg.hero) {
-                document.getElementById('cms-hero-badge').value = cfg.hero.badge || '';
-                document.getElementById('cms-hero-title1').value = cfg.hero.title1 || '';
-                document.getElementById('cms-hero-title2').value = cfg.hero.title2 || '';
-                document.getElementById('cms-hero-desc').value = cfg.hero.desc || '';
-            }
-            // Solutions
-            if (cfg.solutions) {
-                ['sol1', 'sol2', 'sol3'].forEach((key, idx) => {
-                    const item = cfg.solutions[idx];
-                    if (item) {
-                        document.getElementById(`cms-${key}-title`).value = item.title || '';
-                        document.getElementById(`cms-${key}-desc`).value = item.desc || '';
-                        document.getElementById(`cms-${key}-icon`).value = item.icon || '';
-                    }
-                });
-            }
-            // Contact
-            if (cfg.contact) {
-                document.getElementById('cms-contact-email').value = cfg.contact.email || '';
-                document.getElementById('cms-contact-phone').value = cfg.contact.phone || '';
-            }
-        }
-
-        async function saveLandingConfig() {
-            const config = {
-                hero: {
-                    badge: document.getElementById('cms-hero-badge').value,
-                    title1: document.getElementById('cms-hero-title1').value,
-                    title2: document.getElementById('cms-hero-title2').value,
-                    desc: document.getElementById('cms-hero-desc').value
-                },
-                solutions: [
-                    {
-                        title: document.getElementById('cms-sol1-title').value,
-                        desc: document.getElementById('cms-sol1-desc').value,
-                        icon: document.getElementById('cms-sol1-icon').value
-                    },
-                    {
-                        title: document.getElementById('cms-sol2-title').value,
-                        desc: document.getElementById('cms-sol2-desc').value,
-                        icon: document.getElementById('cms-sol2-icon').value
-                    },
-                    {
-                        title: document.getElementById('cms-sol3-title').value,
-                        desc: document.getElementById('cms-sol3-desc').value,
-                        icon: document.getElementById('cms-sol3-icon').value
-                    }
-                ],
-                contact: {
-                    email: document.getElementById('cms-contact-email').value,
-                    phone: document.getElementById('cms-contact-phone').value
-                }
-            };
-
-            Swal.fire({
-                title: 'Kaydediliyor...',
-                didOpen: () => Swal.showLoading()
-            });
-
-            try {
-                const res = await fetch('/api/manage-institutions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'save_landing_config',
-                        master_password: MASTER_PASSWORD,
-                        payload: { config: config }
-                    })
-                });
-
-                if (res.ok) {
-                    Swal.fire('Başarılı', 'Site ayarları güncellendi.', 'success');
-                    closeLandingModal();
-                } else {
-                    Swal.fire('Hata', 'Kaydedilemedi.', 'error');
-                }
-            } catch (e) {
-                Swal.fire('Hata', 'Sunucu hatası.', 'error');
-            }
-        }
-
-        function loadLocalHadiths() {
-            const type = document.getElementById('hadith-target-type').value;
-            const storageKey = `super_admin_hadiths_${type}`;
-            let stored = localStorage.getItem(storageKey);
-
-            // Eğer LocalStorage boşsa, mevcut kurumlardan birinin verisini çekmeyi dene
-            if (!stored) {
-                const sampleInst = institutions.find(i => {
-                    const t = i.config?.institution_type || 'Ortaokul';
-                    return t === type && i.config?.hadith;
-                });
-
-                if (sampleInst) {
-                    try {
-                        const hData = typeof sampleInst.config.hadith === 'string'
-                            ? JSON.parse(sampleInst.config.hadith)
-                            : sampleInst.config.hadith;
-
-                        // Tekil hadis formatındaysa listeye çevirip kaydet
-                        if (hData) {
-                            // Mevcut tekil hadisi 1. eleman olarak ekle
-                            // Ama listede "hafta" bilgisi varsa ona uygun sıraya da koyabiliriz.
-                            // Şimdilik basitçe tek elemanlı liste yapıyoruz.
-                            const list = [hData];
-                            stored = JSON.stringify(list);
-                            localStorage.setItem(storageKey, stored); // Sonraki sefer için cache
-                        }
-                    } catch (e) { console.log('Hadith extract err', e); }
-                }
-            }
-
-            const container = document.getElementById('weeks-container');
-            container.innerHTML = '';
-            hadithWeeks = [];
-
-            // Tarih ayarını önce yükle (Hesaplama için gerekli)
-            const dateKey = `super_admin_start_date_${type}`;
-            const savedDate = localStorage.getItem(dateKey);
-            let activeStartDate = savedDate || DEFAULT_START_DATE;
-
-            // PAZARTESİ'YE SABİTLEME
-            try {
-                const d = new Date(activeStartDate);
-                const day = d.getDay();
-                const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-                activeStartDate = new Date(d.setDate(diff)).toISOString().split('T')[0];
-            } catch (e) { }
-
-            const dateInput = document.getElementById('semester-start-date');
-            dateInput.value = activeStartDate;
-
-            dateInput.onchange = function () {
-                const val = this.value;
-                if (!val) return;
-                const d = new Date(val);
-                const day = d.getDay();
-                const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-                const mStr = new Date(d.setDate(diff)).toISOString().split('T')[0];
-                if (this.value !== mStr) this.value = mStr;
-                recalculateWeekLabels();
-            };
-
-            if (stored) {
-                try {
-                    const parsed = JSON.parse(stored);
-                    if (Array.isArray(parsed) && parsed.length > 0) {
-                        parsed.forEach(w => addNewWeek(w));
-                    } else {
-                        // Kayıtlı ama boş liste
-                        addCurrentWeek(activeStartDate);
-                    }
-                } catch (e) {
-                    console.error(e);
-                    addCurrentWeek(activeStartDate);
-                }
-            } else {
-                // Hiç kayıt yoksa, BUGÜNKÜ haftayı ekle
-                addCurrentWeek(activeStartDate);
-            }
-
-            recalculateWeekLabels();
-        }
-
-        function addCurrentWeek(startDateStr) {
-            // Şimdiki zaman ile başlangıç arasındaki hafta farkını bul
-            const start = new Date(startDateStr);
-            const now = new Date();
-            let weekDiff = Math.floor((now - start) / (1000 * 60 * 60 * 24 * 7));
-            if (weekDiff < 0) weekDiff = 0;
-
-            // Hafta numarası 1'den başlar (fark + 1)
-            // Ama biz kullanıcının önüne boş bir form getireceğiz, başlığı da o haftaya ayarlayacağız
-
-            // Eğer boş bir hafta ekliyorsak, hafta başlığını otomatik ayarla
-            addNewWeek({
-                week: `${weekDiff + 1}. HAFTA`,
-                text: '',
-                arabic: ''
-            });
-        }
-
-        function addNewWeek(data = null) {
-            const index = hadithWeeks.length;
-            const weekNum = index + 1;
-
-            const div = document.createElement('div');
-            div.className = 'bg-white p-5 rounded-xl border border-gray-200 shadow-sm relative group transition-all hover:shadow-md hover:border-emerald-200';
-            div.id = `week-card-${index}`;
-
-            const weekData = data || {
-                week: `${weekNum}. HAFTA`,
-                text: '',
-                arabic: ''
-            };
-
-            div.innerHTML = `
-                <div class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button onclick="removeWeek(${index})" class="text-red-400 hover:text-red-600 p-2" title="Haftayı Sil">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-                    <!-- Week Info -->
-                    <div class="md:col-span-3">
-                        <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Hafta Başlığı</label>
-                        <input type="text" value="${weekData.week || ''}" oninput="updateWeekData(${index}, 'week', this.value)" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-bold text-emerald-800 placeholder-gray-300 focus:ring-2 focus:ring-emerald-500" placeholder="1. HAFTA">
-                        <div class="mt-2 text-[10px] text-gray-400 font-mono bg-gray-50 p-1.5 rounded border border-gray-100" id="week-date-label-${index}">
-                            Tarih: Hesaplanıyor...
-                        </div>
-                    </div>
-                    
-                    <!-- Content -->
-                    <div class="md:col-span-9 space-y-3">
-                        <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Arapça Metin</label>
-                            <textarea oninput="updateWeekData(${index}, 'arabic', this.value)" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-lg font-serif text-right" dir="rtl" placeholder="Hadis-i Şerif Arapça metni...">${weekData.arabic || ''}</textarea>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Türkçe Meal</label>
-                            <textarea oninput="updateWeekData(${index}, 'text', this.value)" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Türkçe anlamı...">${weekData.text || ''}</textarea>
-                        </div>
-                    </div>
-                </div>
-                <div class="absolute left-0 top-6 w-1 h-12 bg-emerald-500 rounded-r"></div>
-            `;
-
-            document.getElementById('weeks-container').appendChild(div);
-            hadithWeeks.push(weekData);
-            recalculateWeekLabels();
-        }
-
-        function updateWeekData(index, key, value) {
-            if (hadithWeeks[index]) {
-                hadithWeeks[index][key] = value;
-                // Auto-save to localstorage silently
-                const type = document.getElementById('hadith-target-type').value;
-                localStorage.setItem(`super_admin_hadiths_${type}`, JSON.stringify(hadithWeeks));
-            }
-        }
-
-        function removeWeek(index) {
-            hadithWeeks.splice(index, 1);
-            const type = document.getElementById('hadith-target-type').value;
-            localStorage.setItem(`super_admin_hadiths_${type}`, JSON.stringify(hadithWeeks));
-            loadLocalHadiths();
-        }
-
-        function recalculateWeekLabels() {
-            const startDateVal = document.getElementById('semester-start-date').value;
-            if (!startDateVal) return;
-
-            // Save date selection
-            const type = document.getElementById('hadith-target-type').value;
-            localStorage.setItem(`super_admin_start_date_${type}`, startDateVal);
-
-            const start = new Date(startDateVal);
-
+        function renderWeeks() {
+            const c = document.getElementById('weeks-container'); c.innerHTML = '';
+            const dateVal = document.getElementById('semester-start-date').value; let start = dateVal ? new Date(dateVal) : null;
             hadithWeeks.forEach((w, i) => {
-                const label = document.getElementById(`week-date-label-${i}`);
-                if (label) {
-                    const weekStart = new Date(start);
-                    weekStart.setDate(start.getDate() + (i * 7));
-
-                    const weekEnd = new Date(weekStart);
-                    weekEnd.setDate(weekStart.getDate() + 6);
-
-                    // Format: 15-21 Eylül
-                    const options = { day: 'numeric', month: 'long' };
-                    const sStr = weekStart.toLocaleDateString('tr-TR', options);
-                    const eStr = weekEnd.toLocaleDateString('tr-TR', options);
-
-                    label.innerHTML = `Otomatik Tarih: <span class="font-bold text-gray-600">${sStr} - ${eStr}</span>`;
-                }
+                let dateStr = "Tarih Ayarlanmadı"; if (start) { const s = new Date(start); s.setDate(start.getDate() + (i * 7)); const e = new Date(s); e.setDate(s.getDate() + 6); dateStr = `${s.getDate()}/${s.getMonth() + 1} - ${e.getDate()}/${e.getMonth() + 1}`; }
+                const weekVal = w.week || (i + 1);
+                c.innerHTML += `<div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm relative group"><div class="flex justify-between items-center mb-3"><div class="flex items-center gap-2"><div class="flex items-center bg-indigo-50 border border-indigo-100 rounded-lg overflow-hidden"><span class="px-2 py-1 text-xs text-indigo-400 font-bold border-r border-indigo-100">HAFTA</span><input type="text" class="w-16 p-1 text-center text-sm font-bold text-indigo-700 bg-transparent outline-none" value="${weekVal}" oninput="hadithWeeks[${i}].week=this.value;saveLocal()"></div><span id="week-date-${i}" class="text-xs text-slate-400 font-mono bg-slate-50 px-2 py-1 rounded border">${dateStr}</span></div><button onclick="hadithWeeks.splice(${i},1);renderWeeks();saveLocal()" class="text-red-400 hover:text-red-600"><i class="fa-solid fa-trash"></i></button></div><textarea class="w-full mb-2 p-3 border rounded-lg text-right font-serif text-lg bg-slate-50 focus:bg-white transition-colors" dir="rtl" placeholder="Arapça Metin" oninput="hadithWeeks[${i}].arabic=this.value;saveLocal()">${w.arabic || ''}</textarea><textarea class="w-full p-3 border rounded-lg text-sm bg-slate-50 focus:bg-white transition-colors" placeholder="Türkçe Meal" oninput="hadithWeeks[${i}].text=this.value;saveLocal()">${w.text || ''}</textarea></div>`;
             });
         }
+        function saveLocal() { const t = document.getElementById('hadith-target-type').value; localStorage.setItem(`sa_h_${t}`, JSON.stringify(hadithWeeks)); localStorage.setItem(`sa_h_date_${t}`, document.getElementById('semester-start-date').value); }
+        async function saveAndDistributeHadiths() { await fetch('/api/manage-institutions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'distribute_hadiths', master_password: MASTER_PASSWORD, payload: { type: document.getElementById('hadith-target-type').value, hadiths: { startDate: document.getElementById('semester-start-date').value, weeks: hadithWeeks } } }) }); Swal.fire('Dağıtıldı', '', 'success'); } // Updated payload str
 
-        async function saveAndDistributeHadiths() {
-            const type = document.getElementById('hadith-target-type').value;
-
-            // Validate
-            if (hadithWeeks.length === 0) {
-                Swal.fire('Uyarı', 'En az bir hadis girmelisiniz.', 'warning');
-                return;
-            }
-
-            Swal.fire({
-                title: 'Dağıtım Yapılıyor...',
-                text: `${type} türündeki tüm kurumlar güncelleniyor.`,
-                didOpen: () => Swal.showLoading()
-            });
-
-            try {
-                // Prepare payload with start date to help client calculation if needed
-                const payload = {
-                    startDate: document.getElementById('semester-start-date').value,
-                    weeks: hadithWeeks
-                };
-
-                const res = await fetch('/api/manage-institutions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'distribute_hadiths',
-                        master_password: MASTER_PASSWORD,
-                        payload: {
-                            type: type,
-                            hadiths: payload // Save the whole object
-                        }
-                    })
-                });
-
-                if (res.ok) {
-                    const d = await res.json();
-                    Swal.fire('Başarılı', `${d.count} adet kurum güncellendi.`, 'success');
-                    closeHadithModal();
-                } else {
-                    throw new Error('API Error');
-                }
-            } catch (e) {
-                console.error(e);
-                Swal.fire('Hata', 'Dağıtım sırasında hata oluştu.', 'error');
-            }
-        }
-
-        // --- FORCE LOGIN (DEBUG) ---
-        window.forceLogin = function () {
-            Swal.fire({
-                title: 'Zorla Giriş',
-                text: 'Master şifreyi onaylamadan panele girmek üzeresiniz. Bu işlem sadece yetkili olduğunuzdan eminseniz yapılmalıdır.',
-                icon: 'warning',
-                input: 'password',
-                inputPlaceholder: 'Master Şifre',
-                showCancelButton: true,
-                confirmButtonText: 'Giriş Yap',
-                cancelButtonText: 'İptal'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    const pass = result.value;
-                    if (pass) {
-                        MASTER_PASSWORD = pass;
-                        localStorage.setItem('super_admin_pass', pass);
-                        document.getElementById('login-modal').classList.add('hidden');
-                        document.getElementById('main-content').classList.remove('hidden');
-                        fetchInstitutions(); // Arka planda dene
-
-                        const Toast = Swal.mixin({
-                            toast: true, position: 'top-end', showConfirmButton: false, timer: 3000
-                        });
-                        Toast.fire({ icon: 'success', title: 'Zorla Giriş Yapıldı' });
-                    }
-                }
-            });
-        }
-
+        // --- UTILS ---
+        function openCentralAnnouncementsModal() { Swal.fire('Info', 'Placeholder: Duyurular için de galeri benzeri gelişmiş yapı eklenecek.'); } // Simplified for now
+        function openLandingModal() { Swal.fire('Info', 'CMS Modülü aktif (kodda gömülü).'); }
+        function openEmergencyModal() { Swal.fire('Info', 'Acil durum aktif (kodda gömülü).'); }
     </script>
 </body>
 

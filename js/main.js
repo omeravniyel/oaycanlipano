@@ -159,34 +159,47 @@ async function fetchConfig() {
             // --- DEMO CONFIGURATION ---
             console.log("Demo Modu Aktif: Örnek veriler yükleniyor...");
             config = {
-                institution_title: "Kartaltepe Pano Demo",
-                institution_subtitle: "Modern Eğitim Teknolojileri",
-                institution_slogan1: "Geleceğe",
-                institution_slogan2: "Teknolojiyle",
+                institution_title: "Örnek Koleji",
+                institution_subtitle: "Eğitimde Mükemmeliyet",
+                institution_slogan1: "Gelecek",
+                institution_slogan2: "Burada Başlar",
                 institution_logo: "logo.png",
-                city: "Istanbul",
-                district: "Uskudar",
-                lunch_menu: "Mercimek Çorbası\nEt Sote\nPilav\nSalata",
-                dinner_menu: "Domates Çorbası\nTavuk Izgara\nMakarna\nAyran",
-                quote_of_day: "1. En büyük zenginlik bilgidir. 2. Sabır acıdır ama meyvesi tatlıdır. 3. İşleyen demir ışıldar.",
-                hadith_data: {
+                weather_animation_active: true, // WEATHER TOGGLE DEFAULT (Demo)
+                city: "İstanbul",
+                district: "Üsküdar",
+                lunch_menu: "Ezogelin Çorbası\nOrman Kebabı\nPirinç Pilavı\nCacık",
+                dinner_menu: "Mercimek Çorbası\nTavuk Sote\nBulgur Pilavı\nTatlı",
+                quote_of_day: "1. İlim ilim bilmektir. 2. İlim kendin bilmektir.",
+                hadith: {
+                    text: "Sizin en hayırlınız Kuran'ı öğrenen ve öğreteninizdir.",
                     arabic: "خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ",
-                    turkish: "Sizin en hayırlınız Kuran'ı öğrenen ve öğreteninizdir.",
-                    source: "Buhârî, Fezâilü'l-Kur'ân 21",
-                    week: 1,
-                    start_date: "2024-01-01",
-                    end_date: "2024-12-31"
+                    week: "BU HAFTA"
                 },
-                dorm_title: "AYIN ÖRNEK ODASI",
-                dorms: [
-                    { name: "A-101", count: 3, students: ["Ahmet Y.", "Mehmet K.", "Ali V.", "Veli D."] },
-                    { name: "B-203", count: 2, students: ["Hasan H.", "Hüseyin B.", "Ömer F.", "Yusuf E."] }
-                ],
+                dorm_main_title: "HAFTANIN YILDIZLARI",
+                dorm1: {
+                    name: "5-A SINIFI",
+                    count: 3,
+                    s1: "Ahmet Yılmaz", s2: "Mehmet Demir", s3: "Ali Vural", s4: "Veli Can", s5: "", s6: ""
+                },
+                dorm2: {
+                    name: "6-B SINIFI",
+                    count: 5,
+                    s1: "Hasan Kaya", s2: "Hüseyin Bakır", s3: "Ömer Faruk", s4: "Yusuf Efe", s5: "", s6: ""
+                },
                 announcements: [
-                    { title: "Yazılı Tarihleri", content: "Matematik yazılısı 15 Ocak tarihinde yapılacaktır." },
-                    { title: "Veli Toplantısı", content: "20 Ocak Pazar günü saat 14:00'te veli toplantısı yapılacaktır." }
+                    "2025-2026 Eğitim Öğretim Yılı kayıtlarımız başlamıştır.",
+                    "Bu hafta sonu veli toplantımız yapılacaktır. Tüm velilerimiz davetlidir.",
+                    "Kütüphane haftası etkinlikleri kapsamında kitap okuma yarışması düzenlenecektir."
                 ],
-                video_url: "https://www.w3schools.com/html/mov_bbb.mp4" // Örnek Video
+                gallery_links: [
+                    "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1000&auto=format&fit=crop",
+                    "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=1000&auto=format&fit=crop",
+                    "https://images.unsplash.com/photo-1509062522246-3755977927d7?w=1000&auto=format&fit=crop"
+                ],
+                left_gallery_links: [
+                    "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=600&auto=format&fit=crop"
+                ],
+                video_url: "https://www.w3schools.com/html/mov_bbb.mp4"
             };
         } else {
             const res = await fetch(`/api/get-config?slug=${slug}&_t=${Date.now()}`);
@@ -205,6 +218,44 @@ async function fetchConfig() {
                 return;
             }
             config = await res.json();
+        }
+
+        // --- ACİL DURUM KONTROLÜ (EMERGENCY MODE) ---
+        if (config.emergency_alert) {
+            const { title, message, style } = config.emergency_alert;
+
+            // Renk Temaları
+            const styles = {
+                red: 'from-red-600 to-red-900',
+                yellow: 'from-yellow-500 to-orange-600',
+                blue: 'from-blue-600 to-indigo-900'
+            };
+            const bgGradient = styles[style] || styles.red;
+            const icon = style === 'yellow' ? '⚠️' : (style === 'blue' ? 'ℹ️' : '🚨');
+
+            document.body.innerHTML = `
+                <div class="fixed inset-0 z-[99999] bg-gradient-to-br ${bgGradient} text-white flex flex-col items-center justify-center p-10 text-center animate-pulse">
+                    <div class="text-[10rem] mb-4 drop-shadow-lg">${icon}</div>
+                    <h1 class="text-[8rem] font-black uppercase tracking-tighter leading-none mb-8 drop-shadow-xl bg-black/20 px-8 rounded-xl">${title}</h1>
+                    <p class="text-[4rem] font-bold leading-tight max-w-6xl bg-black/10 px-10 py-4 rounded-2xl border-2 border-white/20 shadow-2xl backdrop-blur-sm">
+                        ${message}
+                    </p>
+                    <div class="mt-20 text-2xl font-mono opacity-80 bg-black/30 px-6 py-2 rounded-lg">
+                        Sistem Yöneticisi Tarafından Gönderilen Acil Durum Mesajı
+                    </div>
+                </div>
+            `;
+            // Kalan kodun (diğer panoların) çalışmasını engellemek için return
+            // Ama hava durumu vb. arkada çalışsa da olur, görsel tamamen değiştiği için sorun yok.
+            return;
+        }
+
+        // --- WEATHER ANIMATION TOGGLE ---
+        // If false, hide the global overlay
+        const weatherActive = (config.weather_animation_active !== undefined) ? config.weather_animation_active : true;
+        const weatherOverlay = document.getElementById('global-weather-overlay');
+        if (weatherOverlay) {
+            weatherOverlay.style.display = weatherActive ? 'block' : 'none';
         }
 
         // Hava durumu için konumu global'e at
@@ -448,8 +499,11 @@ async function fetchConfig() {
         }
 
         // Görünürlük ayarları
+        // CHAMPIONS (Formerly Dorm) TITLE
         if (document.getElementById('dorm-section-title')) {
-            document.getElementById('dorm-section-title').innerText = config.dorm_main_title || "GÜNÜN KAZANAN YATAKHANESİ";
+            const defaultTitle = "GÜNÜN KAZANAN YATAKHANESİ";
+            // Support both old dorm_title and new champions_title
+            document.getElementById('dorm-section-title').innerText = config.champions_title || config.dorm_main_title || config.dorm_title || defaultTitle;
         }
         if (document.getElementById('dorm1-custom-title')) {
             document.getElementById('dorm1-custom-title').innerText = config.dorm1_title || "";
@@ -760,6 +814,32 @@ async function fetchConfig() {
             });
         }
 
+        // --- NEW: COUNTDOWN MODULE ---
+        if (config.countdown_active && config.countdown_date) {
+            const targetDate = new Date(config.countdown_date);
+            const now = new Date();
+
+            if (targetDate > now) {
+                const diff = targetDate - now;
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+
+                // Reuse Announcement Style Logic but with Timer Type
+                rawAnnouncements.push({
+                    type: 'countdown',
+                    title: 'GERİ SAYIM',
+                    badge: 'HEYECAN',
+                    circle: '<i class="fas fa-hourglass-half text-4xl"></i>',
+                    topLabel: config.countdown_event || 'ETKİNLİK',
+                    content: `<div class="flex flex-col items-center justify-center gap-2">
+                                <div class="text-6xl font-black text-yellow-300 drop-shadow-lg">${days} GÜN</div>
+                                <div class="text-2xl font-bold text-white opacity-90">${hours} SAAT KALDI</div>
+                                <div class="text-sm text-purple-200 mt-2 uppercase tracking-widest opacity-75">${config.countdown_event || 'Etkinlik'}</div>
+                               </div>`
+                });
+            }
+        }
+
         const rawImproved = [];
         if (config.most_improved_list && Array.isArray(config.most_improved_list)) {
             config.most_improved_list.forEach(item => {
@@ -911,7 +991,7 @@ function rotateInfo() {
         const item = infoData[infoIndex];
         document.getElementById('info-title').innerText = item.title;
         document.getElementById('info-badge').innerText = item.badge;
-        document.getElementById('info-circle-badge').innerText = item.circle;
+        // document.getElementById('info-circle-badge').innerHTML = item.circle; // Managed below
 
         // Kart arkaplan rengini değiştir (yemek için özel)
         const cardContainer = container.parentElement;

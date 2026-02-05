@@ -32,32 +32,96 @@ module.exports = async (request, response) => {
     if (!slug.startsWith('system-') && config.institution_type) {
         try {
             // Helper to process central items (exclusion logic + REGION FILTER)
+            // Helper to process central items (exclusion logic + REGION FILTER + DATE FILTER)
             function processCentralItems(items, currentSlug, institutionConfig = {}) {
                 if (!items || !Array.isArray(items)) return [];
+                const now = new Date();
 
                 return items
                     .filter(item => {
-                        if (typeof item !== 'object') return true; // String items are always shown (legacy)
-                        if (!item.url) return false;
-
-                        // 1. EXCLUSION CHECK
-                        if (item.exclude && Array.isArray(item.exclude)) {
-                            if (item.exclude.includes(currentSlug)) return false;
+                        // Normalize item
+                        let data = item;
+                        if (typeof item === 'string') {
+                            data = { url: item };
                         }
 
-                        // 2. REGION FILTER CHECK (NEW)
-                        // If item has a region_filter, it must match the institution's region.
-                        // If institution has NO region, it cannot see filtered items (Safe Default).
-                        if (item.region_filter && item.region_filter.trim().length > 0) {
-                            const requiredRegion = item.region_filter.trim().toLowerCase();
-                            const myRegion = (institutionConfig.region || "").trim().toLowerCase();
+                        if (!data.url) return false;
 
-                            if (myRegion !== requiredRegion) return false;
+                        // 1. EXCLUSION CHECK
+                        if (data.exclude && Array.isArray(data.exclude)) {
+                            if (data.exclude.includes(currentSlug)) return false;
+                        }
+
+                        // 2. SLUG FILTER (Target Specific Institutions)
+                        if (data.slug_filter && Array.isArray(data.slug_filter) && data.slug_filter.length > 0) {
+                            if (!data.slug_filter.includes(currentSlug)) return false;
+                        }
+
+                        // 3. REGION FILTER CHECK (Loose Match)
+                        if (data.region_filter && data.region_filter.trim().length > 0) {
+                            const filter = data.region_filter.trim().toLocaleLowerCase('tr-TR');
+                            const myRegion = (institutionConfig.region || "").trim().toLocaleLowerCase('tr-TR');
+                            const myDistrict = (institutionConfig.district || "").trim().toLocaleLowerCase('tr-TR');
+                            const myCity = (institutionConfig.city || "").trim().toLocaleLowerCase('tr-TR');
+
+                            // Check against full region string, city, or district
+                            const match = myRegion.includes(filter) || myCity.includes(filter) || myDistrict.includes(filter);
+                            if (!match) return false;
+                        }
+
+                        // 4. DATE FILTER CHECK
+                        if (data.start_date) {
+                            const start = new Date(data.start_date);
+                            if (now < start) return false;
+                        }
+                        if (data.end_date) {
+                            const end = new Date(data.end_date);
+                            if (now > end) return false;
                         }
 
                         return true;
                     })
+                    .map(item => (typeof item === 'string') ? item : item.url); // Return simple URL array to frontend
             };
+
+            // 0. EMERGENCY MODE CHECK
+            try {
+                const { data: emData } = await supabase
+                    .from('institutions')
+                    .select('config')
+                    .eq('slug', 'system-emergency')
+                    .single();
+
+                if (emData && emData.config && emData.config.active) {
+                    const em = emData.config;
+                    let showEmergency = true;
+
+                    // Filter by Region
+                    if (em.region_filter && em.region_filter.trim().length > 0) {
+                        const myRegion = (config.region || "").trim().toLowerCase();
+                        if (myRegion !== em.region_filter.trim().toLowerCase()) showEmergency = false;
+                    }
+
+                    // Filter by Type
+                    if (em.type_filter && Array.isArray(em.type_filter) && em.type_filter.length > 0) {
+                        const myType = (config.institution_type || "Ortaokul").trim();
+                        if (!em.type_filter.includes(myType)) showEmergency = false;
+                    }
+
+                    // Date Check
+                    const now = new Date();
+                    if (em.start_date && now < new Date(em.start_date)) showEmergency = false;
+                    if (em.end_date && now > new Date(em.end_date)) showEmergency = false;
+
+                    if (showEmergency) {
+                        config.emergency_alert = {
+                            title: em.title || "ACİL DURUM",
+                            message: em.message || "Lütfen bekleyiniz...",
+                            style: em.style || "red" // red, yellow, blue
+                        };
+                    }
+                }
+            } catch (e) { console.error("Emergency check error:", e); }
 
             // 1. GLOBAL HADITHS
             const { data: globalData } = await supabase

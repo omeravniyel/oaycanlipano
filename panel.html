@@ -107,7 +107,11 @@
             <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
                 <button onclick="switchTab('general')" id="nav-general"
                     class="nav-item w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-blue-600 bg-blue-50 transition-all">
-                    <i class="fas fa-sliders-h w-5 text-center"></i> Genel Ayarlar
+                    <i class="fas fa-sliders-h w-5 text-center"></i> Genel & Başlık
+                </button>
+                <button onclick="switchTab('appearance')" id="nav-appearance"
+                    class="nav-item w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all">
+                    <i class="fas fa-magic w-5 text-center"></i> Görünüm & Sayaç
                 </button>
                 <button onclick="switchTab('announcements')" id="nav-announcements"
                     class="nav-item w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all">
@@ -124,6 +128,14 @@
                 <button onclick="switchTab('dorm')" id="nav-dorm"
                     class="nav-item w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all">
                     <i class="fas fa-bed w-5 text-center"></i> Yurt Modülü
+                </button>
+                <button onclick="switchTab('success')" id="nav-success"
+                    class="nav-item w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all">
+                    <i class="fas fa-medal w-5 text-center"></i> Başarı & Ödül
+                </button>
+                <button onclick="switchTab('emergency')" id="nav-emergency"
+                    class="nav-item w-full flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl text-red-600 bg-red-50 hover:bg-red-100 hover:text-red-700 transition-all mt-4 border border-red-100">
+                    <i class="fas fa-exclamation-triangle w-5 text-center"></i> ACİL DURUM
                 </button>
             </nav>
 
@@ -163,6 +175,33 @@
 
                 <!-- TAB: GENERAL -->
                 <div id="tab-general" class="tab-content max-w-4xl mx-auto space-y-6">
+                    <!-- Header Settings -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="p-2 bg-indigo-50 text-indigo-600 rounded-lg"><i class="fas fa-heading"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-800">Kurum Başlık Bilgileri</h3>
+                                <p class="text-xs text-slate-400">Ekranın en üstünde yer alan kurum kimlik bilgileri.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <input type="text" id="input-institution-title"
+                                class="px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none font-bold"
+                                placeholder="Kurum Adı (Örn: Kartaltepe Lisesi)">
+                            <input type="text" id="input-institution-subtitle"
+                                class="px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none"
+                                placeholder="Alt Başlık (Örn: Dijital Pano Sistemi)">
+                            <input type="text" id="input-institution-slogan1"
+                                class="px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none"
+                                placeholder="Slogan 1 (Örn: Gelecek)">
+                            <input type="text" id="input-institution-slogan2"
+                                class="px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none"
+                                placeholder="Slogan 2 (Örn: Burada Başlar)">
+                        </div>
+                    </div>
+
                     <!-- Marquee -->
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                         <div class="flex items-center gap-3 mb-4">
@@ -223,6 +262,70 @@
                                 <input type="text" id="input-menu-4"
                                     class="flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none"
                                     placeholder="4. Yemek (Tatlı/İçecek)">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- TAB: APPEARANCE & COUNTDOWN -->
+                <div id="tab-appearance" class="tab-content max-w-4xl mx-auto hidden space-y-6">
+                    <!-- Weather -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="p-2 bg-sky-50 text-sky-600 rounded-lg"><i class="fas fa-cloud-sun-rain"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-bold text-slate-800">Hava Durumu ve Şehir</h3>
+                                <p class="text-xs text-slate-400">Animasyon ayarları ve konum bilgisi.</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="input-weather-active" class="sr-only peer">
+                                <div
+                                    class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600">
+                                </div>
+                                <span class="ml-3 text-sm font-medium text-slate-900">Animasyonlar</span>
+                            </label>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <input type="text" id="input-city"
+                                class="px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl"
+                                placeholder="Şehir (Örn: İstanbul)">
+                            <input type="text" id="input-district"
+                                class="px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl"
+                                placeholder="İlçe (Örn: Üsküdar)">
+                        </div>
+                    </div>
+
+                    <!-- Countdown -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="p-2 bg-red-50 text-red-600 rounded-lg"><i class="fas fa-hourglass-start"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="font-bold text-slate-800">Geri Sayım Modülü</h3>
+                                <p class="text-xs text-slate-400">Sınav veya etkinlik için sayaç.</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="input-countdown-active" class="sr-only peer">
+                                <div
+                                    class="w-11 h-6 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-red-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600">
+                                </div>
+                                <span class="ml-3 text-sm font-medium text-slate-900">Aktif</span>
+                            </label>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Etkinlik
+                                    Adı</label>
+                                <input type="text" id="input-countdown-event"
+                                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl"
+                                    placeholder="Örn: YKS 2025">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Hedef Tarih ve
+                                    Saat</label>
+                                <input type="datetime-local" id="input-countdown-date"
+                                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl">
                             </div>
                         </div>
                     </div>
@@ -370,47 +473,187 @@
                         <div class="flex items-center gap-3 mb-6">
                             <div class="p-2 bg-amber-50 text-amber-600 rounded-lg"><i class="fas fa-trophy"></i></div>
                             <div>
-                                <h3 class="font-bold text-slate-800">Haftanın Birincileri</h3>
-                                <p class="text-xs text-slate-400">Yarışma kazananları listesi.</p>
+                                <div>
+                                    <h3 class="font-bold text-slate-800">Yarışma & Kazananlar Modülü</h3>
+                                    <p class="text-xs text-slate-400">Haftalık birincileri veya yurt puanlarını girin.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Modül
+                                    Başlığı</label>
+                                <input type="text" id="dorm-main-title"
+                                    class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg font-bold text-amber-800"
+                                    placeholder="Varsayılan: GÜNÜN KAZANAN YATAKHANESİ">
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <!-- Dorm 1 -->
+                                <div class="bg-amber-50/50 p-4 rounded-xl border border-amber-100">
+                                    <h4 class="font-bold text-amber-800 mb-3 border-b border-amber-100 pb-2">1. Grup
+                                    </h4>
+                                    <div class="space-y-3">
+                                        <input type="text" id="dorm1-name"
+                                            class="w-full px-3 py-2 bg-white border border-amber-200 rounded-lg text-sm font-bold"
+                                            placeholder="Grup Adı">
+                                        <input type="text" id="dorm1-count"
+                                            class="w-full px-3 py-2 bg-white border border-amber-200 rounded-lg text-sm"
+                                            placeholder="Puan / Net">
+                                        <textarea id="dorm1-students" rows="6"
+                                            class="w-full px-3 py-2 bg-white border border-amber-200 rounded-lg text-xs"
+                                            placeholder="Öğrenciler (Her satıra bir isim)"></textarea>
+                                    </div>
+                                </div>
+                                <!-- Dorm 2 -->
+                                <div class="bg-amber-50/50 p-4 rounded-xl border border-amber-100">
+                                    <h4 class="font-bold text-amber-800 mb-3 border-b border-amber-100 pb-2">2. Grup
+                                    </h4>
+                                    <div class="space-y-3">
+                                        <input type="text" id="dorm2-name"
+                                            class="w-full px-3 py-2 bg-white border border-amber-200 rounded-lg text-sm font-bold"
+                                            placeholder="Grup Adı">
+                                        <input type="text" id="dorm2-count"
+                                            class="w-full px-3 py-2 bg-white border border-amber-200 rounded-lg text-sm"
+                                            placeholder="Puan / Net">
+                                        <textarea id="dorm2-students" rows="6"
+                                            class="w-full px-3 py-2 bg-white border border-amber-200 rounded-lg text-xs"
+                                            placeholder="Öğrenciler (Her satıra bir isim)"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- TAB: SUCCESS & REWARDS -->
+                <div id="tab-success" class="tab-content max-w-4xl mx-auto hidden space-y-6">
+                    <!-- Student of the Week -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <div class="flex items-center gap-3 mb-6">
+                            <div class="p-2 bg-yellow-50 text-yellow-600 rounded-lg"><i
+                                    class="fas fa-user-graduate"></i></div>
+                            <div>
+                                <h3 class="font-bold text-slate-800">Haftanın Öğrencisi</h3>
+                                <p class="text-xs text-slate-400">Pano akışında görünecek örnek öğrenci.</p>
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <!-- Dorm 1 -->
-                            <div class="bg-amber-50/50 p-4 rounded-xl border border-amber-100">
-                                <h4 class="font-bold text-amber-800 mb-3 border-b border-amber-100 pb-2">1. Grup</h4>
-                                <div class="space-y-3">
-                                    <input type="text" id="dorm1-name"
-                                        class="w-full px-3 py-2 bg-white border border-amber-200 rounded-lg text-sm font-bold"
-                                        placeholder="Grup Adı">
-                                    <input type="text" id="dorm1-count"
-                                        class="w-full px-3 py-2 bg-white border border-amber-200 rounded-lg text-sm"
-                                        placeholder="Puan / Net">
-                                    <textarea id="dorm1-students" rows="6"
-                                        class="w-full px-3 py-2 bg-white border border-amber-200 rounded-lg text-xs"
-                                        placeholder="Öğrenciler (Her satıra bir isim)"></textarea>
+                        <div class="flex flex-col md:flex-row gap-6">
+                            <div class="w-full md:w-1/3 flex flex-col items-center gap-3">
+                                <div class="w-32 h-32 bg-slate-100 rounded-full flex items-center justify-center overflow-hidden border-2 border-slate-200"
+                                    id="preview-student-img">
+                                    <i class="fas fa-user text-4xl text-slate-300"></i>
+                                </div>
+                                <input type="hidden" id="input-student-image">
+                                <button onclick="triggerUpload('student')"
+                                    class="text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-lg font-medium transition-colors">
+                                    <i class="fas fa-camera mr-1"></i> Resim Yükle
+                                </button>
+                            </div>
+                            <div class="w-full md:w-2/3 space-y-3">
+                                <input type="text" id="input-student-name"
+                                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none font-bold"
+                                    placeholder="Ad Soyad">
+                                <input type="text" id="input-student-class"
+                                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none"
+                                    placeholder="Sınıf / Unvan (Örn: 12-A)">
+                                <textarea id="input-student-message" rows="2"
+                                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none resize-none"
+                                    placeholder="Tebrik Mesajı"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Most Improved List -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="p-2 bg-green-50 text-green-600 rounded-lg"><i class="fas fa-chart-line"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-800">En Çok Gelişenler Listesi</h3>
+                                <p class="text-xs text-slate-400">İsim ve puan artışını giriniz (Ahmet Yılmaz - 50 Puan)
+                                </p>
+                            </div>
+                        </div>
+                        <textarea id="input-improved-list" rows="8"
+                            class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none font-mono text-sm leading-relaxed"
+                            placeholder="Ahmet Yılmaz - 50 Net Artış&#10;Ayşe Demir - 40 Puan&#10;Mehmet Kaya - %20 Başarı"></textarea>
+                    </div>
+                </div>
+
+                <!-- TAB: EMERGENCY -->
+                <div id="tab-emergency" class="tab-content max-w-4xl mx-auto hidden space-y-6">
+                    <div class="bg-red-50 p-6 rounded-2xl shadow-sm border-2 border-red-100">
+                        <div class="flex items-center justify-between mb-6">
+                            <div class="flex items-center gap-3">
+                                <div class="p-3 bg-red-100 text-red-600 rounded-xl"><i
+                                        class="fas fa-bullhorn text-xl"></i></div>
+                                <div>
+                                    <h3 class="font-bold text-slate-800 text-lg">ACİL DURUM MODU</h3>
+                                    <p class="text-sm text-red-500 font-medium">Bu mod açıldığında panodaki tüm
+                                        içerikler gizlenir.</p>
                                 </div>
                             </div>
-                            <!-- Dorm 2 -->
-                            <div class="bg-amber-50/50 p-4 rounded-xl border border-amber-100">
-                                <h4 class="font-bold text-amber-800 mb-3 border-b border-amber-100 pb-2">2. Grup</h4>
-                                <div class="space-y-3">
-                                    <input type="text" id="dorm2-name"
-                                        class="w-full px-3 py-2 bg-white border border-amber-200 rounded-lg text-sm font-bold"
-                                        placeholder="Grup Adı">
-                                    <input type="text" id="dorm2-count"
-                                        class="w-full px-3 py-2 bg-white border border-amber-200 rounded-lg text-sm"
-                                        placeholder="Puan / Net">
-                                    <textarea id="dorm2-students" rows="6"
-                                        class="w-full px-3 py-2 bg-white border border-amber-200 rounded-lg text-xs"
-                                        placeholder="Öğrenciler (Her satıra bir isim)"></textarea>
+                            <label class="relative inline-flex items-center cursor-pointer scale-125 mr-2">
+                                <input type="checkbox" id="input-emergency-active" class="sr-only peer">
+                                <div
+                                    class="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600">
                                 </div>
+                            </label>
+                        </div>
+
+                        <div class="space-y-4 bg-white p-6 rounded-xl border border-red-100">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Görünüm
+                                    Rengi</label>
+                                <div class="flex gap-3">
+                                    <label class="cursor-pointer">
+                                        <input type="radio" name="emergency-style" value="red" class="peer sr-only"
+                                            checked>
+                                        <div
+                                            class="px-4 py-2 rounded-lg border-2 border-red-100 bg-red-50 text-red-600 peer-checked:bg-red-600 peer-checked:text-white peer-checked:border-red-600 transition-all font-bold text-sm">
+                                            <i class="fas fa-exclamation-circle mr-1"></i> KIRMIZI (ALARM)
+                                        </div>
+                                    </label>
+                                    <label class="cursor-pointer">
+                                        <input type="radio" name="emergency-style" value="yellow" class="peer sr-only">
+                                        <div
+                                            class="px-4 py-2 rounded-lg border-2 border-yellow-100 bg-yellow-50 text-yellow-600 peer-checked:bg-yellow-500 peer-checked:text-white peer-checked:border-yellow-500 transition-all font-bold text-sm">
+                                            <i class="fas fa-exclamation-triangle mr-1"></i> SARI (UYARI)
+                                        </div>
+                                    </label>
+                                    <label class="cursor-pointer">
+                                        <input type="radio" name="emergency-style" value="blue" class="peer sr-only">
+                                        <div
+                                            class="px-4 py-2 rounded-lg border-2 border-blue-100 bg-blue-50 text-blue-600 peer-checked:bg-blue-600 peer-checked:text-white peer-checked:border-blue-600 transition-all font-bold text-sm">
+                                            <i class="fas fa-info-circle mr-1"></i> MAVİ (BİLGİ)
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Başlık</label>
+                                <input type="text" id="input-emergency-title"
+                                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-lg text-slate-800"
+                                    placeholder="Örn: OKULLAR TATİL">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Mesaj
+                                    İçeriği</label>
+                                <textarea id="input-emergency-message" rows="4"
+                                    class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-lg"
+                                    placeholder="Detaylı açıklama metni..."></textarea>
                             </div>
                         </div>
                     </div>
                 </div>
 
-            </div>
+                <!-- Hidden inputs for file upload -->
+                <input type="file" id="upload-trigger" class="hidden">
+                <input type="hidden" id="upload-target-type">
         </main>
     </div>
 
@@ -506,6 +749,52 @@
             localStorage.removeItem('admin_pass_' + currentSlug);
             window.location.reload();
         }
+
+        // --- UPLOAD HANDLER (SINGLE IMAGE) ---
+        function triggerUpload(type) {
+            document.getElementById('upload-target-type').value = type;
+            document.getElementById('upload-trigger').click();
+        }
+
+        document.getElementById('upload-trigger').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const type = document.getElementById('upload-target-type').value;
+
+            // Convert to Base64 for API
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                const base64 = event.target.result.split(',')[1];
+
+                try {
+                    Swal.fire({ title: 'Yükleniyor...', didOpen: () => Swal.showLoading() });
+                    const res = await fetch('/api/upload', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            filename: file.name,
+                            fileBase64: base64,
+                            contentType: file.type,
+                            slug: currentSlug
+                        })
+                    });
+                    const data = await res.json();
+
+                    if (data.success) {
+                        Swal.close();
+                        if (type === 'student') {
+                            document.getElementById('input-student-image').value = data.url;
+                            document.getElementById('preview-student-img').innerHTML = `<img src="${data.url}" class="w-full h-full object-cover">`;
+                        }
+                    } else {
+                        Swal.fire('Hata', 'Yükleme başarısız: ' + (data.error || 'Server error'), 'error');
+                    }
+                } catch (err) {
+                    Swal.fire('Hata', 'Bağlantı hatası', 'error');
+                }
+            };
+            reader.readAsDataURL(file);
+        });
 
         // --- VISUAL GALLERY LOGIC ---
         function renderGalleries() {
@@ -613,8 +902,21 @@
         }
 
         function populateForm(cfg) {
-            // General
+            // General & Header
+            document.getElementById('input-institution-title').value = cfg.institution_title || cfg.name || "";
+            document.getElementById('input-institution-subtitle').value = cfg.institution_subtitle || "";
+            document.getElementById('input-institution-slogan1').value = cfg.institution_slogan1 || "";
+            document.getElementById('input-institution-slogan2').value = cfg.institution_slogan2 || "";
             document.getElementById('input-marquee').value = cfg.marquee_text || "";
+
+            // Appearance & Countdown
+            document.getElementById('input-weather-active').checked = (cfg.weather_animation_active !== undefined) ? cfg.weather_animation_active : true;
+            document.getElementById('input-city').value = cfg.city || "";
+            document.getElementById('input-district').value = cfg.district || "";
+
+            document.getElementById('input-countdown-active').checked = cfg.countdown_active || false;
+            document.getElementById('input-countdown-event').value = cfg.countdown_event || "";
+            document.getElementById('input-countdown-date').value = cfg.countdown_date || "";
 
             // Menu
             let menu = [];
@@ -683,163 +985,234 @@
             document.getElementById('dorm2-count').value = d2.count || "";
             const s2List = [d2.s1, d2.s2, d2.s3, d2.s4, d2.s5, d2.s6].filter(x => x);
             document.getElementById('dorm2-students').value = s2List.join('\n');
-        }
 
-        // --- SAVE DATA ---
-        async function saveAll() {
-            const btn = document.getElementById('save-btn');
-            const originalHTML = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Kaydediliyor...';
-            btn.disabled = true;
+            // Dorm Main Title
+            document.getElementById('dorm-main-title').value = cfg.champions_title || cfg.dorm_main_title || "";
 
-            try {
-                const newConfig = { ...currentConfig };
-
-                // 1. General
-                newConfig.marquee_text = document.getElementById('input-marquee').value;
-                newConfig.menu = JSON.stringify([
-                    document.getElementById('input-menu-1').value,
-                    document.getElementById('input-menu-2').value,
-                    document.getElementById('input-menu-3').value,
-                    document.getElementById('input-menu-4').value
-                ]);
-
-                // 2. Announcements
-                newConfig.announcements = [document.getElementById('input-announcement').value];
-
-                // 3. Video
-                const vidText = document.getElementById('input-video').value;
-                newConfig.video_url = vidText;
-                newConfig.video_urls = [vidText];
-
-                // 4. Gallery (NOW USING GLOBAL ARRAYS)
-                newConfig.gallery_links = galleryMain;
-                newConfig.left_gallery_links = galleryLeft;
-
-                // 5. Hadith
-                newConfig.hadith = JSON.stringify({
-                    text: document.getElementById('input-hadith-text').value,
-                    arabic: document.getElementById('input-hadith-arabic').value,
-                    week: document.getElementById('input-hadith-week').value
-                });
-
-                // 6. Dorms
-                function parseStudents(text) {
-                    const lines = text.split('\n').map(s => s.trim()).filter(s => s);
-                    return { s1: lines[0] || "", s2: lines[1] || "", s3: lines[2] || "", s4: lines[3] || "", s5: lines[4] || "", s6: lines[5] || "" };
-                }
-                newConfig.winning_dorms = JSON.stringify({
-                    dorm1: { name: document.getElementById('dorm1-name').value, count: document.getElementById('dorm1-count').value, ...parseStudents(document.getElementById('dorm1-students').value) },
-                    dorm2: { name: document.getElementById('dorm2-name').value, count: document.getElementById('dorm2-count').value, ...parseStudents(document.getElementById('dorm2-students').value) }
-                });
-
-                const res = await fetch('/api/save-config', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        slug: currentSlug,
-                        password: currentPassword,
-                        config: newConfig
-                    })
-                });
-
-                if (res.ok) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Başarılı',
-                        text: 'Ayarlar güncellendi!',
-                        timer: 1500,
-                        showConfirmButton: false
-                    });
-                } else {
-                    const d = await res.json();
-                    throw new Error(d.error || "Sunucu hatası");
-                }
-            } catch (e) {
-                Swal.fire("Hata", e.message, "error");
-            } finally {
-                btn.innerHTML = originalHTML;
-                btn.disabled = false;
+            // Student of Week
+            const stu = cfg.student_of_week || {};
+            document.getElementById('input-student-name').value = stu.name || "";
+            document.getElementById('input-student-class').value = stu.class || "";
+            document.getElementById('input-student-message').value = stu.message || "";
+            if (stu.image) {
+                document.getElementById('input-student-image').value = stu.image;
+                document.getElementById('preview-student-img').innerHTML = `<img src="${stu.image}" class="w-full h-full object-cover">`;
             }
-        }
 
-        // --- PREVIEW ---
-        function openPreview() {
-            const modal = document.getElementById('preview-modal');
-            const frame = document.getElementById('preview-frame');
-            // Assuming the board URL is /slug
-            frame.src = '/' + currentSlug;
-            modal.classList.remove('hidden');
-        }
+            // Improved List
+            let imp = [];
+            try { imp = (typeof cfg.most_improved_list === 'string') ? JSON.parse(cfg.most_improved_list) : (cfg.most_improved_list || []); } catch (e) { }
+            document.getElementById('input-improved-list').value = Array.isArray(imp) ? imp.join('\n') : "";
 
-        // --- FILE UPLOAD ---
-        async function handleFileUpload(input) {
-            const fileInput = input;
-            if (fileInput.files.length === 0) return;
+            // Emergency
+            const em = cfg.emergency_alert || {};
+            document.getElementById('input-emergency-active').checked = cfg.emergency_alert ? true : false;
+            document.getElementById('input-emergency-title').value = em.title || "";
+            document.getElementById('input-emergency-message').value = em.message || "";
+            if (em.style) {
+                const radio = document.querySelector(`input[name="emergency-style"][value="${em.style}"]`);
+                if (radio) radio.checked = true;
+            } else {
+                // If checking active but no style, default to false if object empty. 
+                // Wait, if cfg.emergency_alert is undefined, checked is false.
+                // If defined, checked is true.
+                // We should handle the case where we toggle it OFF. Logic in save will handle it.
+                if (!cfg.emergency_alert) document.getElementById('input-emergency-active').checked = false;
+            }
 
-            const file = fileInput.files[0];
+            // --- SAVE DATA ---
+            async function saveAll() {
+                const btn = document.getElementById('save-btn');
+                const originalHTML = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Kaydediliyor...';
+                btn.disabled = true;
 
-            // SweetAlert Loading
-            Swal.fire({
-                title: 'Yükleniyor...',
-                text: 'Lütfen bekleyin.',
-                allowOutsideClick: false,
-                didOpen: () => { Swal.showLoading(); }
-            });
+                try {
+                    const newConfig = { ...currentConfig };
 
-            try {
-                const toBase64 = file => new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.readAsDataURL(file);
-                    reader.onload = () => resolve(reader.result.split(',')[1]);
-                    reader.onerror = error => reject(error);
-                });
+                    // 1. General & Header
+                    newConfig.institution_title = document.getElementById('input-institution-title').value;
+                    newConfig.institution_subtitle = document.getElementById('input-institution-subtitle').value;
+                    newConfig.institution_slogan1 = document.getElementById('input-institution-slogan1').value;
+                    newConfig.institution_slogan2 = document.getElementById('input-institution-slogan2').value;
+                    newConfig.marquee_text = document.getElementById('input-marquee').value;
 
-                const base64 = await toBase64(file);
-                const res = await fetch('/api/upload', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        filename: file.name,
-                        fileBase64: base64,
-                        contentType: file.type,
-                        slug: currentSlug
-                    })
-                });
+                    // 1.5 Appearance & Countdown
+                    newConfig.weather_animation_active = document.getElementById('input-weather-active').checked;
+                    newConfig.city = document.getElementById('input-city').value;
+                    newConfig.district = document.getElementById('input-district').value;
 
-                const data = await res.json();
-                if (res.ok) {
-                    Swal.close();
+                    newConfig.countdown_active = document.getElementById('input-countdown-active').checked;
+                    newConfig.countdown_event = document.getElementById('input-countdown-event').value;
+                    newConfig.countdown_date = document.getElementById('input-countdown-date').value;
+                    newConfig.menu = JSON.stringify([
+                        document.getElementById('input-menu-1').value,
+                        document.getElementById('input-menu-2').value,
+                        document.getElementById('input-menu-3').value,
+                        document.getElementById('input-menu-4').value
+                    ]);
 
-                    // Ask where to add
-                    const { isConfirmed } = await Swal.fire({
-                        title: 'Yüklendi!',
-                        text: "Bu görseli hangi galeriye eklemek istersiniz?",
-                        icon: 'success',
-                        showDenyButton: true,
-                        confirmButtonText: 'Ana Galeri (Sağ)',
-                        denyButtonText: 'Sol Slider (Dikey)',
-                        confirmButtonColor: '#2563eb',
-                        denyButtonColor: '#9333ea'
+                    // 2. Announcements
+                    newConfig.announcements = [document.getElementById('input-announcement').value];
+
+                    // 3. Video
+                    const vidText = document.getElementById('input-video').value;
+                    newConfig.video_url = vidText;
+                    newConfig.video_urls = [vidText];
+
+                    // 4. Gallery (NOW USING GLOBAL ARRAYS)
+                    newConfig.gallery_links = galleryMain;
+                    newConfig.left_gallery_links = galleryLeft;
+
+                    // 5. Hadith
+                    newConfig.hadith = JSON.stringify({
+                        text: document.getElementById('input-hadith-text').value,
+                        arabic: document.getElementById('input-hadith-arabic').value,
+                        week: document.getElementById('input-hadith-week').value
                     });
 
-                    if (isConfirmed) {
-                        galleryMain.push(data.url);
+                    // 6. Dorms
+                    function parseStudents(text) {
+                        const lines = text.split('\n').map(s => s.trim()).filter(s => s);
+                        return { s1: lines[0] || "", s2: lines[1] || "", s3: lines[2] || "", s4: lines[3] || "", s5: lines[4] || "", s6: lines[5] || "" };
+                    }
+                    newConfig.winning_dorms = JSON.stringify({
+                        dorm1: { name: document.getElementById('dorm1-name').value, count: document.getElementById('dorm1-count').value, ...parseStudents(document.getElementById('dorm1-students').value) },
+                        dorm2: { name: document.getElementById('dorm2-name').value, count: document.getElementById('dorm2-count').value, ...parseStudents(document.getElementById('dorm2-students').value) }
+                    });
+
+                    newConfig.champions_title = document.getElementById('dorm-main-title').value;
+
+                    // Success
+                    newConfig.student_of_week = JSON.stringify({
+                        name: document.getElementById('input-student-name').value,
+                        class: document.getElementById('input-student-class').value,
+                        message: document.getElementById('input-student-message').value,
+                        image: document.getElementById('input-student-image').value
+                    });
+
+                    newConfig.most_improved_list = JSON.stringify(
+                        document.getElementById('input-improved-list').value.split('\n').filter(line => line.trim() !== "")
+                    );
+
+                    // Emergency
+                    if (document.getElementById('input-emergency-active').checked) {
+                        newConfig.emergency_alert = JSON.stringify({
+                            title: document.getElementById('input-emergency-title').value,
+                            message: document.getElementById('input-emergency-message').value,
+                            style: document.querySelector('input[name="emergency-style"]:checked').value
+                        });
                     } else {
-                        galleryLeft.push(data.url);
+                        newConfig.emergency_alert = null; // Turn off
                     }
 
-                    renderGalleries();
+                    const res = await fetch('/api/save-config', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            slug: currentSlug,
+                            password: currentPassword,
+                            config: newConfig
+                        })
+                    });
 
-                } else {
-                    throw new Error(data.error);
+                    if (res.ok) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Başarılı',
+                            text: 'Ayarlar güncellendi!',
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        const d = await res.json();
+                        throw new Error(d.error || "Sunucu hatası");
+                    }
+                } catch (e) {
+                    Swal.fire("Hata", e.message, "error");
+                } finally {
+                    btn.innerHTML = originalHTML;
+                    btn.disabled = false;
                 }
-            } catch (e) {
-                Swal.fire("Hata", e.message, "error");
-            } finally {
-                fileInput.value = ''; // Reset input
             }
-        }
+
+            // --- PREVIEW ---
+            function openPreview() {
+                const modal = document.getElementById('preview-modal');
+                const frame = document.getElementById('preview-frame');
+                // Assuming the board URL is /slug
+                frame.src = '/' + currentSlug;
+                modal.classList.remove('hidden');
+            }
+
+            // --- FILE UPLOAD ---
+            async function handleFileUpload(input) {
+                const fileInput = input;
+                if (fileInput.files.length === 0) return;
+
+                const file = fileInput.files[0];
+
+                // SweetAlert Loading
+                Swal.fire({
+                    title: 'Yükleniyor...',
+                    text: 'Lütfen bekleyin.',
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading(); }
+                });
+
+                try {
+                    const toBase64 = file => new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.readAsDataURL(file);
+                        reader.onload = () => resolve(reader.result.split(',')[1]);
+                        reader.onerror = error => reject(error);
+                    });
+
+                    const base64 = await toBase64(file);
+                    const res = await fetch('/api/upload', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            filename: file.name,
+                            fileBase64: base64,
+                            contentType: file.type,
+                            slug: currentSlug
+                        })
+                    });
+
+                    const data = await res.json();
+                    if (res.ok) {
+                        Swal.close();
+
+                        // Ask where to add
+                        const { isConfirmed } = await Swal.fire({
+                            title: 'Yüklendi!',
+                            text: "Bu görseli hangi galeriye eklemek istersiniz?",
+                            icon: 'success',
+                            showDenyButton: true,
+                            confirmButtonText: 'Ana Galeri (Sağ)',
+                            denyButtonText: 'Sol Slider (Dikey)',
+                            confirmButtonColor: '#2563eb',
+                            denyButtonColor: '#9333ea'
+                        });
+
+                        if (isConfirmed) {
+                            galleryMain.push(data.url);
+                        } else {
+                            galleryLeft.push(data.url);
+                        }
+
+                        renderGalleries();
+
+                    } else {
+                        throw new Error(data.error);
+                    }
+                } catch (e) {
+                    Swal.fire("Hata", e.message, "error");
+                } finally {
+                    fileInput.value = ''; // Reset input
+                }
+            }
     </script>
 </body>
 
