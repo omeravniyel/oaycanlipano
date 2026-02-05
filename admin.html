@@ -356,12 +356,13 @@
                 // --- OFFLINE/LOCAL FALLBACK ---
                 const localValid = ["283353.", "283353", "admin123", "root"].includes(MASTER_PASSWORD);
 
+                // Ensure we catch ALL errors if localValid is true
                 if (localValid) {
                     console.log("Entering Offline Mode (Force)");
                     if (showError) Swal.fire({
                         icon: 'warning',
-                        title: 'Çevrimdışı Mod (Etkin)',
-                        text: 'Sunucu bağlantısı kurulamadı. Geliştirici erişimi ile demo verileri yüklendi.',
+                        title: 'Offline / Yönetici Modu',
+                        text: 'Sunucu erişimi sağlanamadı. Yerel yetki ile giriş yapılıyor.',
                         timer: 2000,
                         showConfirmButton: false
                     });
