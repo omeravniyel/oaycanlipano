@@ -147,10 +147,10 @@
                     <h2 class="text-lg font-bold text-slate-800 hidden sm:block">Kurum Ayarları</h2>
                 </div>
                 <div class="flex items-center gap-3">
-                    <a href="/" target="_blank"
-                        class="hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 transition-colors">
-                        <i class="fas fa-external-link-alt"></i> Panoyu Görüntüle
-                    </a>
+                    <button onclick="openPreview()"
+                        class="hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-bold text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 hover:text-blue-600 transition-colors">
+                        <i class="fas fa-play-circle"></i> Canlı Önizleme
+                    </button>
                     <button onclick="saveAll()" id="save-btn"
                         class="flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg shadow-blue-500/20 font-medium transition-all active:scale-95">
                         <i class="fas fa-save"></i> <span class="hidden sm:inline">Kaydet</span>
@@ -187,19 +187,43 @@
                                 <p class="text-xs text-slate-400">Günlük 4 öğün yemek listesi.</p>
                             </div>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <input type="text" id="input-menu-1"
-                                class="px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none"
-                                placeholder="1. Yemek (Çorba)">
-                            <input type="text" id="input-menu-2"
-                                class="px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none"
-                                placeholder="2. Yemek (Ana Yemek)">
-                            <input type="text" id="input-menu-3"
-                                class="px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none"
-                                placeholder="3. Yemek (Yan Ürün)">
-                            <input type="text" id="input-menu-4"
-                                class="px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none"
-                                placeholder="4. Yemek (Tatlı/İçecek)">
+                        <div class="space-y-3">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-10 h-10 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center shrink-0">
+                                    <i class="fas fa-mug-hot"></i>
+                                </div>
+                                <input type="text" id="input-menu-1"
+                                    class="flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none"
+                                    placeholder="1. Yemek (Çorba)">
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-10 h-10 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center shrink-0">
+                                    <i class="fas fa-drumstick-bite"></i>
+                                </div>
+                                <input type="text" id="input-menu-2"
+                                    class="flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none"
+                                    placeholder="2. Yemek (Ana Yemek)">
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-10 h-10 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center shrink-0">
+                                    <i class="fas fa-carrot"></i>
+                                </div>
+                                <input type="text" id="input-menu-3"
+                                    class="flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none"
+                                    placeholder="3. Yemek (Yan Ürün)">
+                            </div>
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-10 h-10 rounded-lg bg-orange-100 text-orange-600 flex items-center justify-center shrink-0">
+                                    <i class="fas fa-ice-cream"></i>
+                                </div>
+                                <input type="text" id="input-menu-4"
+                                    class="flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none"
+                                    placeholder="4. Yemek (Tatlı/İçecek)">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -220,61 +244,88 @@
                     </div>
                 </div>
 
-                <!-- TAB: GALLERY -->
-                <div id="tab-gallery" class="tab-content max-w-4xl mx-auto hidden space-y-6">
-                    <!-- File Upload -->
+                <!-- TAB: GALLERY & VIDEO (VISUAL UPDATE) -->
+                <div id="tab-gallery" class="tab-content max-w-7xl mx-auto hidden space-y-8">
+
+                    <!-- Upload Section -->
+                    <div
+                        class="bg-indigo-600 rounded-3xl p-8 text-white shadow-xl shadow-indigo-500/20 relative overflow-hidden">
+                        <div class="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+                            <div>
+                                <h2 class="text-2xl font-bold mb-2">Medya Yükle</h2>
+                                <p class="text-indigo-100 opacity-80">Görsel veya video dosyalarınızı buraya yükleyin.
+                                    Otomatik olarak galeriye eklenir.</p>
+                            </div>
+                            <div class="flex gap-3">
+                                <input type="file" id="input-file" class="hidden" onchange="handleFileUpload(this)">
+                                <button onclick="document.getElementById('input-file').click()"
+                                    class="bg-white text-indigo-600 px-6 py-3 rounded-xl font-bold hover:bg-indigo-50 transition shadow-lg flex items-center gap-2">
+                                    <i class="fas fa-cloud-upload-alt"></i> Dosya Seç
+                                </button>
+                            </div>
+                        </div>
+                        <div
+                            class="absolute top-0 right-0 -mt-10 -mr-10 w-64 h-64 bg-white opacity-5 rounded-full blur-3xl">
+                        </div>
+                        <div
+                            class="absolute bottom-0 left-0 -mb-10 -ml-10 w-64 h-64 bg-black opacity-10 rounded-full blur-3xl">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <!-- Main Gallery -->
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col h-[600px]">
+                            <div class="flex justify-between items-center mb-4 border-b pb-4">
+                                <div>
+                                    <h3 class="font-bold text-slate-800 flex items-center gap-2"><i
+                                            class="fas fa-images text-blue-500"></i> Ana Galeri (Sağ)</h3>
+                                    <p class="text-xs text-slate-400">Ana alanda dönecek görseller.</p>
+                                </div>
+                                <span class="bg-blue-50 text-blue-600 text-xs font-bold px-2 py-1 rounded"
+                                    id="count-main">0 Görsel</span>
+                            </div>
+                            <!-- Visual Grid -->
+                            <div id="gallery-grid-main"
+                                class="flex-1 overflow-y-auto grid grid-cols-3 gap-2 pr-2 content-start">
+                                <!-- JS will populate this -->
+                            </div>
+                        </div>
+
+                        <!-- Left Gallery -->
+                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex flex-col h-[600px]">
+                            <div class="flex justify-between items-center mb-4 border-b pb-4">
+                                <div>
+                                    <h3 class="font-bold text-slate-800 flex items-center gap-2"><i
+                                            class="fas fa-photo-video text-purple-500"></i> Sol Slider</h3>
+                                    <p class="text-xs text-slate-400">Sol panelde dönecek dikey görseller.</p>
+                                </div>
+                                <span class="bg-purple-50 text-purple-600 text-xs font-bold px-2 py-1 rounded"
+                                    id="count-left">0 Görsel</span>
+                            </div>
+                            <!-- Visual Grid -->
+                            <div id="gallery-grid-left"
+                                class="flex-1 overflow-y-auto grid grid-cols-3 gap-2 pr-2 content-start">
+                                <!-- JS will populate this -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Video URL -->
                     <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                         <div class="flex items-center gap-3 mb-4">
-                            <div class="p-2 bg-indigo-50 text-indigo-600 rounded-lg"><i
-                                    class="fas fa-cloud-upload-alt"></i></div>
+                            <div class="p-2 bg-red-50 text-red-600 rounded-lg"><i class="fas fa-video"></i></div>
                             <div>
-                                <h3 class="font-bold text-slate-800">Dosya Yükle</h3>
-                                <p class="text-xs text-slate-400">Resim veya video yükleyin. Link otomatik eklenecektir.
-                                </p>
+                                <h3 class="font-bold text-slate-800">Video URL (YouTube/MP4)</h3>
+                                <p class="text-xs text-slate-400">Tam ekran video oynatımı için.</p>
                             </div>
                         </div>
-                        <div class="flex flex-col md:flex-row gap-4">
-                            <div class="flex-1 relative">
-                                <input type="file" id="input-file" class="hidden"
-                                    onchange="document.getElementById('file-label').innerText = this.files[0]?.name || 'Dosya Seçilmedi'">
-                                <label for="input-file"
-                                    class="flex items-center justify-between w-full px-4 py-3 bg-slate-50 border border-slate-200 border-dashed rounded-xl cursor-pointer hover:bg-slate-100 transition-colors">
-                                    <span id="file-label" class="text-slate-500 truncate">Dosya Seçiniz...</span>
-                                    <i class="fas fa-folder-open text-slate-400"></i>
-                                </label>
-                            </div>
-                            <button id="btn-upload" onclick="uploadFile()"
-                                class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-medium shadow-lg shadow-indigo-500/20 active:scale-95 transition-all w-full md:w-auto">
-                                Yükle
-                            </button>
+                        <div class="flex gap-2">
+                            <input type="text" id="input-video"
+                                class="flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none"
+                                placeholder="https://...">
+                            <button onclick="document.getElementById('input-video').value=''"
+                                class="px-4 text-slate-400 hover:text-red-500"><i class="fas fa-times"></i></button>
                         </div>
-                        <p id="upload-status"
-                            class="mt-2 text-xs font-semibold text-slate-500 text-center md:text-left"></p>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Main Gallery -->
-                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                            <h3 class="font-bold text-slate-800 mb-2 text-sm uppercase">Ana Galeri (Sağ)</h3>
-                            <p class="text-xs text-slate-400 mb-4">Her satıra bir resim URL'si girin.</p>
-                            <textarea id="input-gallery-links" rows="8"
-                                class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none text-xs font-mono"></textarea>
-                        </div>
-                        <!-- Left Gallery -->
-                        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                            <h3 class="font-bold text-slate-800 mb-2 text-sm uppercase">Sol Slider</h3>
-                            <p class="text-xs text-slate-400 mb-4">Dikey banner alanı için resim URL'leri.</p>
-                            <textarea id="input-left-gallery-links" rows="8"
-                                class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:border-blue-500 outline-none text-xs font-mono"></textarea>
-                        </div>
-                    </div>
-
-                    <!-- Video -->
-                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
-                        <h3 class="font-bold text-slate-800 mb-2">Video URL</h3>
-                        <input type="text" id="input-video"
-                            class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm"
-                            placeholder="https://...">
                     </div>
                 </div>
 
@@ -363,6 +414,14 @@
         </main>
     </div>
 
+    <div id="preview-modal"
+        class="fixed inset-0 z-[60] hidden bg-slate-900/90 backdrop-blur-sm flex items-center justify-center p-4">
+        <button onclick="document.getElementById('preview-modal').classList.add('hidden')"
+            class="absolute top-4 right-4 text-white hover:text-red-400 text-3xl"><i class="fas fa-times"></i></button>
+        <iframe id="preview-frame" class="w-full h-full max-w-[1920px] max-h-[1080px] bg-black rounded-lg shadow-2xl"
+            src=""></iframe>
+    </div>
+
     <!-- SCRIPT -->
     <script>
         // GLOBALS
@@ -375,6 +434,10 @@
         }
         let currentPassword = null;
         let currentConfig = {};
+
+        // Gallery State
+        let galleryMain = [];
+        let galleryLeft = [];
 
         // --- AUTH & INIT ---
         document.addEventListener('DOMContentLoaded', () => {
@@ -442,6 +505,61 @@
         function logout() {
             localStorage.removeItem('admin_pass_' + currentSlug);
             window.location.reload();
+        }
+
+        // --- VISUAL GALLERY LOGIC ---
+        function renderGalleries() {
+            renderGrid('main', galleryMain);
+            renderGrid('left', galleryLeft);
+        }
+
+        function renderGrid(type, items) {
+            const container = document.getElementById(`gallery-grid-${type}`);
+            const countLabel = document.getElementById(`count-${type}`);
+            container.innerHTML = '';
+            countLabel.innerText = `${items.length} Görsel`;
+
+            if (items.length === 0) {
+                container.innerHTML = `<div class="col-span-3 text-center py-10 text-slate-400 text-sm border-2 border-dashed border-slate-100 rounded-xl">Görsel bulunamadı.<br>Yüklemek için yukarıdaki alanı kullanın.</div>`;
+                return;
+            }
+
+            items.forEach((url, idx) => {
+                const isVideo = url.endsWith('.mp4') || url.includes('youtube') || url.includes('vimeo');
+                const content = isVideo
+                    ? `<div class="w-full h-full bg-slate-900 flex items-center justify-center text-white"><i class="fas fa-play"></i></div>`
+                    : `<img src="${url}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/150?text=Error'">`;
+
+                const div = document.createElement('div');
+                div.className = "relative aspect-square rounded-lg overflow-hidden group shadow-sm bg-slate-50 border hover:border-blue-500 transition-all";
+                div.innerHTML = `
+                    ${content}
+                    <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                        <a href="${url}" target="_blank" class="w-8 h-8 flex items-center justify-center bg-white/20 hover:bg-white text-white hover:text-blue-600 rounded-full backdrop-blur"><i class="fas fa-eye"></i></a>
+                        <button onclick="deleteImage('${type}', ${idx})" class="w-8 h-8 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-full"><i class="fas fa-trash"></i></button>
+                    </div>
+                    <div class="absolute top-1 left-1 bg-black/40 text-white text-[10px] px-1.5 rounded font-mono backdrop-blur">${idx + 1}</div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function deleteImage(type, index) {
+            Swal.fire({
+                title: 'Silinsin mi?',
+                text: "Bu görsel listeden kaldırılacak.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Evet, Sil'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    if (type === 'main') galleryMain.splice(index, 1);
+                    else galleryLeft.splice(index, 1);
+                    renderGalleries();
+                }
+            });
         }
 
         // --- SIDEBAR TOGGLE ---
@@ -526,22 +644,22 @@
             } catch (e) { }
             document.getElementById('input-video').value = vid;
 
-            // Gallery Links
-            let imgs = [];
+            // Gallery Links (Modified for Visual Editor)
+            galleryMain = [];
             try {
                 const rawG = cfg.gallery_links;
-                if (Array.isArray(rawG)) imgs = rawG;
-                else if (rawG && rawG.startsWith('[')) imgs = JSON.parse(rawG);
+                if (Array.isArray(rawG)) galleryMain = rawG;
+                else if (rawG && rawG.startsWith('[')) galleryMain = JSON.parse(rawG);
             } catch (e) { }
-            document.getElementById('input-gallery-links').value = imgs.join('\n');
 
-            let leftImgs = [];
+            galleryLeft = [];
             try {
                 const rawLG = cfg.left_gallery_links;
-                if (Array.isArray(rawLG)) leftImgs = rawLG;
-                else if (rawLG && rawLG.startsWith('[')) leftImgs = JSON.parse(rawLG);
+                if (Array.isArray(rawLG)) galleryLeft = rawLG;
+                else if (rawLG && rawLG.startsWith('[')) galleryLeft = JSON.parse(rawLG);
             } catch (e) { }
-            document.getElementById('input-left-gallery-links').value = leftImgs.join('\n');
+
+            renderGalleries(); // Initial Render
 
             // Hadith
             let h = {};
@@ -594,9 +712,9 @@
                 newConfig.video_url = vidText;
                 newConfig.video_urls = [vidText];
 
-                // 4. Gallery
-                newConfig.gallery_links = document.getElementById('input-gallery-links').value.split('\n').map(s => s.trim()).filter(s => s);
-                newConfig.left_gallery_links = document.getElementById('input-left-gallery-links').value.split('\n').map(s => s.trim()).filter(s => s);
+                // 4. Gallery (NOW USING GLOBAL ARRAYS)
+                newConfig.gallery_links = galleryMain;
+                newConfig.left_gallery_links = galleryLeft;
 
                 // 5. Hadith
                 newConfig.hadith = JSON.stringify({
@@ -645,18 +763,29 @@
             }
         }
 
+        // --- PREVIEW ---
+        function openPreview() {
+            const modal = document.getElementById('preview-modal');
+            const frame = document.getElementById('preview-frame');
+            // Assuming the board URL is /slug
+            frame.src = '/' + currentSlug;
+            modal.classList.remove('hidden');
+        }
+
         // --- FILE UPLOAD ---
-        async function uploadFile() {
-            const fileInput = document.getElementById('input-file');
+        async function handleFileUpload(input) {
+            const fileInput = input;
             if (fileInput.files.length === 0) return;
 
             const file = fileInput.files[0];
-            const btn = document.getElementById('btn-upload');
-            const status = document.getElementById('upload-status');
 
-            btn.innerText = "...";
-            btn.disabled = true;
-            status.innerText = "Yükleniyor...";
+            // SweetAlert Loading
+            Swal.fire({
+                title: 'Yükleniyor...',
+                text: 'Lütfen bekleyin.',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
 
             try {
                 const toBase64 = file => new Promise((resolve, reject) => {
@@ -680,19 +809,35 @@
 
                 const data = await res.json();
                 if (res.ok) {
-                    status.innerText = "Yüklendi!";
-                    status.classList.add('text-green-600');
-                    const glParams = document.getElementById('input-gallery-links');
-                    glParams.value = (glParams.value + '\n' + data.url).trim();
+                    Swal.close();
+
+                    // Ask where to add
+                    const { isConfirmed } = await Swal.fire({
+                        title: 'Yüklendi!',
+                        text: "Bu görseli hangi galeriye eklemek istersiniz?",
+                        icon: 'success',
+                        showDenyButton: true,
+                        confirmButtonText: 'Ana Galeri (Sağ)',
+                        denyButtonText: 'Sol Slider (Dikey)',
+                        confirmButtonColor: '#2563eb',
+                        denyButtonColor: '#9333ea'
+                    });
+
+                    if (isConfirmed) {
+                        galleryMain.push(data.url);
+                    } else {
+                        galleryLeft.push(data.url);
+                    }
+
+                    renderGalleries();
+
                 } else {
                     throw new Error(data.error);
                 }
             } catch (e) {
-                status.innerText = "Hata: " + e.message;
-                status.classList.add('text-red-500');
+                Swal.fire("Hata", e.message, "error");
             } finally {
-                btn.innerText = "Yükle";
-                btn.disabled = false;
+                fileInput.value = ''; // Reset input
             }
         }
     </script>
