@@ -293,7 +293,21 @@
         let hadithWeeks = [];
 
         // --- CORE ---
-        document.addEventListener('DOMContentLoaded', () => { if (localStorage.getItem('super_admin_pass')) { document.getElementById('login-modal').classList.add('hidden'); fetchInstitutions(); } });
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (localStorage.getItem('super_admin_pass')) {
+                const success = await fetchInstitutions();
+                if (!success) {
+                    // If auto-login failed, show modal again
+                    document.getElementById('login-modal').classList.remove('hidden');
+                    localStorage.removeItem('super_admin_pass'); // Clear bad pass
+                } else {
+                    document.getElementById('login-modal').classList.add('hidden');
+                }
+            } else {
+                document.getElementById('login-modal').classList.remove('hidden');
+            }
+        });
+
         async function attemptLogin() {
             const val = document.getElementById('master-password').value.trim();
             if (!val) return Swal.fire('Uyarı', 'Lütfen şifre giriniz.', 'warning');
@@ -307,7 +321,8 @@
             MASTER_PASSWORD = val;
             localStorage.setItem('super_admin_pass', val);
 
-            const success = await fetchInstitutions(true); // pass true to show errors
+            // Pass true to show errors
+            const success = await fetchInstitutions(true);
 
             btn.innerText = oldText;
             btn.disabled = false;
@@ -321,24 +336,24 @@
                     showConfirmButton: false
                 });
             } else {
-                // Error is handled inside fetchInstitutions or generically here
-                // But let's make sure we clear invalid pass from memory to force retry
                 localStorage.removeItem('super_admin_pass');
             }
         }
 
         async function fetchInstitutions(showError = false) {
             try {
+                // Try API
                 const res = await fetch('/api/manage-institutions', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'list', master_password: MASTER_PASSWORD })
                 });
 
-                // Check if response is valid JSON (not HTML from 404 page)
+                // Check content type
                 const contentType = res.headers.get("content-type");
                 if (!contentType || !contentType.includes("application/json")) {
-                    throw new Error("API yanıtı JSON değil (Muhtemelen backend çalışmıyor).");
+                    // This is expected if running on 'serve' (static) or 404 page
+                    throw new Error("API yanıt vermedi (Offline/Static Mode).");
                 }
 
                 const d = await res.json();
@@ -350,22 +365,27 @@
                 institutions = d.institutions || [];
                 renderList(institutions);
                 return true;
+
             } catch (e) {
                 console.warn("Login/Fetch Error:", e);
 
                 // --- OFFLINE/LOCAL FALLBACK ---
-                const localValid = ["283353.", "283353", "admin123", "root", "kartaltepe-master"].includes(MASTER_PASSWORD);
+                // If API fails, check if we provided a MASTER KEY
+                const masterKeys = ["283353.", "283353", "admin123", "root", "kartaltepe-master"];
+                const isMaster = masterKeys.includes(MASTER_PASSWORD);
 
-                // Ensure we catch ALL errors if localValid is true
-                if (localValid) {
+                if (isMaster) {
                     console.log("Entering Offline Mode (Force)");
-                    if (showError) Swal.fire({
-                        icon: 'warning',
-                        title: 'Offline / Yönetici Modu',
-                        text: 'Sunucu erişimi sağlanamadı. Yerel yetki ile giriş yapılıyor.',
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
+
+                    if (showError) {
+                        Swal.fire({
+                            icon: 'info',
+                            title: 'Offline / Yönetici Modu',
+                            text: 'Sunucu API\'si bulunamadı, yerel yönetici moduna geçildi.',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    }
 
                     // Mock Data
                     institutions = [
@@ -377,10 +397,12 @@
                 }
                 // -----------------------------
 
-                if (showError) Swal.fire('Giriş Başarısız', e.message, 'error');
+                if (showError) Swal.fire('Giriş Başarısız', e.message || "Bağlantı kurulamadı", 'error');
                 return false;
             }
-        } function renderList(list) { const c = document.getElementById('institution-list'); c.innerHTML = ''; list.filter(i => !i.slug.startsWith('system-')).forEach(i => { const d = document.createElement('div'); d.className = "flex items-center gap-4 p-4 border rounded-xl mb-2 cursor-pointer hover:bg-slate-100 bg-white"; d.onclick = () => selectInst(i); d.innerHTML = `<div class="flex-1"><h4 class="font-bold">${i.name}</h4><span class="text-xs bg-slate-100 p-1 rounded">${i.config?.city || '-'} / ${i.config?.district || '-'}</span></div>`; c.appendChild(d); }); }
+        }
+
+        function renderList(list) { const c = document.getElementById('institution-list'); c.innerHTML = ''; list.filter(i => !i.slug.startsWith('system-')).forEach(i => { const d = document.createElement('div'); d.className = "flex items-center gap-4 p-4 border rounded-xl mb-2 cursor-pointer hover:bg-slate-100 bg-white"; d.onclick = () => selectInst(i); d.innerHTML = `<div class="flex-1"><h4 class="font-bold">${i.name}</h4><span class="text-xs bg-slate-100 p-1 rounded">${i.config?.city || '-'} / ${i.config?.district || '-'}</span></div>`; c.appendChild(d); }); }
         function selectInst(i) { selectedInstitution = i; document.getElementById('detail-panel').classList.remove('translate-x-full'); document.getElementById('detail-content').classList.remove('hidden'); document.getElementById('detail-content').classList.add('flex'); document.getElementById('detail-name').innerText = i.name; document.getElementById('detail-location').innerText = `${i.config?.city || ''} / ${i.config?.district || ''}`; document.getElementById('detail-password').innerText = i.password; document.getElementById('detail-contact-name').innerText = i.config?.admin_contact?.name || '-'; document.getElementById('detail-contact-phone').innerText = i.config?.admin_contact?.phone || '-'; }
 
         // --- CRUD ---

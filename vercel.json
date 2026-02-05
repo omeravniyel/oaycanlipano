@@ -28,11 +28,11 @@
         },
         {
             "source": "/super-admin",
-            "destination": "/super-admin.html"
+            "destination": "/admin.html"
         },
         {
             "source": "/super-admin.html",
-            "destination": "/super-admin.html"
+            "destination": "/admin.html"
         },
         {
             "source": "/panel.html",

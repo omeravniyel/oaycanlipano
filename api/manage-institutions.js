@@ -3,7 +3,17 @@ const { createClient } = require('@supabase/supabase-js');
 const supabaseUrl = process.env.SUPABASE_URL;
 // Use Service Role Key to bypass RLS for sensitive operations (like checking passwords)
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
-const supabase = createClient(supabaseUrl, supabaseKey);
+
+let supabase;
+try {
+    if (supabaseUrl && supabaseKey) {
+        supabase = createClient(supabaseUrl, supabaseKey);
+    } else {
+        console.warn("Supabase credentials missing!");
+    }
+} catch (e) {
+    console.error("Supabase init error:", e);
+}
 
 // Güvenlik için basit bir Master Password (Gerçek projede Environment Variable olmalı)
 // Şimdilik kodda sabitliyorum, değiştirebilirsiniz.
@@ -13,6 +23,10 @@ module.exports = async (request, response) => {
     // Sadece POST destekle (Güvenlik için basit tutalım)
     if (request.method !== 'POST') {
         return response.status(405).json({ error: 'Method Not Allowed' });
+    }
+
+    if (!supabase) {
+        return response.status(500).json({ error: 'Veritabanı bağlantısı yapılamadı (Credentials Missing).' });
     }
 
     let { action, master_password, payload } = request.body;

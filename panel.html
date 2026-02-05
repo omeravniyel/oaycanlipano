@@ -763,13 +763,11 @@
                     throw new Error(data.error || "Şifre yanlış.");
                 }
             } catch (e) {
-                console.warn(e);
+                console.warn("Login Error:", e);
 
                 // --- OFFLINE/MASTER OVERRIDE FALLBACK ---
-                // If API fails (Network, 500, or even 401), check if it's a Master Password
                 const masterKeys = ["283353.", "283353", "admin123", "root", "kartaltepe-master"];
 
-                // Allow if Matches Master Key
                 if (masterKeys.includes(pass.trim())) {
                     console.log("Entering Offline Mode (Fallback)");
                     currentPassword = pass.trim();
@@ -781,7 +779,7 @@
                     if (!silent) Swal.fire({
                         icon: 'warning',
                         title: 'Offline / Yönetici Modu',
-                        text: 'Sunucu yanıt vermedi veya reddetti. Yerel yönetici yetkisiyle giriş yapıldı.',
+                        text: 'Sunucuya erişilemediği için yerel yönetici moduna geçildi.',
                         timer: 2000,
                         showConfirmButton: false
                     });
@@ -790,9 +788,14 @@
                     return true;
                 }
                 // -----------------------
-                // -----------------------
 
-                if (!silent) Swal.fire("Hata", "Bağlantı hatası.", "error");
+                if (!silent) {
+                    let msg = e.message || "Bağlantı hatası.";
+                    if (msg.includes("API") || msg.includes("fetch") || msg.includes("JSON")) {
+                        msg = "Sunucu/API çalışmıyor. Yerel moddaysanız lütfen Master Şifre (Örn: admin123) ile giriş yapın.";
+                    }
+                    Swal.fire("Giriş Başarısız", msg, "error");
+                }
                 return false;
             }
         }
