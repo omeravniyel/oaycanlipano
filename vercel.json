@@ -11,6 +11,14 @@
             "destination": "/api/$1"
         },
         {
+            "source": "/canli",
+            "destination": "/canli.html"
+        },
+        {
+            "source": "/yayin",
+            "destination": "/broadcast.html"
+        },
+        {
             "source": "/admin",
             "destination": "/admin.html"
         },

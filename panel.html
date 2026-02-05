@@ -163,6 +163,10 @@
                         class="hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-bold text-slate-600 bg-white border border-slate-200 rounded-lg hover:bg-slate-50 hover:text-blue-600 transition-colors">
                         <i class="fas fa-play-circle"></i> Canlı Önizleme
                     </button>
+                    <a href="broadcast.html" target="_blank"
+                        class="hidden sm:flex items-center gap-2 px-4 py-2 text-sm font-bold text-red-600 bg-red-50 border border-red-100 rounded-lg hover:bg-red-100 transition-colors">
+                        <i class="fas fa-broadcast-tower"></i> Yayın Başlat
+                    </a>
                     <button onclick="saveAll()" id="save-btn"
                         class="flex items-center gap-2 px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-lg shadow-blue-500/20 font-medium transition-all active:scale-95">
                         <i class="fas fa-save"></i> <span class="hidden sm:inline">Kaydet</span>
@@ -804,6 +808,7 @@
         // 1. Check Query Parameter (Priority for Local Dev / Direct Access)
         const urlParams = new URLSearchParams(window.location.search);
         let currentSlug = urlParams.get('slug');
+        window.currentSlug = currentSlug; // Make global for upload handler
 
         // 2. Check Path (Production / Rewrite Mode)
         if (!currentSlug) {
@@ -819,6 +824,7 @@
         if (!currentSlug) {
             currentSlug = 'test-lisesi';
         }
+        window.currentSlug = currentSlug; // Ensure global update
         let currentPassword = null;
         let currentConfig = {};
 
@@ -1158,377 +1164,383 @@
         }
 
         function populateForm(cfg) {
-            // General & Header
-            document.getElementById('input-institution-title').value = cfg.institution_title || cfg.name || "";
-            document.getElementById('input-institution-subtitle').value = cfg.institution_subtitle || "";
-            document.getElementById('input-institution-slogan1').value = cfg.institution_slogan1 || "";
-            document.getElementById('input-institution-slogan2').value = cfg.institution_slogan2 || "";
-            document.getElementById('input-marquee').value = cfg.marquee_text || "";
-
-            // Appearance & Countdown
-            document.getElementById('input-weather-active').checked = (cfg.weather_animation_active !== undefined) ? cfg.weather_animation_active : true;
-            document.getElementById('input-city').value = cfg.city || "";
-            document.getElementById('input-district').value = cfg.district || "";
-
-            document.getElementById('input-countdown-active').checked = cfg.countdown_active || false;
-            document.getElementById('input-countdown-event').value = cfg.countdown_event || "";
-            document.getElementById('input-countdown-date').value = cfg.countdown_date || "";
-
-            // Menu
-            let menu = [];
-            if (cfg.lunch_menu) {
-                // Prefer lunch_menu string from board
-                menu = cfg.lunch_menu.split('\n');
-            } else {
-                try { menu = (typeof cfg.menu === 'string') ? JSON.parse(cfg.menu) : (cfg.menu || []); } catch (e) { }
-            }
-            document.getElementById('input-menu-1').value = menu[0] || "";
-            document.getElementById('input-menu-2').value = menu[1] || "";
-            document.getElementById('input-menu-3').value = menu[2] || "";
-            document.getElementById('input-menu-4').value = menu[3] || "";
-            document.getElementById('input-dinner-menu').value = cfg.dinner_menu || "";
-
-            // Announcements
-            let ann = "";
             try {
-                const raw = cfg.announcements;
-                if (Array.isArray(raw)) ann = raw.join('\n');
-                else if (typeof raw === 'string' && raw.startsWith('[')) ann = JSON.parse(raw).join('\n');
-                else ann = raw || "";
-            } catch (e) { ann = ""; }
-            document.getElementById('input-announcement').value = ann;
+                if (!cfg) cfg = {};
+                // General & Header
+                document.getElementById('input-institution-title').value = cfg.institution_title || cfg.name || "";
+                document.getElementById('input-institution-subtitle').value = cfg.institution_subtitle || "";
+                document.getElementById('input-institution-slogan1').value = cfg.institution_slogan1 || "";
+                document.getElementById('input-institution-slogan2').value = cfg.institution_slogan2 || "";
+                document.getElementById('input-marquee').value = cfg.marquee_text || "";
 
-            // Video Playlist
-            let vidList = [];
-            try {
-                if (cfg.video_urls && Array.isArray(cfg.video_urls)) vidList = cfg.video_urls;
-                else if (cfg.video_url) vidList = [cfg.video_url];
-            } catch (e) { }
-            document.getElementById('input-video-playlist').value = vidList.join('\n');
+                // Appearance & Countdown
+                document.getElementById('input-weather-active').checked = (cfg.weather_animation_active !== undefined) ? cfg.weather_animation_active : true;
+                document.getElementById('input-city').value = cfg.city || "";
+                document.getElementById('input-district').value = cfg.district || "";
 
-            // Gallery Links (Modified for Visual Editor)
-            galleryMain = [];
-            try {
-                const rawG = cfg.gallery_links;
-                if (Array.isArray(rawG)) galleryMain = rawG;
-                else if (rawG && rawG.startsWith('[')) galleryMain = JSON.parse(rawG);
-            } catch (e) { }
+                document.getElementById('input-countdown-active').checked = cfg.countdown_active || false;
+                document.getElementById('input-countdown-event').value = cfg.countdown_event || "";
+                document.getElementById('input-countdown-date').value = cfg.countdown_date || "";
 
-            galleryLeft = [];
-            try {
-                const rawLG = cfg.left_gallery_links;
-                if (Array.isArray(rawLG)) galleryLeft = rawLG;
-                else if (rawLG && rawLG.startsWith('[')) galleryLeft = JSON.parse(rawLG);
-            } catch (e) { }
-
-            renderGalleries(); // Initial Render
-
-            // Hadith
-            let h = {};
-            try { h = (typeof cfg.hadith === 'string') ? JSON.parse(cfg.hadith) : (cfg.hadith || {}); } catch (e) { }
-            document.getElementById('input-hadith-text').value = h.text || "";
-            document.getElementById('input-hadith-arabic').value = h.arabic || "";
-            document.getElementById('input-hadith-week').value = h.week || "";
-
-            if (h.img) {
-                document.getElementById('input-hadith-image').value = h.img;
-                document.getElementById('preview-hadith-img').innerHTML = `<img src="${h.img}" class="w-full h-full object-cover">`;
-            } else {
-                document.getElementById('input-hadith-image').value = "";
-                document.getElementById('preview-hadith-img').innerHTML = '<i class="fas fa-image text-teal-300 text-2xl"></i>';
-            }
-
-            // Dorms (Support Legacy Flat Keys & New Object)
-            // Priority: Flat Keys (main.js standard) -> winning_dorms (admin backup) -> legacy dormX objects
-            let d = {};
-            try { d = (typeof cfg.winning_dorms === 'string') ? JSON.parse(cfg.winning_dorms) : (cfg.winning_dorms || {}); } catch (e) { }
-
-            // Dorm 1
-            const d1Name = cfg.dorm1_name || d.dorm1?.name || (cfg.dorm1?.name) || "";
-            const d1Count = cfg.dorm1_count || d.dorm1?.count || (cfg.dorm1?.count) || "";
-            let d1Students = [];
-            if (cfg.dorm1_names && Array.isArray(cfg.dorm1_names)) d1Students = cfg.dorm1_names;
-            else if (d.dorm1) d1Students = [d.dorm1.s1, d.dorm1.s2, d.dorm1.s3, d.dorm1.s4, d.dorm1.s5, d.dorm1.s6];
-            else if (cfg.dorm1) d1Students = [cfg.dorm1.s1, cfg.dorm1.s2, cfg.dorm1.s3, cfg.dorm1.s4, cfg.dorm1.s5, cfg.dorm1.s6];
-
-            document.getElementById('dorm1-name').value = d1Name;
-            document.getElementById('dorm1-count').value = d1Count;
-            document.getElementById('dorm1-students').value = d1Students.filter(x => x).join('\n');
-
-            // Dorm 2
-            const d2Name = cfg.dorm2_name || d.dorm2?.name || (cfg.dorm2?.name) || "";
-            const d2Count = cfg.dorm2_count || d.dorm2?.count || (cfg.dorm2?.count) || "";
-            let d2Students = [];
-            if (cfg.dorm2_names && Array.isArray(cfg.dorm2_names)) d2Students = cfg.dorm2_names;
-            else if (d.dorm2) d2Students = [d.dorm2.s1, d.dorm2.s2, d.dorm2.s3, d.dorm2.s4, d.dorm2.s5, d.dorm2.s6];
-            else if (cfg.dorm2) d2Students = [cfg.dorm2.s1, cfg.dorm2.s2, cfg.dorm2.s3, cfg.dorm2.s4, cfg.dorm2.s5, cfg.dorm2.s6];
-
-            document.getElementById('dorm2-name').value = d2Name;
-            document.getElementById('dorm2-count').value = d2Count;
-            document.getElementById('dorm2-students').value = d2Students.filter(x => x).join('\n');
-            document.getElementById('dorm2-active').checked = (cfg.dorm2_active !== undefined) ? cfg.dorm2_active : true;
-            document.getElementById('dorm2-active').checked = (cfg.dorm2_active !== undefined) ? cfg.dorm2_active : true;
-
-            // Dorm Main Title
-            document.getElementById('dorm-main-title').value = cfg.champions_title || cfg.dorm_main_title || "";
-
-            // Student of Week
-            const stu = cfg.student_of_week || {};
-            document.getElementById('input-student-name').value = stu.name || "";
-            document.getElementById('input-student-class').value = stu.class || "";
-            document.getElementById('input-student-message').value = stu.message || "";
-            if (stu.image) {
-                document.getElementById('input-student-image').value = stu.image;
-                document.getElementById('preview-student-img').innerHTML = `<img src="${stu.image}" class="w-full h-full object-cover">`;
-            }
-
-            // Improved List
-            let imp = [];
-            try { imp = (typeof cfg.most_improved_list === 'string') ? JSON.parse(cfg.most_improved_list) : (cfg.most_improved_list || []); } catch (e) { }
-            document.getElementById('input-improved-list').value = Array.isArray(imp) ? imp.join('\n') : "";
-
-            // Exam Winners
-            let winners = [];
-            try { winners = (typeof cfg.exam_winners === 'string') ? JSON.parse(cfg.exam_winners) : (cfg.exam_winners || []); } catch (e) { }
-            document.getElementById('input-exam-winners').value = Array.isArray(winners) ? winners.join('\n') : "";
-
-            // Emergency
-            const em = cfg.emergency_alert || {};
-            document.getElementById('input-emergency-active').checked = cfg.emergency_alert ? true : false;
-            document.getElementById('input-emergency-title').value = em.title || "";
-            document.getElementById('input-emergency-message').value = em.message || "";
-            if (em.style) {
-                const radio = document.querySelector(`input[name="emergency-style"][value="${em.style}"]`);
-                if (radio) radio.checked = true;
-            } else {
-                // If checking active but no style, default to false if object empty. 
-                // Wait, if cfg.emergency_alert is undefined, checked is false.
-                // If defined, checked is true.
-                // We should handle the case where we toggle it OFF. Logic in save will handle it.
-                if (!cfg.emergency_alert) document.getElementById('input-emergency-active').checked = false;
-            }
-
-            // --- SAVE DATA ---
-            async function saveAll() {
-                const btn = document.getElementById('save-btn');
-                const originalHTML = btn.innerHTML;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Kaydediliyor...';
-                btn.disabled = true;
-
-                try {
-                    const newConfig = { ...currentConfig };
-
-                    // 1. General & Header
-                    newConfig.institution_title = document.getElementById('input-institution-title').value;
-                    newConfig.institution_subtitle = document.getElementById('input-institution-subtitle').value;
-                    newConfig.institution_slogan1 = document.getElementById('input-institution-slogan1').value;
-                    newConfig.institution_slogan2 = document.getElementById('input-institution-slogan2').value;
-                    newConfig.marquee_text = document.getElementById('input-marquee').value;
-
-                    // 1.5 Appearance & Countdown
-                    newConfig.weather_animation_active = document.getElementById('input-weather-active').checked;
-                    newConfig.city = document.getElementById('input-city').value;
-                    newConfig.district = document.getElementById('input-district').value;
-
-                    newConfig.countdown_active = document.getElementById('input-countdown-active').checked;
-                    newConfig.countdown_event = document.getElementById('input-countdown-event').value;
-                    newConfig.countdown_date = document.getElementById('input-countdown-date').value;
-
-                    // Menu (Save as 'lunch_menu' string for main.js)
-                    const menuItems = [
-                        document.getElementById('input-menu-1').value,
-                        document.getElementById('input-menu-2').value,
-                        document.getElementById('input-menu-3').value,
-                        document.getElementById('input-menu-4').value
-                    ].filter(x => x.trim().length > 0);
-
-                    newConfig.lunch_menu = menuItems.join('\n');
-                    newConfig.menu = menuItems; // Keep array just in case
-
-                    newConfig.dinner_menu = document.getElementById('input-dinner-menu').value;
-
-                    // 2. Announcements
-                    newConfig.announcements = [document.getElementById('input-announcement').value];
-
-                    // 3. Video
-                    // 3. Video Playlist
-                    const vidRaw = document.getElementById('input-video-playlist').value;
-                    const vidList = vidRaw.split('\n').map(v => v.trim()).filter(v => v.length > 5);
-                    newConfig.video_urls = vidList;
-                    newConfig.video_url = vidList[0] || ""; // Fallback for legacy
-
-                    // 4. Gallery (NOW USING GLOBAL ARRAYS)
-                    newConfig.gallery_links = galleryMain;
-                    newConfig.left_gallery_links = galleryLeft;
-
-                    // 5. Hadith
-                    newConfig.hadith = JSON.stringify({
-                        text: document.getElementById('input-hadith-text').value,
-                        arabic: document.getElementById('input-hadith-arabic').value,
-                        week: document.getElementById('input-hadith-week').value,
-                        img: document.getElementById('input-hadith-image').value
-                    });
-
-                    // 6. Dorms (Save as Flat Keys for main.js)
-                    function getStudents(text) { return text.split('\n').map(s => s.trim()).filter(s => s); }
-
-                    newConfig.dorm1_name = document.getElementById('dorm1-name').value;
-                    newConfig.dorm1_count = document.getElementById('dorm1-count').value;
-                    newConfig.dorm1_names = getStudents(document.getElementById('dorm1-students').value);
-
-                    newConfig.dorm2_name = document.getElementById('dorm2-name').value;
-                    newConfig.dorm2_count = document.getElementById('dorm2-count').value;
-                    newConfig.dorm2_names = getStudents(document.getElementById('dorm2-students').value);
-                    newConfig.dorm2_active = document.getElementById('dorm2-active').checked;
-
-                    // Also save to winning_dorms for completeness/legacy, though board uses flat keys
-                    // We can construct the legacy object just to be safe
-                    function parseStudentsObj(text) {
-                        const lines = getStudents(text);
-                        return { s1: lines[0] || "", s2: lines[1] || "", s3: lines[2] || "", s4: lines[3] || "", s5: lines[4] || "", s6: lines[5] || "" };
-                    }
-                    newConfig.winning_dorms = JSON.stringify({
-                        dorm1: { name: newConfig.dorm1_name, count: newConfig.dorm1_count, ...parseStudentsObj(document.getElementById('dorm1-students').value) },
-                        dorm2: { name: newConfig.dorm2_name, count: newConfig.dorm2_count, ...parseStudentsObj(document.getElementById('dorm2-students').value) }
-                    });
-                    newConfig.dorm2_active = document.getElementById('dorm2-active').checked;
-
-                    newConfig.champions_title = document.getElementById('dorm-main-title').value;
-
-                    // Success
-                    newConfig.student_of_week = JSON.stringify({
-                        name: document.getElementById('input-student-name').value,
-                        class: document.getElementById('input-student-class').value,
-                        message: document.getElementById('input-student-message').value,
-                        image: document.getElementById('input-student-image').value
-                    });
-
-                    newConfig.most_improved_list = JSON.stringify(
-                        document.getElementById('input-improved-list').value.split('\n').filter(line => line.trim() !== "")
-                    );
-
-                    newConfig.exam_winners = JSON.stringify(
-                        document.getElementById('input-exam-winners').value.split('\n').filter(line => line.trim() !== "")
-                    );
-
-                    // Emergency
-                    if (document.getElementById('input-emergency-active').checked) {
-                        newConfig.emergency_alert = JSON.stringify({
-                            title: document.getElementById('input-emergency-title').value,
-                            message: document.getElementById('input-emergency-message').value,
-                            style: document.querySelector('input[name="emergency-style"]:checked').value
-                        });
-                    } else {
-                        newConfig.emergency_alert = null; // Turn off
-                    }
-
-                    const res = await fetch('/api/save-config', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            slug: currentSlug,
-                            password: currentPassword,
-                            config: newConfig
-                        })
-                    });
-
-                    if (res.ok) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'Başarılı',
-                            text: 'Ayarlar güncellendi!',
-                            timer: 1500,
-                            showConfirmButton: false
-                        });
-                    } else {
-                        const d = await res.json();
-                        throw new Error(d.error || "Sunucu hatası");
-                    }
-                } catch (e) {
-                    Swal.fire("Hata", e.message, "error");
-                } finally {
-                    btn.innerHTML = originalHTML;
-                    btn.disabled = false;
+                // Menu
+                let menu = [];
+                if (cfg.lunch_menu) {
+                    // Prefer lunch_menu string from board
+                    menu = cfg.lunch_menu.split('\n');
+                } else {
+                    try { menu = (typeof cfg.menu === 'string') ? JSON.parse(cfg.menu) : (cfg.menu || []); } catch (e) { }
                 }
-            }
+                document.getElementById('input-menu-1').value = menu[0] || "";
+                document.getElementById('input-menu-2').value = menu[1] || "";
+                document.getElementById('input-menu-3').value = menu[2] || "";
+                document.getElementById('input-menu-4').value = menu[3] || "";
+                document.getElementById('input-dinner-menu').value = cfg.dinner_menu || "";
 
-            // --- PREVIEW ---
-            function openPreview() {
-                const modal = document.getElementById('preview-modal');
-                const frame = document.getElementById('preview-frame');
-                // Assuming the board URL is /slug
-                frame.src = '/' + currentSlug;
-                modal.classList.remove('hidden');
-            }
-
-            // --- FILE UPLOAD ---
-            async function handleFileUpload(input) {
-                const fileInput = input;
-                if (fileInput.files.length === 0) return;
-
-                const file = fileInput.files[0];
-
-                // SweetAlert Loading
-                Swal.fire({
-                    title: 'Yükleniyor...',
-                    text: 'Lütfen bekleyin.',
-                    allowOutsideClick: false,
-                    didOpen: () => { Swal.showLoading(); }
-                });
-
+                // Announcements
+                let ann = "";
                 try {
-                    const toBase64 = file => new Promise((resolve, reject) => {
-                        const reader = new FileReader();
-                        reader.readAsDataURL(file);
-                        reader.onload = () => resolve(reader.result.split(',')[1]);
-                        reader.onerror = error => reject(error);
-                    });
+                    const raw = cfg.announcements;
+                    if (Array.isArray(raw)) ann = raw.join('\n');
+                    else if (typeof raw === 'string' && raw.startsWith('[')) ann = JSON.parse(raw).join('\n');
+                    else ann = raw || "";
+                } catch (e) { ann = ""; }
+                document.getElementById('input-announcement').value = ann;
 
-                    const base64 = await toBase64(file);
-                    const res = await fetch('/api/upload', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            filename: file.name,
-                            fileBase64: base64,
-                            contentType: file.type,
-                            slug: currentSlug
-                        })
-                    });
+                // Video Playlist
+                let vidList = [];
+                try {
+                    if (cfg.video_urls && Array.isArray(cfg.video_urls)) vidList = cfg.video_urls;
+                    else if (cfg.video_url) vidList = [cfg.video_url];
+                } catch (e) { }
+                document.getElementById('input-video-playlist').value = vidList.join('\n');
 
-                    const data = await res.json();
-                    if (res.ok) {
-                        Swal.close();
+                // Gallery Links (Modified for Visual Editor)
+                galleryMain = [];
+                try {
+                    const rawG = cfg.gallery_links;
+                    if (Array.isArray(rawG)) galleryMain = rawG;
+                    else if (rawG && rawG.startsWith('[')) galleryMain = JSON.parse(rawG);
+                } catch (e) { }
 
-                        // Ask where to add
-                        const { isConfirmed } = await Swal.fire({
-                            title: 'Yüklendi!',
-                            text: "Bu görseli hangi galeriye eklemek istersiniz?",
-                            icon: 'success',
-                            showDenyButton: true,
-                            confirmButtonText: 'Ana Galeri (Sağ)',
-                            denyButtonText: 'Sol Slider (Dikey)',
-                            confirmButtonColor: '#2563eb',
-                            denyButtonColor: '#9333ea'
+                galleryLeft = [];
+                try {
+                    const rawLG = cfg.left_gallery_links;
+                    if (Array.isArray(rawLG)) galleryLeft = rawLG;
+                    else if (rawLG && rawLG.startsWith('[')) galleryLeft = JSON.parse(rawLG);
+                } catch (e) { }
+
+                renderGalleries(); // Initial Render
+
+                // Hadith
+                let h = {};
+                try { h = (typeof cfg.hadith === 'string') ? JSON.parse(cfg.hadith) : (cfg.hadith || {}); } catch (e) { }
+                document.getElementById('input-hadith-text').value = h.text || "";
+                document.getElementById('input-hadith-arabic').value = h.arabic || "";
+                document.getElementById('input-hadith-week').value = h.week || "";
+
+                if (h.img) {
+                    document.getElementById('input-hadith-image').value = h.img;
+                    document.getElementById('preview-hadith-img').innerHTML = `<img src="${h.img}" class="w-full h-full object-cover">`;
+                } else {
+                    document.getElementById('input-hadith-image').value = "";
+                    document.getElementById('preview-hadith-img').innerHTML = '<i class="fas fa-image text-teal-300 text-2xl"></i>';
+                }
+
+                // Dorms (Support Legacy Flat Keys & New Object)
+                // Priority: Flat Keys (main.js standard) -> winning_dorms (admin backup) -> legacy dormX objects
+                let d = {};
+                try { d = (typeof cfg.winning_dorms === 'string') ? JSON.parse(cfg.winning_dorms) : (cfg.winning_dorms || {}); } catch (e) { }
+
+                // Dorm 1
+                const d1Name = cfg.dorm1_name || d.dorm1?.name || (cfg.dorm1?.name) || "";
+                const d1Count = cfg.dorm1_count || d.dorm1?.count || (cfg.dorm1?.count) || "";
+                let d1Students = [];
+                if (cfg.dorm1_names && Array.isArray(cfg.dorm1_names)) d1Students = cfg.dorm1_names;
+                else if (d.dorm1) d1Students = [d.dorm1.s1, d.dorm1.s2, d.dorm1.s3, d.dorm1.s4, d.dorm1.s5, d.dorm1.s6];
+                else if (cfg.dorm1) d1Students = [cfg.dorm1.s1, cfg.dorm1.s2, cfg.dorm1.s3, cfg.dorm1.s4, cfg.dorm1.s5, cfg.dorm1.s6];
+
+                document.getElementById('dorm1-name').value = d1Name;
+                document.getElementById('dorm1-count').value = d1Count;
+                document.getElementById('dorm1-students').value = d1Students.filter(x => x).join('\n');
+
+                // Dorm 2
+                const d2Name = cfg.dorm2_name || d.dorm2?.name || (cfg.dorm2?.name) || "";
+                const d2Count = cfg.dorm2_count || d.dorm2?.count || (cfg.dorm2?.count) || "";
+                let d2Students = [];
+                if (cfg.dorm2_names && Array.isArray(cfg.dorm2_names)) d2Students = cfg.dorm2_names;
+                else if (d.dorm2) d2Students = [d.dorm2.s1, d.dorm2.s2, d.dorm2.s3, d.dorm2.s4, d.dorm2.s5, d.dorm2.s6];
+                else if (cfg.dorm2) d2Students = [cfg.dorm2.s1, cfg.dorm2.s2, cfg.dorm2.s3, cfg.dorm2.s4, cfg.dorm2.s5, cfg.dorm2.s6];
+
+                document.getElementById('dorm2-name').value = d2Name;
+                document.getElementById('dorm2-count').value = d2Count;
+                document.getElementById('dorm2-students').value = d2Students.filter(x => x).join('\n');
+                document.getElementById('dorm2-active').checked = (cfg.dorm2_active !== undefined) ? cfg.dorm2_active : true;
+
+                // Dorm Main Title
+                document.getElementById('dorm-main-title').value = cfg.champions_title || cfg.dorm_main_title || "";
+
+                // Student of Week
+                const stu = cfg.student_of_week || {};
+                document.getElementById('input-student-name').value = stu.name || "";
+                document.getElementById('input-student-class').value = stu.class || "";
+                document.getElementById('input-student-message').value = stu.message || "";
+                if (stu.image) {
+                    document.getElementById('input-student-image').value = stu.image;
+                    document.getElementById('preview-student-img').innerHTML = `<img src="${stu.image}" class="w-full h-full object-cover">`;
+                }
+
+                // Improved List
+                let imp = [];
+                try { imp = (typeof cfg.most_improved_list === 'string') ? JSON.parse(cfg.most_improved_list) : (cfg.most_improved_list || []); } catch (e) { }
+                document.getElementById('input-improved-list').value = Array.isArray(imp) ? imp.join('\n') : "";
+
+                // Exam Winners
+                let winners = [];
+                try { winners = (typeof cfg.exam_winners === 'string') ? JSON.parse(cfg.exam_winners) : (cfg.exam_winners || []); } catch (e) { }
+                document.getElementById('input-exam-winners').value = Array.isArray(winners) ? winners.join('\n') : "";
+
+                // Emergency
+                const em = cfg.emergency_alert || {};
+                document.getElementById('input-emergency-active').checked = cfg.emergency_alert ? true : false;
+                document.getElementById('input-emergency-title').value = em.title || "";
+                document.getElementById('input-emergency-message').value = em.message || "";
+                if (em.style) {
+                    const radio = document.querySelector(`input[name="emergency-style"][value="${em.style}"]`);
+                    if (radio) radio.checked = true;
+                } else {
+                    // If checking active but no style, default to false if object empty. 
+                    // Wait, if cfg.emergency_alert is undefined, checked is false.
+                    // If defined, checked is true.
+                    // We should handle the case where we toggle it OFF. Logic in save will handle it.
+                    if (!cfg.emergency_alert) document.getElementById('input-emergency-active').checked = false;
+                }
+
+                // --- SAVE DATA ---
+                async function saveAll() {
+                    const btn = document.getElementById('save-btn');
+                    const originalHTML = btn.innerHTML;
+                    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Kaydediliyor...';
+                    btn.disabled = true;
+
+                    try {
+                        const newConfig = { ...currentConfig };
+
+                        // 1. General & Header
+                        newConfig.institution_title = document.getElementById('input-institution-title').value;
+                        newConfig.institution_subtitle = document.getElementById('input-institution-subtitle').value;
+                        newConfig.institution_slogan1 = document.getElementById('input-institution-slogan1').value;
+                        newConfig.institution_slogan2 = document.getElementById('input-institution-slogan2').value;
+                        newConfig.marquee_text = document.getElementById('input-marquee').value;
+
+                        // 1.5 Appearance & Countdown
+                        newConfig.weather_animation_active = document.getElementById('input-weather-active').checked;
+                        newConfig.city = document.getElementById('input-city').value;
+                        newConfig.district = document.getElementById('input-district').value;
+
+                        newConfig.countdown_active = document.getElementById('input-countdown-active').checked;
+                        newConfig.countdown_event = document.getElementById('input-countdown-event').value;
+                        newConfig.countdown_date = document.getElementById('input-countdown-date').value;
+
+                        // Menu (Save as 'lunch_menu' string for main.js)
+                        const menuItems = [
+                            document.getElementById('input-menu-1').value,
+                            document.getElementById('input-menu-2').value,
+                            document.getElementById('input-menu-3').value,
+                            document.getElementById('input-menu-4').value
+                        ].filter(x => x.trim().length > 0);
+
+                        newConfig.lunch_menu = menuItems.join('\n');
+                        newConfig.menu = menuItems; // Keep array just in case
+
+                        newConfig.dinner_menu = document.getElementById('input-dinner-menu').value;
+
+                        // 2. Announcements
+                        newConfig.announcements = [document.getElementById('input-announcement').value];
+
+                        // 3. Video
+                        // 3. Video Playlist
+                        const vidRaw = document.getElementById('input-video-playlist').value;
+                        const vidList = vidRaw.split('\n').map(v => v.trim()).filter(v => v.length > 5);
+                        newConfig.video_urls = vidList;
+                        newConfig.video_url = vidList[0] || ""; // Fallback for legacy
+
+                        // 4. Gallery (NOW USING GLOBAL ARRAYS)
+                        newConfig.gallery_links = galleryMain;
+                        newConfig.left_gallery_links = galleryLeft;
+
+                        // 5. Hadith
+                        newConfig.hadith = JSON.stringify({
+                            text: document.getElementById('input-hadith-text').value,
+                            arabic: document.getElementById('input-hadith-arabic').value,
+                            week: document.getElementById('input-hadith-week').value,
+                            img: document.getElementById('input-hadith-image').value
                         });
 
-                        if (isConfirmed) {
-                            galleryMain.push(data.url);
+                        // 6. Dorms (Save as Flat Keys for main.js)
+                        function getStudents(text) { return text.split('\n').map(s => s.trim()).filter(s => s); }
+
+                        newConfig.dorm1_name = document.getElementById('dorm1-name').value;
+                        newConfig.dorm1_count = document.getElementById('dorm1-count').value;
+                        newConfig.dorm1_names = getStudents(document.getElementById('dorm1-students').value);
+
+                        newConfig.dorm2_name = document.getElementById('dorm2-name').value;
+                        newConfig.dorm2_count = document.getElementById('dorm2-count').value;
+                        newConfig.dorm2_names = getStudents(document.getElementById('dorm2-students').value);
+                        newConfig.dorm2_active = document.getElementById('dorm2-active').checked;
+
+                        // Also save to winning_dorms for completeness/legacy, though board uses flat keys
+                        // We can construct the legacy object just to be safe
+                        function parseStudentsObj(text) {
+                            const lines = getStudents(text);
+                            return { s1: lines[0] || "", s2: lines[1] || "", s3: lines[2] || "", s4: lines[3] || "", s5: lines[4] || "", s6: lines[5] || "" };
+                        }
+                        newConfig.winning_dorms = JSON.stringify({
+                            dorm1: { name: newConfig.dorm1_name, count: newConfig.dorm1_count, ...parseStudentsObj(document.getElementById('dorm1-students').value) },
+                            dorm2: { name: newConfig.dorm2_name, count: newConfig.dorm2_count, ...parseStudentsObj(document.getElementById('dorm2-students').value) }
+                        });
+                        newConfig.dorm2_active = document.getElementById('dorm2-active').checked;
+
+                        newConfig.champions_title = document.getElementById('dorm-main-title').value;
+
+                        // Success
+                        newConfig.student_of_week = JSON.stringify({
+                            name: document.getElementById('input-student-name').value,
+                            class: document.getElementById('input-student-class').value,
+                            message: document.getElementById('input-student-message').value,
+                            image: document.getElementById('input-student-image').value
+                        });
+
+                        newConfig.most_improved_list = JSON.stringify(
+                            document.getElementById('input-improved-list').value.split('\n').filter(line => line.trim() !== "")
+                        );
+
+                        newConfig.exam_winners = JSON.stringify(
+                            document.getElementById('input-exam-winners').value.split('\n').filter(line => line.trim() !== "")
+                        );
+
+                        // Emergency
+                        if (document.getElementById('input-emergency-active').checked) {
+                            newConfig.emergency_alert = JSON.stringify({
+                                title: document.getElementById('input-emergency-title').value,
+                                message: document.getElementById('input-emergency-message').value,
+                                style: document.querySelector('input[name="emergency-style"]:checked').value
+                            });
                         } else {
-                            galleryLeft.push(data.url);
+                            newConfig.emergency_alert = null; // Turn off
                         }
 
-                        renderGalleries();
+                        const res = await fetch('/api/save-config', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                slug: currentSlug,
+                                password: currentPassword,
+                                config: newConfig
+                            })
+                        });
 
-                    } else {
-                        throw new Error(data.error);
+                        if (res.ok) {
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Başarılı',
+                                text: 'Ayarlar güncellendi!',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                        } else {
+                            const d = await res.json();
+                            throw new Error(d.error || "Sunucu hatası");
+                        }
+                    } catch (e) {
+                        Swal.fire("Hata", e.message, "error");
+                    } finally {
+                        btn.innerHTML = originalHTML;
+                        btn.disabled = false;
                     }
-                } catch (e) {
-                    Swal.fire("Hata", e.message, "error");
-                } finally {
-                    fileInput.value = ''; // Reset input
                 }
+
+                // --- PREVIEW ---
+                function openPreview() {
+                    const modal = document.getElementById('preview-modal');
+                    const frame = document.getElementById('preview-frame');
+                    // Assuming the board URL is /slug
+                    frame.src = '/' + currentSlug;
+                    modal.classList.remove('hidden');
+                }
+
+                // --- FILE UPLOAD ---
+                async function handleFileUpload(input) {
+                    const fileInput = input;
+                    if (fileInput.files.length === 0) return;
+
+                    const file = fileInput.files[0];
+
+                    // SweetAlert Loading
+                    Swal.fire({
+                        title: 'Yükleniyor...',
+                        text: 'Lütfen bekleyin.',
+                        allowOutsideClick: false,
+                        didOpen: () => { Swal.showLoading(); }
+                    });
+
+                    try {
+                        const toBase64 = file => new Promise((resolve, reject) => {
+                            const reader = new FileReader();
+                            reader.readAsDataURL(file);
+                            reader.onload = () => resolve(reader.result.split(',')[1]);
+                            reader.onerror = error => reject(error);
+                        });
+
+                        const base64 = await toBase64(file);
+                        const res = await fetch('/api/upload', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                filename: file.name,
+                                fileBase64: base64,
+                                contentType: file.type,
+                                slug: currentSlug
+                            })
+                        });
+
+                        const data = await res.json();
+                        if (res.ok) {
+                            Swal.close();
+
+                            // Ask where to add
+                            const { isConfirmed } = await Swal.fire({
+                                title: 'Yüklendi!',
+                                text: "Bu görseli hangi galeriye eklemek istersiniz?",
+                                icon: 'success',
+                                showDenyButton: true,
+                                confirmButtonText: 'Ana Galeri (Sağ)',
+                                denyButtonText: 'Sol Slider (Dikey)',
+                                confirmButtonColor: '#2563eb',
+                                denyButtonColor: '#9333ea'
+                            });
+
+                            if (isConfirmed) {
+                                galleryMain.push(data.url);
+                            } else {
+                                galleryLeft.push(data.url);
+                            }
+
+                            renderGalleries();
+
+                        } else {
+                            throw new Error(data.error);
+                        }
+                    } catch (e) {
+                        Swal.fire("Hata", e.message, "error");
+                    } finally {
+                        fileInput.value = ''; // Reset input
+                    }
+                }
+            } catch (err) {
+                console.error("Populate Form Error:", err);
+                Swal.fire("Kritik Hata", "Form doldurulurken hata oluştu: " + err.message, "error");
             }
+        }
     </script>
 </body>
 

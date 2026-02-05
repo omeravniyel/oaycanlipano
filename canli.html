@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="tr" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kartaltepe Pano - Canlı Yayın</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- PeerJS -->
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        dark: {
+                            DEFAULT: '#0f172a',
+                            surface: '#1e293b'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 5px solid #FFF;
+            border-bottom-color: transparent;
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+
+        @keyframes rotation {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-black text-white h-screen overflow-hidden flex flex-col justify-center items-center">
+
+    <!-- Video Container -->
+    <div class="relative w-full h-full flex items-center justify-center">
+
+        <!-- Video Element -->
+        <video id="remote-video" class="w-full h-full object-contain" autoplay playsinline controls></video>
+
+        <!-- Loading / Status Overlay -->
+        <div id="status-overlay"
+            class="absolute inset-0 z-20 bg-slate-900 flex flex-col items-center justify-center transition-opacity duration-500">
+            <div class="loader mb-6"></div>
+            <h2 class="text-2xl font-bold mb-2 animate-pulse" id="status-title">Canlı Yayın Aranıyor...</h2>
+            <p class="text-slate-400" id="status-desc">Lütfen bekleyin, yayına bağlanılıyor.</p>
+            <button onclick="location.reload()"
+                class="mt-8 px-6 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-sm border border-slate-700 transition hidden"
+                id="reload-btn">
+                Yeniden Dene
+            </button>
+        </div>
+
+        <!-- Live Badge (Top Left) -->
+        <div id="live-badge" class="absolute top-6 left-6 z-10 hidden">
+            <div
+                class="bg-red-600 text-white text-sm font-bold px-4 py-1.5 rounded-full flex items-center gap-2 shadow-lg animate-pulse">
+                <span class="w-2.5 h-2.5 bg-white rounded-full"></span> CANLI
+            </div>
+        </div>
+
+    </div>
+
+    <!-- CONNECTION LOGIC -->
+    <script>
+        // Must match the broadcaster ID
+        const TARGET_PEER_ID = 'kartaltepe-pano-live-v1';
+
+        let peer;
+        let conn;
+
+        const videoEl = document.getElementById('remote-video');
+        const overlay = document.getElementById('status-overlay');
+        const statusTitle = document.getElementById('status-title');
+        const statusDesc = document.getElementById('status-desc');
+        const liveBadge = document.getElementById('live-badge');
+        const reloadBtn = document.getElementById('reload-btn');
+
+        function initViewer() {
+            // Join as a new peer (random ID is fine for viewer)
+            peer = new Peer(null, {
+                debug: 1
+            });
+
+            peer.on('open', (id) => {
+                console.log('Viewer ID:', id);
+                connectToBroadcast();
+            });
+
+            peer.on('error', (err) => {
+                console.error("Peer Error:", err);
+                showError("Bağlantı Hatası", "Sunucu ile bağlantı kurulamadı.");
+            });
+        }
+
+        function connectToBroadcast() {
+            console.log("Calling broadcaster:", TARGET_PEER_ID);
+
+            // Initiate a call to the broadcaster
+            const call = peer.call(TARGET_PEER_ID, null); // We send no stream
+
+            if (!call) {
+                // If call is null immediately, maybe peer issues?
+                setTimeout(connectToBroadcast, 3000); // Retry
+                return;
+            }
+
+            call.on('stream', (remoteStream) => {
+                console.log("Stream received!");
+                videoEl.srcObject = remoteStream;
+                videoEl.play().catch(e => console.log("Autoplay blocked, user interaction needed:", e));
+
+                // UI Updates
+                overlay.classList.add('opacity-0', 'pointer-events-none');
+                liveBadge.classList.remove('hidden');
+            });
+
+            call.on('close', () => {
+                console.log("Stream closed");
+                showError("Yayın Sona Erdi", "Yayıncı bağlantıyı kesti.");
+            });
+
+            call.on('error', (err) => {
+                console.error("Call Error:", err);
+                // Retry logic?
+                setTimeout(connectToBroadcast, 5000);
+            });
+
+            // Also try to open a data connection to check if peer is alive? 
+            // PeerJS "call" might fail silently if peer is not online.
+            // A common pattern is to retry 'call' every few seconds until stream is received.
+            const retryInterval = setInterval(() => {
+                if (videoEl.srcObject) {
+                    clearInterval(retryInterval);
+                } else {
+                    console.log("Retrying connection...");
+                    const retryCall = peer.call(TARGET_PEER_ID, null);
+                    if (retryCall) {
+                        retryCall.on('stream', (s) => {
+                            clearInterval(retryInterval);
+                            videoEl.srcObject = s;
+                            videoEl.play();
+                            overlay.classList.add('opacity-0', 'pointer-events-none');
+                            liveBadge.classList.remove('hidden');
+                        });
+                    }
+                }
+            }, 3000);
+        }
+
+        function showError(title, desc) {
+            statusTitle.innerText = title;
+            statusTitle.classList.remove('animate-pulse');
+            statusTitle.classList.add('text-red-500');
+            statusDesc.innerText = desc;
+            reloadBtn.classList.remove('hidden');
+            overlay.classList.remove('opacity-0', 'pointer-events-none');
+            liveBadge.classList.add('hidden');
+        }
+
+        window.addEventListener('load', initViewer);
+
+    </script>
+</body>
+
+</html>

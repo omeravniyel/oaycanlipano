@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="tr" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kartaltepe Pano - Canlı Yayın Merkezi</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <!-- PeerJS -->
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: { 500: '#3b82f6', 600: '#2563eb' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .pulse-ring {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+
+        @keyframes pulse-ring {
+            0% {
+                transform: scale(0.9);
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+            }
+
+            70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 20px rgba(239, 68, 68, 0);
+            }
+
+            100% {
+                transform: scale(0.9);
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-slate-900 text-white h-screen flex flex-col overflow-hidden selection:bg-red-500 selection:text-white">
+
+    <!-- HEADER -->
+    <header class="h-16 flex items-center justify-between px-6 border-b border-white/10 glass-panel z-20">
+        <div class="flex items-center gap-3">
+            <div class="w-8 h-8 rounded bg-red-600 flex items-center justify-center animate-pulse">
+                <i class="fas fa-broadcast-tower"></i>
+            </div>
+            <h1 class="font-bold text-lg tracking-wide">CANLI YAYIN MERKEZİ</h1>
+        </div>
+        <div class="flex items-center gap-4">
+            <div id="status-badge"
+                class="px-3 py-1 rounded-full bg-slate-700 text-slate-300 text-xs font-mono font-bold flex items-center gap-2">
+                <div class="w-2 h-2 rounded-full bg-slate-500"></div> Çevrimdışı
+            </div>
+            <div class="text-xs text-slate-400 font-mono hidden md:block">
+                ID: <span id="my-peer-id" class="text-white select-all">---</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 relative flex items-center justify-center p-4">
+
+        <!-- Video Container -->
+        <div
+            class="relative w-full max-w-5xl aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl border border-white/10 group">
+            <!-- Placeholder / No Signal -->
+            <div id="no-signal" class="absolute inset-0 flex flex-col items-center justify-center text-slate-600 z-0">
+                <i class="fas fa-video-slash text-6xl mb-4"></i>
+                <p class="text-lg font-medium">Kamera veya Ekran Paylaşımı Başlatılmadı</p>
+                <div class="mt-8 flex gap-4">
+                    <button onclick="startCamera()"
+                        class="px-6 py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold transition flex items-center gap-2">
+                        <i class="fas fa-camera"></i> Kamera Aç
+                    </button>
+                    <button onclick="startScreen()"
+                        class="px-6 py-3 rounded-xl bg-purple-600 hover:bg-purple-500 text-white font-bold transition flex items-center gap-2">
+                        <i class="fas fa-desktop"></i> Ekran Paylaş (Zoom)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Preview Video Element -->
+            <video id="local-video" class="w-full h-full object-contain hidden z-10" autoplay muted playsinline></video>
+
+            <!-- Overlay Controls (Bottom) -->
+            <div id="active-controls"
+                class="absolute bottom-0 left-0 w-full p-6 bg-gradient-to-t from-black/90 to-transparent flex items-end justify-between opacity-0 group-hover:opacity-100 transition-opacity z-20 pointer-events-none">
+                <div class="pointer-events-auto flex items-center gap-3">
+                    <div
+                        class="bg-red-600 text-white text-xs font-bold px-3 py-1 rounded-md animate-pulse flex items-center gap-2">
+                        <span class="w-2 h-2 bg-white rounded-full"></span> CANLI
+                    </div>
+                    <span class="text-sm font-mono text-slate-300"><i class="fas fa-eye mr-1"></i> <span
+                            id="viewer-count">0</span> İzleyici</span>
+                </div>
+
+                <div class="pointer-events-auto flex gap-3">
+                    <button onclick="toggleMute()" id="btn-mute"
+                        class="w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur text-white flex items-center justify-center transition border border-white/10"
+                        title="Sesi Kapat">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                    <button onclick="stopBroadcast()"
+                        class="px-6 h-12 rounded-full bg-red-600 hover:bg-red-700 text-white font-bold transition shadow-lg shadow-red-600/20 flex items-center gap-2">
+                        <i class="fas fa-stop"></i> Yayını Durdur
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- LOGIC -->
+    <script>
+        // CONFIG
+        // We try to use a deterministic ID to make it easy for viewers
+        const STATIC_PEER_ID = 'kartaltepe-pano-live-v1';
+
+        let peer;
+        let localStream;
+        let connections = [];
+
+        // UI REF
+        const videoEl = document.getElementById('local-video');
+        const noSignalEl = document.getElementById('no-signal');
+        const activeControlsEl = document.getElementById('active-controls');
+        const statusBadge = document.getElementById('status-badge');
+        const viewerCountEl = document.getElementById('viewer-count');
+        const peerIdDisplay = document.getElementById('my-peer-id');
+
+        // --- INIT PEER ---
+        function initPeer() {
+            // Using public PeerJS server
+            peer = new Peer(STATIC_PEER_ID, {
+                debug: 2
+            });
+
+            peer.on('open', (id) => {
+                console.log('My peer ID is: ' + id);
+                peerIdDisplay.innerText = id;
+                updateStatus('ready');
+            });
+
+            peer.on('error', (err) => {
+                console.error('Peer error:', err);
+                if (err.type === 'unavailable-id') {
+                    // ID taken, maybe retry with random?
+                    // For now, let's just alert user or fallback
+                    alert("Uyarı: 'kartaltepe-pano-live-v1' ID'si kullanımda. Lütfen diğer sekmeleri kapatın veya sayfayı yenileyin.");
+                    updateStatus('error');
+                } else {
+                    updateStatus('error');
+                }
+            });
+
+            peer.on('connection', (conn) => {
+                console.log('New connection from', conn.peer);
+                // Data connection logic if needed
+            });
+
+            // Handle incoming calls (Viewers asking for stream)
+            peer.on('call', (call) => {
+                console.log('Incoming call from viewer:', call.peer);
+                if (localStream) {
+                    call.answer(localStream); // Answer with our stream
+                    handleCall(call);
+                } else {
+                    console.warn('No local stream to answer with');
+                }
+            });
+        }
+
+        function handleCall(call) {
+            connections.push(call);
+            updateViewerCount();
+
+            call.on('close', () => {
+                connections = connections.filter(c => c !== call);
+                updateViewerCount();
+            });
+
+            call.on('error', (err) => {
+                console.error('Call error', err);
+                connections = connections.filter(c => c !== call);
+                updateViewerCount();
+            });
+        }
+
+        function updateViewerCount() {
+            viewerCountEl.innerText = connections.length;
+        }
+
+        function updateStatus(state) {
+            if (state === 'ready') {
+                statusBadge.className = "px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 text-xs font-mono font-bold flex items-center gap-2 border border-blue-500/30";
+                statusBadge.innerHTML = '<div class="w-2 h-2 rounded-full bg-blue-500"></div> Hazır';
+            } else if (state === 'live') {
+                statusBadge.className = "px-3 py-1 rounded-full bg-red-500/20 text-red-300 text-xs font-mono font-bold flex items-center gap-2 border border-red-500/30 animate-pulse";
+                statusBadge.innerHTML = '<div class="w-2 h-2 rounded-full bg-red-500"></div> YAYINDA';
+            } else if (state === 'error') {
+                statusBadge.className = "px-3 py-1 rounded-full bg-yellow-500/20 text-yellow-300 text-xs font-mono font-bold flex items-center gap-2 border border-yellow-500/30";
+                statusBadge.innerHTML = '<div class="w-2 h-2 rounded-full bg-yellow-500"></div> Bağlantı Hatası';
+            }
+        }
+
+        // --- MEDIA FUNCTIONS ---
+        async function startCamera() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                onStreamSuccess(stream);
+            } catch (err) {
+                console.error("Camera access denied:", err);
+                alert("Kameraya erişim sağlanamadı. Lütfen izinleri kontrol edin.");
+            }
+        }
+
+        async function startScreen() {
+            try {
+                // Audio: true captures system audio as well (important for Zoom video sharing)
+                const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: true });
+                onStreamSuccess(stream);
+            } catch (err) {
+                console.error("Screen share access denied:", err);
+            }
+        }
+
+        function onStreamSuccess(stream) {
+            localStream = stream;
+            videoEl.srcObject = stream;
+
+            // UI Updates
+            noSignalEl.classList.add('hidden');
+            videoEl.classList.remove('hidden');
+            activeControlsEl.classList.remove('hidden');
+            updateStatus('live');
+
+            // If we have any existing connections (viewers connected before stream started - rare case but possible)
+            // we technically need to call them back, but usually PeerJS call logic starts from viewer.
+
+            // Handle Stream Stop (e.g. user stops screen share from browser UI)
+            stream.getVideoTracks()[0].onended = () => {
+                stopBroadcast();
+            };
+        }
+
+        function stopBroadcast() {
+            if (localStream) {
+                localStream.getTracks().forEach(track => track.stop());
+                localStream = null;
+            }
+
+            // Close all connections? 
+            // connections.forEach(conn => conn.close());
+            // Actually, keep peer open, just stop stream.
+
+            noSignalEl.classList.remove('hidden');
+            videoEl.classList.add('hidden');
+            activeControlsEl.classList.add('hidden');
+            statusBadge.className = "px-3 py-1 rounded-full bg-slate-700 text-slate-300 text-xs font-mono font-bold flex items-center gap-2";
+            statusBadge.innerHTML = '<div class="w-2 h-2 rounded-full bg-slate-500"></div> Hazır';
+
+            // Force reload to clean state if needed, but smooth UX is better
+            // connections = []; 
+            // updateViewerCount();
+        }
+
+        function toggleMute() {
+            if (!localStream) return;
+            const audioTrack = localStream.getAudioTracks()[0];
+            if (audioTrack) {
+                audioTrack.enabled = !audioTrack.enabled;
+                const btn = document.getElementById('btn-mute');
+                if (audioTrack.enabled) {
+                    btn.innerHTML = '<i class="fas fa-microphone"></i>';
+                    btn.classList.remove('bg-red-600', 'hover:bg-red-700');
+                    btn.classList.add('bg-white/10');
+                } else {
+                    btn.innerHTML = '<i class="fas fa-microphone-slash"></i>';
+                    btn.classList.add('bg-red-600', 'hover:bg-red-700');
+                    btn.classList.remove('bg-white/10');
+                }
+            }
+        }
+
+        // Initialize Peer on Load
+        window.addEventListener('load', initPeer);
+
+    </script>
+</body>
+
+</html>
