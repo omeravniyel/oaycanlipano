@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Admin | Kartaltepe Pano</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body class="bg-slate-50 min-h-screen">
+    <!-- Login Modal -->
+    <div id="login-modal" class="fixed inset-0 z-50 bg-slate-900 flex items-center justify-center">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8">
+            <h2 class="text-2xl font-bold text-center mb-6">Yönetici Girişi</h2>
+            <form id="admin-login-form">
+                <input type="password" id="master-password"
+                    class="w-full p-4 border rounded-xl mb-4 text-center text-lg tracking-widest" placeholder="••••••">
+                <button type="submit" class="w-full py-4 bg-blue-600 text-white rounded-xl font-bold">
+                    Giriş Yap
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div id="main-content" class="hidden">
+        <!-- Header -->
+        <header class="bg-white border-b p-6">
+            <div class="max-w-7xl mx-auto flex justify-between items-center">
+                <h1 class="text-2xl font-bold">Super Admin Panel</h1>
+                <button onclick="logout()" class="text-red-600 hover:text-red-800">
+                    <i class="fa-solid fa-sign-out"></i> Çıkış
+                </button>
+            </div>
+        </header>
+
+        <!-- Institutions List -->
+        <main class="max-w-7xl mx-auto p-6">
+            <div class="mb-6">
+                <h2 class="text-xl font-bold mb-4">Kurumlar</h2>
+                <div id="institution-list" class="space-y-3"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        let institutions = [];
+        let MASTER_PASSWORD = localStorage.getItem('super_admin_pass') || '283353.';
+
+        // --- INIT ---
+        document.addEventListener('DOMContentLoaded', async () => {
+            const loginForm = document.getElementById('admin-login-form');
+            if (loginForm) {
+                loginForm.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    attemptLogin();
+                });
+            }
+
+            if (localStorage.getItem('super_admin_pass')) {
+                const success = await fetchInstitutions();
+                if (success) {
+                    showMainContent();
+                } else {
+                    showLoginModal();
+                }
+            } else {
+                showLoginModal();
+            }
+        });
+
+        // --- LOGIN ---
+        async function attemptLogin() {
+            const val = document.getElementById('master-password').value.trim();
+            if (!val) {
+                Swal.fire('Uyarı', 'Lütfen şifre giriniz.', 'warning');
+                return;
+            }
+
+            MASTER_PASSWORD = val;
+            localStorage.setItem('super_admin_pass', val);
+
+            const success = await fetchInstitutions(true);
+
+            if (success) {
+                showMainContent();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Giriş Başarılı',
+                    timer: 1000,
+                    showConfirmButton: false
+                });
+            } else {
+                localStorage.removeItem('super_admin_pass');
+            }
+        }
+
+        // --- FETCH INSTITUTIONS ---
+        async function fetchInstitutions(showError = false) {
+            try {
+                const res = await fetch('/api/manage-institutions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'list',
+                        master_password: MASTER_PASSWORD
+                    })
+                });
+
+                const contentType = res.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('API yanıt vermedi');
+                }
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    throw new Error(data.error || 'Sunucu hatası');
+                }
+
+                institutions = data.institutions || [];
+                renderList(institutions);
+                return true;
+
+            } catch (e) {
+                console.warn('Fetch Error:', e);
+
+                const masterKeys = ['283353.', '283353', 'admin123'];
+                const isMaster = masterKeys.includes(MASTER_PASSWORD);
+
+                if (isMaster) {
+                    if (showError) {
+                        Swal.fire({
+                            icon: 'info',
+                            title: 'Offline Mode',
+                            text: 'API bulunamadı, demo modunda çalışıyor.',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    }
+
+                    institutions = [
+                        {
+                            name: 'Demo Kurum',
+                            slug: 'demo',
+                            password: '123',
+                            config: { city: 'İstanbul', district: 'Merkez' }
+                        }
+                    ];
+                    renderList(institutions);
+                    return true;
+                }
+
+                if (showError) {
+                    Swal.fire('Giriş Başarısız', e.message || 'Bağlantı kurulamadı', 'error');
+                }
+                return false;
+            }
+        }
+
+        // --- RENDER LIST ---
+        function renderList(list) {
+            const container = document.getElementById('institution-list');
+            container.innerHTML = '';
+
+            list.forEach(inst => {
+                const card = document.createElement('div');
+                card.className = 'bg-white p-4 rounded-xl border hover:shadow-md transition-shadow cursor-pointer';
+                card.innerHTML = `
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h3 class="font-bold text-lg">${inst.name}</h3>
+                            <p class="text-sm text-slate-500">
+                                ${inst.config?.city || '-'} / ${inst.config?.district || '-'}
+                            </p>
+                            <p class="text-xs text-slate-400 mt-1">
+                                Şifre: <span class="font-mono font-bold">${inst.password}</span>
+                            </p>
+                        </div>
+                        <a href="/${inst.slug}/admin" target="_blank" 
+                           class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+                            <i class="fa-solid fa-external-link"></i> Panele Git
+                        </a>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // --- UI HELPERS ---
+        function showLoginModal() {
+            document.getElementById('login-modal').classList.remove('hidden');
+            document.getElementById('main-content').classList.add('hidden');
+        }
+
+        function showMainContent() {
+            document.getElementById('login-modal').classList.add('hidden');
+            document.getElementById('main-content').classList.remove('hidden');
+        }
+
+        function logout() {
+            localStorage.removeItem('super_admin_pass');
+            showLoginModal();
+        }
+    </script>
+</body>
+
+</html>

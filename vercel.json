@@ -43,6 +43,10 @@
             "destination": "/admin.html"
         },
         {
+            "source": "/admin-clean",
+            "destination": "/admin-clean.html"
+        },
+        {
             "source": "/panel.html",
             "destination": "/panel.html"
         },
