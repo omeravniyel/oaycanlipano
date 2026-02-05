@@ -81,11 +81,14 @@
 
     <!-- CONNECTION LOGIC -->
     <script>
-        // Must match the broadcaster ID
-        const TARGET_PEER_ID = 'kartaltepe-pano-live-v1';
+        // CONFIG
+        const urlParams = new URLSearchParams(window.location.search);
+        // Fallback Slug logic
+        const DEFAULT_SLUG = 'omeravniyel';
+        const SLUG = urlParams.get('slug') || DEFAULT_SLUG;
 
         let peer;
-        let conn;
+        let targetPeerId = null;
 
         const videoEl = document.getElementById('remote-video');
         const overlay = document.getElementById('status-overlay');
@@ -94,86 +97,98 @@
         const liveBadge = document.getElementById('live-badge');
         const reloadBtn = document.getElementById('reload-btn');
 
-        function initViewer() {
-            // Join as a new peer (random ID is fine for viewer)
-            peer = new Peer(null, {
-                debug: 1
-            });
+        async function initViewer() {
+            // 1. Fetch Active Broadcast ID from Backend
+            try {
+                statusDesc.innerText = "Yayın bilgisi alınıyor... (" + SLUG + ")";
+                const res = await fetch(`/api/get-config?slug=${SLUG}`);
+
+                if (!res.ok) {
+                    console.error("Config failed", res.status);
+                    // maybe try hardcoded fallback ID as a last resort? 
+                    // No, that causes collision.
+                    throw new Error("Kurum verisi alınamadı");
+                }
+
+                const config = await res.json();
+                console.log("Config loaded:", config);
+
+                if (config && config.activeBroadcastId) {
+                    targetPeerId = config.activeBroadcastId;
+                    console.log("Found Active Broadcast ID:", targetPeerId);
+                    startPeer();
+                } else {
+                    console.warn("No active broadcast ID found in config.");
+                    // Retry loop
+                    setTimeout(initViewer, 5000);
+                }
+            } catch (e) {
+                console.error("Config fetch error:", e);
+                statusTitle.innerText = "Bağlantı Hatası";
+                statusDesc.innerText = "Sunucuya erişilemedi.";
+                setTimeout(initViewer, 5000); // Keep retrying
+            }
+        }
+
+        function startPeer() {
+            if (peer) {
+                // If peer exists, just connect
+                connectToBroadcast();
+                return;
+            }
+
+            peer = new Peer(null, { debug: 1 });
 
             peer.on('open', (id) => {
-                console.log('Viewer ID:', id);
+                console.log('Viewer Me ID:', id);
                 connectToBroadcast();
             });
 
             peer.on('error', (err) => {
                 console.error("Peer Error:", err);
-                showError("Bağlantı Hatası", "Sunucu ile bağlantı kurulamadı.");
+                // If ID invalid, maybe re-fetch config?
+                setTimeout(initViewer, 3000);
             });
         }
 
         function connectToBroadcast() {
-            console.log("Calling broadcaster:", TARGET_PEER_ID);
+            if (!targetPeerId) return;
 
-            // Initiate a call to the broadcaster
-            const call = peer.call(TARGET_PEER_ID, null); // We send no stream
+            statusDesc.innerText = "Yayına bağlanılıyor...";
+            console.log("Calling broadcaster:", targetPeerId);
+
+            const call = peer.call(targetPeerId, null);
 
             if (!call) {
-                // If call is null immediately, maybe peer issues?
-                setTimeout(connectToBroadcast, 3000); // Retry
+                console.warn("Call failed immediately");
+                setTimeout(initViewer, 3000); // Re-init might fetch new ID
                 return;
             }
 
             call.on('stream', (remoteStream) => {
                 console.log("Stream received!");
                 videoEl.srcObject = remoteStream;
-                videoEl.play().catch(e => console.log("Autoplay blocked, user interaction needed:", e));
+                videoEl.play().catch(e => console.log("Autoplay blocked:", e));
 
-                // UI Updates
                 overlay.classList.add('opacity-0', 'pointer-events-none');
                 liveBadge.classList.remove('hidden');
             });
 
             call.on('close', () => {
                 console.log("Stream closed");
-                showError("Yayın Sona Erdi", "Yayıncı bağlantıyı kesti.");
+                overlay.classList.remove('opacity-0', 'pointer-events-none');
+                liveBadge.classList.add('hidden');
+                statusTitle.innerText = "Yayın Sona Erdi";
+                statusDesc.innerText = "Yeni yayın bekleniyor...";
+
+                // Poll for new stream
+                setTimeout(initViewer, 5000);
             });
 
             call.on('error', (err) => {
                 console.error("Call Error:", err);
-                // Retry logic?
-                setTimeout(connectToBroadcast, 5000);
+                setTimeout(initViewer, 3000);
             });
-
-            // Also try to open a data connection to check if peer is alive? 
-            // PeerJS "call" might fail silently if peer is not online.
-            // A common pattern is to retry 'call' every few seconds until stream is received.
-            const retryInterval = setInterval(() => {
-                if (videoEl.srcObject) {
-                    clearInterval(retryInterval);
-                } else {
-                    console.log("Retrying connection...");
-                    const retryCall = peer.call(TARGET_PEER_ID, null);
-                    if (retryCall) {
-                        retryCall.on('stream', (s) => {
-                            clearInterval(retryInterval);
-                            videoEl.srcObject = s;
-                            videoEl.play();
-                            overlay.classList.add('opacity-0', 'pointer-events-none');
-                            liveBadge.classList.remove('hidden');
-                        });
-                    }
-                }
-            }, 3000);
-        }
-
-        function showError(title, desc) {
-            statusTitle.innerText = title;
-            statusTitle.classList.remove('animate-pulse');
-            statusTitle.classList.add('text-red-500');
-            statusDesc.innerText = desc;
-            reloadBtn.classList.remove('hidden');
-            overlay.classList.remove('opacity-0', 'pointer-events-none');
-            liveBadge.classList.add('hidden');
         }
 
         window.addEventListener('load', initViewer);

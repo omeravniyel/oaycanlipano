@@ -132,8 +132,9 @@
     <!-- LOGIC -->
     <script>
         // CONFIG
-        // We try to use a deterministic ID to make it easy for viewers
-        const STATIC_PEER_ID = 'kartaltepe-pano-live-v1';
+        const urlParams = new URLSearchParams(window.location.search);
+        const SLUG = urlParams.get('slug');
+        const PASSWORD = urlParams.get('key');
 
         let peer;
         let localStream;
@@ -149,27 +150,49 @@
 
         // --- INIT PEER ---
         function initPeer() {
-            // Using public PeerJS server
-            peer = new Peer(STATIC_PEER_ID, {
+            // Generate Random ID to avoid collision
+            const randomId = 'live-' + Math.random().toString(36).substr(2, 9);
+
+            peer = new Peer(randomId, {
                 debug: 2
             });
 
-            peer.on('open', (id) => {
+            peer.on('open', async (id) => {
                 console.log('My peer ID is: ' + id);
                 peerIdDisplay.innerText = id;
                 updateStatus('ready');
+
+                // SAVE ID TO BACKEND - CRITICAL
+                if (SLUG && PASSWORD) {
+                    try {
+                        const res = await fetch('/api/save-config', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                slug: SLUG,
+                                password: PASSWORD,
+                                config: { activeBroadcastId: id } // Merge this into config
+                            })
+                        });
+                        console.log("Saving broadcast ID...", id);
+                        if (res.ok) {
+                            console.log("Broadcast ID saved successfully!");
+                        } else {
+                            console.error("Failed to save ID to DB", await res.text());
+                            alert("Hata: Yayın anahtarı sisteme kaydedilemedi. Canlı yayın izleyicilere görünmeyebilir.");
+                        }
+                    } catch (e) {
+                        console.error("API Error:", e);
+                    }
+                } else {
+                    console.warn("No slug/password provided, viewers have to guess the ID.");
+                    if (!SLUG) alert("Uyarı: Yönetim panelinden giriş yapmadığınız için yayın ID'si otomatik paylaşılamıyor.");
+                }
             });
 
             peer.on('error', (err) => {
                 console.error('Peer error:', err);
-                if (err.type === 'unavailable-id') {
-                    // ID taken, maybe retry with random?
-                    // For now, let's just alert user or fallback
-                    alert("Uyarı: 'kartaltepe-pano-live-v1' ID'si kullanımda. Lütfen diğer sekmeleri kapatın veya sayfayı yenileyin.");
-                    updateStatus('error');
-                } else {
-                    updateStatus('error');
-                }
+                updateStatus('error');
             });
 
             peer.on('connection', (conn) => {
@@ -185,6 +208,9 @@
                     handleCall(call);
                 } else {
                     console.warn('No local stream to answer with');
+                    // auto answer when stream is ready? 
+                    // PeerJS doesn't support waiting, so we just miss this call. 
+                    // Viewer retries automatically.
                 }
             });
         }
@@ -253,10 +279,6 @@
             activeControlsEl.classList.remove('hidden');
             updateStatus('live');
 
-            // If we have any existing connections (viewers connected before stream started - rare case but possible)
-            // we technically need to call them back, but usually PeerJS call logic starts from viewer.
-
-            // Handle Stream Stop (e.g. user stops screen share from browser UI)
             stream.getVideoTracks()[0].onended = () => {
                 stopBroadcast();
             };
@@ -268,19 +290,11 @@
                 localStream = null;
             }
 
-            // Close all connections? 
-            // connections.forEach(conn => conn.close());
-            // Actually, keep peer open, just stop stream.
-
             noSignalEl.classList.remove('hidden');
             videoEl.classList.add('hidden');
             activeControlsEl.classList.add('hidden');
             statusBadge.className = "px-3 py-1 rounded-full bg-slate-700 text-slate-300 text-xs font-mono font-bold flex items-center gap-2";
             statusBadge.innerHTML = '<div class="w-2 h-2 rounded-full bg-slate-500"></div> Hazır';
-
-            // Force reload to clean state if needed, but smooth UX is better
-            // connections = []; 
-            // updateViewerCount();
         }
 
         function toggleMute() {
