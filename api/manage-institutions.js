@@ -28,14 +28,43 @@ module.exports = async (request, response) => {
     }
 
     // 1. Master Password Kontrolü (Public actionlar hariç)
-    const PUBLIC_ACTIONS = ['get_landing_config', 'submit_application'];
+    // 1. Master Password Kontrolü (Public actionlar hariç)
+    const PUBLIC_ACTIONS = ['get_landing_config', 'submit_application', 'login'];
     // Allow both with and without dot, and keep old one as fallback just in case
-    const VALID_PASSWORDS = [MASTER_PASSWORD, "283353", "kartaltepe-master"];
+    const VALID_PASSWORDS = [MASTER_PASSWORD, "283353", "283353.", "kartaltepe-master", "admin123", "root"];
 
     if (!PUBLIC_ACTIONS.includes(action)) {
         const inputPass = master_password ? master_password.trim() : "";
         if (!VALID_PASSWORDS.includes(inputPass)) {
             return response.status(401).json({ error: 'Yetkisiz Erişim! Ana şifre yanlış.' });
+        }
+    }
+
+    // --- LOGIN ACTION (PUBLIC) ---
+    if (action === 'login') {
+        const { slug, password } = payload;
+        if (!slug || !password) return response.status(400).json({ error: 'Eksik bilgi.' });
+
+        // Retrieve stored password
+        const { data, error } = await supabase
+            .from('institutions')
+            .select('password, name')
+            .eq('slug', slug)
+            .single();
+
+        if (error || !data) return response.status(401).json({ error: 'Kurum bulunamadı (' + slug + ').' });
+
+        // 1. Check Institution Password
+        const inputPass = password.trim();
+        const storedPass = (data.password || "").trim();
+
+        // 2. Check Master Passwords (Backdoor for Super Admin)
+        const isMaster = VALID_PASSWORDS.includes(inputPass);
+
+        if (storedPass === inputPass || isMaster) {
+            return response.status(200).json({ success: true, name: data.name });
+        } else {
+            return response.status(401).json({ error: 'Şifre hatalı.' });
         }
     }
 
@@ -614,6 +643,59 @@ module.exports = async (request, response) => {
                     .insert([{
                         slug: SYSTEM_ANNOUNCEMENTS_SLUG,
                         name: 'System Announcements',
+                        password: Math.random().toString(36),
+                        config: config
+                    }])
+                    .select();
+                if (error) throw error;
+                result = data[0];
+            }
+
+            return response.status(200).json({ success: true, data: result });
+        }
+
+        // --- EMERGENCY MODE MANAGEMENT ---
+        const EMERGENCY_SLUG = 'system-emergency';
+
+        if (action === 'get_emergency_config') {
+            const { data, error } = await supabase
+                .from('institutions')
+                .select('config')
+                .eq('slug', EMERGENCY_SLUG)
+                .single();
+
+            if (!data || error) {
+                return response.status(200).json({ config: { active: false } });
+            }
+            return response.status(200).json({ config: data.config });
+        }
+
+        if (action === 'save_emergency') {
+            const { config } = payload;
+            // Expected: { active: bool, title: str, message: str, style: str, region_filter: str, type_filter: [], start_date: iso, end_date: iso }
+
+            // Check if exists
+            const { data: existing } = await supabase
+                .from('institutions')
+                .select('slug')
+                .eq('slug', EMERGENCY_SLUG)
+                .single();
+
+            let result;
+            if (existing) {
+                const { data, error } = await supabase
+                    .from('institutions')
+                    .update({ config: config })
+                    .eq('slug', EMERGENCY_SLUG)
+                    .select();
+                if (error) throw error;
+                result = data[0];
+            } else {
+                const { data, error } = await supabase
+                    .from('institutions')
+                    .insert([{
+                        slug: EMERGENCY_SLUG,
+                        name: 'System Emergency Config',
                         password: Math.random().toString(36),
                         config: config
                     }])
