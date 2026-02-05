@@ -697,7 +697,7 @@
                     const data = await res.json();
                     const name = data.institution_title || data.institution_name || data.name;
                     if (name) {
-                        const loginTitle = document.querySelector('#login-modal h2');
+                        const loginTitle = document.querySelector('#login-overlay h2');
                         if (loginTitle) loginTitle.innerText = name + "\nGiriş Paneli";
                         document.title = name + " | Yönetim Paneli";
                     }
