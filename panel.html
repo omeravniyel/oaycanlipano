@@ -1176,7 +1176,12 @@
 
             // Menu
             let menu = [];
-            try { menu = (typeof cfg.menu === 'string') ? JSON.parse(cfg.menu) : (cfg.menu || []); } catch (e) { }
+            if (cfg.lunch_menu) {
+                // Prefer lunch_menu string from board
+                menu = cfg.lunch_menu.split('\n');
+            } else {
+                try { menu = (typeof cfg.menu === 'string') ? JSON.parse(cfg.menu) : (cfg.menu || []); } catch (e) { }
+            }
             document.getElementById('input-menu-1').value = menu[0] || "";
             document.getElementById('input-menu-2').value = menu[1] || "";
             document.getElementById('input-menu-3').value = menu[2] || "";
@@ -1233,22 +1238,35 @@
                 document.getElementById('preview-hadith-img').innerHTML = '<i class="fas fa-image text-teal-300 text-2xl"></i>';
             }
 
-            // Dorms
+            // Dorms (Support Legacy Flat Keys & New Object)
+            // Priority: Flat Keys (main.js standard) -> winning_dorms (admin backup) -> legacy dormX objects
             let d = {};
             try { d = (typeof cfg.winning_dorms === 'string') ? JSON.parse(cfg.winning_dorms) : (cfg.winning_dorms || {}); } catch (e) { }
 
-            const d1 = d.dorm1 || {};
-            document.getElementById('dorm1-name').value = d1.name || "";
-            document.getElementById('dorm1-count').value = d1.count || "";
-            const s1List = [d1.s1, d1.s2, d1.s3, d1.s4, d1.s5, d1.s6].filter(x => x);
-            document.getElementById('dorm1-students').value = s1List.join('\n');
+            // Dorm 1
+            const d1Name = cfg.dorm1_name || d.dorm1?.name || (cfg.dorm1?.name) || "";
+            const d1Count = cfg.dorm1_count || d.dorm1?.count || (cfg.dorm1?.count) || "";
+            let d1Students = [];
+            if (cfg.dorm1_names && Array.isArray(cfg.dorm1_names)) d1Students = cfg.dorm1_names;
+            else if (d.dorm1) d1Students = [d.dorm1.s1, d.dorm1.s2, d.dorm1.s3, d.dorm1.s4, d.dorm1.s5, d.dorm1.s6];
+            else if (cfg.dorm1) d1Students = [cfg.dorm1.s1, cfg.dorm1.s2, cfg.dorm1.s3, cfg.dorm1.s4, cfg.dorm1.s5, cfg.dorm1.s6];
 
-            const d2 = d.dorm2 || {};
+            document.getElementById('dorm1-name').value = d1Name;
+            document.getElementById('dorm1-count').value = d1Count;
+            document.getElementById('dorm1-students').value = d1Students.filter(x => x).join('\n');
 
-            document.getElementById('dorm2-name').value = d2.name || "";
-            document.getElementById('dorm2-count').value = d2.count || "";
-            const s2List = [d2.s1, d2.s2, d2.s3, d2.s4, d2.s5, d2.s6].filter(x => x);
-            document.getElementById('dorm2-students').value = s2List.join('\n');
+            // Dorm 2
+            const d2Name = cfg.dorm2_name || d.dorm2?.name || (cfg.dorm2?.name) || "";
+            const d2Count = cfg.dorm2_count || d.dorm2?.count || (cfg.dorm2?.count) || "";
+            let d2Students = [];
+            if (cfg.dorm2_names && Array.isArray(cfg.dorm2_names)) d2Students = cfg.dorm2_names;
+            else if (d.dorm2) d2Students = [d.dorm2.s1, d.dorm2.s2, d.dorm2.s3, d.dorm2.s4, d.dorm2.s5, d.dorm2.s6];
+            else if (cfg.dorm2) d2Students = [cfg.dorm2.s1, cfg.dorm2.s2, cfg.dorm2.s3, cfg.dorm2.s4, cfg.dorm2.s5, cfg.dorm2.s6];
+
+            document.getElementById('dorm2-name').value = d2Name;
+            document.getElementById('dorm2-count').value = d2Count;
+            document.getElementById('dorm2-students').value = d2Students.filter(x => x).join('\n');
+            document.getElementById('dorm2-active').checked = (cfg.dorm2_active !== undefined) ? cfg.dorm2_active : true;
             document.getElementById('dorm2-active').checked = (cfg.dorm2_active !== undefined) ? cfg.dorm2_active : true;
 
             // Dorm Main Title
@@ -1316,13 +1334,16 @@
                     newConfig.countdown_event = document.getElementById('input-countdown-event').value;
                     newConfig.countdown_date = document.getElementById('input-countdown-date').value;
 
-                    // Menu
-                    newConfig.menu = [
+                    // Menu (Save as 'lunch_menu' string for main.js)
+                    const menuItems = [
                         document.getElementById('input-menu-1').value,
                         document.getElementById('input-menu-2').value,
                         document.getElementById('input-menu-3').value,
                         document.getElementById('input-menu-4').value
-                    ];
+                    ].filter(x => x.trim().length > 0);
+
+                    newConfig.lunch_menu = menuItems.join('\n');
+                    newConfig.menu = menuItems; // Keep array just in case
 
                     newConfig.dinner_menu = document.getElementById('input-dinner-menu').value;
 
@@ -1348,14 +1369,27 @@
                         img: document.getElementById('input-hadith-image').value
                     });
 
-                    // 6. Dorms
-                    function parseStudents(text) {
-                        const lines = text.split('\n').map(s => s.trim()).filter(s => s);
+                    // 6. Dorms (Save as Flat Keys for main.js)
+                    function getStudents(text) { return text.split('\n').map(s => s.trim()).filter(s => s); }
+
+                    newConfig.dorm1_name = document.getElementById('dorm1-name').value;
+                    newConfig.dorm1_count = document.getElementById('dorm1-count').value;
+                    newConfig.dorm1_names = getStudents(document.getElementById('dorm1-students').value);
+
+                    newConfig.dorm2_name = document.getElementById('dorm2-name').value;
+                    newConfig.dorm2_count = document.getElementById('dorm2-count').value;
+                    newConfig.dorm2_names = getStudents(document.getElementById('dorm2-students').value);
+                    newConfig.dorm2_active = document.getElementById('dorm2-active').checked;
+
+                    // Also save to winning_dorms for completeness/legacy, though board uses flat keys
+                    // We can construct the legacy object just to be safe
+                    function parseStudentsObj(text) {
+                        const lines = getStudents(text);
                         return { s1: lines[0] || "", s2: lines[1] || "", s3: lines[2] || "", s4: lines[3] || "", s5: lines[4] || "", s6: lines[5] || "" };
                     }
                     newConfig.winning_dorms = JSON.stringify({
-                        dorm1: { name: document.getElementById('dorm1-name').value, count: document.getElementById('dorm1-count').value, ...parseStudents(document.getElementById('dorm1-students').value) },
-                        dorm2: { name: document.getElementById('dorm2-name').value, count: document.getElementById('dorm2-count').value, ...parseStudents(document.getElementById('dorm2-students').value) }
+                        dorm1: { name: newConfig.dorm1_name, count: newConfig.dorm1_count, ...parseStudentsObj(document.getElementById('dorm1-students').value) },
+                        dorm2: { name: newConfig.dorm2_name, count: newConfig.dorm2_count, ...parseStudentsObj(document.getElementById('dorm2-students').value) }
                     });
                     newConfig.dorm2_active = document.getElementById('dorm2-active').checked;
 
