@@ -1,9 +1,9 @@
 
-import { createClient } from '@supabase/supabase-js';
-import fs from 'fs';
-import path from 'path';
+const { createClient } = require('@supabase/supabase-js');
+const fs = require('fs');
+const path = require('path');
 
-export default async function handler(request, response) {
+module.exports = async (request, response) => {
     const { url, query } = request;
 
     // Vercel rewrite support: prefer 'path' query param if available
