@@ -31,9 +31,24 @@ module.exports = async (request, response) => {
         const fileName = isAdminMode ? 'panel.html' : 'board.html';
         const filePath = path.join(process.cwd(), fileName);
 
-        // If panel.html doesn't exist and it's admin mode, return 404
-        if (isAdminMode && !fs.existsSync(filePath)) {
-            return response.status(404).send('Admin panel not found');
+        // Debug: Check if file exists
+        if (!fs.existsSync(filePath)) {
+            // DIAGNOSTIC INFO FOR VERCEL
+            const currentDir = process.cwd();
+            const files = fs.readdirSync(currentDir);
+            console.error(`File not found: ${filePath}`);
+
+            // Try fallback path (sometimes Vercel puts files in different spots)
+            // But for now, report error to user to fix "Gelmedi" issue
+            return response.status(500).send(`
+                <h1>Sistem Hatası: Dosya Bulunamadı</h1>
+                <p>Aranan Dosya: ${fileName}</p>
+                <p>Tam Yol: ${filePath}</p>
+                <p>Mevcut Dizin: ${currentDir}</p>
+                <p>Dizin İçeriği: ${JSON.stringify(files)}</p>
+                <hr>
+                <p>Lütfen bu ekranın görüntüsünü geliştiriciye iletin.</p>
+            `);
         }
 
         let html = fs.readFileSync(filePath, 'utf-8');
