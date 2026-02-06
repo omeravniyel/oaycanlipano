@@ -291,6 +291,59 @@
         </div>
     </div>
 
+    <!-- Hadith Modal -->
+    <div id="hadith-modal" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-sm">
+        <div class="absolute inset-0" onclick="closeHadithModal()"></div>
+        <div
+            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-5xl h-[90vh] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+            <!-- Header -->
+            <div class="p-6 border-b flex justify-between items-center bg-slate-50">
+                <h3 class="font-bold text-lg">Hadis Yönetimi</h3>
+                <button onclick="closeHadithModal()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Content -->
+            <div class="p-6 overflow-y-auto flex-1 bg-slate-50/30">
+                <!-- Controls -->
+                <div class="flex gap-4 mb-6">
+                    <div class="flex-1 bg-white p-4 rounded border">
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Kurum Tipi</label>
+                        <select id="hadith-type" class="w-full p-2 border rounded font-bold" onchange="loadHadiths()">
+                            <option>Ortaokul</option>
+                            <option>Lise</option>
+                            <option>Üniversite Hazırlık</option>
+                        </select>
+                    </div>
+                    <div class="flex-1 bg-white p-4 rounded border">
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Dönem Başlangıç
+                            Tarihi</label>
+                        <input type="date" id="semester-start-date" class="w-full p-2 border rounded"
+                            onchange="updateWeekDates()">
+                    </div>
+                </div>
+
+                <!-- Weeks Container -->
+                <div id="weeks-container" class="space-y-4"></div>
+
+                <!-- Add Week Button -->
+                <button onclick="addWeek()"
+                    class="w-full py-4 mt-6 border-2 border-dashed border-slate-300 rounded-xl hover:bg-white hover:border-blue-400 text-slate-500 font-bold transition-all">
+                    + Yeni Hafta Ekle
+                </button>
+            </div>
+
+            <!-- Footer -->
+            <div class="p-4 border-t flex justify-end gap-3 bg-white">
+                <button onclick="syncHadithsToApi()"
+                    class="px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg">
+                    Kaydet ve Dağıt
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         let institutions = [];
         let MASTER_PASSWORD = localStorage.getItem('super_admin_pass') || '283353.';
@@ -1038,11 +1091,160 @@
             }
         }
 
-        // --- MODAL STUBS (to be implemented) ---
+        // --- HADITH MANAGEMENT ---
+        let hadithWeeks = [];
+
         function openHadithModal() {
-            Swal.fire('Yakında', 'Hadis yönetimi eklenecek.', 'info');
+            document.getElementById('hadith-modal').classList.remove('hidden');
+            loadHadiths();
         }
 
+        function closeHadithModal() {
+            document.getElementById('hadith-modal').classList.add('hidden');
+        }
+
+        function loadHadiths() {
+            const type = document.getElementById('hadith-type').value;
+
+            // Load from localStorage
+            const savedWeeks = localStorage.getItem(`sa_h_${type}`);
+            hadithWeeks = savedWeeks ? JSON.parse(savedWeeks) : [];
+
+            const savedDate = localStorage.getItem(`sa_h_date_${type}`);
+            if (savedDate) {
+                document.getElementById('semester-start-date').value = savedDate;
+            }
+
+            // Initialize with at least one week if empty
+            if (hadithWeeks.length === 0) {
+                addWeek();
+            } else {
+                renderWeeks();
+            }
+        }
+
+        function addWeek() {
+            const nextWeekNumber = hadithWeeks.length + 1;
+            hadithWeeks.push({
+                week: nextWeekNumber,
+                arabic: '',
+                text: ''
+            });
+            renderWeeks();
+            saveLocalHadiths();
+        }
+
+        function renderWeeks() {
+            const container = document.getElementById('weeks-container');
+            container.innerHTML = '';
+
+            const startDate = document.getElementById('semester-start-date').value;
+            let semesterStart = startDate ? new Date(startDate) : null;
+
+            hadithWeeks.forEach((week, index) => {
+                let dateStr = 'Tarih Ayarlanmadı';
+
+                if (semesterStart) {
+                    const weekStart = new Date(semesterStart);
+                    weekStart.setDate(semesterStart.getDate() + (index * 7));
+
+                    const weekEnd = new Date(weekStart);
+                    weekEnd.setDate(weekStart.getDate() + 6);
+
+                    dateStr = `${weekStart.getDate()}/${weekStart.getMonth() + 1} - ${weekEnd.getDate()}/${weekEnd.getMonth() + 1}`;
+                }
+
+                const weekCard = document.createElement('div');
+                weekCard.className = 'bg-white p-4 rounded-xl border border-slate-200 shadow-sm';
+                weekCard.innerHTML = `
+                    <div class="flex justify-between items-center mb-3">
+                        <div class="flex items-center gap-2">
+                            <div class="flex items-center bg-blue-50 border border-blue-100 rounded-lg overflow-hidden">
+                                <span class="px-2 py-1 text-xs text-blue-400 font-bold border-r border-blue-100">HAFTA</span>
+                                <input type="number" 
+                                    class="w-16 p-1 text-center text-sm font-bold text-blue-700 bg-transparent outline-none" 
+                                    value="${week.week || (index + 1)}" 
+                                    oninput="hadithWeeks[${index}].week = this.value; saveLocalHadiths()">
+                            </div>
+                            <span class="text-xs text-slate-400 font-mono bg-slate-50 px-2 py-1 rounded border">${dateStr}</span>
+                        </div>
+                        <button onclick="removeWeek(${index})" class="text-red-400 hover:text-red-600">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                    <textarea 
+                        class="w-full mb-2 p-3 border rounded-lg text-right font-serif text-lg bg-slate-50 focus:bg-white transition-colors" 
+                        dir="rtl" 
+                        placeholder="Arapça Metin" 
+                        oninput="hadithWeeks[${index}].arabic = this.value; saveLocalHadiths()"
+                    >${week.arabic || ''}</textarea>
+                    <textarea 
+                        class="w-full p-3 border rounded-lg text-sm bg-slate-50 focus:bg-white transition-colors" 
+                        placeholder="Türkçe Meal" 
+                        oninput="hadithWeeks[${index}].text = this.value; saveLocalHadiths()"
+                    >${week.text || ''}</textarea>
+                `;
+                container.appendChild(weekCard);
+            });
+        }
+
+        function removeWeek(index) {
+            hadithWeeks.splice(index, 1);
+            renderWeeks();
+            saveLocalHadiths();
+        }
+
+        function updateWeekDates() {
+            saveLocalHadiths();
+            renderWeeks();
+        }
+
+        function saveLocalHadiths() {
+            const type = document.getElementById('hadith-type').value;
+            const startDate = document.getElementById('semester-start-date').value;
+
+            localStorage.setItem(`sa_h_${type}`, JSON.stringify(hadithWeeks));
+            if (startDate) {
+                localStorage.setItem(`sa_h_date_${type}`, startDate);
+            }
+        }
+
+        async function syncHadithsToApi() {
+            try {
+                const type = document.getElementById('hadith-type').value;
+                const startDate = document.getElementById('semester-start-date').value;
+
+                const res = await fetch('/api/manage-institutions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'save_hadith',
+                        master_password: MASTER_PASSWORD,
+                        payload: {
+                            type: type,
+                            weeks: hadithWeeks,
+                            start_date: startDate
+                        }
+                    })
+                });
+
+                if (!res.ok) {
+                    throw new Error('Senkronizasyon başarısız');
+                }
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Kaydedildi ve Dağıtıldı',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            } catch (err) {
+                console.error('Hadith sync error:', err);
+                Swal.fire('Hata', err.message || 'Hadisler kaydedilemedi', 'error');
+            }
+        }
+
+        // --- MODAL STUBS (to be implemented) ---
         function openAnnouncementsModal() {
             Swal.fire('Yakında', 'Duyuru yönetimi eklenecek.', 'info');
         }
