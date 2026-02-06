@@ -46,12 +46,12 @@
                     class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-800">
                     <i class="fa-solid fa-images w-5"></i> Merkezi Galeri
                 </a>
-                <a href="#" onclick="openAnnouncementsModal()"
+                <a href="#" onclick="openAnnouncementModal()"
                     class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-800">
                     <i class="fa-solid fa-bullhorn w-5"></i> Merkezi Duyuru
                 </a>
                 <div class="mt-8 mb-2 px-4 text-xs font-bold text-slate-500 uppercase">Sistem</div>
-                <a href="#" onclick="openLandingModal()"
+                <a href="#" onclick="openCMSModal()"
                     class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-800">
                     <i class="fa-solid fa-desktop w-5"></i> Site CMS
                 </a>
@@ -76,26 +76,6 @@
                         class="bg-slate-100 rounded-xl px-4 py-2 w-64" placeholder="Kurum Ara...">
                 </div>
                 <div class="flex items-center gap-3">
-                    <button onclick="openCMSModal()"
-                        class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-indigo-700 flex items-center gap-2">
-                        <i class="fa-solid fa-desktop"></i>
-                        Site Yönetimi
-                    </button>
-                    <button onclick="openAnnouncementModal()"
-                        class="bg-amber-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-amber-700 flex items-center gap-2">
-                        <i class="fa-solid fa-bullhorn"></i>
-                        Merkezi Duyurular
-                    </button>
-                    <button onclick="window.location.href='galeri.html'"
-                        class="bg-purple-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-purple-700 flex items-center gap-2">
-                        <i class="fa-solid fa-images"></i>
-                        Galeri
-                    </button>
-                    <button onclick="openHadithModal()"
-                        class="bg-green-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-green-700 flex items-center gap-2">
-                        <i class="fa-solid fa-book-quran"></i>
-                        Hadis Yönetimi
-                    </button>
                     <button onclick="openInstitutionModal()"
                         class="bg-blue-600 text-white px-5 py-2 rounded-xl text-sm font-bold hover:bg-blue-700">
                         + Yeni Kurum
@@ -1475,18 +1455,7 @@
                 }
             }
 
-            // --- MODAL STUBS (to be implemented) ---
-            function openAnnouncementsModal() {
-                Swal.fire('Yakında', 'Duyuru yönetimi eklenecek.', 'info');
-            }
 
-            function openLandingModal() {
-                Swal.fire('Yakında', 'CMS modülü eklenecek.', 'info');
-            }
-
-            function openEmergencyModal() {
-                Swal.fire('Yakında', 'Acil durum modu eklenecek.', 'info');
-            }
 
             // --- ANNOUNCEMENT MANAGEMENT ---
             function openAnnouncementModal() {
