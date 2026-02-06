@@ -169,6 +169,90 @@
         </div>
     </div>
 
+    <!-- Global Gallery Modal -->
+    <div id="gallery-modal" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-sm">
+        <div class="absolute inset-0" onclick="closeGalleryModal()"></div>
+        <div
+            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-6xl h-[90vh] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+            <!-- Header -->
+            <div class="px-6 py-4 border-b flex justify-between items-center bg-slate-50">
+                <div class="flex items-center gap-3 text-lg font-bold">
+                    <i class="fa-solid fa-images text-blue-600"></i> Merkezi Galeri
+                </div>
+                <button onclick="closeGalleryModal()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Filters & Actions -->
+            <div class="p-4 bg-white border-b flex flex-col md:flex-row gap-4 items-center justify-between">
+                <div class="flex gap-4 items-center">
+                    <select id="gallery-type" onchange="loadGallery()"
+                        class="p-2 border rounded-lg font-bold text-sm bg-slate-50">
+                        <option>Ortaokul</option>
+                        <option>Lise</option>
+                        <option>Üniversite Hazırlık</option>
+                        <option>Daimi</option>
+                        <option>Tekamül</option>
+                    </select>
+                    <div class="flex bg-slate-100 p-1 rounded-lg">
+                        <button onclick="switchGalleryTab('main')" id="tab-main"
+                            class="gallery-tab active px-4 py-1.5 rounded text-xs font-bold bg-white shadow-sm">
+                            Ana Galeri
+                        </button>
+                        <button onclick="switchGalleryTab('slider')" id="tab-slider"
+                            class="gallery-tab px-4 py-1.5 rounded text-xs font-bold text-slate-500">
+                            Sol Slider
+                        </button>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <input type="file" id="gallery-upload-input" class="hidden" multiple accept="image/*">
+                    <button onclick="document.getElementById('gallery-upload-input').click()"
+                        class="px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 text-sm font-bold border border-blue-100">
+                        Yükle
+                    </button>
+                    <button onclick="saveGallery()"
+                        class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-bold shadow-lg">
+                        Kaydet
+                    </button>
+                </div>
+            </div>
+
+            <!-- Image Grid -->
+            <div class="flex-1 overflow-y-auto p-6 bg-slate-50/50">
+                <div id="gallery-grid" class="grid grid-cols-2 md:grid-cols-6 gap-4"></div>
+                <p id="gallery-empty" class="hidden text-center mt-20 text-slate-400">Görsel bulunamadı.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Settings Modal -->
+    <div id="image-settings-modal"
+        class="fixed inset-0 z-[60] hidden bg-black/20 backdrop-blur-sm flex items-center justify-center">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-96">
+            <h3 class="font-bold text-lg mb-4">Görsel Ayarları</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Bölge (Mıntıka)</label>
+                    <input id="image-region" class="w-full p-2 border rounded-lg" placeholder="Tümü için boş bırakın">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Özel Kurum (Slug)</label>
+                    <input id="image-slug" class="w-full p-2 border rounded-lg" placeholder="Tümü için boş bırakın">
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end gap-2">
+                <button onclick="closeImageSettingsModal()" class="px-4 py-2 text-slate-500">
+                    İptal
+                </button>
+                <button onclick="applyImageSettings()" class="px-6 py-2 bg-blue-600 text-white rounded-lg font-bold">
+                    Uygula
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script>
         let institutions = [];
         let MASTER_PASSWORD = localStorage.getItem('super_admin_pass') || '283353.';
@@ -224,6 +308,60 @@
                         }
                     };
                     reader.readAsDataURL(file);
+                });
+            }
+
+            // Gallery upload handler
+            const galleryUploadInput = document.getElementById('gallery-upload-input');
+            if (galleryUploadInput) {
+                galleryUploadInput.addEventListener('change', async (e) => {
+                    for (const file of e.target.files) {
+                        const reader = new FileReader();
+                        reader.onload = async (ev) => {
+                            try {
+                                const res = await fetch('/api/upload', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        filename: 'gallery-' + Date.now() + '.png',
+                                        fileBase64: ev.target.result.split(',')[1],
+                                        contentType: file.type
+                                    })
+                                });
+                                const data = await res.json();
+
+                                const type = document.getElementById('gallery-type').value;
+                                if (!globalGallery[type]) {
+                                    globalGallery[type] = { images: [], left_gallery_links: [] };
+                                }
+
+                                const newImage = {
+                                    url: data.url,
+                                    region_filter: '',
+                                    slug_filter: []
+                                };
+
+                                if (currentGalleryTab === 'main') {
+                                    globalGallery[type].images.push(newImage);
+                                } else {
+                                    globalGallery[type].left_gallery_links.push(newImage);
+                                }
+
+                                loadGallery();
+
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Yüklendi',
+                                    timer: 1000,
+                                    showConfirmButton: false
+                                });
+                            } catch (err) {
+                                console.error('Upload error:', err);
+                                Swal.fire('Hata', 'Yükleme başarısız', 'error');
+                            }
+                        };
+                        reader.readAsDataURL(file);
+                    }
                 });
             }
 
@@ -522,13 +660,253 @@
             }
         }
 
+        // --- GALLERY MANAGEMENT ---
+        let globalGallery = {};
+        let currentGalleryTab = 'main';
+        let currentEditingImageIndex = -1;
+
+        function openGalleryModal() {
+            document.getElementById('gallery-modal').classList.remove('hidden');
+            loadGallery(true);
+        }
+
+        function closeGalleryModal() {
+            document.getElementById('gallery-modal').classList.add('hidden');
+        }
+
+        function switchGalleryTab(tab) {
+            currentGalleryTab = tab;
+
+            // Update tab buttons
+            document.querySelectorAll('.gallery-tab').forEach(btn => {
+                btn.classList.remove('active', 'bg-white', 'shadow-sm');
+                btn.classList.add('text-slate-500');
+            });
+
+            const activeBtn = document.getElementById(`tab-${tab}`);
+            activeBtn.classList.add('active', 'bg-white', 'shadow-sm');
+            activeBtn.classList.remove('text-slate-500');
+
+            loadGallery();
+        }
+
+        async function loadGallery(fetchFromApi = false) {
+            const type = document.getElementById('gallery-type').value;
+
+            if (fetchFromApi) {
+                try {
+                    const res = await fetch('/api/manage-institutions', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'get_global_gallery',
+                            master_password: MASTER_PASSWORD
+                        })
+                    });
+                    const data = await res.json();
+                    globalGallery = data.config || {};
+                } catch (err) {
+                    console.error('Gallery load error:', err);
+                    globalGallery = {};
+                }
+            }
+
+            const grid = document.getElementById('gallery-grid');
+            grid.innerHTML = '';
+
+            const items = currentGalleryTab === 'main'
+                ? (globalGallery[type]?.images || [])
+                : (globalGallery[type]?.left_gallery_links || []);
+
+            if (items.length === 0) {
+                document.getElementById('gallery-empty').classList.remove('hidden');
+            } else {
+                document.getElementById('gallery-empty').classList.add('hidden');
+
+                items.forEach((item, idx) => {
+                    const url = typeof item === 'string' ? item : item.url;
+                    const region = (typeof item === 'object' && item.region_filter) ? item.region_filter : '';
+                    const slug = (typeof item === 'object' && item.slug_filter && item.slug_filter.length > 0) ? 'Özel' : '';
+
+                    let badge = '';
+                    if (region) {
+                        badge = `<span class="absolute top-2 left-2 bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded shadow">${region}</span>`;
+                    } else if (slug) {
+                        badge = `<span class="absolute top-2 left-2 bg-purple-600 text-white text-[10px] font-bold px-2 py-1 rounded shadow">ÖZEL</span>`;
+                    }
+
+                    const card = document.createElement('div');
+                    card.className = 'relative group aspect-square bg-white rounded-xl border overflow-hidden shadow-sm';
+                    card.innerHTML = `
+                        <img src="${url}" class="w-full h-full object-cover">
+                        ${badge}
+                        <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
+                            <button onclick="openImageSettings(${idx})" 
+                                class="px-3 py-1 bg-white/20 hover:bg-white text-white hover:text-black rounded text-xs font-bold backdrop-blur">
+                                Ayarlar
+                            </button>
+                            <button onclick="removeImage(${idx})" 
+                                class="w-8 h-8 bg-red-500 rounded-full text-white hover:bg-red-600">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+            }
+        }
+
+        function openImageSettings(idx) {
+            currentEditingImageIndex = idx;
+            const type = document.getElementById('gallery-type').value;
+
+            const items = currentGalleryTab === 'main'
+                ? (globalGallery[type]?.images || [])
+                : (globalGallery[type]?.left_gallery_links || []);
+
+            const item = items[idx];
+
+            if (typeof item === 'string') {
+                document.getElementById('image-region').value = '';
+                document.getElementById('image-slug').value = '';
+            } else {
+                document.getElementById('image-region').value = item.region_filter || '';
+                document.getElementById('image-slug').value = (item.slug_filter || []).join(',');
+            }
+
+            document.getElementById('image-settings-modal').classList.remove('hidden');
+        }
+
+        function closeImageSettingsModal() {
+            document.getElementById('image-settings-modal').classList.add('hidden');
+        }
+
+        function applyImageSettings() {
+            const type = document.getElementById('gallery-type').value;
+
+            if (!globalGallery[type]) {
+                globalGallery[type] = { images: [], left_gallery_links: [] };
+            }
+
+            const list = currentGalleryTab === 'main'
+                ? globalGallery[type].images
+                : globalGallery[type].left_gallery_links;
+
+            let item = list[currentEditingImageIndex];
+
+            if (typeof item === 'string') {
+                item = { url: item };
+            }
+
+            item.region_filter = document.getElementById('image-region').value.trim();
+            const slugVal = document.getElementById('image-slug').value.trim();
+            item.slug_filter = slugVal ? slugVal.split(',').map(s => s.trim()) : [];
+
+            list[currentEditingImageIndex] = item;
+
+            closeImageSettingsModal();
+            loadGallery();
+        }
+
+        // Upload handler
+        document.addEventListener('DOMContentLoaded', () => {
+            const uploadInput = document.getElementById('gallery-upload-input');
+            if (uploadInput) {
+                uploadInput.addEventListener('change', async (e) => {
+                    for (const file of e.target.files) {
+                        const reader = new FileReader();
+                        reader.onload = async (ev) => {
+                            try {
+                                const res = await fetch('/api/upload', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        filename: 'gallery-' + Date.now() + '.png',
+                                        fileBase64: ev.target.result.split(',')[1],
+                                        contentType: file.type
+                                    })
+                                });
+                                const data = await res.json();
+
+                                const type = document.getElementById('gallery-type').value;
+                                if (!globalGallery[type]) {
+                                    globalGallery[type] = { images: [], left_gallery_links: [] };
+                                }
+
+                                const newImage = {
+                                    url: data.url,
+                                    region_filter: '',
+                                    slug_filter: []
+                                };
+
+                                if (currentGalleryTab === 'main') {
+                                    globalGallery[type].images.push(newImage);
+                                } else {
+                                    globalGallery[type].left_gallery_links.push(newImage);
+                                }
+
+                                loadGallery();
+
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Yüklendi',
+                                    timer: 1000,
+                                    showConfirmButton: false
+                                });
+                            } catch (err) {
+                                console.error('Upload error:', err);
+                                Swal.fire('Hata', 'Yükleme başarısız', 'error');
+                            }
+                        };
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+        });
+
+        function removeImage(idx) {
+            const type = document.getElementById('gallery-type').value;
+
+            if (currentGalleryTab === 'main') {
+                globalGallery[type].images.splice(idx, 1);
+            } else {
+                globalGallery[type].left_gallery_links.splice(idx, 1);
+            }
+
+            loadGallery();
+        }
+
+        async function saveGallery() {
+            try {
+                const res = await fetch('/api/manage-institutions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'save_global_gallery',
+                        master_password: MASTER_PASSWORD,
+                        payload: { config: globalGallery }
+                    })
+                });
+
+                if (!res.ok) {
+                    throw new Error('Kaydetme başarısız');
+                }
+
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Kaydedildi',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            } catch (err) {
+                console.error('Save error:', err);
+                Swal.fire('Hata', err.message || 'Kaydetme başarısız', 'error');
+            }
+        }
+
         // --- MODAL STUBS (to be implemented) ---
         function openHadithModal() {
             Swal.fire('Yakında', 'Hadis yönetimi eklenecek.', 'info');
-        }
-
-        function openGalleryModal() {
-            Swal.fire('Yakında', 'Galeri yönetimi eklenecek.', 'info');
         }
 
         function openAnnouncementsModal() {
