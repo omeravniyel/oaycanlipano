@@ -206,7 +206,15 @@
                         </button>
                     </div>
                 </div>
-                <div class="flex gap-2">
+                <div class="flex gap-2 items-center">
+                    <button onclick="toggleSelectAll()" id="select-all-btn"
+                        class="px-3 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 text-sm font-bold">
+                        <i class="fa-solid fa-check-square"></i> Tümünü Seç
+                    </button>
+                    <button onclick="openBulkEditModal()" id="bulk-edit-btn"
+                        class="px-3 py-2 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 text-sm font-bold border border-purple-100 hidden">
+                        <i class="fa-solid fa-edit"></i> Toplu Düzenle (<span id="selected-count">0</span>)
+                    </button>
                     <input type="file" id="gallery-upload-input" class="hidden" multiple accept="image/*">
                     <button onclick="document.getElementById('gallery-upload-input').click()"
                         class="px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 text-sm font-bold border border-blue-100">
@@ -247,6 +255,36 @@
                     İptal
                 </button>
                 <button onclick="applyImageSettings()" class="px-6 py-2 bg-blue-600 text-white rounded-lg font-bold">
+                    Uygula
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Edit Modal -->
+    <div id="bulk-edit-modal"
+        class="fixed inset-0 z-[60] hidden bg-black/20 backdrop-blur-sm flex items-center justify-center">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-96">
+            <h3 class="font-bold text-lg mb-4">Toplu Düzenleme</h3>
+            <p class="text-sm text-slate-500 mb-4">
+                <span id="bulk-selected-count">0</span> görsel seçildi
+            </p>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Bölge (Mıntıka)</label>
+                    <input id="bulk-region" class="w-full p-2 border rounded-lg" placeholder="Örn: Merkez">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Özel Kurum (Slug)</label>
+                    <input id="bulk-slug" class="w-full p-2 border rounded-lg" placeholder="Örn: avniyel,hamidiye">
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end gap-2">
+                <button onclick="closeBulkEditModal()" class="px-4 py-2 text-slate-500">
+                    İptal
+                </button>
+                <button onclick="applyBulkEdit()"
+                    class="px-6 py-2 bg-purple-600 text-white rounded-lg font-bold hover:bg-purple-700">
                     Uygula
                 </button>
             </div>
@@ -664,18 +702,23 @@
         let globalGallery = {};
         let currentGalleryTab = 'main';
         let currentEditingImageIndex = -1;
+        let selectedImages = new Set();
 
         function openGalleryModal() {
             document.getElementById('gallery-modal').classList.remove('hidden');
+            selectedImages.clear();
             loadGallery(true);
         }
 
         function closeGalleryModal() {
             document.getElementById('gallery-modal').classList.add('hidden');
+            selectedImages.clear();
         }
 
         function switchGalleryTab(tab) {
             currentGalleryTab = tab;
+            selectedImages.clear();
+            updateBulkEditButton();
 
             // Update tab buttons
             document.querySelectorAll('.gallery-tab').forEach(btn => {
@@ -735,10 +778,14 @@
                         badge = `<span class="absolute top-2 left-2 bg-purple-600 text-white text-[10px] font-bold px-2 py-1 rounded shadow">ÖZEL</span>`;
                     }
 
+                    const checked = selectedImages.has(idx) ? 'checked' : '';
+
                     const card = document.createElement('div');
                     card.className = 'relative group aspect-square bg-white rounded-xl border overflow-hidden shadow-sm';
                     card.innerHTML = `
                         <img src="${url}" class="w-full h-full object-cover">
+                        <input type="checkbox" ${checked} onchange="toggleImageSelection(${idx})" 
+                            class="absolute top-2 right-2 w-5 h-5 cursor-pointer z-10">
                         ${badge}
                         <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
                             <button onclick="openImageSettings(${idx})" 
@@ -754,6 +801,93 @@
                     grid.appendChild(card);
                 });
             }
+
+            updateBulkEditButton();
+        }
+
+        function toggleImageSelection(idx) {
+            if (selectedImages.has(idx)) {
+                selectedImages.delete(idx);
+            } else {
+                selectedImages.add(idx);
+            }
+            updateBulkEditButton();
+        }
+
+        function toggleSelectAll() {
+            const type = document.getElementById('gallery-type').value;
+            const items = currentGalleryTab === 'main'
+                ? (globalGallery[type]?.images || [])
+                : (globalGallery[type]?.left_gallery_links || []);
+
+            if (selectedImages.size === items.length) {
+                // Deselect all
+                selectedImages.clear();
+            } else {
+                // Select all
+                selectedImages.clear();
+                items.forEach((_, idx) => selectedImages.add(idx));
+            }
+
+            loadGallery();
+        }
+
+        function updateBulkEditButton() {
+            const count = selectedImages.size;
+            const btn = document.getElementById('bulk-edit-btn');
+            const countSpan = document.getElementById('selected-count');
+
+            if (count > 0) {
+                btn.classList.remove('hidden');
+                countSpan.textContent = count;
+            } else {
+                btn.classList.add('hidden');
+            }
+        }
+
+        function openBulkEditModal() {
+            document.getElementById('bulk-selected-count').textContent = selectedImages.size;
+            document.getElementById('bulk-edit-modal').classList.remove('hidden');
+        }
+
+        function closeBulkEditModal() {
+            document.getElementById('bulk-edit-modal').classList.add('hidden');
+        }
+
+        function applyBulkEdit() {
+            const type = document.getElementById('gallery-type').value;
+            const region = document.getElementById('bulk-region').value.trim();
+            const slugVal = document.getElementById('bulk-slug').value.trim();
+            const slugArray = slugVal ? slugVal.split(',').map(s => s.trim()) : [];
+
+            if (!globalGallery[type]) {
+                globalGallery[type] = { images: [], left_gallery_links: [] };
+            }
+
+            const list = currentGalleryTab === 'main'
+                ? globalGallery[type].images
+                : globalGallery[type].left_gallery_links;
+
+            selectedImages.forEach(idx => {
+                let item = list[idx];
+                if (typeof item === 'string') {
+                    item = { url: item };
+                }
+                item.region_filter = region;
+                item.slug_filter = slugArray;
+                list[idx] = item;
+            });
+
+            closeBulkEditModal();
+            selectedImages.clear();
+            loadGallery();
+
+            Swal.fire({
+                icon: 'success',
+                title: 'Uygulandı',
+                timer: 1500,
+                showConfirmButton: false
+            });
         }
 
         function openImageSettings(idx) {
