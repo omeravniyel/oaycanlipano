@@ -88,6 +88,59 @@
         </main>
     </div>
 
+    <!-- Institution Edit Modal -->
+    <div id="edit-modal"
+        class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center">
+        <div class="bg-white rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl">
+            <div class="p-4 border-b flex justify-between items-center bg-slate-50">
+                <h3 class="font-bold text-lg">Kurum Düzenle</h3>
+                <button onclick="closeInstitutionModal()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+            <form id="institution-form" class="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+                <div class="grid grid-cols-2 gap-4">
+                    <input id="form-slug" class="border p-3 rounded-lg" placeholder="Slug (URL)" required>
+                    <input id="form-name" class="border p-3 rounded-lg" placeholder="Kurum Adı" required>
+                    <input id="form-password" class="border p-3 rounded-lg" placeholder="Şifre" required>
+                    <select id="form-type" class="border p-3 rounded-lg">
+                        <option>Ortaokul</option>
+                        <option>Lise</option>
+                        <option>Üniversite Hazırlık</option>
+                    </select>
+                    <input id="form-city" class="border p-3 rounded-lg" placeholder="İl">
+                    <input id="form-district" class="border p-3 rounded-lg" placeholder="İlçe">
+                </div>
+                <div class="grid grid-cols-3 gap-2">
+                    <input id="form-contact-name" placeholder="İletişim Ad" class="border p-3 rounded-lg">
+                    <input id="form-contact-phone" placeholder="Telefon" class="border p-3 rounded-lg">
+                    <input id="form-contact-email" placeholder="E-posta" class="border p-3 rounded-lg">
+                </div>
+                <div class="flex gap-2">
+                    <input id="form-logo" class="flex-1 border p-3 rounded-lg" placeholder="Logo URL">
+                    <input type="file" id="upload-logo-input" class="hidden" accept="image/*">
+                    <button type="button" onclick="document.getElementById('upload-logo-input').click()"
+                        class="bg-slate-100 px-4 rounded-lg hover:bg-slate-200">
+                        Yükle
+                    </button>
+                </div>
+                <div class="flex gap-4">
+                    <label class="flex items-center gap-2">
+                        <input type="checkbox" id="form-dorm-active" checked>
+                        <span>Yurt Modülü</span>
+                    </label>
+                    <label class="flex items-center gap-2">
+                        <input type="checkbox" id="form-logo-locked">
+                        <span>Logo Kilitle</span>
+                    </label>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700">
+                    Kaydet
+                </button>
+            </form>
+        </div>
+    </div>
+
     <script>
         let institutions = [];
         let MASTER_PASSWORD = localStorage.getItem('super_admin_pass') || '283353.';
@@ -99,6 +152,50 @@
                 loginForm.addEventListener('submit', (e) => {
                     e.preventDefault();
                     attemptLogin();
+                });
+            }
+
+            // Institution form submit handler
+            const institutionForm = document.getElementById('institution-form');
+            if (institutionForm) {
+                institutionForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    await saveInstitution();
+                });
+            }
+
+            // Logo upload handler
+            const logoInput = document.getElementById('upload-logo-input');
+            if (logoInput) {
+                logoInput.addEventListener('change', async (e) => {
+                    const file = e.target.files[0];
+                    if (!file) return;
+
+                    const reader = new FileReader();
+                    reader.onload = async (ev) => {
+                        try {
+                            const res = await fetch('/api/upload', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    filename: 'logo-' + Date.now() + '.png',
+                                    fileBase64: ev.target.result.split(',')[1],
+                                    contentType: file.type
+                                })
+                            });
+                            const data = await res.json();
+                            document.getElementById('form-logo').value = data.url;
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Logo yüklendi',
+                                timer: 1500,
+                                showConfirmButton: false
+                            });
+                        } catch (err) {
+                            Swal.fire('Hata', 'Logo yüklenemedi', 'error');
+                        }
+                    };
+                    reader.readAsDataURL(file);
                 });
             }
 
@@ -215,7 +312,21 @@
                 card.className = 'bg-white p-4 rounded-xl border hover:shadow-md transition-shadow';
                 card.innerHTML = `
                     <div>
-                        <h3 class="font-bold text-lg mb-1">${inst.name}</h3>
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-bold text-lg">${inst.name}</h3>
+                            <div class="flex gap-1">
+                                <button onclick='openInstitutionModal(${JSON.stringify(inst).replace(/'/g, "&apos;")})' 
+                                    class="w-8 h-8 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded transition-colors"
+                                    title="Düzenle">
+                                    <i class="fa-solid fa-pen text-sm"></i>
+                                </button>
+                                <button onclick='deleteInstitution(${JSON.stringify(inst).replace(/'/g, "&apos;")})'
+                                    class="w-8 h-8 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"
+                                    title="Sil">
+                                    <i class="fa-solid fa-trash text-sm"></i>
+                                </button>
+                            </div>
+                        </div>
                         <p class="text-sm text-slate-500 mb-3">
                             <i class="fa-solid fa-location-dot text-xs"></i>
                             ${inst.config?.city || '-'} / ${inst.config?.district || '-'}
@@ -255,13 +366,134 @@
             }
         }
 
-        // --- MODAL STUBS (to be implemented) ---
-        function openInstitutionModal() {
-            Swal.fire('Yakında', 'Kurum ekleme özelliği eklenecek.', 'info');
+        // --- INSTITUTION CRUD ---
+        let currentEditingInstitution = null;
+
+        function openInstitutionModal(institution = null) {
+            currentEditingInstitution = institution;
+            const modal = document.getElementById('edit-modal');
+            const form = document.getElementById('institution-form');
+
+            if (institution) {
+                // Edit mode
+                document.querySelector('#edit-modal h3').textContent = 'Kurum Düzenle';
+                document.getElementById('form-slug').value = institution.slug || '';
+                document.getElementById('form-name').value = institution.name || '';
+                document.getElementById('form-password').value = institution.password || '';
+                document.getElementById('form-type').value = institution.config?.institution_type || 'Ortaokul';
+                document.getElementById('form-city').value = institution.config?.city || '';
+                document.getElementById('form-district').value = institution.config?.district || '';
+                document.getElementById('form-logo').value = institution.config?.institution_logo || '';
+                document.getElementById('form-contact-name').value = institution.config?.admin_contact?.name || '';
+                document.getElementById('form-contact-phone').value = institution.config?.admin_contact?.phone || '';
+                document.getElementById('form-contact-email').value = institution.config?.admin_contact?.email || '';
+                document.getElementById('form-dorm-active').checked = institution.config?.module_dorm_active !== false;
+                document.getElementById('form-logo-locked').checked = institution.config?.logo_locked || false;
+            } else {
+                // Create mode
+                document.querySelector('#edit-modal h3').textContent = 'Yeni Kurum';
+                form.reset();
+                document.getElementById('form-dorm-active').checked = true;
+            }
+
+            modal.classList.remove('hidden');
         }
 
-        function openHadithModal() {
-            Swal.fire('Yakında', 'Hadis yönetimi eklenecek.', 'info');
+        function closeInstitutionModal() {
+            document.getElementById('edit-modal').classList.add('hidden');
+            currentEditingInstitution = null;
+        }
+
+        async function saveInstitution() {
+            try {
+                const payload = {
+                    slug: document.getElementById('form-slug').value.trim(),
+                    name: document.getElementById('form-name').value,
+                    password: document.getElementById('form-password').value.trim(),
+                    type: document.getElementById('form-type').value,
+                    institution_logo: document.getElementById('form-logo').value,
+                    city: document.getElementById('form-city').value,
+                    district: document.getElementById('form-district').value,
+                    module_dorm_active: document.getElementById('form-dorm-active').checked,
+                    logo_locked: document.getElementById('form-logo-locked').checked,
+                    admin_contact: {
+                        name: document.getElementById('form-contact-name').value,
+                        phone: document.getElementById('form-contact-phone').value,
+                        email: document.getElementById('form-contact-email').value
+                    }
+                };
+
+                const res = await fetch('/api/manage-institutions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'upsert',
+                        master_password: MASTER_PASSWORD,
+                        payload: payload
+                    })
+                });
+
+                if (!res.ok) {
+                    throw new Error('Kaydetme başarısız');
+                }
+
+                closeInstitutionModal();
+                await fetchInstitutions();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Kaydedildi',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            } catch (err) {
+                console.error('Save error:', err);
+                Swal.fire('Hata', err.message || 'Kaydetme başarısız', 'error');
+            }
+        }
+
+        async function deleteInstitution(institution) {
+            const result = await Swal.fire({
+                title: 'Emin misiniz?',
+                text: `${institution.name} silinecek!`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonText: 'İptal',
+                confirmButtonText: 'Evet, Sil'
+            });
+
+            if (!result.isConfirmed) return;
+
+            try {
+                const res = await fetch('/api/manage-institutions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'delete',
+                        master_password: MASTER_PASSWORD,
+                        payload: { slug: institution.slug }
+                    })
+                });
+
+                if (!res.ok) {
+                    throw new Error('Silme başarısız');
+                }
+
+                await fetchInstitutions();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Silindi',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+            } catch (err) {
+                console.error('Delete error:', err);
+                Swal.fire('Hata', err.message || 'Silme başarısız', 'error');
+            }
+        }
+
+        // --- MODAL STUBS (to be implemented) ---
+        Swal.fire('Yakında', 'Hadis yönetimi eklenecek.', 'info');
         }
 
         function openGalleryModal() {
