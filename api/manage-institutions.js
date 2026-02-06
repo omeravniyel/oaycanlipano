@@ -405,11 +405,13 @@ module.exports = async (request, response) => {
 
                 let hadithStore = (sysData && sysData.config) ? sysData.config : {};
 
-                // Store weeks with start_date as metadata
-                hadithStore[cleanType] = {
-                    weeks: weeks,
-                    start_date: start_date || null
-                };
+                // Store weeks array directly (legacy format compatibility)
+                hadithStore[cleanType] = weeks;
+
+                // Store start_date separately with _date suffix
+                if (start_date) {
+                    hadithStore[`${cleanType}_date`] = start_date;
+                }
 
                 if (sysData) {
                     await supabase.from('institutions').update({ config: hadithStore }).eq('slug', SYSTEM_HADITHS_SLUG);
@@ -440,7 +442,7 @@ module.exports = async (request, response) => {
                     const currentType = (cfg.institution_type || "").trim().toLowerCase();
 
                     if (currentType === targetTypeLower) {
-                        cfg.weekly_hadiths = weeks;
+                        cfg.weekly_hadiths = weeks; // Store as array
                         const p = supabase
                             .from('institutions')
                             .update({ config: cfg })
