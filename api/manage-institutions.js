@@ -386,6 +386,76 @@ module.exports = async (request, response) => {
                 }
             }
 
+            // --- SAVE HADITH (NEW ADMİN PANEL) ---
+            if (action === 'save_hadith') {
+                const { type, weeks, start_date } = payload;
+                if (!type || !weeks) {
+                    return response.status(400).json({ error: 'Type and weeks are required' });
+                }
+
+                const cleanType = type.trim();
+
+                // 1. STORE in system-hadiths for future institutions
+                const SYSTEM_HADITHS_SLUG = 'system-hadiths';
+                const { data: sysData } = await supabase
+                    .from('institutions')
+                    .select('config')
+                    .eq('slug', SYSTEM_HADITHS_SLUG)
+                    .single();
+
+                let hadithStore = (sysData && sysData.config) ? sysData.config : {};
+
+                // Store weeks with start_date as metadata
+                hadithStore[cleanType] = {
+                    weeks: weeks,
+                    start_date: start_date || null
+                };
+
+                if (sysData) {
+                    await supabase.from('institutions').update({ config: hadithStore }).eq('slug', SYSTEM_HADITHS_SLUG);
+                } else {
+                    await supabase.from('institutions').insert([{
+                        slug: SYSTEM_HADITHS_SLUG,
+                        name: 'System Hadiths Store',
+                        config: hadithStore,
+                        password: Math.random().toString(36)
+                    }]);
+                }
+
+                // 2. DISTRIBUTE to existing institutions
+                const { data: targets, error: fetchError } = await supabase
+                    .from('institutions')
+                    .select('*');
+
+                if (fetchError) throw fetchError;
+
+                const targetTypeLower = cleanType.toLowerCase();
+                const updates = [];
+
+                for (const inst of targets) {
+                    // Skip system users
+                    if (inst.slug.startsWith('system-')) continue;
+
+                    const cfg = inst.config || {};
+                    const currentType = (cfg.institution_type || "").trim().toLowerCase();
+
+                    if (currentType === targetTypeLower) {
+                        cfg.weekly_hadiths = weeks;
+                        const p = supabase
+                            .from('institutions')
+                            .update({ config: cfg })
+                            .eq('slug', inst.slug);
+                        updates.push(p);
+                    }
+                }
+
+                if (updates.length > 0) {
+                    await Promise.all(updates);
+                }
+
+                return response.status(200).json({ success: true, count: updates.length });
+            }
+
             // --- HADİS DAĞITIMI (BULK UPDATE) ---
             if (action === 'distribute_hadiths') {
                 const { type, hadiths } = payload;
