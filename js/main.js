@@ -566,9 +566,8 @@ async function fetchConfig() {
             if (Array.isArray(config.weekly_hadiths)) {
                 // NEW FORMAT: Direct array
                 weeklyHadithsArray = config.weekly_hadiths;
-                // Try to get start_date from separate key (Ortaokul_date)
-                const typeKey = config.institution_type || '';
-                semesterStartDate = config[`${typeKey}_date`] || '2025-09-08'; // Fallback
+                // Get start_date from dedicated key
+                semesterStartDate = config.hadith_start_date || '2025-09-08'; // Fallback
             } else if (config.weekly_hadiths.startDate && Array.isArray(config.weekly_hadiths.weeks)) {
                 // OLD FORMAT: Object with startDate and weeks
                 weeklyHadithsArray = config.weekly_hadiths.weeks;

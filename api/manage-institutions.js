@@ -454,6 +454,7 @@ module.exports = async (request, response) => {
                     if (currentType === targetTypeLower) {
                         matchedCount++;
                         cfg.weekly_hadiths = weeks; // Store as array
+                        cfg.hadith_start_date = start_date; // Store start date for week calculation
                         const p = supabase
                             .from('institutions')
                             .update({ config: cfg })
