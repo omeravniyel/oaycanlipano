@@ -389,6 +389,11 @@ module.exports = async (request, response) => {
             // --- SAVE HADITH (NEW ADMİN PANEL) ---
             if (action === 'save_hadith') {
                 const { type, weeks, start_date } = payload;
+                console.log('=== SAVE HADITH DEBUG ===');
+                console.log('Type:', type);
+                console.log('Weeks count:', weeks?.length);
+                console.log('Start date:', start_date);
+
                 if (!type || !weeks) {
                     return response.status(400).json({ error: 'Type and weeks are required' });
                 }
@@ -431,8 +436,11 @@ module.exports = async (request, response) => {
 
                 if (fetchError) throw fetchError;
 
+                console.log('Total institutions fetched:', targets?.length);
+
                 const targetTypeLower = cleanType.toLowerCase();
                 const updates = [];
+                let matchedCount = 0;
 
                 for (const inst of targets) {
                     // Skip system users
@@ -441,7 +449,10 @@ module.exports = async (request, response) => {
                     const cfg = inst.config || {};
                     const currentType = (cfg.institution_type || "").trim().toLowerCase();
 
+                    console.log(`Institution: ${inst.slug}, Type: "${currentType}", Target: "${targetTypeLower}", Match: ${currentType === targetTypeLower}`);
+
                     if (currentType === targetTypeLower) {
+                        matchedCount++;
                         cfg.weekly_hadiths = weeks; // Store as array
                         const p = supabase
                             .from('institutions')
@@ -450,6 +461,9 @@ module.exports = async (request, response) => {
                         updates.push(p);
                     }
                 }
+
+                console.log('Matched institutions:', matchedCount);
+                console.log('Updates to send:', updates.length);
 
                 if (updates.length > 0) {
                     await Promise.all(updates);
