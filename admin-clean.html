@@ -26,22 +26,64 @@
     </div>
 
     <!-- Main Container -->
-    <div id="main-content" class="hidden">
-        <!-- Header -->
-        <header class="bg-white border-b p-6">
-            <div class="max-w-7xl mx-auto flex justify-between items-center">
-                <h1 class="text-2xl font-bold">Super Admin Panel</h1>
-                <button onclick="logout()" class="text-red-600 hover:text-red-800">
+    <div id="main-content" class="hidden flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <aside class="w-72 bg-slate-900 text-slate-300 flex flex-col shadow-2xl">
+            <div class="h-20 flex items-center px-8 border-b border-slate-800/50 text-white font-bold text-xl">
+                PANEL<span class="text-blue-400">V3</span>
+            </div>
+            <nav class="flex-1 py-6 px-4 space-y-1 overflow-y-auto">
+                <a href="#" onclick="switchView('institutions')" id="nav-institutions"
+                    class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-800 text-white">
+                    <i class="fa-solid fa-school w-5"></i> Kurumlar
+                </a>
+                <div class="mt-8 mb-2 px-4 text-xs font-bold text-slate-500 uppercase">İçerik</div>
+                <a href="#" onclick="openHadithModal()"
+                    class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-800">
+                    <i class="fa-solid fa-book-quran w-5"></i> Hadis Yönetimi
+                </a>
+                <a href="#" onclick="openGalleryModal()"
+                    class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-800">
+                    <i class="fa-solid fa-images w-5"></i> Merkezi Galeri
+                </a>
+                <a href="#" onclick="openAnnouncementsModal()"
+                    class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-800">
+                    <i class="fa-solid fa-bullhorn w-5"></i> Merkezi Duyuru
+                </a>
+                <div class="mt-8 mb-2 px-4 text-xs font-bold text-slate-500 uppercase">Sistem</div>
+                <a href="#" onclick="openLandingModal()"
+                    class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-800">
+                    <i class="fa-solid fa-desktop w-5"></i> Site CMS
+                </a>
+                <a href="#" onclick="openEmergencyModal()"
+                    class="flex items-center gap-3 px-4 py-3 rounded-lg text-red-400 hover:bg-red-900/20">
+                    <i class="fa-solid fa-triangle-exclamation w-5"></i> Acil Durum
+                </a>
+            </nav>
+            <div class="p-4 border-t border-slate-800">
+                <button onclick="logout()" class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
                     <i class="fa-solid fa-sign-out"></i> Çıkış
                 </button>
             </div>
-        </header>
+        </aside>
 
-        <!-- Institutions List -->
-        <main class="max-w-7xl mx-auto p-6">
-            <div class="mb-6">
-                <h2 class="text-xl font-bold mb-4">Kurumlar</h2>
-                <div id="institution-list" class="space-y-3"></div>
+        <!-- Main Area -->
+        <main class="flex-1 flex flex-col bg-slate-50 overflow-hidden">
+            <!-- Header -->
+            <header class="h-20 bg-white border-b flex items-center justify-between px-8">
+                <div class="flex items-center gap-4">
+                    <input type="text" id="search-input" oninput="filterInstitutions()"
+                        class="bg-slate-100 rounded-xl px-4 py-2 w-64" placeholder="Kurum Ara...">
+                </div>
+                <button onclick="openInstitutionModal()"
+                    class="bg-blue-600 text-white px-5 py-2 rounded-xl text-sm font-bold hover:bg-blue-700">
+                    + Yeni Kurum
+                </button>
+            </header>
+
+            <!-- Content -->
+            <div class="flex-1 p-8 overflow-y-auto">
+                <div id="institution-list" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4"></div>
             </div>
         </main>
     </div>
@@ -166,28 +208,76 @@
             const container = document.getElementById('institution-list');
             container.innerHTML = '';
 
-            list.forEach(inst => {
+            const filteredList = list.filter(inst => !inst.slug.startsWith('system-'));
+
+            filteredList.forEach(inst => {
                 const card = document.createElement('div');
-                card.className = 'bg-white p-4 rounded-xl border hover:shadow-md transition-shadow cursor-pointer';
+                card.className = 'bg-white p-4 rounded-xl border hover:shadow-md transition-shadow';
                 card.innerHTML = `
-                    <div class="flex justify-between items-center">
-                        <div>
-                            <h3 class="font-bold text-lg">${inst.name}</h3>
-                            <p class="text-sm text-slate-500">
-                                ${inst.config?.city || '-'} / ${inst.config?.district || '-'}
-                            </p>
-                            <p class="text-xs text-slate-400 mt-1">
-                                Şifre: <span class="font-mono font-bold">${inst.password}</span>
-                            </p>
+                    <div>
+                        <h3 class="font-bold text-lg mb-1">${inst.name}</h3>
+                        <p class="text-sm text-slate-500 mb-3">
+                            <i class="fa-solid fa-location-dot text-xs"></i>
+                            ${inst.config?.city || '-'} / ${inst.config?.district || '-'}
+                        </p>
+                        <div class="flex items-center justify-between">
+                            <div class="text-xs text-slate-400">
+                                Şifre: <span class="font-mono font-bold text-slate-700">${inst.password}</span>
+                            </div>
+                            <a href="/${inst.slug}/admin" target="_blank" 
+                               class="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700">
+                                <i class="fa-solid fa-external-link"></i> Aç
+                            </a>
                         </div>
-                        <a href="/${inst.slug}/admin" target="_blank" 
-                           class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
-                            <i class="fa-solid fa-external-link"></i> Panele Git
-                        </a>
                     </div>
                 `;
                 container.appendChild(card);
             });
+        }
+
+        // --- SEARCH/FILTER ---
+        function filterInstitutions() {
+            const searchTerm = document.getElementById('search-input').value.toLowerCase();
+            const filtered = institutions.filter(inst =>
+                inst.name.toLowerCase().includes(searchTerm) ||
+                inst.slug.toLowerCase().includes(searchTerm) ||
+                (inst.config?.city || '').toLowerCase().includes(searchTerm) ||
+                (inst.config?.district || '').toLowerCase().includes(searchTerm)
+            );
+            renderList(filtered);
+        }
+
+        // --- NAVIGATION ---
+        function switchView(view) {
+            // Currently only 'institutions' view exists
+            if (view === 'institutions') {
+                renderList(institutions);
+            }
+        }
+
+        // --- MODAL STUBS (to be implemented) ---
+        function openInstitutionModal() {
+            Swal.fire('Yakında', 'Kurum ekleme özelliği eklenecek.', 'info');
+        }
+
+        function openHadithModal() {
+            Swal.fire('Yakında', 'Hadis yönetimi eklenecek.', 'info');
+        }
+
+        function openGalleryModal() {
+            Swal.fire('Yakında', 'Galeri yönetimi eklenecek.', 'info');
+        }
+
+        function openAnnouncementsModal() {
+            Swal.fire('Yakında', 'Duyuru yönetimi eklenecek.', 'info');
+        }
+
+        function openLandingModal() {
+            Swal.fire('Yakında', 'CMS modülü eklenecek.', 'info');
+        }
+
+        function openEmergencyModal() {
+            Swal.fire('Yakında', 'Acil durum modu eklenecek.', 'info');
         }
 
         // --- UI HELPERS ---
