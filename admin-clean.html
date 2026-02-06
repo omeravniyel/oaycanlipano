@@ -100,29 +100,53 @@
             </div>
             <form id="institution-form" class="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
                 <div class="grid grid-cols-2 gap-4">
-                    <input id="form-slug" class="border p-3 rounded-lg" placeholder="Slug (URL)" required>
-                    <input id="form-name" class="border p-3 rounded-lg" placeholder="Kurum Adı" required>
-                    <input id="form-password" class="border p-3 rounded-lg" placeholder="Şifre" required>
-                    <select id="form-type" class="border p-3 rounded-lg">
-                        <option>Ortaokul</option>
-                        <option>Lise</option>
-                        <option>Üniversite Hazırlık</option>
-                    </select>
-                    <input id="form-city" class="border p-3 rounded-lg" placeholder="İl">
-                    <input id="form-district" class="border p-3 rounded-lg" placeholder="İlçe">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Slug (URL)</label>
+                        <input id="form-slug" class="w-full border p-3 rounded-lg" placeholder="ornek-kurum" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Kurum Adı</label>
+                        <input id="form-name" class="w-full border p-3 rounded-lg" placeholder="Örnek Kurum" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Şifre</label>
+                        <input id="form-password" class="w-full border p-3 rounded-lg" placeholder="****" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Kurum Tipi</label>
+                        <select id="form-type" class="w-full border p-3 rounded-lg">
+                            <option>Ortaokul</option>
+                            <option>Lise</option>
+                            <option>Üniversite Hazırlık</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">İl</label>
+                        <input id="form-city" class="w-full border p-3 rounded-lg" placeholder="İstanbul">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">İlçe</label>
+                        <input id="form-district" class="w-full border p-3 rounded-lg" placeholder="Kadıköy">
+                    </div>
                 </div>
-                <div class="grid grid-cols-3 gap-2">
-                    <input id="form-contact-name" placeholder="İletişim Ad" class="border p-3 rounded-lg">
-                    <input id="form-contact-phone" placeholder="Telefon" class="border p-3 rounded-lg">
-                    <input id="form-contact-email" placeholder="E-posta" class="border p-3 rounded-lg">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">İletişim Bilgileri</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <input id="form-contact-name" placeholder="Ad Soyad" class="border p-3 rounded-lg">
+                        <input id="form-contact-phone" placeholder="Telefon" class="border p-3 rounded-lg">
+                        <input id="form-contact-email" placeholder="E-posta" class="border p-3 rounded-lg">
+                    </div>
                 </div>
-                <div class="flex gap-2">
-                    <input id="form-logo" class="flex-1 border p-3 rounded-lg" placeholder="Logo URL">
-                    <input type="file" id="upload-logo-input" class="hidden" accept="image/*">
-                    <button type="button" onclick="document.getElementById('upload-logo-input').click()"
-                        class="bg-slate-100 px-4 rounded-lg hover:bg-slate-200">
-                        Yükle
-                    </button>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Logo</label>
+                    <div class="flex gap-2">
+                        <input id="form-logo" class="flex-1 border p-3 rounded-lg" placeholder="Logo URL">
+                        <input type="file" id="upload-logo-input" class="hidden" accept="image/*">
+                        <button type="button" onclick="document.getElementById('upload-logo-input').click()"
+                            class="bg-slate-100 px-4 rounded-lg hover:bg-slate-200">
+                            Yükle
+                        </button>
+                    </div>
                 </div>
                 <div class="flex gap-4">
                     <label class="flex items-center gap-2">
