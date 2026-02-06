@@ -75,10 +75,27 @@
                     <input type="text" id="search-input" oninput="filterInstitutions()"
                         class="bg-slate-100 rounded-xl px-4 py-2 w-64" placeholder="Kurum Ara...">
                 </div>
-                <button onclick="openInstitutionModal()"
-                    class="bg-blue-600 text-white px-5 py-2 rounded-xl text-sm font-bold hover:bg-blue-700">
-                    + Yeni Kurum
-                </button>
+                <div class="flex items-center gap-3">
+                    <button onclick="openAnnouncementModal()"
+                        class="bg-amber-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-amber-700 flex items-center gap-2">
+                        <i class="fa-solid fa-bullhorn"></i>
+                        Merkezi Duyurular
+                    </button>
+                    <button onclick="window.location.href='galeri.html'"
+                        class="bg-purple-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-purple-700 flex items-center gap-2">
+                        <i class="fa-solid fa-images"></i>
+                        Galeri
+                    </button>
+                    <button onclick="openHadithModal()"
+                        class="bg-green-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-green-700 flex items-center gap-2">
+                        <i class="fa-solid fa-book-quran"></i>
+                        Hadis Yönetimi
+                    </button>
+                    <button onclick="openInstitutionModal()"
+                        class="bg-blue-600 text-white px-5 py-2 rounded-xl text-sm font-bold hover:bg-blue-700">
+                        + Yeni Kurum
+                    </button>
+                </div>
             </header>
 
             <!-- Content -->
@@ -347,6 +364,77 @@
                     class="px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg">
                     Kaydet ve Dağıt
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Announcement Modal -->
+    <div id="announcement-modal" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-sm">
+        <div class="absolute inset-0" onclick="closeAnnouncementModal()"></div>
+        <div
+            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl h-[90vh] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+            <!-- Header -->
+            <div class="p-6 border-b flex justify-between items-center bg-slate-50">
+                <h3 class="font-bold text-lg">Merkezi Duyurular</h3>
+                <button onclick="closeAnnouncementModal()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Content -->
+            <div class="flex-1 overflow-y-auto p-6 bg-slate-50/30">
+                <!-- Create New Announcement -->
+                <div class="bg-white p-6 rounded-xl border mb-6">
+                    <h4 class="font-bold mb-4 text-slate-700">Yeni Duyuru Oluştur</h4>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Duyuru Metni</label>
+                            <textarea id="announcement-text" rows="3" class="w-full border rounded-lg p-3"
+                                placeholder="Duyuru metnini girin..."></textarea>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Kurum Tipi (İsteğe
+                                    Bağlı)</label>
+                                <select id="announcement-type-filter" multiple
+                                    class="w-full border rounded-lg p-2 h-32">
+                                    <option value="">Tümü</option>
+                                    <option>Ortaokul</option>
+                                    <option>Lise</option>
+                                    <option>Üniversite Hazırlık</option>
+                                    <option>Daimi</option>
+                                    <option>Üniversite</option>
+                                    <option>Tekamül</option>
+                                </select>
+                                <p class="text-xs text-slate-400 mt-1">Ctrl tuşuyla çoklu seçim yapabilirsiniz</p>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Bölge (İsteğe
+                                    Bağlı)</label>
+                                <input id="announcement-region-filter" class="w-full border rounded-lg p-3"
+                                    placeholder="Örn: İstanbul, Ankara">
+                                <p class="text-xs text-slate-400 mt-1">Virgülle ayırın: İstanbul, Ankara</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-4">
+                            <button onclick="broadcastAnnouncement()"
+                                class="px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl">
+                                <i class="fa-solid fa-bullhorn mr-2"></i>
+                                Dağıt
+                            </button>
+                            <span id="broadcast-status" class="text-sm text-slate-500"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Announcements List -->
+                <div class="bg-white p-6 rounded-xl border">
+                    <h4 class="font-bold mb-4 text-slate-700">Aktif Duyurular</h4>
+                    <div id="announcements-list" class="space-y-3"></div>
+                </div>
             </div>
         </div>
     </div>
@@ -1262,6 +1350,165 @@
 
         function openEmergencyModal() {
             Swal.fire('Yakında', 'Acil durum modu eklenecek.', 'info');
+        }
+
+        // --- ANNOUNCEMENT MANAGEMENT ---
+        function openAnnouncementModal() {
+            document.getElementById('announcement-modal').classList.remove('hidden');
+            loadAnnouncements();
+        }
+
+        function closeAnnouncementModal() {
+            document.getElementById('announcement-modal').classList.add('hidden');
+        }
+
+        async function loadAnnouncements() {
+            try {
+                const res = await fetch('/api/manage-institutions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'list_announcements',
+                        master_password: MASTER_PASSWORD
+                    })
+                });
+
+                const data = await res.json();
+                const announcements = data.announcements || [];
+
+                const listEl = document.getElementById('announcements-list');
+                if (announcements.length === 0) {
+                    listEl.innerHTML = '<p class="text-slate-400 text-sm">Aktif duyuru yok.</p>';
+                    return;
+                }
+
+                listEl.innerHTML = announcements.map(ann => `
+                    <div class="p-4 border rounded-lg bg-slate-50 flex justify-between items-start">
+                        <div class="flex-1">
+                            <p class="font-medium">${ann.text}</p>
+                            <p class="text-xs text-slate-400 mt-1">
+                                Dağıtıldı: ${new Date(ann.created_at).toLocaleString('tr-TR')} • 
+                                ${ann.delivered_to} kuruma
+                            </p>
+                        </div>
+                        <button onclick="deleteAnnouncement('${ann.id}')" 
+                            class="ml-4 text-red-600 hover:text-red-700">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </div>
+                `).join('');
+            } catch (err) {
+                console.error('Load announcements error:', err);
+            }
+        }
+
+        async function broadcastAnnouncement() {
+            const text = document.getElementById('announcement-text').value.trim();
+            if (!text) {
+                Swal.fire('Hata', 'Duyuru metnini girin', 'error');
+                return;
+            }
+
+            const typeFilter = document.getElementById('announcement-type-filter');
+            const selectedTypes = Array.from(typeFilter.selectedOptions)
+                .map(opt => opt.value)
+                .filter(v => v !== '');
+
+            const regionInput = document.getElementById('announcement-region-filter').value.trim();
+            const selectedRegions = regionInput ? regionInput.split(',').map(r => r.trim()) : [];
+
+            const filters = {};
+            if (selectedTypes.length > 0) filters.types = selectedTypes;
+            if (selectedRegions.length > 0) filters.regions = selectedRegions;
+
+            try {
+                document.getElementById('broadcast-status').textContent = 'Dağıtılıyor...';
+
+                const res = await fetch('/api/manage-institutions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'broadcast_announcement',
+                        master_password: MASTER_PASSWORD,
+                        payload: {
+                            text: text,
+                            filters: filters,
+                            priority: 'normal'
+                        }
+                    })
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    document.getElementById('broadcast-status').textContent = `✅ ${data.delivered_to} kuruma dağıtıldı!`;
+                    document.getElementById('announcement-text').value = '';
+
+                    setTimeout(() => {
+                        document.getElementById('broadcast-status').textContent = '';
+                        loadAnnouncements();
+                    }, 2000);
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Dağıtıldı',
+                        text: `${data.delivered_to} kuruma duyuru gönderildi`,
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                } else {
+                    throw new Error('Broadcast failed');
+                }
+            } catch (err) {
+                console.error('Broadcast error:', err);
+                document.getElementById('broadcast-status').textContent = '';
+                Swal.fire('Hata', 'Duyuru dağıtılamadı', 'error');
+            }
+        }
+
+        async function deleteAnnouncement(id) {
+            const confirm = await Swal.fire({
+                title: 'Emin misiniz?',
+                text: 'Bu duyuru tüm kurumlardan silinecek',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Evet, Sil',
+                cancelButtonText: 'İptal'
+            });
+
+            if (!confirm.isConfirmed) return;
+
+            try {
+                const res = await fetch('/api/manage-institutions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'delete_announcement',
+                        master_password: MASTER_PASSWORD,
+                        payload: {
+                            announcement_id: id
+                        }
+                    })
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Silindi',
+                        text: `${data.removed_from} kurumdan kaldırıldı`,
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                    loadAnnouncements();
+                } else {
+                    throw new Error('Delete failed');
+                }
+            } catch (err) {
+                console.error('Delete error:', err);
+                Swal.fire('Hata', 'Duyuru silinmedi', 'error');
+            }
         }
 
         // --- UI HELPERS ---

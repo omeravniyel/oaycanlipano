@@ -473,6 +473,199 @@ module.exports = async (request, response) => {
                 return response.status(200).json({ success: true, count: updates.length });
             }
 
+            // --- BROADCAST ANNOUNCEMENT ---
+            if (action === 'broadcast_announcement') {
+                const { text, filters, priority, expires_at } = payload;
+
+                if (!text) {
+                    return response.status(400).json({ error: 'Announcement text is required' });
+                }
+
+                // 1. Query all institutions
+                const { data: allInstitutions, error: fetchError } = await supabase
+                    .from('institutions')
+                    .select('*');
+
+                if (fetchError) throw fetchError;
+
+                // 2. Filter institutions based on criteria
+                let targetInstitutions = allInstitutions.filter(inst => {
+                    // Skip system entries
+                    if (inst.slug.startsWith('system-')) return false;
+
+                    const cfg = inst.config || {};
+
+                    // Filter by type
+                    if (filters?.types && filters.types.length > 0) {
+                        const instType = (cfg.institution_type || '').trim().toLowerCase();
+                        const matchesType = filters.types.some(t =>
+                            t.toLowerCase() === instType
+                        );
+                        if (!matchesType) return false;
+                    }
+
+                    // Filter by region
+                    if (filters?.regions && filters.regions.length > 0) {
+                        const instRegion = (cfg.region || inst.region || '').trim().toLowerCase();
+                        const matchesRegion = filters.regions.some(r =>
+                            r.toLowerCase() === instRegion
+                        );
+                        if (!matchesRegion) return false;
+                    }
+
+                    return true;
+                });
+
+                // 3. Add announcement to each institution's config
+                const updates = [];
+                for (const inst of targetInstitutions) {
+                    const cfg = inst.config || {};
+
+                    // Initialize announcements array if needed
+                    if (!Array.isArray(cfg.announcements)) {
+                        cfg.announcements = [];
+                    }
+
+                    // Add new announcement
+                    cfg.announcements.push(text);
+
+                    const updatePromise = supabase
+                        .from('institutions')
+                        .update({ config: cfg })
+                        .eq('slug', inst.slug);
+
+                    updates.push(updatePromise);
+                }
+
+                // 4. Execute all updates
+                if (updates.length > 0) {
+                    await Promise.all(updates);
+                }
+
+                // 5. Save to central store
+                const announcementRecord = {
+                    id: Date.now().toString(),
+                    text: text,
+                    priority: priority || 'normal',
+                    created_at: new Date().toISOString(),
+                    expires_at: expires_at || null,
+                    filters: filters || {},
+                    delivered_to: updates.length
+                };
+
+                const ANNOUNCEMENTS_SLUG = 'system-announcements';
+                const { data: sysData } = await supabase
+                    .from('institutions')
+                    .select('config')
+                    .eq('slug', ANNOUNCEMENTS_SLUG)
+                    .single();
+
+                let announcementStore = (sysData && sysData.config) ? sysData.config : {};
+                if (!Array.isArray(announcementStore.announcements)) {
+                    announcementStore.announcements = [];
+                }
+
+                announcementStore.announcements.unshift(announcementRecord);
+
+                if (sysData) {
+                    await supabase
+                        .from('institutions')
+                        .update({ config: announcementStore })
+                        .eq('slug', ANNOUNCEMENTS_SLUG);
+                } else {
+                    await supabase.from('institutions').insert([{
+                        slug: ANNOUNCEMENTS_SLUG,
+                        name: 'System Announcements Store',
+                        config: announcementStore,
+                        password: Math.random().toString(36)
+                    }]);
+                }
+
+                return response.status(200).json({
+                    success: true,
+                    delivered_to: updates.length
+                });
+            }
+
+            // --- DELETE ANNOUNCEMENT ---
+            if (action === 'delete_announcement') {
+                const { announcement_id } = payload;
+
+                if (!announcement_id) {
+                    return response.status(400).json({ error: 'Announcement ID required' });
+                }
+
+                // 1. Get announcement details from central store
+                const ANNOUNCEMENTS_SLUG = 'system-announcements';
+                const { data: sysData } = await supabase
+                    .from('institutions')
+                    .select('config')
+                    .eq('slug', ANNOUNCEMENTS_SLUG)
+                    .single();
+
+                if (!sysData || !sysData.config || !Array.isArray(sysData.config.announcements)) {
+                    return response.status(404).json({ error: 'Announcement not found' });
+                }
+
+                const announcement = sysData.config.announcements.find(a => a.id === announcement_id);
+                if (!announcement) {
+                    return response.status(404).json({ error: 'Announcement not found' });
+                }
+
+                const announcementText = announcement.text;
+
+                // 2. Remove from all institutions
+                const { data: allInstitutions } = await supabase
+                    .from('institutions')
+                    .select('*');
+
+                const updates = [];
+                for (const inst of allInstitutions) {
+                    if (inst.slug.startsWith('system-')) continue;
+
+                    const cfg = inst.config || {};
+                    if (Array.isArray(cfg.announcements) && cfg.announcements.includes(announcementText)) {
+                        cfg.announcements = cfg.announcements.filter(a => a !== announcementText);
+
+                        const updatePromise = supabase
+                            .from('institutions')
+                            .update({ config: cfg })
+                            .eq('slug', inst.slug);
+
+                        updates.push(updatePromise);
+                    }
+                }
+
+                if (updates.length > 0) {
+                    await Promise.all(updates);
+                }
+
+                // 3. Remove from central store
+                sysData.config.announcements = sysData.config.announcements.filter(a => a.id !== announcement_id);
+                await supabase
+                    .from('institutions')
+                    .update({ config: sysData.config })
+                    .eq('slug', ANNOUNCEMENTS_SLUG);
+
+                return response.status(200).json({ success: true, removed_from: updates.length });
+            }
+
+            // --- LIST ANNOUNCEMENTS ---
+            if (action === 'list_announcements') {
+                const ANNOUNCEMENTS_SLUG = 'system-announcements';
+                const { data: sysData } = await supabase
+                    .from('institutions')
+                    .select('config')
+                    .eq('slug', ANNOUNCEMENTS_SLUG)
+                    .single();
+
+                const announcements = (sysData && sysData.config && Array.isArray(sysData.config.announcements))
+                    ? sysData.config.announcements
+                    : [];
+
+                return response.status(200).json({ announcements });
+            }
+
             // --- HADİS DAĞITIMI (BULK UPDATE) ---
             if (action === 'distribute_hadiths') {
                 const { type, hadiths } = payload;
