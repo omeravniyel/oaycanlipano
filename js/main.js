@@ -557,9 +557,28 @@ async function fetchConfig() {
         let selectedHadith = null;
 
         // 1. Haftalık Program Kontrolü
-        if (config.weekly_hadiths && config.weekly_hadiths.startDate && Array.isArray(config.weekly_hadiths.weeks)) {
+        // NEW FORMAT: weekly_hadiths is a direct array
+        // OLD FORMAT: weekly_hadiths.weeks is array, weekly_hadiths.startDate exists
+        let weeklyHadithsArray = null;
+        let semesterStartDate = null;
+
+        if (config.weekly_hadiths) {
+            if (Array.isArray(config.weekly_hadiths)) {
+                // NEW FORMAT: Direct array
+                weeklyHadithsArray = config.weekly_hadiths;
+                // Try to get start_date from separate key (Ortaokul_date)
+                const typeKey = config.institution_type || '';
+                semesterStartDate = config[`${typeKey}_date`] || '2025-09-08'; // Fallback
+            } else if (config.weekly_hadiths.startDate && Array.isArray(config.weekly_hadiths.weeks)) {
+                // OLD FORMAT: Object with startDate and weeks
+                weeklyHadithsArray = config.weekly_hadiths.weeks;
+                semesterStartDate = config.weekly_hadiths.startDate;
+            }
+        }
+
+        if (weeklyHadithsArray && weeklyHadithsArray.length > 0) {
             try {
-                const startDate = new Date(config.weekly_hadiths.startDate);
+                const startDate = new Date(semesterStartDate || '2025-09-08');
                 const now = new Date();
                 const oneWeek = 1000 * 60 * 60 * 24 * 7;
 
@@ -570,12 +589,12 @@ async function fetchConfig() {
                 if (weekIndex < 0) weekIndex = 0;
 
                 // Eğer index array dışındaysa son haftayı göster
-                if (weekIndex >= config.weekly_hadiths.weeks.length) {
-                    weekIndex = config.weekly_hadiths.weeks.length - 1;
+                if (weekIndex >= weeklyHadithsArray.length) {
+                    weekIndex = weeklyHadithsArray.length - 1;
                 }
 
-                if (weekIndex >= 0 && weekIndex < config.weekly_hadiths.weeks.length) {
-                    const wData = config.weekly_hadiths.weeks[weekIndex];
+                if (weekIndex >= 0 && weekIndex < weeklyHadithsArray.length) {
+                    const wData = weeklyHadithsArray[weekIndex];
                     if (wData) {
                         selectedHadith = {
                             week: wData.week || `${weekIndex + 1}. HAFTA`,
