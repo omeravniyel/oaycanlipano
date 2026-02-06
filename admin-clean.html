@@ -76,6 +76,11 @@
                         class="bg-slate-100 rounded-xl px-4 py-2 w-64" placeholder="Kurum Ara...">
                 </div>
                 <div class="flex items-center gap-3">
+                    <button onclick="openCMSModal()"
+                        class="bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-indigo-700 flex items-center gap-2">
+                        <i class="fa-solid fa-desktop"></i>
+                        Site Yönetimi
+                    </button>
                     <button onclick="openAnnouncementModal()"
                         class="bg-amber-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-amber-700 flex items-center gap-2">
                         <i class="fa-solid fa-bullhorn"></i>
@@ -437,71 +442,169 @@
                 </div>
             </div>
         </div>
-    </div>
 
-    <script>
-        let institutions = [];
-        let MASTER_PASSWORD = localStorage.getItem('super_admin_pass') || '283353.';
+        <!-- CMS Modal -->
+        <div id="cms-modal" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-sm">
+            <div class="absolute inset-0" onclick="closeCMSModal()"></div>
+            <div
+                class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-5xl h-[90vh] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+                <!-- Header -->
+                <div class="p-6 border-b flex justify-between items-center bg-slate-50">
+                    <h3 class="font-bold text-lg">Site İçerik Yönetimi (CMS)</h3>
+                    <button onclick="closeCMSModal()" class="text-slate-400 hover:text-slate-600">
+                        <i class="fa-solid fa-times"></i>
+                    </button>
+                </div>
 
-        // --- INIT ---
-        document.addEventListener('DOMContentLoaded', async () => {
-            const loginForm = document.getElementById('admin-login-form');
-            if (loginForm) {
-                loginForm.addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    attemptLogin();
-                });
-            }
+                <!-- Tabs -->
+                <div class="flex border-b">
+                    <button onclick="switchCMSTab('hero')" id="tab-btn-hero"
+                        class="flex-1 py-4 text-sm font-bold border-b-2 border-indigo-600 text-indigo-600 bg-indigo-50 transition-colors">
+                        Hero Alanı
+                    </button>
+                    <button onclick="switchCMSTab('solutions')" id="tab-btn-solutions"
+                        class="flex-1 py-4 text-sm font-bold border-b-2 border-transparent text-slate-500 hover:bg-slate-50 transition-colors">
+                        Çözümler
+                    </button>
+                    <button onclick="switchCMSTab('contact')" id="tab-btn-contact"
+                        class="flex-1 py-4 text-sm font-bold border-b-2 border-transparent text-slate-500 hover:bg-slate-50 transition-colors">
+                        İletişim
+                    </button>
+                </div>
 
-            // Institution form submit handler
-            const institutionForm = document.getElementById('institution-form');
-            if (institutionForm) {
-                institutionForm.addEventListener('submit', async (e) => {
-                    e.preventDefault();
-                    await saveInstitution();
-                });
-            }
+                <!-- Content -->
+                <div class="flex-1 overflow-y-auto p-8 bg-slate-50/30">
 
-            // Logo upload handler
-            const logoInput = document.getElementById('upload-logo-input');
-            if (logoInput) {
-                logoInput.addEventListener('change', async (e) => {
-                    const file = e.target.files[0];
-                    if (!file) return;
+                    <!-- Hero Tab -->
+                    <div id="cms-tab-hero" class="space-y-6">
+                        <div class="bg-white p-6 rounded-xl border">
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Üst Rozet Metni</label>
+                            <input id="cms-hero-badge" class="w-full border p-3 rounded-lg"
+                                placeholder="DAHA HIZLI, DAHA AKILLI">
+                        </div>
 
-                    const reader = new FileReader();
-                    reader.onload = async (ev) => {
-                        try {
-                            const res = await fetch('/api/upload', {
-                                method: 'POST',
-                                headers: { 'Content-Type': 'application/json' },
-                                body: JSON.stringify({
-                                    filename: 'logo-' + Date.now() + '.png',
-                                    fileBase64: ev.target.result.split(',')[1],
-                                    contentType: file.type
-                                })
-                            });
-                            const data = await res.json();
-                            document.getElementById('form-logo').value = data.url;
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Logo yüklendi',
-                                timer: 1500,
-                                showConfirmButton: false
-                            });
-                        } catch (err) {
-                            Swal.fire('Hata', 'Logo yüklenemedi', 'error');
-                        }
-                    };
-                    reader.readAsDataURL(file);
-                });
-            }
+                        <div class="grid grid-cols-2 gap-6">
+                            <div class="bg-white p-6 rounded-xl border">
+                                <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Başlık Satır
+                                    1</label>
+                                <input id="cms-hero-title1" class="w-full border p-3 rounded-lg"
+                                    placeholder="Kurumunuza Özel">
+                            </div>
+                            <div class="bg-white p-6 rounded-xl border">
+                                <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Başlık Satır 2
+                                    (Renkli)</label>
+                                <input id="cms-hero-title2" class="w-full border p-3 rounded-lg"
+                                    placeholder="Modern İletişim Çözümü">
+                            </div>
+                        </div>
 
-            // Gallery upload handler
-            const galleryUploadInput = document.getElementById('gallery-upload-input');
-            if (galleryUploadInput) {
-                galleryUploadInput.addEventListener('change', async (e) => {
-                    for (const file of e.target.files) {
+                        <div class="bg-white p-6 rounded-xl border">
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Açıklama Metni</label>
+                            <textarea id="cms-hero-desc" rows="3" class="w-full border p-3 rounded-lg"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Solutions Tab -->
+                    <div id="cms-tab-solutions" class="hidden space-y-6">
+                        <!-- Solution 1 -->
+                        <div class="bg-white p-6 rounded-xl border relative overflow-hidden">
+                            <div class="absolute top-0 right-0 w-20 h-20 bg-blue-100 rounded-bl-full opacity-50"></div>
+                            <h4 class="font-bold text-blue-600 mb-4">1. Kart: Hız & Performans</h4>
+                            <div class="space-y-4">
+                                <input id="cms-sol1-title" class="w-full border p-3 rounded-lg" placeholder="Başlık">
+                                <textarea id="cms-sol1-desc" rows="2" class="w-full border p-3 rounded-lg"
+                                    placeholder="Açıklama"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Solution 2 -->
+                        <div class="bg-white p-6 rounded-xl border relative overflow-hidden">
+                            <div class="absolute top-0 right-0 w-20 h-20 bg-purple-100 rounded-bl-full opacity-50">
+                            </div>
+                            <h4 class="font-bold text-purple-600 mb-4">2. Kart: Özelleştirme</h4>
+                            <div class="space-y-4">
+                                <input id="cms-sol2-title" class="w-full border p-3 rounded-lg" placeholder="Başlık">
+                                <textarea id="cms-sol2-desc" rows="2" class="w-full border p-3 rounded-lg"
+                                    placeholder="Açıklama"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Solution 3 -->
+                        <div class="bg-white p-6 rounded-xl border relative overflow-hidden">
+                            <div class="absolute top-0 right-0 w-20 h-20 bg-orange-100 rounded-bl-full opacity-50">
+                            </div>
+                            <h4 class="font-bold text-orange-600 mb-4">3. Kart: Mobil Uyum</h4>
+                            <div class="space-y-4">
+                                <input id="cms-sol3-title" class="w-full border p-3 rounded-lg" placeholder="Başlık">
+                                <textarea id="cms-sol3-desc" rows="2" class="w-full border p-3 rounded-lg"
+                                    placeholder="Açıklama"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contact Tab -->
+                    <div id="cms-tab-contact" class="hidden space-y-6">
+                        <div class="bg-white p-6 rounded-xl border">
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-2">E-posta Adresi</label>
+                            <input id="cms-contact-email" class="w-full border p-3 rounded-lg"
+                                placeholder="iletisim@...">
+                        </div>
+                        <div class="bg-white p-6 rounded-xl border">
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Telefon
+                                Numarası</label>
+                            <input id="cms-contact-phone" class="w-full border p-3 rounded-lg" placeholder="05XX...">
+                        </div>
+                        <div class="bg-white p-6 rounded-xl border">
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-2">WhatsApp Linki</label>
+                            <input id="cms-whatsapp-link" class="w-full border p-3 rounded-lg"
+                                placeholder="https://wa.me/...">
+                            <p class="text-xs text-slate-400 mt-1">Tam URL giriniz (https://...)</p>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Footer -->
+                <div class="p-6 border-t flex justify-end bg-white">
+                    <button onclick="saveCMS()"
+                        class="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg flex items-center gap-2">
+                        <i class="fa-solid fa-save"></i>
+                        Siteyi Güncelle
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            let institutions = [];
+            let MASTER_PASSWORD = localStorage.getItem('super_admin_pass') || '283353.';
+
+            // --- INIT ---
+            document.addEventListener('DOMContentLoaded', async () => {
+                const loginForm = document.getElementById('admin-login-form');
+                if (loginForm) {
+                    loginForm.addEventListener('submit', (e) => {
+                        e.preventDefault();
+                        attemptLogin();
+                    });
+                }
+
+                // Institution form submit handler
+                const institutionForm = document.getElementById('institution-form');
+                if (institutionForm) {
+                    institutionForm.addEventListener('submit', async (e) => {
+                        e.preventDefault();
+                        await saveInstitution();
+                    });
+                }
+
+                // Logo upload handler
+                const logoInput = document.getElementById('upload-logo-input');
+                if (logoInput) {
+                    logoInput.addEventListener('change', async (e) => {
+                        const file = e.target.files[0];
+                        if (!file) return;
+
                         const reader = new FileReader();
                         reader.onload = async (ev) => {
                             try {
@@ -509,160 +612,193 @@
                                     method: 'POST',
                                     headers: { 'Content-Type': 'application/json' },
                                     body: JSON.stringify({
-                                        filename: 'gallery-' + Date.now() + '.png',
+                                        filename: 'logo-' + Date.now() + '.png',
                                         fileBase64: ev.target.result.split(',')[1],
                                         contentType: file.type
                                     })
                                 });
                                 const data = await res.json();
-
-                                const type = document.getElementById('gallery-type').value;
-                                if (!globalGallery[type]) {
-                                    globalGallery[type] = { images: [], left_gallery_links: [] };
-                                }
-
-                                const newImage = {
-                                    url: data.url,
-                                    region_filter: '',
-                                    slug_filter: []
-                                };
-
-                                if (currentGalleryTab === 'main') {
-                                    globalGallery[type].images.push(newImage);
-                                } else {
-                                    globalGallery[type].left_gallery_links.push(newImage);
-                                }
-
-                                loadGallery();
-
+                                document.getElementById('form-logo').value = data.url;
                                 Swal.fire({
                                     icon: 'success',
-                                    title: 'Yüklendi',
-                                    timer: 1000,
+                                    title: 'Logo yüklendi',
+                                    timer: 1500,
                                     showConfirmButton: false
                                 });
                             } catch (err) {
-                                console.error('Upload error:', err);
-                                Swal.fire('Hata', 'Yükleme başarısız', 'error');
+                                Swal.fire('Hata', 'Logo yüklenemedi', 'error');
                             }
                         };
                         reader.readAsDataURL(file);
-                    }
-                });
-            }
+                    });
+                }
 
-            if (localStorage.getItem('super_admin_pass')) {
-                const success = await fetchInstitutions();
-                if (success) {
-                    showMainContent();
+                // Gallery upload handler
+                const galleryUploadInput = document.getElementById('gallery-upload-input');
+                if (galleryUploadInput) {
+                    galleryUploadInput.addEventListener('change', async (e) => {
+                        for (const file of e.target.files) {
+                            const reader = new FileReader();
+                            reader.onload = async (ev) => {
+                                try {
+                                    const res = await fetch('/api/upload', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({
+                                            filename: 'gallery-' + Date.now() + '.png',
+                                            fileBase64: ev.target.result.split(',')[1],
+                                            contentType: file.type
+                                        })
+                                    });
+                                    const data = await res.json();
+
+                                    const type = document.getElementById('gallery-type').value;
+                                    if (!globalGallery[type]) {
+                                        globalGallery[type] = { images: [], left_gallery_links: [] };
+                                    }
+
+                                    const newImage = {
+                                        url: data.url,
+                                        region_filter: '',
+                                        slug_filter: []
+                                    };
+
+                                    if (currentGalleryTab === 'main') {
+                                        globalGallery[type].images.push(newImage);
+                                    } else {
+                                        globalGallery[type].left_gallery_links.push(newImage);
+                                    }
+
+                                    loadGallery();
+
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Yüklendi',
+                                        timer: 1000,
+                                        showConfirmButton: false
+                                    });
+                                } catch (err) {
+                                    console.error('Upload error:', err);
+                                    Swal.fire('Hata', 'Yükleme başarısız', 'error');
+                                }
+                            };
+                            reader.readAsDataURL(file);
+                        }
+                    });
+                }
+
+                if (localStorage.getItem('super_admin_pass')) {
+                    const success = await fetchInstitutions();
+                    if (success) {
+                        showMainContent();
+                    } else {
+                        showLoginModal();
+                    }
                 } else {
                     showLoginModal();
                 }
-            } else {
-                showLoginModal();
-            }
-        });
+            });
 
-        // --- LOGIN ---
-        async function attemptLogin() {
-            const val = document.getElementById('master-password').value.trim();
-            if (!val) {
-                Swal.fire('Uyarı', 'Lütfen şifre giriniz.', 'warning');
-                return;
-            }
-
-            MASTER_PASSWORD = val;
-            localStorage.setItem('super_admin_pass', val);
-
-            const success = await fetchInstitutions(true);
-
-            if (success) {
-                showMainContent();
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Giriş Başarılı',
-                    timer: 1000,
-                    showConfirmButton: false
-                });
-            } else {
-                localStorage.removeItem('super_admin_pass');
-            }
-        }
-
-        // --- FETCH INSTITUTIONS ---
-        async function fetchInstitutions(showError = false) {
-            try {
-                const res = await fetch('/api/manage-institutions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'list',
-                        master_password: MASTER_PASSWORD
-                    })
-                });
-
-                const contentType = res.headers.get('content-type');
-                if (!contentType || !contentType.includes('application/json')) {
-                    throw new Error('API yanıt vermedi');
+            // --- LOGIN ---
+            async function attemptLogin() {
+                const val = document.getElementById('master-password').value.trim();
+                if (!val) {
+                    Swal.fire('Uyarı', 'Lütfen şifre giriniz.', 'warning');
+                    return;
                 }
 
-                const data = await res.json();
+                MASTER_PASSWORD = val;
+                localStorage.setItem('super_admin_pass', val);
 
-                if (!res.ok) {
-                    throw new Error(data.error || 'Sunucu hatası');
+                const success = await fetchInstitutions(true);
+
+                if (success) {
+                    showMainContent();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Giriş Başarılı',
+                        timer: 1000,
+                        showConfirmButton: false
+                    });
+                } else {
+                    localStorage.removeItem('super_admin_pass');
                 }
+            }
 
-                institutions = data.institutions || [];
-                renderList(institutions);
-                return true;
+            // --- FETCH INSTITUTIONS ---
+            async function fetchInstitutions(showError = false) {
+                try {
+                    const res = await fetch('/api/manage-institutions', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'list',
+                            master_password: MASTER_PASSWORD
+                        })
+                    });
 
-            } catch (e) {
-                console.warn('Fetch Error:', e);
-
-                const masterKeys = ['283353.', '283353', 'admin123'];
-                const isMaster = masterKeys.includes(MASTER_PASSWORD);
-
-                if (isMaster) {
-                    if (showError) {
-                        Swal.fire({
-                            icon: 'info',
-                            title: 'Offline Mode',
-                            text: 'API bulunamadı, demo modunda çalışıyor.',
-                            timer: 2000,
-                            showConfirmButton: false
-                        });
+                    const contentType = res.headers.get('content-type');
+                    if (!contentType || !contentType.includes('application/json')) {
+                        throw new Error('API yanıt vermedi');
                     }
 
-                    institutions = [
-                        {
-                            name: 'Demo Kurum',
-                            slug: 'demo',
-                            password: '123',
-                            config: { city: 'İstanbul', district: 'Merkez' }
-                        }
-                    ];
+                    const data = await res.json();
+
+                    if (!res.ok) {
+                        throw new Error(data.error || 'Sunucu hatası');
+                    }
+
+                    institutions = data.institutions || [];
                     renderList(institutions);
                     return true;
-                }
 
-                if (showError) {
-                    Swal.fire('Giriş Başarısız', e.message || 'Bağlantı kurulamadı', 'error');
+                } catch (e) {
+                    console.warn('Fetch Error:', e);
+
+                    const masterKeys = ['283353.', '283353', 'admin123'];
+                    const isMaster = masterKeys.includes(MASTER_PASSWORD);
+
+                    if (isMaster) {
+                        if (showError) {
+                            Swal.fire({
+                                icon: 'info',
+                                title: 'Offline Mode',
+                                text: 'API bulunamadı, demo modunda çalışıyor.',
+                                timer: 2000,
+                                showConfirmButton: false
+                            });
+                        }
+
+                        institutions = [
+                            {
+                                name: 'Demo Kurum',
+                                slug: 'demo',
+                                password: '123',
+                                config: { city: 'İstanbul', district: 'Merkez' }
+                            }
+                        ];
+                        renderList(institutions);
+                        return true;
+                    }
+
+                    if (showError) {
+                        Swal.fire('Giriş Başarısız', e.message || 'Bağlantı kurulamadı', 'error');
+                    }
+                    return false;
                 }
-                return false;
             }
-        }
 
-        // --- RENDER LIST ---
-        function renderList(list) {
-            const container = document.getElementById('institution-list');
-            container.innerHTML = '';
+            // --- RENDER LIST ---
+            function renderList(list) {
+                const container = document.getElementById('institution-list');
+                container.innerHTML = '';
 
-            const filteredList = list.filter(inst => !inst.slug.startsWith('system-'));
+                const filteredList = list.filter(inst => !inst.slug.startsWith('system-'));
 
-            filteredList.forEach(inst => {
-                const card = document.createElement('div');
-                card.className = 'bg-white p-4 rounded-xl border hover:shadow-md transition-shadow';
-                card.innerHTML = `
+                filteredList.forEach(inst => {
+                    const card = document.createElement('div');
+                    card.className = 'bg-white p-4 rounded-xl border hover:shadow-md transition-shadow';
+                    card.innerHTML = `
                     <div>
                         <div class="flex justify-between items-start mb-2">
                             <h3 class="font-bold text-lg">${inst.name}</h3>
@@ -694,243 +830,243 @@
                         </div>
                     </div>
                 `;
-                container.appendChild(card);
-            });
-        }
-
-        // --- SEARCH/FILTER ---
-        function filterInstitutions() {
-            const searchTerm = document.getElementById('search-input').value.toLowerCase();
-            const filtered = institutions.filter(inst =>
-                inst.name.toLowerCase().includes(searchTerm) ||
-                inst.slug.toLowerCase().includes(searchTerm) ||
-                (inst.config?.city || '').toLowerCase().includes(searchTerm) ||
-                (inst.config?.district || '').toLowerCase().includes(searchTerm)
-            );
-            renderList(filtered);
-        }
-
-        // --- NAVIGATION ---
-        function switchView(view) {
-            // Currently only 'institutions' view exists
-            if (view === 'institutions') {
-                renderList(institutions);
-            }
-        }
-
-        // --- INSTITUTION CRUD ---
-        let currentEditingInstitution = null;
-
-        function openInstitutionModal(institution = null) {
-            currentEditingInstitution = institution;
-            const modal = document.getElementById('edit-modal');
-            const form = document.getElementById('institution-form');
-
-            if (institution) {
-                // Edit mode
-                document.querySelector('#edit-modal h3').textContent = 'Kurum Düzenle';
-                document.getElementById('form-slug').value = institution.slug || '';
-                document.getElementById('form-name').value = institution.name || '';
-                document.getElementById('form-password').value = institution.password || '';
-                document.getElementById('form-type').value = institution.config?.institution_type || 'Ortaokul';
-                document.getElementById('form-city').value = institution.config?.city || '';
-                document.getElementById('form-district').value = institution.config?.district || '';
-                document.getElementById('form-region').value = institution.config?.region || '';
-                document.getElementById('form-logo').value = institution.config?.institution_logo || '';
-                document.getElementById('form-contact-name').value = institution.config?.admin_contact?.name || '';
-                document.getElementById('form-contact-phone').value = institution.config?.admin_contact?.phone || '';
-                document.getElementById('form-contact-email').value = institution.config?.admin_contact?.email || '';
-                document.getElementById('form-dorm-active').checked = institution.config?.module_dorm_active !== false;
-                document.getElementById('form-logo-locked').checked = institution.config?.logo_locked || false;
-            } else {
-                // Create mode
-                document.querySelector('#edit-modal h3').textContent = 'Yeni Kurum';
-                form.reset();
-                document.getElementById('form-dorm-active').checked = true;
+                    container.appendChild(card);
+                });
             }
 
-            modal.classList.remove('hidden');
-        }
+            // --- SEARCH/FILTER ---
+            function filterInstitutions() {
+                const searchTerm = document.getElementById('search-input').value.toLowerCase();
+                const filtered = institutions.filter(inst =>
+                    inst.name.toLowerCase().includes(searchTerm) ||
+                    inst.slug.toLowerCase().includes(searchTerm) ||
+                    (inst.config?.city || '').toLowerCase().includes(searchTerm) ||
+                    (inst.config?.district || '').toLowerCase().includes(searchTerm)
+                );
+                renderList(filtered);
+            }
 
-        function closeInstitutionModal() {
-            document.getElementById('edit-modal').classList.add('hidden');
-            currentEditingInstitution = null;
-        }
+            // --- NAVIGATION ---
+            function switchView(view) {
+                // Currently only 'institutions' view exists
+                if (view === 'institutions') {
+                    renderList(institutions);
+                }
+            }
 
-        async function saveInstitution() {
-            try {
-                const payload = {
-                    slug: document.getElementById('form-slug').value.trim(),
-                    name: document.getElementById('form-name').value,
-                    password: document.getElementById('form-password').value.trim(),
-                    type: document.getElementById('form-type').value,
-                    institution_logo: document.getElementById('form-logo').value,
-                    city: document.getElementById('form-city').value,
-                    district: document.getElementById('form-district').value,
-                    region: document.getElementById('form-region').value,
-                    module_dorm_active: document.getElementById('form-dorm-active').checked,
-                    logo_locked: document.getElementById('form-logo-locked').checked,
-                    admin_contact: {
-                        name: document.getElementById('form-contact-name').value,
-                        phone: document.getElementById('form-contact-phone').value,
-                        email: document.getElementById('form-contact-email').value
+            // --- INSTITUTION CRUD ---
+            let currentEditingInstitution = null;
+
+            function openInstitutionModal(institution = null) {
+                currentEditingInstitution = institution;
+                const modal = document.getElementById('edit-modal');
+                const form = document.getElementById('institution-form');
+
+                if (institution) {
+                    // Edit mode
+                    document.querySelector('#edit-modal h3').textContent = 'Kurum Düzenle';
+                    document.getElementById('form-slug').value = institution.slug || '';
+                    document.getElementById('form-name').value = institution.name || '';
+                    document.getElementById('form-password').value = institution.password || '';
+                    document.getElementById('form-type').value = institution.config?.institution_type || 'Ortaokul';
+                    document.getElementById('form-city').value = institution.config?.city || '';
+                    document.getElementById('form-district').value = institution.config?.district || '';
+                    document.getElementById('form-region').value = institution.config?.region || '';
+                    document.getElementById('form-logo').value = institution.config?.institution_logo || '';
+                    document.getElementById('form-contact-name').value = institution.config?.admin_contact?.name || '';
+                    document.getElementById('form-contact-phone').value = institution.config?.admin_contact?.phone || '';
+                    document.getElementById('form-contact-email').value = institution.config?.admin_contact?.email || '';
+                    document.getElementById('form-dorm-active').checked = institution.config?.module_dorm_active !== false;
+                    document.getElementById('form-logo-locked').checked = institution.config?.logo_locked || false;
+                } else {
+                    // Create mode
+                    document.querySelector('#edit-modal h3').textContent = 'Yeni Kurum';
+                    form.reset();
+                    document.getElementById('form-dorm-active').checked = true;
+                }
+
+                modal.classList.remove('hidden');
+            }
+
+            function closeInstitutionModal() {
+                document.getElementById('edit-modal').classList.add('hidden');
+                currentEditingInstitution = null;
+            }
+
+            async function saveInstitution() {
+                try {
+                    const payload = {
+                        slug: document.getElementById('form-slug').value.trim(),
+                        name: document.getElementById('form-name').value,
+                        password: document.getElementById('form-password').value.trim(),
+                        type: document.getElementById('form-type').value,
+                        institution_logo: document.getElementById('form-logo').value,
+                        city: document.getElementById('form-city').value,
+                        district: document.getElementById('form-district').value,
+                        region: document.getElementById('form-region').value,
+                        module_dorm_active: document.getElementById('form-dorm-active').checked,
+                        logo_locked: document.getElementById('form-logo-locked').checked,
+                        admin_contact: {
+                            name: document.getElementById('form-contact-name').value,
+                            phone: document.getElementById('form-contact-phone').value,
+                            email: document.getElementById('form-contact-email').value
+                        }
+                    };
+
+                    const res = await fetch('/api/manage-institutions', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'upsert',
+                            master_password: MASTER_PASSWORD,
+                            payload: payload
+                        })
+                    });
+
+                    if (!res.ok) {
+                        throw new Error('Kaydetme başarısız');
                     }
-                };
 
-                const res = await fetch('/api/manage-institutions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'upsert',
-                        master_password: MASTER_PASSWORD,
-                        payload: payload
-                    })
-                });
-
-                if (!res.ok) {
-                    throw new Error('Kaydetme başarısız');
+                    closeInstitutionModal();
+                    await fetchInstitutions();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Kaydedildi',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                } catch (err) {
+                    console.error('Save error:', err);
+                    Swal.fire('Hata', err.message || 'Kaydetme başarısız', 'error');
                 }
-
-                closeInstitutionModal();
-                await fetchInstitutions();
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Kaydedildi',
-                    timer: 1500,
-                    showConfirmButton: false
-                });
-            } catch (err) {
-                console.error('Save error:', err);
-                Swal.fire('Hata', err.message || 'Kaydetme başarısız', 'error');
             }
-        }
 
-        async function deleteInstitution(institution) {
-            const result = await Swal.fire({
-                title: 'Emin misiniz?',
-                text: `${institution.name} silinecek!`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#dc2626',
-                cancelButtonText: 'İptal',
-                confirmButtonText: 'Evet, Sil'
-            });
-
-            if (!result.isConfirmed) return;
-
-            try {
-                const res = await fetch('/api/manage-institutions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'delete',
-                        master_password: MASTER_PASSWORD,
-                        payload: { slug: institution.slug }
-                    })
+            async function deleteInstitution(institution) {
+                const result = await Swal.fire({
+                    title: 'Emin misiniz?',
+                    text: `${institution.name} silinecek!`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc2626',
+                    cancelButtonText: 'İptal',
+                    confirmButtonText: 'Evet, Sil'
                 });
 
-                if (!res.ok) {
-                    throw new Error('Silme başarısız');
-                }
+                if (!result.isConfirmed) return;
 
-                await fetchInstitutions();
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Silindi',
-                    timer: 1500,
-                    showConfirmButton: false
-                });
-            } catch (err) {
-                console.error('Delete error:', err);
-                Swal.fire('Hata', err.message || 'Silme başarısız', 'error');
-            }
-        }
-
-        // --- GALLERY MANAGEMENT ---
-        let globalGallery = {};
-        let currentGalleryTab = 'main';
-        let currentEditingImageIndex = -1;
-        let selectedImages = new Set();
-
-        function openGalleryModal() {
-            document.getElementById('gallery-modal').classList.remove('hidden');
-            selectedImages.clear();
-            loadGallery(true);
-        }
-
-        function closeGalleryModal() {
-            document.getElementById('gallery-modal').classList.add('hidden');
-            selectedImages.clear();
-        }
-
-        function switchGalleryTab(tab) {
-            currentGalleryTab = tab;
-            selectedImages.clear();
-            updateBulkEditButton();
-
-            // Update tab buttons
-            document.querySelectorAll('.gallery-tab').forEach(btn => {
-                btn.classList.remove('active', 'bg-white', 'shadow-sm');
-                btn.classList.add('text-slate-500');
-            });
-
-            const activeBtn = document.getElementById(`tab-${tab}`);
-            activeBtn.classList.add('active', 'bg-white', 'shadow-sm');
-            activeBtn.classList.remove('text-slate-500');
-
-            loadGallery();
-        }
-
-        async function loadGallery(fetchFromApi = false) {
-            const type = document.getElementById('gallery-type').value;
-
-            if (fetchFromApi) {
                 try {
                     const res = await fetch('/api/manage-institutions', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            action: 'get_global_gallery',
-                            master_password: MASTER_PASSWORD
+                            action: 'delete',
+                            master_password: MASTER_PASSWORD,
+                            payload: { slug: institution.slug }
                         })
                     });
-                    const data = await res.json();
-                    globalGallery = data.config || {};
+
+                    if (!res.ok) {
+                        throw new Error('Silme başarısız');
+                    }
+
+                    await fetchInstitutions();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Silindi',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
                 } catch (err) {
-                    console.error('Gallery load error:', err);
-                    globalGallery = {};
+                    console.error('Delete error:', err);
+                    Swal.fire('Hata', err.message || 'Silme başarısız', 'error');
                 }
             }
 
-            const grid = document.getElementById('gallery-grid');
-            grid.innerHTML = '';
+            // --- GALLERY MANAGEMENT ---
+            let globalGallery = {};
+            let currentGalleryTab = 'main';
+            let currentEditingImageIndex = -1;
+            let selectedImages = new Set();
 
-            const items = currentGalleryTab === 'main'
-                ? (globalGallery[type]?.images || [])
-                : (globalGallery[type]?.left_gallery_links || []);
+            function openGalleryModal() {
+                document.getElementById('gallery-modal').classList.remove('hidden');
+                selectedImages.clear();
+                loadGallery(true);
+            }
 
-            if (items.length === 0) {
-                document.getElementById('gallery-empty').classList.remove('hidden');
-            } else {
-                document.getElementById('gallery-empty').classList.add('hidden');
+            function closeGalleryModal() {
+                document.getElementById('gallery-modal').classList.add('hidden');
+                selectedImages.clear();
+            }
 
-                items.forEach((item, idx) => {
-                    const url = typeof item === 'string' ? item : item.url;
-                    const region = (typeof item === 'object' && item.region_filter) ? item.region_filter : '';
-                    const slug = (typeof item === 'object' && item.slug_filter && item.slug_filter.length > 0) ? 'Özel' : '';
+            function switchGalleryTab(tab) {
+                currentGalleryTab = tab;
+                selectedImages.clear();
+                updateBulkEditButton();
 
-                    let badge = '';
-                    if (region) {
-                        badge = `<span class="absolute top-2 left-2 bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded shadow">${region}</span>`;
-                    } else if (slug) {
-                        badge = `<span class="absolute top-2 left-2 bg-purple-600 text-white text-[10px] font-bold px-2 py-1 rounded shadow">ÖZEL</span>`;
+                // Update tab buttons
+                document.querySelectorAll('.gallery-tab').forEach(btn => {
+                    btn.classList.remove('active', 'bg-white', 'shadow-sm');
+                    btn.classList.add('text-slate-500');
+                });
+
+                const activeBtn = document.getElementById(`tab-${tab}`);
+                activeBtn.classList.add('active', 'bg-white', 'shadow-sm');
+                activeBtn.classList.remove('text-slate-500');
+
+                loadGallery();
+            }
+
+            async function loadGallery(fetchFromApi = false) {
+                const type = document.getElementById('gallery-type').value;
+
+                if (fetchFromApi) {
+                    try {
+                        const res = await fetch('/api/manage-institutions', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                action: 'get_global_gallery',
+                                master_password: MASTER_PASSWORD
+                            })
+                        });
+                        const data = await res.json();
+                        globalGallery = data.config || {};
+                    } catch (err) {
+                        console.error('Gallery load error:', err);
+                        globalGallery = {};
                     }
+                }
 
-                    const checked = selectedImages.has(idx) ? 'checked' : '';
+                const grid = document.getElementById('gallery-grid');
+                grid.innerHTML = '';
 
-                    const card = document.createElement('div');
-                    card.className = 'relative group aspect-square bg-white rounded-xl border overflow-hidden shadow-sm';
-                    card.innerHTML = `
+                const items = currentGalleryTab === 'main'
+                    ? (globalGallery[type]?.images || [])
+                    : (globalGallery[type]?.left_gallery_links || []);
+
+                if (items.length === 0) {
+                    document.getElementById('gallery-empty').classList.remove('hidden');
+                } else {
+                    document.getElementById('gallery-empty').classList.add('hidden');
+
+                    items.forEach((item, idx) => {
+                        const url = typeof item === 'string' ? item : item.url;
+                        const region = (typeof item === 'object' && item.region_filter) ? item.region_filter : '';
+                        const slug = (typeof item === 'object' && item.slug_filter && item.slug_filter.length > 0) ? 'Özel' : '';
+
+                        let badge = '';
+                        if (region) {
+                            badge = `<span class="absolute top-2 left-2 bg-blue-600 text-white text-[10px] font-bold px-2 py-1 rounded shadow">${region}</span>`;
+                        } else if (slug) {
+                            badge = `<span class="absolute top-2 left-2 bg-purple-600 text-white text-[10px] font-bold px-2 py-1 rounded shadow">ÖZEL</span>`;
+                        }
+
+                        const checked = selectedImages.has(idx) ? 'checked' : '';
+
+                        const card = document.createElement('div');
+                        card.className = 'relative group aspect-square bg-white rounded-xl border overflow-hidden shadow-sm';
+                        card.innerHTML = `
                         <img src="${url}" class="w-full h-full object-cover">
                         <input type="checkbox" ${checked} onchange="toggleImageSelection(${idx})" 
                             class="absolute top-2 right-2 w-5 h-5 cursor-pointer z-10">
@@ -946,312 +1082,312 @@
                             </button>
                         </div>
                     `;
-                    grid.appendChild(card);
-                });
-            }
-
-            updateBulkEditButton();
-        }
-
-        function toggleImageSelection(idx) {
-            if (selectedImages.has(idx)) {
-                selectedImages.delete(idx);
-            } else {
-                selectedImages.add(idx);
-            }
-            updateBulkEditButton();
-        }
-
-        function toggleSelectAll() {
-            const type = document.getElementById('gallery-type').value;
-            const items = currentGalleryTab === 'main'
-                ? (globalGallery[type]?.images || [])
-                : (globalGallery[type]?.left_gallery_links || []);
-
-            if (selectedImages.size === items.length) {
-                // Deselect all
-                selectedImages.clear();
-            } else {
-                // Select all
-                selectedImages.clear();
-                items.forEach((_, idx) => selectedImages.add(idx));
-            }
-
-            loadGallery();
-        }
-
-        function updateBulkEditButton() {
-            const count = selectedImages.size;
-            const btn = document.getElementById('bulk-edit-btn');
-            const countSpan = document.getElementById('selected-count');
-
-            if (count > 0) {
-                btn.classList.remove('hidden');
-                countSpan.textContent = count;
-            } else {
-                btn.classList.add('hidden');
-            }
-        }
-
-        function openBulkEditModal() {
-            document.getElementById('bulk-selected-count').textContent = selectedImages.size;
-            document.getElementById('bulk-edit-modal').classList.remove('hidden');
-        }
-
-        function closeBulkEditModal() {
-            document.getElementById('bulk-edit-modal').classList.add('hidden');
-        }
-
-        function applyBulkEdit() {
-            const type = document.getElementById('gallery-type').value;
-            const region = document.getElementById('bulk-region').value.trim();
-            const slugVal = document.getElementById('bulk-slug').value.trim();
-            const slugArray = slugVal ? slugVal.split(',').map(s => s.trim()) : [];
-
-            if (!globalGallery[type]) {
-                globalGallery[type] = { images: [], left_gallery_links: [] };
-            }
-
-            const list = currentGalleryTab === 'main'
-                ? globalGallery[type].images
-                : globalGallery[type].left_gallery_links;
-
-            selectedImages.forEach(idx => {
-                let item = list[idx];
-                if (typeof item === 'string') {
-                    item = { url: item };
+                        grid.appendChild(card);
+                    });
                 }
-                item.region_filter = region;
-                item.slug_filter = slugArray;
-                list[idx] = item;
-            });
 
-            closeBulkEditModal();
-            selectedImages.clear();
-            loadGallery();
-
-            Swal.fire({
-                icon: 'success',
-                title: 'Uygulandı',
-                timer: 1500,
-                showConfirmButton: false
-            });
-        }
-
-        function openImageSettings(idx) {
-            currentEditingImageIndex = idx;
-            const type = document.getElementById('gallery-type').value;
-
-            const items = currentGalleryTab === 'main'
-                ? (globalGallery[type]?.images || [])
-                : (globalGallery[type]?.left_gallery_links || []);
-
-            const item = items[idx];
-
-            if (typeof item === 'string') {
-                document.getElementById('image-region').value = '';
-                document.getElementById('image-slug').value = '';
-            } else {
-                document.getElementById('image-region').value = item.region_filter || '';
-                document.getElementById('image-slug').value = (item.slug_filter || []).join(',');
+                updateBulkEditButton();
             }
 
-            document.getElementById('image-settings-modal').classList.remove('hidden');
-        }
-
-        function closeImageSettingsModal() {
-            document.getElementById('image-settings-modal').classList.add('hidden');
-        }
-
-        function applyImageSettings() {
-            const type = document.getElementById('gallery-type').value;
-
-            if (!globalGallery[type]) {
-                globalGallery[type] = { images: [], left_gallery_links: [] };
+            function toggleImageSelection(idx) {
+                if (selectedImages.has(idx)) {
+                    selectedImages.delete(idx);
+                } else {
+                    selectedImages.add(idx);
+                }
+                updateBulkEditButton();
             }
 
-            const list = currentGalleryTab === 'main'
-                ? globalGallery[type].images
-                : globalGallery[type].left_gallery_links;
+            function toggleSelectAll() {
+                const type = document.getElementById('gallery-type').value;
+                const items = currentGalleryTab === 'main'
+                    ? (globalGallery[type]?.images || [])
+                    : (globalGallery[type]?.left_gallery_links || []);
 
-            let item = list[currentEditingImageIndex];
+                if (selectedImages.size === items.length) {
+                    // Deselect all
+                    selectedImages.clear();
+                } else {
+                    // Select all
+                    selectedImages.clear();
+                    items.forEach((_, idx) => selectedImages.add(idx));
+                }
 
-            if (typeof item === 'string') {
-                item = { url: item };
+                loadGallery();
             }
 
-            item.region_filter = document.getElementById('image-region').value.trim();
-            const slugVal = document.getElementById('image-slug').value.trim();
-            item.slug_filter = slugVal ? slugVal.split(',').map(s => s.trim()) : [];
+            function updateBulkEditButton() {
+                const count = selectedImages.size;
+                const btn = document.getElementById('bulk-edit-btn');
+                const countSpan = document.getElementById('selected-count');
 
-            list[currentEditingImageIndex] = item;
+                if (count > 0) {
+                    btn.classList.remove('hidden');
+                    countSpan.textContent = count;
+                } else {
+                    btn.classList.add('hidden');
+                }
+            }
 
-            closeImageSettingsModal();
-            loadGallery();
-        }
+            function openBulkEditModal() {
+                document.getElementById('bulk-selected-count').textContent = selectedImages.size;
+                document.getElementById('bulk-edit-modal').classList.remove('hidden');
+            }
 
-        // Upload handler
-        document.addEventListener('DOMContentLoaded', () => {
-            const uploadInput = document.getElementById('gallery-upload-input');
-            if (uploadInput) {
-                uploadInput.addEventListener('change', async (e) => {
-                    for (const file of e.target.files) {
-                        const reader = new FileReader();
-                        reader.onload = async (ev) => {
-                            try {
-                                const res = await fetch('/api/upload', {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({
-                                        filename: 'gallery-' + Date.now() + '.png',
-                                        fileBase64: ev.target.result.split(',')[1],
-                                        contentType: file.type
-                                    })
-                                });
-                                const data = await res.json();
+            function closeBulkEditModal() {
+                document.getElementById('bulk-edit-modal').classList.add('hidden');
+            }
 
-                                const type = document.getElementById('gallery-type').value;
-                                if (!globalGallery[type]) {
-                                    globalGallery[type] = { images: [], left_gallery_links: [] };
-                                }
+            function applyBulkEdit() {
+                const type = document.getElementById('gallery-type').value;
+                const region = document.getElementById('bulk-region').value.trim();
+                const slugVal = document.getElementById('bulk-slug').value.trim();
+                const slugArray = slugVal ? slugVal.split(',').map(s => s.trim()) : [];
 
-                                const newImage = {
-                                    url: data.url,
-                                    region_filter: '',
-                                    slug_filter: []
-                                };
+                if (!globalGallery[type]) {
+                    globalGallery[type] = { images: [], left_gallery_links: [] };
+                }
 
-                                if (currentGalleryTab === 'main') {
-                                    globalGallery[type].images.push(newImage);
-                                } else {
-                                    globalGallery[type].left_gallery_links.push(newImage);
-                                }
+                const list = currentGalleryTab === 'main'
+                    ? globalGallery[type].images
+                    : globalGallery[type].left_gallery_links;
 
-                                loadGallery();
-
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Yüklendi',
-                                    timer: 1000,
-                                    showConfirmButton: false
-                                });
-                            } catch (err) {
-                                console.error('Upload error:', err);
-                                Swal.fire('Hata', 'Yükleme başarısız', 'error');
-                            }
-                        };
-                        reader.readAsDataURL(file);
+                selectedImages.forEach(idx => {
+                    let item = list[idx];
+                    if (typeof item === 'string') {
+                        item = { url: item };
                     }
-                });
-            }
-        });
-
-        function removeImage(idx) {
-            const type = document.getElementById('gallery-type').value;
-
-            if (currentGalleryTab === 'main') {
-                globalGallery[type].images.splice(idx, 1);
-            } else {
-                globalGallery[type].left_gallery_links.splice(idx, 1);
-            }
-
-            loadGallery();
-        }
-
-        async function saveGallery() {
-            try {
-                const res = await fetch('/api/manage-institutions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'save_global_gallery',
-                        master_password: MASTER_PASSWORD,
-                        payload: { config: globalGallery }
-                    })
+                    item.region_filter = region;
+                    item.slug_filter = slugArray;
+                    list[idx] = item;
                 });
 
-                if (!res.ok) {
-                    throw new Error('Kaydetme başarısız');
-                }
+                closeBulkEditModal();
+                selectedImages.clear();
+                loadGallery();
 
                 Swal.fire({
                     icon: 'success',
-                    title: 'Kaydedildi',
+                    title: 'Uygulandı',
                     timer: 1500,
                     showConfirmButton: false
                 });
-            } catch (err) {
-                console.error('Save error:', err);
-                Swal.fire('Hata', err.message || 'Kaydetme başarısız', 'error');
-            }
-        }
-
-        // --- HADITH MANAGEMENT ---
-        let hadithWeeks = [];
-
-        function openHadithModal() {
-            document.getElementById('hadith-modal').classList.remove('hidden');
-            loadHadiths();
-        }
-
-        function closeHadithModal() {
-            document.getElementById('hadith-modal').classList.add('hidden');
-        }
-
-        function loadHadiths() {
-            const type = document.getElementById('hadith-type').value;
-
-            // Load from localStorage
-            const savedWeeks = localStorage.getItem(`sa_h_${type}`);
-            hadithWeeks = savedWeeks ? JSON.parse(savedWeeks) : [];
-
-            const savedDate = localStorage.getItem(`sa_h_date_${type}`);
-            if (savedDate) {
-                document.getElementById('semester-start-date').value = savedDate;
             }
 
-            // Initialize with at least one week if empty
-            if (hadithWeeks.length === 0) {
-                addWeek();
-            } else {
-                renderWeeks();
-            }
-        }
+            function openImageSettings(idx) {
+                currentEditingImageIndex = idx;
+                const type = document.getElementById('gallery-type').value;
 
-        function addWeek() {
-            const nextWeekNumber = hadithWeeks.length + 1;
-            hadithWeeks.push({
-                week: nextWeekNumber,
-                arabic: '',
-                text: ''
-            });
-            renderWeeks();
-            saveLocalHadiths();
-        }
+                const items = currentGalleryTab === 'main'
+                    ? (globalGallery[type]?.images || [])
+                    : (globalGallery[type]?.left_gallery_links || []);
 
-        function renderWeeks() {
-            const container = document.getElementById('weeks-container');
-            container.innerHTML = '';
+                const item = items[idx];
 
-            const startDate = document.getElementById('semester-start-date').value;
-            let semesterStart = startDate ? new Date(startDate) : null;
-
-            hadithWeeks.forEach((week, index) => {
-                let dateStr = 'Tarih Ayarlanmadı';
-
-                if (semesterStart) {
-                    const weekStart = new Date(semesterStart);
-                    weekStart.setDate(semesterStart.getDate() + (index * 7));
-
-                    const weekEnd = new Date(weekStart);
-                    weekEnd.setDate(weekStart.getDate() + 6);
-
-                    dateStr = `${weekStart.getDate()}/${weekStart.getMonth() + 1} - ${weekEnd.getDate()}/${weekEnd.getMonth() + 1}`;
+                if (typeof item === 'string') {
+                    document.getElementById('image-region').value = '';
+                    document.getElementById('image-slug').value = '';
+                } else {
+                    document.getElementById('image-region').value = item.region_filter || '';
+                    document.getElementById('image-slug').value = (item.slug_filter || []).join(',');
                 }
 
-                const weekCard = document.createElement('div');
-                weekCard.className = 'bg-white p-4 rounded-xl border border-slate-200 shadow-sm';
-                weekCard.innerHTML = `
+                document.getElementById('image-settings-modal').classList.remove('hidden');
+            }
+
+            function closeImageSettingsModal() {
+                document.getElementById('image-settings-modal').classList.add('hidden');
+            }
+
+            function applyImageSettings() {
+                const type = document.getElementById('gallery-type').value;
+
+                if (!globalGallery[type]) {
+                    globalGallery[type] = { images: [], left_gallery_links: [] };
+                }
+
+                const list = currentGalleryTab === 'main'
+                    ? globalGallery[type].images
+                    : globalGallery[type].left_gallery_links;
+
+                let item = list[currentEditingImageIndex];
+
+                if (typeof item === 'string') {
+                    item = { url: item };
+                }
+
+                item.region_filter = document.getElementById('image-region').value.trim();
+                const slugVal = document.getElementById('image-slug').value.trim();
+                item.slug_filter = slugVal ? slugVal.split(',').map(s => s.trim()) : [];
+
+                list[currentEditingImageIndex] = item;
+
+                closeImageSettingsModal();
+                loadGallery();
+            }
+
+            // Upload handler
+            document.addEventListener('DOMContentLoaded', () => {
+                const uploadInput = document.getElementById('gallery-upload-input');
+                if (uploadInput) {
+                    uploadInput.addEventListener('change', async (e) => {
+                        for (const file of e.target.files) {
+                            const reader = new FileReader();
+                            reader.onload = async (ev) => {
+                                try {
+                                    const res = await fetch('/api/upload', {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        body: JSON.stringify({
+                                            filename: 'gallery-' + Date.now() + '.png',
+                                            fileBase64: ev.target.result.split(',')[1],
+                                            contentType: file.type
+                                        })
+                                    });
+                                    const data = await res.json();
+
+                                    const type = document.getElementById('gallery-type').value;
+                                    if (!globalGallery[type]) {
+                                        globalGallery[type] = { images: [], left_gallery_links: [] };
+                                    }
+
+                                    const newImage = {
+                                        url: data.url,
+                                        region_filter: '',
+                                        slug_filter: []
+                                    };
+
+                                    if (currentGalleryTab === 'main') {
+                                        globalGallery[type].images.push(newImage);
+                                    } else {
+                                        globalGallery[type].left_gallery_links.push(newImage);
+                                    }
+
+                                    loadGallery();
+
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Yüklendi',
+                                        timer: 1000,
+                                        showConfirmButton: false
+                                    });
+                                } catch (err) {
+                                    console.error('Upload error:', err);
+                                    Swal.fire('Hata', 'Yükleme başarısız', 'error');
+                                }
+                            };
+                            reader.readAsDataURL(file);
+                        }
+                    });
+                }
+            });
+
+            function removeImage(idx) {
+                const type = document.getElementById('gallery-type').value;
+
+                if (currentGalleryTab === 'main') {
+                    globalGallery[type].images.splice(idx, 1);
+                } else {
+                    globalGallery[type].left_gallery_links.splice(idx, 1);
+                }
+
+                loadGallery();
+            }
+
+            async function saveGallery() {
+                try {
+                    const res = await fetch('/api/manage-institutions', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'save_global_gallery',
+                            master_password: MASTER_PASSWORD,
+                            payload: { config: globalGallery }
+                        })
+                    });
+
+                    if (!res.ok) {
+                        throw new Error('Kaydetme başarısız');
+                    }
+
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Kaydedildi',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+                } catch (err) {
+                    console.error('Save error:', err);
+                    Swal.fire('Hata', err.message || 'Kaydetme başarısız', 'error');
+                }
+            }
+
+            // --- HADITH MANAGEMENT ---
+            let hadithWeeks = [];
+
+            function openHadithModal() {
+                document.getElementById('hadith-modal').classList.remove('hidden');
+                loadHadiths();
+            }
+
+            function closeHadithModal() {
+                document.getElementById('hadith-modal').classList.add('hidden');
+            }
+
+            function loadHadiths() {
+                const type = document.getElementById('hadith-type').value;
+
+                // Load from localStorage
+                const savedWeeks = localStorage.getItem(`sa_h_${type}`);
+                hadithWeeks = savedWeeks ? JSON.parse(savedWeeks) : [];
+
+                const savedDate = localStorage.getItem(`sa_h_date_${type}`);
+                if (savedDate) {
+                    document.getElementById('semester-start-date').value = savedDate;
+                }
+
+                // Initialize with at least one week if empty
+                if (hadithWeeks.length === 0) {
+                    addWeek();
+                } else {
+                    renderWeeks();
+                }
+            }
+
+            function addWeek() {
+                const nextWeekNumber = hadithWeeks.length + 1;
+                hadithWeeks.push({
+                    week: nextWeekNumber,
+                    arabic: '',
+                    text: ''
+                });
+                renderWeeks();
+                saveLocalHadiths();
+            }
+
+            function renderWeeks() {
+                const container = document.getElementById('weeks-container');
+                container.innerHTML = '';
+
+                const startDate = document.getElementById('semester-start-date').value;
+                let semesterStart = startDate ? new Date(startDate) : null;
+
+                hadithWeeks.forEach((week, index) => {
+                    let dateStr = 'Tarih Ayarlanmadı';
+
+                    if (semesterStart) {
+                        const weekStart = new Date(semesterStart);
+                        weekStart.setDate(semesterStart.getDate() + (index * 7));
+
+                        const weekEnd = new Date(weekStart);
+                        weekEnd.setDate(weekStart.getDate() + 6);
+
+                        dateStr = `${weekStart.getDate()}/${weekStart.getMonth() + 1} - ${weekEnd.getDate()}/${weekEnd.getMonth() + 1}`;
+                    }
+
+                    const weekCard = document.createElement('div');
+                    weekCard.className = 'bg-white p-4 rounded-xl border border-slate-200 shadow-sm';
+                    weekCard.innerHTML = `
                     <div class="flex justify-between items-center mb-3">
                         <div class="flex items-center gap-2">
                             <div class="flex items-center bg-blue-50 border border-blue-100 rounded-lg overflow-hidden">
@@ -1279,110 +1415,110 @@
                         oninput="hadithWeeks[${index}].text = this.value; saveLocalHadiths()"
                     >${week.text || ''}</textarea>
                 `;
-                container.appendChild(weekCard);
-            });
-        }
-
-        function removeWeek(index) {
-            hadithWeeks.splice(index, 1);
-            renderWeeks();
-            saveLocalHadiths();
-        }
-
-        function updateWeekDates() {
-            saveLocalHadiths();
-            renderWeeks();
-        }
-
-        function saveLocalHadiths() {
-            const type = document.getElementById('hadith-type').value;
-            const startDate = document.getElementById('semester-start-date').value;
-
-            localStorage.setItem(`sa_h_${type}`, JSON.stringify(hadithWeeks));
-            if (startDate) {
-                localStorage.setItem(`sa_h_date_${type}`, startDate);
+                    container.appendChild(weekCard);
+                });
             }
-        }
 
-        async function syncHadithsToApi() {
-            try {
+            function removeWeek(index) {
+                hadithWeeks.splice(index, 1);
+                renderWeeks();
+                saveLocalHadiths();
+            }
+
+            function updateWeekDates() {
+                saveLocalHadiths();
+                renderWeeks();
+            }
+
+            function saveLocalHadiths() {
                 const type = document.getElementById('hadith-type').value;
                 const startDate = document.getElementById('semester-start-date').value;
 
-                const res = await fetch('/api/manage-institutions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'save_hadith',
-                        master_password: MASTER_PASSWORD,
-                        payload: {
-                            type: type,
-                            weeks: hadithWeeks,
-                            start_date: startDate
-                        }
-                    })
-                });
-
-                if (!res.ok) {
-                    throw new Error('Senkronizasyon başarısız');
+                localStorage.setItem(`sa_h_${type}`, JSON.stringify(hadithWeeks));
+                if (startDate) {
+                    localStorage.setItem(`sa_h_date_${type}`, startDate);
                 }
-
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Kaydedildi ve Dağıtıldı',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-            } catch (err) {
-                console.error('Hadith sync error:', err);
-                Swal.fire('Hata', err.message || 'Hadisler kaydedilemedi', 'error');
             }
-        }
 
-        // --- MODAL STUBS (to be implemented) ---
-        function openAnnouncementsModal() {
-            Swal.fire('Yakında', 'Duyuru yönetimi eklenecek.', 'info');
-        }
+            async function syncHadithsToApi() {
+                try {
+                    const type = document.getElementById('hadith-type').value;
+                    const startDate = document.getElementById('semester-start-date').value;
 
-        function openLandingModal() {
-            Swal.fire('Yakında', 'CMS modülü eklenecek.', 'info');
-        }
+                    const res = await fetch('/api/manage-institutions', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'save_hadith',
+                            master_password: MASTER_PASSWORD,
+                            payload: {
+                                type: type,
+                                weeks: hadithWeeks,
+                                start_date: startDate
+                            }
+                        })
+                    });
 
-        function openEmergencyModal() {
-            Swal.fire('Yakında', 'Acil durum modu eklenecek.', 'info');
-        }
+                    if (!res.ok) {
+                        throw new Error('Senkronizasyon başarısız');
+                    }
 
-        // --- ANNOUNCEMENT MANAGEMENT ---
-        function openAnnouncementModal() {
-            document.getElementById('announcement-modal').classList.remove('hidden');
-            loadAnnouncements();
-        }
-
-        function closeAnnouncementModal() {
-            document.getElementById('announcement-modal').classList.add('hidden');
-        }
-
-        async function loadAnnouncements() {
-            try {
-                const res = await fetch('/api/manage-institutions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'list_announcements',
-                        master_password: MASTER_PASSWORD
-                    })
-                });
-
-                const data = await res.json();
-                const announcements = data.announcements || [];
-
-                const listEl = document.getElementById('announcements-list');
-                if (announcements.length === 0) {
-                    listEl.innerHTML = '<p class="text-slate-400 text-sm">Aktif duyuru yok.</p>';
-                    return;
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Kaydedildi ve Dağıtıldı',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                } catch (err) {
+                    console.error('Hadith sync error:', err);
+                    Swal.fire('Hata', err.message || 'Hadisler kaydedilemedi', 'error');
                 }
+            }
 
-                listEl.innerHTML = announcements.map(ann => `
+            // --- MODAL STUBS (to be implemented) ---
+            function openAnnouncementsModal() {
+                Swal.fire('Yakında', 'Duyuru yönetimi eklenecek.', 'info');
+            }
+
+            function openLandingModal() {
+                Swal.fire('Yakında', 'CMS modülü eklenecek.', 'info');
+            }
+
+            function openEmergencyModal() {
+                Swal.fire('Yakında', 'Acil durum modu eklenecek.', 'info');
+            }
+
+            // --- ANNOUNCEMENT MANAGEMENT ---
+            function openAnnouncementModal() {
+                document.getElementById('announcement-modal').classList.remove('hidden');
+                loadAnnouncements();
+            }
+
+            function closeAnnouncementModal() {
+                document.getElementById('announcement-modal').classList.add('hidden');
+            }
+
+            async function loadAnnouncements() {
+                try {
+                    const res = await fetch('/api/manage-institutions', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'list_announcements',
+                            master_password: MASTER_PASSWORD
+                        })
+                    });
+
+                    const data = await res.json();
+                    const announcements = data.announcements || [];
+
+                    const listEl = document.getElementById('announcements-list');
+                    if (announcements.length === 0) {
+                        listEl.innerHTML = '<p class="text-slate-400 text-sm">Aktif duyuru yok.</p>';
+                        return;
+                    }
+
+                    listEl.innerHTML = announcements.map(ann => `
                     <div class="p-4 border rounded-lg bg-slate-50 flex justify-between items-start">
                         <div class="flex-1">
                             <p class="font-medium">${ann.text}</p>
@@ -1397,136 +1533,245 @@
                         </button>
                     </div>
                 `).join('');
-            } catch (err) {
-                console.error('Load announcements error:', err);
-            }
-        }
-
-        async function broadcastAnnouncement() {
-            const text = document.getElementById('announcement-text').value.trim();
-            if (!text) {
-                Swal.fire('Hata', 'Duyuru metnini girin', 'error');
-                return;
+                } catch (err) {
+                    console.error('Load announcements error:', err);
+                }
             }
 
-            const typeFilter = document.getElementById('announcement-type-filter');
-            const selectedTypes = Array.from(typeFilter.selectedOptions)
-                .map(opt => opt.value)
-                .filter(v => v !== '');
+            async function broadcastAnnouncement() {
+                const text = document.getElementById('announcement-text').value.trim();
+                if (!text) {
+                    Swal.fire('Hata', 'Duyuru metnini girin', 'error');
+                    return;
+                }
 
-            const regionInput = document.getElementById('announcement-region-filter').value.trim();
-            const selectedRegions = regionInput ? regionInput.split(',').map(r => r.trim()) : [];
+                const typeFilter = document.getElementById('announcement-type-filter');
+                const selectedTypes = Array.from(typeFilter.selectedOptions)
+                    .map(opt => opt.value)
+                    .filter(v => v !== '');
 
-            const filters = {};
-            if (selectedTypes.length > 0) filters.types = selectedTypes;
-            if (selectedRegions.length > 0) filters.regions = selectedRegions;
+                const regionInput = document.getElementById('announcement-region-filter').value.trim();
+                const selectedRegions = regionInput ? regionInput.split(',').map(r => r.trim()) : [];
 
-            try {
-                document.getElementById('broadcast-status').textContent = 'Dağıtılıyor...';
+                const filters = {};
+                if (selectedTypes.length > 0) filters.types = selectedTypes;
+                if (selectedRegions.length > 0) filters.regions = selectedRegions;
 
-                const res = await fetch('/api/manage-institutions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'broadcast_announcement',
-                        master_password: MASTER_PASSWORD,
-                        payload: {
-                            text: text,
-                            filters: filters,
-                            priority: 'normal'
-                        }
-                    })
+                try {
+                    document.getElementById('broadcast-status').textContent = 'Dağıtılıyor...';
+
+                    const res = await fetch('/api/manage-institutions', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'broadcast_announcement',
+                            master_password: MASTER_PASSWORD,
+                            payload: {
+                                text: text,
+                                filters: filters,
+                                priority: 'normal'
+                            }
+                        })
+                    });
+
+                    const data = await res.json();
+
+                    if (data.success) {
+                        document.getElementById('broadcast-status').textContent = `✅ ${data.delivered_to} kuruma dağıtıldı!`;
+                        document.getElementById('announcement-text').value = '';
+
+                        setTimeout(() => {
+                            document.getElementById('broadcast-status').textContent = '';
+                            loadAnnouncements();
+                        }, 2000);
+
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Dağıtıldı',
+                            text: `${data.delivered_to} kuruma duyuru gönderildi`,
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                    } else {
+                        throw new Error('Broadcast failed');
+                    }
+                } catch (err) {
+                    console.error('Broadcast error:', err);
+                    document.getElementById('broadcast-status').textContent = '';
+                    Swal.fire('Hata', 'Duyuru dağıtılamadı', 'error');
+                }
+            }
+
+            async function deleteAnnouncement(id) {
+                const confirm = await Swal.fire({
+                    title: 'Emin misiniz?',
+                    text: 'Bu duyuru tüm kurumlardan silinecek',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonText: 'Evet, Sil',
+                    cancelButtonText: 'İptal'
                 });
 
-                const data = await res.json();
+                if (!confirm.isConfirmed) return;
 
-                if (data.success) {
-                    document.getElementById('broadcast-status').textContent = `✅ ${data.delivered_to} kuruma dağıtıldı!`;
-                    document.getElementById('announcement-text').value = '';
+                try {
+                    const res = await fetch('/api/manage-institutions', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'delete_announcement',
+                            master_password: MASTER_PASSWORD,
+                            payload: {
+                                announcement_id: id
+                            }
+                        })
+                    });
 
-                    setTimeout(() => {
-                        document.getElementById('broadcast-status').textContent = '';
+                    const data = await res.json();
+
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Silindi',
+                            text: `${data.removed_from} kurumdan kaldırıldı`,
+                            timer: 1500,
+                            showConfirmButton: false
+                        });
                         loadAnnouncements();
-                    }, 2000);
-
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Dağıtıldı',
-                        text: `${data.delivered_to} kuruma duyuru gönderildi`,
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
-                } else {
-                    throw new Error('Broadcast failed');
+                    } else {
+                        throw new Error('Delete failed');
+                    }
+                } catch (err) {
+                    console.error('Delete error:', err);
+                    Swal.fire('Hata', 'Duyuru silinmedi', 'error');
                 }
-            } catch (err) {
-                console.error('Broadcast error:', err);
-                document.getElementById('broadcast-status').textContent = '';
-                Swal.fire('Hata', 'Duyuru dağıtılamadı', 'error');
             }
-        }
 
-        async function deleteAnnouncement(id) {
-            const confirm = await Swal.fire({
-                title: 'Emin misiniz?',
-                text: 'Bu duyuru tüm kurumlardan silinecek',
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonText: 'Evet, Sil',
-                cancelButtonText: 'İptal'
-            });
+            }
 
-            if (!confirm.isConfirmed) return;
+            // --- CMS MANAGEMENT ---
+            function openCMSModal() {
+                document.getElementById('cms-modal').classList.remove('hidden');
+                loadCMSContent();
+            }
 
-            try {
-                const res = await fetch('/api/manage-institutions', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action: 'delete_announcement',
-                        master_password: MASTER_PASSWORD,
-                        payload: {
-                            announcement_id: id
-                        }
-                    })
+            function closeCMSModal() {
+                document.getElementById('cms-modal').classList.add('hidden');
+            }
+
+            function switchCMSTab(tabName) {
+                // Hide all contents
+                ['hero', 'solutions', 'contact'].forEach(t => {
+                    document.getElementById(`cms-tab-${t}`).classList.add('hidden');
+                    document.getElementById(`tab-btn-${t}`).classList.remove('border-indigo-600', 'text-indigo-600', 'bg-indigo-50');
+                    document.getElementById(`tab-btn-${t}`).classList.add('border-transparent', 'text-slate-500');
                 });
 
-                const data = await res.json();
-
-                if (data.success) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Silindi',
-                        text: `${data.removed_from} kurumdan kaldırıldı`,
-                        timer: 1500,
-                        showConfirmButton: false
-                    });
-                    loadAnnouncements();
-                } else {
-                    throw new Error('Delete failed');
-                }
-            } catch (err) {
-                console.error('Delete error:', err);
-                Swal.fire('Hata', 'Duyuru silinmedi', 'error');
+                // Show selected
+                document.getElementById(`cms-tab-${tabName}`).classList.remove('hidden');
+                document.getElementById(`tab-btn-${tabName}`).classList.remove('border-transparent', 'text-slate-500');
+                document.getElementById(`tab-btn-${tabName}`).classList.add('border-indigo-600', 'text-indigo-600', 'bg-indigo-50');
             }
-        }
 
-        // --- UI HELPERS ---
-        function showLoginModal() {
-            document.getElementById('login-modal').classList.remove('hidden');
-            document.getElementById('main-content').classList.add('hidden');
-        }
+            async function loadCMSContent() {
+                try {
+                    const res = await fetch('/api/manage-institutions', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'get_landing_content',
+                            master_password: MASTER_PASSWORD
+                        })
+                    });
 
-        function showMainContent() {
-            document.getElementById('login-modal').classList.add('hidden');
-            document.getElementById('main-content').classList.remove('hidden');
-        }
+                    const data = await res.json();
+                    const content = data.content || {};
 
-        function logout() {
-            localStorage.removeItem('super_admin_pass');
-            showLoginModal();
-        }
-    </script>
+                    // Populate Hero
+                    document.getElementById('cms-hero-badge').value = content.heroBadge || '';
+                    document.getElementById('cms-hero-title1').value = content.heroTitle1 || '';
+                    document.getElementById('cms-hero-title2').value = content.heroTitle2 || '';
+                    document.getElementById('cms-hero-desc').value = content.heroDesc || '';
+
+                    // Populate Solutions
+                    document.getElementById('cms-sol1-title').value = content.sol1Title || '';
+                    document.getElementById('cms-sol1-desc').value = content.sol1Desc || '';
+                    document.getElementById('cms-sol2-title').value = content.sol2Title || '';
+                    document.getElementById('cms-sol2-desc').value = content.sol2Desc || '';
+                    document.getElementById('cms-sol3-title').value = content.sol3Title || '';
+                    document.getElementById('cms-sol3-desc').value = content.sol3Desc || '';
+
+                    // Populate Contact
+                    document.getElementById('cms-contact-email').value = content.email || '';
+                    document.getElementById('cms-contact-phone').value = content.phone || '';
+                    document.getElementById('cms-whatsapp-link').value = content.whatsapp || '';
+
+                } catch (err) {
+                    console.error('CMS Load Error:', err);
+                    Swal.fire('Hata', 'İçerik yüklenemedi', 'error');
+                }
+            }
+
+            async function saveCMS() {
+                const content = {
+                    heroBadge: document.getElementById('cms-hero-badge').value,
+                    heroTitle1: document.getElementById('cms-hero-title1').value,
+                    heroTitle2: document.getElementById('cms-hero-title2').value,
+                    heroDesc: document.getElementById('cms-hero-desc').value,
+
+                    sol1Title: document.getElementById('cms-sol1-title').value,
+                    sol1Desc: document.getElementById('cms-sol1-desc').value,
+                    sol2Title: document.getElementById('cms-sol2-title').value,
+                    sol2Desc: document.getElementById('cms-sol2-desc').value,
+                    sol3Title: document.getElementById('cms-sol3-title').value,
+                    sol3Desc: document.getElementById('cms-sol3-desc').value,
+
+                    email: document.getElementById('cms-contact-email').value,
+                    phone: document.getElementById('cms-contact-phone').value,
+                    whatsapp: document.getElementById('cms-whatsapp-link').value
+                };
+
+                try {
+                    const res = await fetch('/api/manage-institutions', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'save_landing_content',
+                            master_password: MASTER_PASSWORD,
+                            payload: { content }
+                        })
+                    });
+
+                    const data = await res.json();
+
+                    if (data.success) {
+                        Swal.fire('Başarılı', 'Site içeriği güncellendi!', 'success');
+                        closeCMSModal();
+                    } else {
+                        throw new Error('Save failed');
+                    }
+                } catch (err) {
+                    console.error('CMS Save Error:', err);
+                    Swal.fire('Hata', 'Kaydedilemedi', 'error');
+                }
+            }
+
+            // --- UI HELPERS ---
+            function showLoginModal() {
+                document.getElementById('login-modal').classList.remove('hidden');
+                document.getElementById('main-content').classList.add('hidden');
+            }
+
+            function showMainContent() {
+                document.getElementById('login-modal').classList.add('hidden');
+                document.getElementById('main-content').classList.remove('hidden');
+            }
+
+            function logout() {
+                localStorage.removeItem('super_admin_pass');
+                showLoginModal();
+            }
+        </script>
 </body>
 
 </html>

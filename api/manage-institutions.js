@@ -666,6 +666,48 @@ module.exports = async (request, response) => {
                 return response.status(200).json({ announcements });
             }
 
+            // --- CMS - SAVE LANDING CONTENT ---
+            if (action === 'save_landing_content') {
+                const { content } = payload;
+                const CMS_SLUG = 'system-cms';
+
+                const { data: sysData } = await supabase
+                    .from('institutions')
+                    .select('config')
+                    .eq('slug', CMS_SLUG)
+                    .single();
+
+                if (sysData) {
+                    await supabase
+                        .from('institutions')
+                        .update({ config: content })
+                        .eq('slug', CMS_SLUG);
+                } else {
+                    await supabase.from('institutions').insert([{
+                        slug: CMS_SLUG,
+                        name: 'System CMS Data',
+                        config: content,
+                        password: Math.random().toString(36)
+                    }]);
+                }
+
+                return response.status(200).json({ success: true });
+            }
+
+            // --- CMS - GET LANDING CONTENT ---
+            if (action === 'get_landing_content') {
+                const CMS_SLUG = 'system-cms';
+                const { data: sysData } = await supabase
+                    .from('institutions')
+                    .select('config')
+                    .eq('slug', CMS_SLUG)
+                    .single();
+
+                return response.status(200).json({
+                    content: sysData ? sysData.config : null
+                });
+            }
+
             // --- HADİS DAĞITIMI (BULK UPDATE) ---
             if (action === 'distribute_hadiths') {
                 const { type, hadiths } = payload;

@@ -663,14 +663,16 @@
         // --- CMS HYDRATION LOGIC ---
         document.addEventListener('DOMContentLoaded', async () => {
             try {
+                // Use the new endpoint 'get_landing_content'
                 const res = await fetch('/api/manage-institutions', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'get_landing_config' })
+                    body: JSON.stringify({ action: 'get_landing_content' })
                 });
 
                 if (res.ok) {
-                    const { config } = await res.json();
+                    const data = await res.json();
+                    const config = data.content; // Access the 'content' key
                     if (config) hydratePage(config);
                 }
             } catch (e) {
@@ -680,43 +682,44 @@
 
         function hydratePage(cfg) {
             // Hero
-            if (cfg.hero) {
-                if (cfg.hero.badge) {
-                    const badgeEl = document.getElementById('hero-badge-text');
-                    if (badgeEl) badgeEl.innerHTML = cfg.hero.badge;
-                }
-                if (cfg.hero.title1) document.getElementById('hero-title1').innerText = cfg.hero.title1;
-                if (cfg.hero.title2) document.getElementById('hero-title2').innerText = cfg.hero.title2;
-                if (cfg.hero.desc) document.getElementById('hero-desc').innerHTML = cfg.hero.desc; // Allow HTML bold tags
-            }
-            // Solutions
-            if (cfg.solutions) {
-                ['sol1', 'sol2', 'sol3'].forEach((key, idx) => {
-                    const item = cfg.solutions[idx];
-                    if (item) {
-                        if (item.title) document.getElementById(`${key}-title`).innerText = item.title;
-                        if (item.desc) document.getElementById(`${key}-desc`).innerText = item.desc;
-                        if (item.icon) document.getElementById(`${key}-icon`).className = item.icon + " text-2xl text-white";
-                    }
-                });
-            }
-            // Contact
-            if (cfg.contact) {
-                if (cfg.contact.email) document.getElementById('footer-email').innerText = cfg.contact.email;
-                if (cfg.contact.phone) {
-                    const phoneDisplay = cfg.contact.phone;
-                    document.getElementById('footer-phone').innerText = phoneDisplay;
+            if (cfg.heroBadge) document.getElementById('hero-badge-text').innerText = cfg.heroBadge;
+            if (cfg.heroTitle1) document.getElementById('hero-title1').innerText = cfg.heroTitle1;
+            if (cfg.heroTitle2) document.getElementById('hero-title2').innerText = cfg.heroTitle2;
+            if (cfg.heroDesc) document.getElementById('hero-desc').innerHTML = cfg.heroDesc;
 
-                    // WhatsApp Link Logic
-                    const waLink = document.getElementById('whatsapp-link');
-                    if (waLink) {
-                        // Clean phone number (remove spaces, dashes, etc.)
+            // Solutions
+            // Sol 1
+            if (cfg.sol1Title) document.getElementById('sol1-title').innerText = cfg.sol1Title;
+            if (cfg.sol1Desc) document.getElementById('sol1-desc').innerText = cfg.sol1Desc;
+
+            // Sol 2
+            if (cfg.sol2Title) document.getElementById('sol2-title').innerText = cfg.sol2Title;
+            if (cfg.sol2Desc) document.getElementById('sol2-desc').innerText = cfg.sol2Desc;
+
+            // Sol 3
+            if (cfg.sol3Title) document.getElementById('sol3-title').innerText = cfg.sol3Title;
+            if (cfg.sol3Desc) document.getElementById('sol3-desc').innerText = cfg.sol3Desc;
+
+            // Contact
+            if (cfg.email) document.getElementById('footer-email').innerText = cfg.email;
+
+            if (cfg.phone) {
+                const phoneDisplay = cfg.phone;
+                document.getElementById('footer-phone').innerText = phoneDisplay;
+
+                // WhatsApp Link Logic
+                const waLink = document.getElementById('whatsapp-link');
+                const customWa = cfg.whatsapp;
+
+                if (waLink) {
+                    if (customWa && customWa.startsWith('http')) {
+                        // If admin provided a full custom link
+                        waLink.href = customWa;
+                    } else {
+                        // Default logic based on phone number
                         const cleanPhone = phoneDisplay.replace(/[^0-9]/g, '');
-                        // Pre-filled Message: "Merhaba, Dijital Pano sistemi hakkında bilgi almak istiyorum."
                         const msg = "Merhaba, Dijital Pano sistemi hakkında bilgi almak istiyorum.";
                         const encodedMsg = encodeURIComponent(msg);
-
-                        // Check if it starts with 90, if not (and is 10 digits), assume TR and add 90
                         let finalPhone = cleanPhone;
                         if (finalPhone.length === 10) finalPhone = '90' + finalPhone;
                         else if (finalPhone.length === 11 && finalPhone.startsWith('0')) finalPhone = '90' + finalPhone.substring(1);
