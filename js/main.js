@@ -581,28 +581,27 @@ async function fetchConfig() {
                 const now = new Date();
                 const oneWeek = 1000 * 60 * 60 * 24 * 7;
 
-                // Hafta indexini hesapla
-                let weekIndex = Math.floor((now - startDate) / oneWeek);
+                // Calculate ACTUAL week number (for display)
+                let actualWeekIndex = Math.floor((now - startDate) / oneWeek);
+                if (actualWeekIndex < 0) actualWeekIndex = 0;
 
-                // Eğer negatifse (henüz başlamadıysa) ilk haftayı göster
-                if (weekIndex < 0) weekIndex = 0;
-
-                // Eğer index array dışındaysa son haftayı göster
-                if (weekIndex >= weeklyHadithsArray.length) {
-                    weekIndex = weeklyHadithsArray.length - 1;
+                // Calculate AVAILABLE week index (for hadith selection)
+                let availableWeekIndex = actualWeekIndex;
+                if (availableWeekIndex >= weeklyHadithsArray.length) {
+                    availableWeekIndex = weeklyHadithsArray.length - 1;
                 }
 
-                if (weekIndex >= 0 && weekIndex < weeklyHadithsArray.length) {
-                    const wData = weeklyHadithsArray[weekIndex];
+                if (availableWeekIndex >= 0 && availableWeekIndex < weeklyHadithsArray.length) {
+                    const wData = weeklyHadithsArray[availableWeekIndex];
                     if (wData) {
                         selectedHadith = {
-                            week: wData.week || `${weekIndex + 1}. HAFTA`,
+                            week: `${actualWeekIndex + 1}. HAFTA`, // Use ACTUAL week number
                             text: wData.text,
                             arabic: wData.arabic,
                             img: wData.img,
-                            weekIndex: weekIndex // Tarih hesaplama için sakla
+                            weekIndex: actualWeekIndex // Use ACTUAL week for date calculation
                         };
-                        console.log(`Haftalık program: ${weekIndex + 1}. hafta`, selectedHadith);
+                        console.log(`Displaying week ${actualWeekIndex + 1} with hadith from array index ${availableWeekIndex}`);
                     }
                 }
             } catch (e) { console.error('Haftalık hadis hatası:', e); }
