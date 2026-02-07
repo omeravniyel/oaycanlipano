@@ -49,15 +49,8 @@
             "destination": "/panel.html"
         },
         {
-            "source": "/((?!api/|js/|css/|img/|admin\\.html|debug\\.html|panel\\.html|board\\.html|favicon\\.ico).*)",
+            "source": "/((?!api/|js/|css/|img/|admin\\.html|debug\\.html|panel\\.html|board\\.html|super-admin|favicon\\.ico).*)",
             "destination": "/api/serve-board?path=$1"
-        }
-    ],
-    "redirects": [
-        {
-            "source": "/admin.html",
-            "destination": "/super-admin",
-            "permanent": true
         }
     ]
 }
