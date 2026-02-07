@@ -1033,7 +1033,7 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             action: 'delete_gallery_file',
-                            master_password: currentMasterPassword,
+                            master_password: currentUserPassword,
                             payload: { url }
                         })
                     });
