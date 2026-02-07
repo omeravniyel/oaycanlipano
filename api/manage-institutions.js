@@ -258,354 +258,578 @@ module.exports = async (request, response) => {
                 return response.status(200).json({ success: true, institution: data });
             }
 
-            // --- EKLEME / GÜNCELLEME ---
-            if (action === 'upsert') {
-                let { slug, name, password, type, institution_logo, logo_locked, institution_subtitle, institution_slogan1, institution_slogan2, cover, city, district, region, weekly_hadiths, admin_contact, module_dorm_active, module_bottom_right_type } = payload || {};
+            return response.status(200).json({ success: true, institution: data });
+        }
 
-                if (!slug) {
-                    return response.status(400).json({ error: 'Kurum URL (Slug) alanı zorunludur!' });
-                }
-                slug = slug.trim(); // Boşlukları temizle
+            // --- UPLOAD CONFIG & DISTRIBUTION ---
+            if (action === 'get_upload_config') {
+            return response.status(200).json({
+                url: process.env.SUPABASE_URL,
+                key: process.env.SUPABASE_ANON_KEY
+            });
+        }
 
-                // Legacy support
-                const finalSubtitle = institution_subtitle || payload.subtitle;
-                const finalSlogan1 = institution_slogan1 || payload.slogan1;
-                const finalSlogan2 = institution_slogan2 || payload.slogan2;
+        if (action === 'distribute_gallery_items') {
+            const { items, target_type, target_value, gallery_type, institution_type } = payload;
+            // items: [url1, url2...]
+            // target_type: 'general', 'region', 'institution'
+            // gallery_type: 'main' (Right/Gallery Links), 'left' (Left/Left Gallery Links)
+            // institution_type: 'Ortaokul' etc. (Used for General)
 
-                const finalLogo = institution_logo || payload.logo;
+            if (!items || items.length === 0) return response.status(400).json({ error: 'Dosya yok' });
 
-                // 1. Önce bu kurum var mı kontrol et
-                const { data: existing, error: fetchError } = await supabase
-                    .from('institutions')
-                    .select('*')
-                    .eq('slug', slug)
-                    .single();
+            // Map gallery type to config keys
+            // Global mapping: 'main' -> 'images', 'left' -> 'left_images'
+            // Local mapping: 'main' -> 'gallery_links', 'left' -> 'left_gallery_links'
 
-                let result;
+            const localKey = gallery_type === 'left' ? 'left_gallery_links' : 'gallery_links';
+            const globalKey = gallery_type === 'left' ? 'left_images' : 'images';
 
-                if (existing) {
-                    // --- GÜNCELLEME (UPDATE) ---
-                    const updatedConfig = existing.config || {};
-
-                    // RESURRECTION: If it was hidden, bring it back!
-                    updatedConfig.hidden_from_panel = false;
-
-                    // Gelen değerleri güncelle
-                    updatedConfig.institution_title = name;
-                    if (type) updatedConfig.institution_type = type.trim();
-                    if (finalLogo) updatedConfig.institution_logo = finalLogo;
-                    if (logo_locked !== undefined) updatedConfig.logo_locked = logo_locked;
-
-                    // Opsiyonel alanlar
-                    if (finalSubtitle) updatedConfig.institution_subtitle = finalSubtitle;
-                    if (finalSlogan1) updatedConfig.institution_slogan1 = finalSlogan1;
-                    if (finalSlogan2) updatedConfig.institution_slogan2 = finalSlogan2;
-
-                    if (city) updatedConfig.city = city;
-                    if (district) updatedConfig.district = district;
-                    if (region) updatedConfig.region = region; // NEW
-
-                    if (cover) updatedConfig.institution_cover = cover;
-
-                    // Haftalık Hadis (Global)
-                    if (weekly_hadiths) updatedConfig.weekly_hadiths = weekly_hadiths;
-
-                    // İletişim Bilgileri (YENİ)
-                    if (admin_contact) updatedConfig.admin_contact = admin_contact;
-
-                    // Dashboard Config (YENİ)
-                    if (module_dorm_active !== undefined) updatedConfig.module_dorm_active = module_dorm_active;
-                    if (module_bottom_right_type) updatedConfig.module_bottom_right_type = module_bottom_right_type;
-
-                    const { data, error } = await supabase
-                        .from('institutions')
-                        .update({ name, password, config: updatedConfig })
-                        .eq('slug', slug)
-                        .select();
-
-                    if (error) throw error;
-                    result = data[0];
-
-                } else {
-                    // --- YENİ KAYIT (INSERT) ---
-                    const newConfig = {
-                        hidden_from_panel: false, // Explicitly visible
-                        institution_name: name,
-                        institution_title: name,
-                        institution_type: (type || 'Ortaokul').trim(),
-                        // Default values
-                        institution_logo: finalLogo || '',
-                        logo_locked: logo_locked || false, // Varsayılan kilitli değil
-                        institution_subtitle: finalSubtitle || 'Dijital Pano Sistemi',
-                        institution_slogan1: finalSlogan1 || 'İlgiyle bilginin',
-                        institution_slogan2: finalSlogan2 || 'buluştuğu yer',
-                        institution_cover: cover || '',
-                        city: city || 'İstanbul',
-                        district: district || 'Üsküdar',
-                        region: region || '', // NEW
-
-                        // Arrays
-                        dorm1_names: [],
-                        dorm2_names: [],
-                        announcements: [],
-                        video_urls: [],
-                        gallery_links: [],
-                        left_gallery_links: [],
-                        exam_winners: [],
-
-                        // Objects
-                        weekly_hadiths: weekly_hadiths || {},
-                        admin_contact: admin_contact || { name: '', phone: '', email: '' }, // Varsayılan boş obje
-
-                        // Dashboard Config
-                        module_dorm_active: (module_dorm_active !== undefined) ? module_dorm_active : true, // Varsayılan açık
-                        module_bottom_right_type: module_bottom_right_type || 'auto'
-                    };
-
-                    // --- AUTO INHERIT HADITHS ---
-                    try {
-                        const SYSTEM_HADITHS_SLUG = 'system-hadiths';
-                        const { data: sysData } = await supabase
-                            .from('institutions')
-                            .select('config')
-                            .eq('slug', SYSTEM_HADITHS_SLUG)
-                            .single();
-
-                        if (sysData && sysData.config) {
-                            // Try to find matching type in store
-                            // Store keys are like "Ortaokul", "Lise"
-                            // New Inst type is in newConfig.institution_type
-                            const myType = newConfig.institution_type;
-
-                            // Exact match or Case-insensitive match check
-                            // sysData.config keys might be case sensitive.
-                            let inheritedHadiths = sysData.config[myType];
-
-                            // If not found, try finding case-insensitive key
-                            if (!inheritedHadiths) {
-                                const foundKey = Object.keys(sysData.config).find(k => k.toLowerCase() === myType.toLowerCase());
-                                if (foundKey) inheritedHadiths = sysData.config[foundKey];
-                            }
-
-                            if (inheritedHadiths) {
-                                newConfig.weekly_hadiths = inheritedHadiths;
-                            }
-                        }
-                    } catch (e) {
-                        console.log("Hadith inherit error (non-blocking):", e);
-                    }
-                    // ----------------------------
-
-                    const { data, error } = await supabase
-                        .from('institutions')
-                        .insert([{ slug, name, password, config: newConfig }])
-                        .select();
-
-                    if (error) throw error;
-                    result = data[0];
-                }
-
-                return response.status(200).json({ success: true, data: result });
-            }
-
-            // --- SİLME (SMART DELETE) ---
-            if (action === 'delete') {
-                const { slug } = payload || {};
-
-                try {
-                    // 1. Try Hard Delete First
-                    const { error } = await supabase
-                        .from('institutions')
-                        .delete()
-                        .eq('slug', slug);
-
-                    if (error) throw error;
-                    return response.status(200).json({ success: true });
-
-                } catch (deleteError) {
-                    // 2. Fallback to Soft Delete if FK Violation
-                    // Postgres Error 23503 is Foreign Key Violation
-                    if (deleteError.code === '23503') {
-                        // Fetch current config to wipe it
-                        const { data: existing } = await supabase
-                            .from('institutions')
-                            .select('config')
-                            .eq('slug', slug)
-                            .single();
-
-                        if (existing) {
-                            const wipedConfig = existing.config || {};
-
-                            // WIPE CONTENT
-                            wipedConfig.announcements = [];
-                            wipedConfig.video_urls = [];
-                            wipedConfig.gallery_links = [];
-                            wipedConfig.left_gallery_links = [];
-                            wipedConfig.exam_winners = [];
-                            wipedConfig.dorm1_names = [];
-                            wipedConfig.dorm2_names = [];
-                            wipedConfig.weekly_hadiths = {};
-
-                            // HIDE
-                            wipedConfig.hidden_from_panel = true;
-
-                            const { error: updateError } = await supabase
-                                .from('institutions')
-                                .update({ config: wipedConfig })
-                                .eq('slug', slug);
-
-                            if (updateError) throw updateError;
-
-                            return response.status(200).json({ success: true, message: 'Kurum pano verileri sıfırlandı ve listeden gizlendi (Karne verileri korundu).' });
-                        }
-                    }
-
-                    throw deleteError; // Re-throw other errors
-                }
-            }
-
-            // --- SAVE HADITH (NEW ADMİN PANEL) ---
-            if (action === 'save_hadith') {
-                const { type, weeks, start_date } = payload;
-                console.log('=== SAVE HADITH DEBUG ===');
-                console.log('Type:', type);
-                console.log('Weeks count:', weeks?.length);
-                console.log('Start date:', start_date);
-
-                if (!type || !weeks) {
-                    return response.status(400).json({ error: 'Type and weeks are required' });
-                }
-
-                const cleanType = type.trim();
-
-                // 1. STORE in system-hadiths for future institutions
-                const SYSTEM_HADITHS_SLUG = 'system-hadiths';
-                const { data: sysData } = await supabase
+            if (target_type === 'general') {
+                // Update System Global Gallery
+                const { data: globalData } = await supabase
                     .from('institutions')
                     .select('config')
-                    .eq('slug', SYSTEM_HADITHS_SLUG)
+                    .eq('slug', 'system-global-gallery')
                     .single();
 
-                let hadithStore = (sysData && sysData.config) ? sysData.config : {};
+                let config = globalData?.config || {};
+                if (!config[institution_type]) config[institution_type] = {};
 
-                // Store weeks array directly (legacy format compatibility)
-                hadithStore[cleanType] = weeks;
+                if (!config[institution_type][globalKey]) config[institution_type][globalKey] = [];
 
-                // Store start_date separately with _date suffix
-                if (start_date) {
-                    hadithStore[`${cleanType}_date`] = start_date;
-                }
-
-                if (sysData) {
-                    await supabase.from('institutions').update({ config: hadithStore }).eq('slug', SYSTEM_HADITHS_SLUG);
-                } else {
-                    await supabase.from('institutions').insert([{
-                        slug: SYSTEM_HADITHS_SLUG,
-                        name: 'System Hadiths Store',
-                        config: hadithStore,
-                        password: Math.random().toString(36)
-                    }]);
-                }
-
-                // 2. DISTRIBUTE to existing institutions
-                const { data: targets, error: fetchError } = await supabase
-                    .from('institutions')
-                    .select('*');
-
-                if (fetchError) throw fetchError;
-
-                console.log('Total institutions fetched:', targets?.length);
-
-                const targetTypeLower = cleanType.toLowerCase();
-                const updates = [];
-                let matchedCount = 0;
-
-                for (const inst of targets) {
-                    // Skip system users
-                    if (inst.slug.startsWith('system-')) continue;
-
-                    const cfg = inst.config || {};
-                    const currentType = (cfg.institution_type || "").trim().toLowerCase();
-
-                    console.log(`Institution: ${inst.slug}, Type: "${currentType}", Target: "${targetTypeLower}", Match: ${currentType === targetTypeLower}`);
-
-                    if (currentType === targetTypeLower) {
-                        matchedCount++;
-                        cfg.weekly_hadiths = weeks; // Store as array
-                        cfg.hadith_start_date = start_date; // Store start date for week calculation
-                        const p = supabase
-                            .from('institutions')
-                            .update({ config: cfg })
-                            .eq('slug', inst.slug);
-                        updates.push(p);
-                    }
-                }
-
-                console.log('Matched institutions:', matchedCount);
-                console.log('Updates to send:', updates.length);
-
-                if (updates.length > 0) {
-                    await Promise.all(updates);
-                }
-
-                return response.status(200).json({ success: true, count: updates.length });
-            }
-
-            // --- BROADCAST ANNOUNCEMENT ---
-            if (action === 'broadcast_announcement') {
-                const { text, filters, priority, expires_at } = payload;
-
-                if (!text) {
-                    return response.status(400).json({ error: 'Announcement text is required' });
-                }
-
-                // 1. Query all institutions
-                const { data: allInstitutions, error: fetchError } = await supabase
-                    .from('institutions')
-                    .select('*');
-
-                if (fetchError) throw fetchError;
-
-                // 2. Filter institutions based on criteria
-                let targetInstitutions = allInstitutions.filter(inst => {
-                    // Skip system entries
-                    if (inst.slug.startsWith('system-')) return false;
-
-                    const cfg = inst.config || {};
-
-                    // Filter by type
-                    if (filters?.types && filters.types.length > 0) {
-                        const instType = (cfg.institution_type || '').trim().toLowerCase();
-                        const matchesType = filters.types.some(t =>
-                            t.toLowerCase() === instType
-                        );
-                        if (!matchesType) return false;
-                    }
-
-                    // Filter by region
-                    if (filters?.regions && filters.regions.length > 0) {
-                        const instRegion = (cfg.region || inst.region || '').trim().toLowerCase();
-                        const matchesRegion = filters.regions.some(r =>
-                            r.toLowerCase() === instRegion
-                        );
-                        if (!matchesRegion) return false;
-                    }
-
-                    return true;
+                // Add new items (prevent duplicates)
+                const existing = new Set(config[institution_type][globalKey].map(i => typeof i === 'string' ? i : i.url));
+                items.forEach(url => {
+                    if (!existing.has(url)) config[institution_type][globalKey].push(url);
                 });
 
-                // 3. Add announcement to each institution's config
-                const updates = [];
-                for (const inst of targetInstitutions) {
-                    const cfg = inst.config || {};
+                const { error } = await supabase
+                    .from('institutions')
+                    .update({ config })
+                    .eq('slug', 'system-global-gallery');
 
-                    // Initialize announcements array if needed
-                    if (!Array.isArray(cfg.announcements)) {
-                        cfg.announcements = [];
+                if (error) throw error;
+
+            } else if (target_type === 'region') {
+                // Update all institutions in region
+                // This is heavy, we fetch all, modify, update all.
+                // Ideally we should use a Postgres function for JSONB append, but Supabase JS client doesn't support it easily without RPC.
+                // We'll fetch-modify-update.
+
+                const { data: insts } = await supabase
+                    .from('institutions')
+                    .select('slug, config')
+                    .ilike('config->>region', target_value); // JSONB filter
+
+                if (insts) {
+                    for (const inst of insts) {
+                        let cfg = inst.config || {};
+                        if (!cfg[localKey]) cfg[localKey] = [];
+
+                        // Append
+                        let currentList = Array.isArray(cfg[localKey]) ? cfg[localKey] : [];
+                        // Parse if string? No, internal config usually array. But checks valid.
+                        if (typeof cfg[localKey] === 'string') {
+                            try { currentList = JSON.parse(cfg[localKey]); } catch (e) { currentList = []; }
+                        }
+
+                        const existing = new Set(currentList);
+                        let changed = false;
+                        items.forEach(url => {
+                            if (!existing.has(url)) {
+                                currentList.push(url);
+                                changed = true;
+                            }
+                        });
+
+                        if (changed) {
+                            cfg[localKey] = currentList;
+                            await supabase.from('institutions').update({ config: cfg }).eq('slug', inst.slug);
+                        }
+                    }
+                }
+
+            } else if (target_type === 'institution') {
+                // Update single institution
+                const { data: inst } = await supabase
+                    .from('institutions')
+                    .select('config')
+                    .eq('slug', target_value)
+                    .single();
+
+                if (inst) {
+                    let cfg = inst.config || {};
+                    let currentList = cfg[localKey] || [];
+                    if (typeof currentList === 'string') {
+                        try { currentList = JSON.parse(currentList); } catch (e) { currentList = []; }
                     }
 
-                    // Add new announcement
-                    cfg.announcements.push(text);
+                    const existing = new Set(currentList);
+                    let changed = false;
+                    items.forEach(url => {
+                        if (!existing.has(url)) {
+                            currentList.push(url);
+                            changed = true;
+                        }
+                    });
+
+                    if (changed) {
+                        cfg[localKey] = currentList;
+                        await supabase.from('institutions').update({ config: cfg }).eq('slug', target_value);
+                    }
+                }
+            }
+
+            return response.status(200).json({ success: true });
+        }
+
+        // --- EKLEME / GÜNCELLEME ---
+        if (action === 'upsert') {
+            let { slug, name, password, type, institution_logo, logo_locked, institution_subtitle, institution_slogan1, institution_slogan2, cover, city, district, region, weekly_hadiths, admin_contact, module_dorm_active, module_bottom_right_type } = payload || {};
+
+            if (!slug) {
+                return response.status(400).json({ error: 'Kurum URL (Slug) alanı zorunludur!' });
+            }
+            slug = slug.trim(); // Boşlukları temizle
+
+            // Legacy support
+            const finalSubtitle = institution_subtitle || payload.subtitle;
+            const finalSlogan1 = institution_slogan1 || payload.slogan1;
+            const finalSlogan2 = institution_slogan2 || payload.slogan2;
+
+            const finalLogo = institution_logo || payload.logo;
+
+            // 1. Önce bu kurum var mı kontrol et
+            const { data: existing, error: fetchError } = await supabase
+                .from('institutions')
+                .select('*')
+                .eq('slug', slug)
+                .single();
+
+            let result;
+
+            if (existing) {
+                // --- GÜNCELLEME (UPDATE) ---
+                const updatedConfig = existing.config || {};
+
+                // RESURRECTION: If it was hidden, bring it back!
+                updatedConfig.hidden_from_panel = false;
+
+                // Gelen değerleri güncelle
+                updatedConfig.institution_title = name;
+                if (type) updatedConfig.institution_type = type.trim();
+                if (finalLogo) updatedConfig.institution_logo = finalLogo;
+                if (logo_locked !== undefined) updatedConfig.logo_locked = logo_locked;
+
+                // Opsiyonel alanlar
+                if (finalSubtitle) updatedConfig.institution_subtitle = finalSubtitle;
+                if (finalSlogan1) updatedConfig.institution_slogan1 = finalSlogan1;
+                if (finalSlogan2) updatedConfig.institution_slogan2 = finalSlogan2;
+
+                if (city) updatedConfig.city = city;
+                if (district) updatedConfig.district = district;
+                if (region) updatedConfig.region = region; // NEW
+
+                if (cover) updatedConfig.institution_cover = cover;
+
+                // Haftalık Hadis (Global)
+                if (weekly_hadiths) updatedConfig.weekly_hadiths = weekly_hadiths;
+
+                // İletişim Bilgileri (YENİ)
+                if (admin_contact) updatedConfig.admin_contact = admin_contact;
+
+                // Dashboard Config (YENİ)
+                if (module_dorm_active !== undefined) updatedConfig.module_dorm_active = module_dorm_active;
+                if (module_bottom_right_type) updatedConfig.module_bottom_right_type = module_bottom_right_type;
+
+                const { data, error } = await supabase
+                    .from('institutions')
+                    .update({ name, password, config: updatedConfig })
+                    .eq('slug', slug)
+                    .select();
+
+                if (error) throw error;
+                result = data[0];
+
+            } else {
+                // --- YENİ KAYIT (INSERT) ---
+                const newConfig = {
+                    hidden_from_panel: false, // Explicitly visible
+                    institution_name: name,
+                    institution_title: name,
+                    institution_type: (type || 'Ortaokul').trim(),
+                    // Default values
+                    institution_logo: finalLogo || '',
+                    logo_locked: logo_locked || false, // Varsayılan kilitli değil
+                    institution_subtitle: finalSubtitle || 'Dijital Pano Sistemi',
+                    institution_slogan1: finalSlogan1 || 'İlgiyle bilginin',
+                    institution_slogan2: finalSlogan2 || 'buluştuğu yer',
+                    institution_cover: cover || '',
+                    city: city || 'İstanbul',
+                    district: district || 'Üsküdar',
+                    region: region || '', // NEW
+
+                    // Arrays
+                    dorm1_names: [],
+                    dorm2_names: [],
+                    announcements: [],
+                    video_urls: [],
+                    gallery_links: [],
+                    left_gallery_links: [],
+                    exam_winners: [],
+
+                    // Objects
+                    weekly_hadiths: weekly_hadiths || {},
+                    admin_contact: admin_contact || { name: '', phone: '', email: '' }, // Varsayılan boş obje
+
+                    // Dashboard Config
+                    module_dorm_active: (module_dorm_active !== undefined) ? module_dorm_active : true, // Varsayılan açık
+                    module_bottom_right_type: module_bottom_right_type || 'auto'
+                };
+
+                // --- AUTO INHERIT HADITHS ---
+                try {
+                    const SYSTEM_HADITHS_SLUG = 'system-hadiths';
+                    const { data: sysData } = await supabase
+                        .from('institutions')
+                        .select('config')
+                        .eq('slug', SYSTEM_HADITHS_SLUG)
+                        .single();
+
+                    if (sysData && sysData.config) {
+                        // Try to find matching type in store
+                        // Store keys are like "Ortaokul", "Lise"
+                        // New Inst type is in newConfig.institution_type
+                        const myType = newConfig.institution_type;
+
+                        // Exact match or Case-insensitive match check
+                        // sysData.config keys might be case sensitive.
+                        let inheritedHadiths = sysData.config[myType];
+
+                        // If not found, try finding case-insensitive key
+                        if (!inheritedHadiths) {
+                            const foundKey = Object.keys(sysData.config).find(k => k.toLowerCase() === myType.toLowerCase());
+                            if (foundKey) inheritedHadiths = sysData.config[foundKey];
+                        }
+
+                        if (inheritedHadiths) {
+                            newConfig.weekly_hadiths = inheritedHadiths;
+                        }
+                    }
+                } catch (e) {
+                    console.log("Hadith inherit error (non-blocking):", e);
+                }
+                // ----------------------------
+
+                const { data, error } = await supabase
+                    .from('institutions')
+                    .insert([{ slug, name, password, config: newConfig }])
+                    .select();
+
+                if (error) throw error;
+                result = data[0];
+            }
+
+            return response.status(200).json({ success: true, data: result });
+        }
+
+        // --- SİLME (SMART DELETE) ---
+        if (action === 'delete') {
+            const { slug } = payload || {};
+
+            try {
+                // 1. Try Hard Delete First
+                const { error } = await supabase
+                    .from('institutions')
+                    .delete()
+                    .eq('slug', slug);
+
+                if (error) throw error;
+                return response.status(200).json({ success: true });
+
+            } catch (deleteError) {
+                // 2. Fallback to Soft Delete if FK Violation
+                // Postgres Error 23503 is Foreign Key Violation
+                if (deleteError.code === '23503') {
+                    // Fetch current config to wipe it
+                    const { data: existing } = await supabase
+                        .from('institutions')
+                        .select('config')
+                        .eq('slug', slug)
+                        .single();
+
+                    if (existing) {
+                        const wipedConfig = existing.config || {};
+
+                        // WIPE CONTENT
+                        wipedConfig.announcements = [];
+                        wipedConfig.video_urls = [];
+                        wipedConfig.gallery_links = [];
+                        wipedConfig.left_gallery_links = [];
+                        wipedConfig.exam_winners = [];
+                        wipedConfig.dorm1_names = [];
+                        wipedConfig.dorm2_names = [];
+                        wipedConfig.weekly_hadiths = {};
+
+                        // HIDE
+                        wipedConfig.hidden_from_panel = true;
+
+                        const { error: updateError } = await supabase
+                            .from('institutions')
+                            .update({ config: wipedConfig })
+                            .eq('slug', slug);
+
+                        if (updateError) throw updateError;
+
+                        return response.status(200).json({ success: true, message: 'Kurum pano verileri sıfırlandı ve listeden gizlendi (Karne verileri korundu).' });
+                    }
+                }
+
+                throw deleteError; // Re-throw other errors
+            }
+        }
+
+        // --- SAVE HADITH (NEW ADMİN PANEL) ---
+        if (action === 'save_hadith') {
+            const { type, weeks, start_date } = payload;
+            console.log('=== SAVE HADITH DEBUG ===');
+            console.log('Type:', type);
+            console.log('Weeks count:', weeks?.length);
+            console.log('Start date:', start_date);
+
+            if (!type || !weeks) {
+                return response.status(400).json({ error: 'Type and weeks are required' });
+            }
+
+            const cleanType = type.trim();
+
+            // 1. STORE in system-hadiths for future institutions
+            const SYSTEM_HADITHS_SLUG = 'system-hadiths';
+            const { data: sysData } = await supabase
+                .from('institutions')
+                .select('config')
+                .eq('slug', SYSTEM_HADITHS_SLUG)
+                .single();
+
+            let hadithStore = (sysData && sysData.config) ? sysData.config : {};
+
+            // Store weeks array directly (legacy format compatibility)
+            hadithStore[cleanType] = weeks;
+
+            // Store start_date separately with _date suffix
+            if (start_date) {
+                hadithStore[`${cleanType}_date`] = start_date;
+            }
+
+            if (sysData) {
+                await supabase.from('institutions').update({ config: hadithStore }).eq('slug', SYSTEM_HADITHS_SLUG);
+            } else {
+                await supabase.from('institutions').insert([{
+                    slug: SYSTEM_HADITHS_SLUG,
+                    name: 'System Hadiths Store',
+                    config: hadithStore,
+                    password: Math.random().toString(36)
+                }]);
+            }
+
+            // 2. DISTRIBUTE to existing institutions
+            const { data: targets, error: fetchError } = await supabase
+                .from('institutions')
+                .select('*');
+
+            if (fetchError) throw fetchError;
+
+            console.log('Total institutions fetched:', targets?.length);
+
+            const targetTypeLower = cleanType.toLowerCase();
+            const updates = [];
+            let matchedCount = 0;
+
+            for (const inst of targets) {
+                // Skip system users
+                if (inst.slug.startsWith('system-')) continue;
+
+                const cfg = inst.config || {};
+                const currentType = (cfg.institution_type || "").trim().toLowerCase();
+
+                console.log(`Institution: ${inst.slug}, Type: "${currentType}", Target: "${targetTypeLower}", Match: ${currentType === targetTypeLower}`);
+
+                if (currentType === targetTypeLower) {
+                    matchedCount++;
+                    cfg.weekly_hadiths = weeks; // Store as array
+                    cfg.hadith_start_date = start_date; // Store start date for week calculation
+                    const p = supabase
+                        .from('institutions')
+                        .update({ config: cfg })
+                        .eq('slug', inst.slug);
+                    updates.push(p);
+                }
+            }
+
+            console.log('Matched institutions:', matchedCount);
+            console.log('Updates to send:', updates.length);
+
+            if (updates.length > 0) {
+                await Promise.all(updates);
+            }
+
+            return response.status(200).json({ success: true, count: updates.length });
+        }
+
+        // --- BROADCAST ANNOUNCEMENT ---
+        if (action === 'broadcast_announcement') {
+            const { text, filters, priority, expires_at } = payload;
+
+            if (!text) {
+                return response.status(400).json({ error: 'Announcement text is required' });
+            }
+
+            // 1. Query all institutions
+            const { data: allInstitutions, error: fetchError } = await supabase
+                .from('institutions')
+                .select('*');
+
+            if (fetchError) throw fetchError;
+
+            // 2. Filter institutions based on criteria
+            let targetInstitutions = allInstitutions.filter(inst => {
+                // Skip system entries
+                if (inst.slug.startsWith('system-')) return false;
+
+                const cfg = inst.config || {};
+
+                // Filter by type
+                if (filters?.types && filters.types.length > 0) {
+                    const instType = (cfg.institution_type || '').trim().toLowerCase();
+                    const matchesType = filters.types.some(t =>
+                        t.toLowerCase() === instType
+                    );
+                    if (!matchesType) return false;
+                }
+
+                // Filter by region
+                if (filters?.regions && filters.regions.length > 0) {
+                    const instRegion = (cfg.region || inst.region || '').trim().toLowerCase();
+                    const matchesRegion = filters.regions.some(r =>
+                        r.toLowerCase() === instRegion
+                    );
+                    if (!matchesRegion) return false;
+                }
+
+                return true;
+            });
+
+            // 3. Add announcement to each institution's config
+            const updates = [];
+            for (const inst of targetInstitutions) {
+                const cfg = inst.config || {};
+
+                // Initialize announcements array if needed
+                if (!Array.isArray(cfg.announcements)) {
+                    cfg.announcements = [];
+                }
+
+                // Add new announcement
+                cfg.announcements.push(text);
+
+                const updatePromise = supabase
+                    .from('institutions')
+                    .update({ config: cfg })
+                    .eq('slug', inst.slug);
+
+                updates.push(updatePromise);
+            }
+
+            // 4. Execute all updates
+            if (updates.length > 0) {
+                await Promise.all(updates);
+            }
+
+            // 5. Save to central store
+            const announcementRecord = {
+                id: Date.now().toString(),
+                text: text,
+                priority: priority || 'normal',
+                created_at: new Date().toISOString(),
+                expires_at: expires_at || null,
+                filters: filters || {},
+                delivered_to: updates.length
+            };
+
+            const ANNOUNCEMENTS_SLUG = 'system-announcements';
+            const { data: sysData } = await supabase
+                .from('institutions')
+                .select('config')
+                .eq('slug', ANNOUNCEMENTS_SLUG)
+                .single();
+
+            let announcementStore = (sysData && sysData.config) ? sysData.config : {};
+            if (!Array.isArray(announcementStore.announcements)) {
+                announcementStore.announcements = [];
+            }
+
+            announcementStore.announcements.unshift(announcementRecord);
+
+            if (sysData) {
+                await supabase
+                    .from('institutions')
+                    .update({ config: announcementStore })
+                    .eq('slug', ANNOUNCEMENTS_SLUG);
+            } else {
+                await supabase.from('institutions').insert([{
+                    slug: ANNOUNCEMENTS_SLUG,
+                    name: 'System Announcements Store',
+                    config: announcementStore,
+                    password: Math.random().toString(36)
+                }]);
+            }
+
+            return response.status(200).json({
+                success: true,
+                delivered_to: updates.length
+            });
+        }
+
+        // --- DELETE ANNOUNCEMENT ---
+        if (action === 'delete_announcement') {
+            const { announcement_id } = payload;
+
+            if (!announcement_id) {
+                return response.status(400).json({ error: 'Announcement ID required' });
+            }
+
+            // 1. Get announcement details from central store
+            const ANNOUNCEMENTS_SLUG = 'system-announcements';
+            const { data: sysData } = await supabase
+                .from('institutions')
+                .select('config')
+                .eq('slug', ANNOUNCEMENTS_SLUG)
+                .single();
+
+            if (!sysData || !sysData.config || !Array.isArray(sysData.config.announcements)) {
+                return response.status(404).json({ error: 'Announcement not found' });
+            }
+
+            const announcement = sysData.config.announcements.find(a => a.id === announcement_id);
+            if (!announcement) {
+                return response.status(404).json({ error: 'Announcement not found' });
+            }
+
+            const announcementText = announcement.text;
+
+            // 2. Remove from all institutions
+            const { data: allInstitutions } = await supabase
+                .from('institutions')
+                .select('*');
+
+            const updates = [];
+            for (const inst of allInstitutions) {
+                if (inst.slug.startsWith('system-')) continue;
+
+                const cfg = inst.config || {};
+                if (Array.isArray(cfg.announcements) && cfg.announcements.includes(announcementText)) {
+                    cfg.announcements = cfg.announcements.filter(a => a !== announcementText);
 
                     const updatePromise = supabase
                         .from('institutions')
@@ -614,728 +838,630 @@ module.exports = async (request, response) => {
 
                     updates.push(updatePromise);
                 }
+            }
 
-                // 4. Execute all updates
-                if (updates.length > 0) {
-                    await Promise.all(updates);
-                }
+            if (updates.length > 0) {
+                await Promise.all(updates);
+            }
 
-                // 5. Save to central store
-                const announcementRecord = {
-                    id: Date.now().toString(),
-                    text: text,
-                    priority: priority || 'normal',
-                    created_at: new Date().toISOString(),
-                    expires_at: expires_at || null,
-                    filters: filters || {},
-                    delivered_to: updates.length
-                };
+            // 3. Remove from central store
+            sysData.config.announcements = sysData.config.announcements.filter(a => a.id !== announcement_id);
+            await supabase
+                .from('institutions')
+                .update({ config: sysData.config })
+                .eq('slug', ANNOUNCEMENTS_SLUG);
 
-                const ANNOUNCEMENTS_SLUG = 'system-announcements';
-                const { data: sysData } = await supabase
+            return response.status(200).json({ success: true, removed_from: updates.length });
+        }
+
+        // --- LIST ANNOUNCEMENTS ---
+        if (action === 'list_announcements') {
+            const ANNOUNCEMENTS_SLUG = 'system-announcements';
+            const { data: sysData } = await supabase
+                .from('institutions')
+                .select('config')
+                .eq('slug', ANNOUNCEMENTS_SLUG)
+                .single();
+
+            const announcements = (sysData && sysData.config && Array.isArray(sysData.config.announcements))
+                ? sysData.config.announcements
+                : [];
+
+            return response.status(200).json({ announcements });
+        }
+
+        // --- CMS - SAVE LANDING CONTENT ---
+        if (action === 'save_landing_content') {
+            const { content } = payload;
+            const CMS_SLUG = 'system-cms';
+
+            const { data: sysData } = await supabase
+                .from('institutions')
+                .select('config')
+                .eq('slug', CMS_SLUG)
+                .single();
+
+            if (sysData) {
+                await supabase
                     .from('institutions')
-                    .select('config')
-                    .eq('slug', ANNOUNCEMENTS_SLUG)
-                    .single();
+                    .update({ config: content })
+                    .eq('slug', CMS_SLUG);
+            } else {
+                await supabase.from('institutions').insert([{
+                    slug: CMS_SLUG,
+                    name: 'System CMS Data',
+                    config: content,
+                    password: Math.random().toString(36)
+                }]);
+            }
 
-                let announcementStore = (sysData && sysData.config) ? sysData.config : {};
-                if (!Array.isArray(announcementStore.announcements)) {
-                    announcementStore.announcements = [];
+            return response.status(200).json({ success: true });
+        }
+
+        // --- CMS - GET LANDING CONTENT ---
+        if (action === 'get_landing_content') {
+            const CMS_SLUG = 'system-cms';
+            const { data: sysData } = await supabase
+                .from('institutions')
+                .select('config')
+                .eq('slug', CMS_SLUG)
+                .single();
+
+            return response.status(200).json({
+                content: sysData ? sysData.config : null
+            });
+        }
+
+        // --- HADİS DAĞITIMI (BULK UPDATE) ---
+        if (action === 'distribute_hadiths') {
+            const { type, hadiths } = payload;
+            const targetType = (type || "").trim().toLowerCase();
+
+            // 1. İlgili tipteki kurumları çek
+            const { data: targets, error: fetchError } = await supabase
+                .from('institutions')
+                .select('*');
+
+            if (fetchError) throw fetchError;
+
+            const updates = [];
+            for (const inst of targets) {
+                const cfg = inst.config || {};
+                const currentType = (cfg.institution_type || "").trim().toLowerCase();
+
+                if (currentType === targetType) {
+                    cfg.weekly_hadiths = hadiths;
+                    const p = supabase
+                        .from('institutions')
+                        .update({ config: cfg })
+                        .eq('slug', inst.slug);
+                    updates.push(p);
+                }
+            }
+
+            if (updates.length > 0) {
+                await Promise.all(updates);
+            }
+
+            // --- SYSTEM SAVE (PERSISTENCE) ---
+            // Gelecekte açılacak kurumlar için bu hadisleri sakla
+            const SYSTEM_HADITHS_SLUG = 'system-hadiths';
+            const { data: sysData } = await supabase
+                .from('institutions')
+                .select('config')
+                .eq('slug', SYSTEM_HADITHS_SLUG)
+                .single();
+
+            let hadithStore = (sysData && sysData.config) ? sysData.config : {};
+
+            // Normalize keys? Let's keep original casing from payload 'type' as key if possible, 
+            // but for matching we might need cleaner approach. 
+            // Let's store using the exact string provided by admin panel (e.g. "Ortaokul")
+            hadithStore[type] = hadiths;
+
+            // Persist updates
+            if (sysData) {
+                await supabase.from('institutions').update({ config: hadithStore }).eq('slug', SYSTEM_HADITHS_SLUG);
+            } else {
+                await supabase.from('institutions').insert([{
+                    slug: SYSTEM_HADITHS_SLUG,
+                    name: 'System Hadiths Store',
+                    config: hadithStore,
+                    password: Math.random().toString(36)
+                }]);
+            }
+
+            return response.status(200).json({ success: true, count: updates.length });
+        }
+
+        // --- GET HADITHS ---
+        if (action === 'get_hadiths') {
+            const SYSTEM_HADITHS_SLUG = 'system-hadiths';
+            const { data } = await supabase
+                .from('institutions')
+                .select('config')
+                .eq('slug', SYSTEM_HADITHS_SLUG)
+                .single();
+
+            return response.status(200).json({
+                success: true,
+                config: data?.config || {}
+            });
+        }
+
+        // --- GET GALLERY ---
+        if (action === 'get_gallery') {
+            const SYSTEM_GALLERY_SLUG = 'system-global-gallery';
+            const { data } = await supabase
+                .from('institutions')
+                .select('config')
+                .eq('slug', SYSTEM_GALLERY_SLUG)
+                .single();
+
+            return response.status(200).json({
+                success: true,
+                gallery: data?.config || { main: [], slider: [] }
+            });
+        }
+
+        // --- SAVE GALLERY ---
+        if (action === 'save_gallery') {
+            const { gallery } = payload;
+            const SYSTEM_GALLERY_SLUG = 'system-global-gallery';
+
+            console.log('save_gallery called with:', JSON.stringify(gallery).substring(0, 500));
+
+            // Use upsert to handle both insert and update
+            const { error: upsertError } = await supabase
+                .from('institutions')
+                .upsert({
+                    slug: SYSTEM_GALLERY_SLUG,
+                    name: 'System Gallery',
+                    config: gallery,
+                    password: 'system-internal'
+                }, {
+                    onConflict: 'slug'
+                });
+
+            if (upsertError) {
+                console.error('save_gallery upsert error:', upsertError);
+                return response.status(500).json({
+                    error: `Galeri kaydetme hatası: ${upsertError.message}`
+                });
+            }
+
+            console.log('save_gallery success');
+            return response.status(200).json({ success: true });
+        }
+
+        // --- DELETE GALLERY FILE FROM STORAGE ---
+        if (action === 'delete_gallery_file') {
+            const { url } = payload;
+
+            if (!url) {
+                return response.status(400).json({ error: 'URL gereklidir' });
+            }
+
+            try {
+                // Extract file path from Supabase public URL
+                // Format: https://{PROJECT}.supabase.co/storage/v1/object/public/images/{filePath}
+                const urlParts = url.split('/storage/v1/object/public/images/');
+
+                if (urlParts.length < 2) {
+                    // Not a Supabase Storage URL, skip deletion
+                    return response.status(200).json({
+                        success: true,
+                        message: 'Not a Storage URL, skipped deletion'
+                    });
                 }
 
-                announcementStore.announcements.unshift(announcementRecord);
+                const filePath = urlParts[1];
 
-                if (sysData) {
-                    await supabase
-                        .from('institutions')
-                        .update({ config: announcementStore })
-                        .eq('slug', ANNOUNCEMENTS_SLUG);
-                } else {
-                    await supabase.from('institutions').insert([{
-                        slug: ANNOUNCEMENTS_SLUG,
-                        name: 'System Announcements Store',
-                        config: announcementStore,
-                        password: Math.random().toString(36)
-                    }]);
+                // Delete from Storage
+                const { error } = await supabase
+                    .storage
+                    .from('images')
+                    .remove([filePath]);
+
+                if (error) {
+                    console.error('Storage delete error:', error);
+                    return response.status(500).json({
+                        error: `Storage silme hatası: ${error.message}`
+                    });
                 }
 
                 return response.status(200).json({
                     success: true,
-                    delivered_to: updates.length
+                    message: 'Dosya Storage\'dan silindi'
+                });
+
+            } catch (err) {
+                console.error('Delete file error:', err);
+                return response.status(500).json({
+                    error: `Dosya silme hatası: ${err.message}`
                 });
             }
+        }
 
-            // --- DELETE ANNOUNCEMENT ---
-            if (action === 'delete_announcement') {
-                const { announcement_id } = payload;
+        // --- BULK DELETE ALL STORAGE FILES ---
+        if (action === 'bulk_delete_all_storage') {
+            try {
+                // List all files in the images bucket
+                const { data: fileList, error: listError } = await supabase
+                    .storage
+                    .from('images')
+                    .list('', {
+                        limit: 1000,
+                        offset: 0
+                    });
 
-                if (!announcement_id) {
-                    return response.status(400).json({ error: 'Announcement ID required' });
+                if (listError) {
+                    console.error('List storage error:', listError);
+                    return response.status(500).json({
+                        error: `Storage listeleme hatası: ${listError.message}`
+                    });
                 }
 
-                // 1. Get announcement details from central store
-                const ANNOUNCEMENTS_SLUG = 'system-announcements';
-                const { data: sysData } = await supabase
-                    .from('institutions')
-                    .select('config')
-                    .eq('slug', ANNOUNCEMENTS_SLUG)
-                    .single();
-
-                if (!sysData || !sysData.config || !Array.isArray(sysData.config.announcements)) {
-                    return response.status(404).json({ error: 'Announcement not found' });
+                if (!fileList || fileList.length === 0) {
+                    return response.status(200).json({
+                        success: true,
+                        message: 'Storage zaten boş',
+                        deletedCount: 0
+                    });
                 }
 
-                const announcement = sysData.config.announcements.find(a => a.id === announcement_id);
-                if (!announcement) {
-                    return response.status(404).json({ error: 'Announcement not found' });
-                }
+                // Collect all file paths (including subdirectories)
+                const allPaths = [];
 
-                const announcementText = announcement.text;
-
-                // 2. Remove from all institutions
-                const { data: allInstitutions } = await supabase
-                    .from('institutions')
-                    .select('*');
-
-                const updates = [];
-                for (const inst of allInstitutions) {
-                    if (inst.slug.startsWith('system-')) continue;
-
-                    const cfg = inst.config || {};
-                    if (Array.isArray(cfg.announcements) && cfg.announcements.includes(announcementText)) {
-                        cfg.announcements = cfg.announcements.filter(a => a !== announcementText);
-
-                        const updatePromise = supabase
-                            .from('institutions')
-                            .update({ config: cfg })
-                            .eq('slug', inst.slug);
-
-                        updates.push(updatePromise);
+                // First, collect top-level files
+                for (const item of fileList) {
+                    if (item.name) {
+                        allPaths.push(item.name);
                     }
                 }
 
-                if (updates.length > 0) {
-                    await Promise.all(updates);
+                // Also list subdirectories (e.g., institution slugs)
+                for (const item of fileList) {
+                    if (item.id && !item.name.includes('.')) {
+                        // This might be a folder, list its contents
+                        const { data: subFiles } = await supabase
+                            .storage
+                            .from('images')
+                            .list(item.name, { limit: 1000 });
+
+                        if (subFiles) {
+                            for (const subFile of subFiles) {
+                                if (subFile.name) {
+                                    allPaths.push(`${item.name}/${subFile.name}`);
+                                }
+                            }
+                        }
+                    }
                 }
 
-                // 3. Remove from central store
-                sysData.config.announcements = sysData.config.announcements.filter(a => a.id !== announcement_id);
-                await supabase
-                    .from('institutions')
-                    .update({ config: sysData.config })
-                    .eq('slug', ANNOUNCEMENTS_SLUG);
+                // Delete all files in batches
+                const { error: deleteError } = await supabase
+                    .storage
+                    .from('images')
+                    .remove(allPaths);
 
-                return response.status(200).json({ success: true, removed_from: updates.length });
-            }
-
-            // --- LIST ANNOUNCEMENTS ---
-            if (action === 'list_announcements') {
-                const ANNOUNCEMENTS_SLUG = 'system-announcements';
-                const { data: sysData } = await supabase
-                    .from('institutions')
-                    .select('config')
-                    .eq('slug', ANNOUNCEMENTS_SLUG)
-                    .single();
-
-                const announcements = (sysData && sysData.config && Array.isArray(sysData.config.announcements))
-                    ? sysData.config.announcements
-                    : [];
-
-                return response.status(200).json({ announcements });
-            }
-
-            // --- CMS - SAVE LANDING CONTENT ---
-            if (action === 'save_landing_content') {
-                const { content } = payload;
-                const CMS_SLUG = 'system-cms';
-
-                const { data: sysData } = await supabase
-                    .from('institutions')
-                    .select('config')
-                    .eq('slug', CMS_SLUG)
-                    .single();
-
-                if (sysData) {
-                    await supabase
-                        .from('institutions')
-                        .update({ config: content })
-                        .eq('slug', CMS_SLUG);
-                } else {
-                    await supabase.from('institutions').insert([{
-                        slug: CMS_SLUG,
-                        name: 'System CMS Data',
-                        config: content,
-                        password: Math.random().toString(36)
-                    }]);
+                if (deleteError) {
+                    console.error('Bulk delete error:', deleteError);
+                    return response.status(500).json({
+                        error: `Toplu silme hatası: ${deleteError.message}`
+                    });
                 }
-
-                return response.status(200).json({ success: true });
-            }
-
-            // --- CMS - GET LANDING CONTENT ---
-            if (action === 'get_landing_content') {
-                const CMS_SLUG = 'system-cms';
-                const { data: sysData } = await supabase
-                    .from('institutions')
-                    .select('config')
-                    .eq('slug', CMS_SLUG)
-                    .single();
 
                 return response.status(200).json({
-                    content: sysData ? sysData.config : null
+                    success: true,
+                    message: 'Tüm dosyalar Storage\'dan silindi',
+                    deletedCount: allPaths.length
+                });
+
+            } catch (err) {
+                console.error('Bulk delete all storage error:', err);
+                return response.status(500).json({
+                    error: `Toplu silme hatası: ${err.message}`
                 });
             }
+        }
 
-            // --- HADİS DAĞITIMI (BULK UPDATE) ---
-            if (action === 'distribute_hadiths') {
-                const { type, hadiths } = payload;
-                const targetType = (type || "").trim().toLowerCase();
 
-                // 1. İlgili tipteki kurumları çek
-                const { data: targets, error: fetchError } = await supabase
-                    .from('institutions')
-                    .select('*');
+        // --- BULK PURGE LOCAL CONTENT (TEMİZLİK) ---
+        // --- BULK REMOVE ITEMS (SMART CLEANUP) ---
+        if (action === 'bulk_remove_items') {
+            const { type, targets, items } = payload; // targets: ['gallery_links', ...], items: ["url1", "url2"]
+            const targetType = (type || "").trim().toLowerCase();
+            const itemsToRemove = (items && Array.isArray(items)) ? items : [];
 
-                if (fetchError) throw fetchError;
+            if (!targetType) return response.status(400).json({ error: 'Type is required' });
+            if (itemsToRemove.length === 0) return response.status(200).json({ success: true, count: 0 });
 
-                const updates = [];
-                for (const inst of targets) {
-                    const cfg = inst.config || {};
-                    const currentType = (cfg.institution_type || "").trim().toLowerCase();
+            // 1. Fetch relevant institutions
+            const { data: insts, error: fetchError } = await supabase
+                .from('institutions')
+                .select('*');
 
-                    if (currentType === targetType) {
-                        cfg.weekly_hadiths = hadiths;
+            if (fetchError) throw fetchError;
+
+            const updates = [];
+            let affectedCount = 0;
+
+            for (const inst of insts) {
+                // Skip system users
+                if (inst.slug.startsWith('system-')) continue;
+
+                const cfg = inst.config || {};
+                const currentType = (cfg.institution_type || "Ortaokul").trim().toLowerCase();
+
+                // Match Type (loose check defaults to Ortaokul if missing)
+                if (currentType === targetType) {
+                    let changed = false;
+
+                    targets.forEach(targetKey => {
+                        let currentList = [];
+                        // Parse current list
+                        if (Array.isArray(cfg[targetKey])) currentList = cfg[targetKey];
+                        else if (typeof cfg[targetKey] === 'string') {
+                            try { currentList = JSON.parse(cfg[targetKey]); } catch (e) { }
+                        }
+
+                        if (currentList && currentList.length > 0) {
+                            const originalLen = currentList.length;
+                            // FILTER: Remove if URL is in itemsToRemove
+                            currentList = currentList.filter(url => !itemsToRemove.includes(url));
+
+                            if (currentList.length !== originalLen) {
+                                cfg[targetKey] = currentList;
+                                changed = true;
+                            }
+                        }
+                    });
+
+                    if (changed) {
                         const p = supabase
                             .from('institutions')
                             .update({ config: cfg })
                             .eq('slug', inst.slug);
                         updates.push(p);
+                        affectedCount++;
                     }
                 }
-
-                if (updates.length > 0) {
-                    await Promise.all(updates);
-                }
-
-                // --- SYSTEM SAVE (PERSISTENCE) ---
-                // Gelecekte açılacak kurumlar için bu hadisleri sakla
-                const SYSTEM_HADITHS_SLUG = 'system-hadiths';
-                const { data: sysData } = await supabase
-                    .from('institutions')
-                    .select('config')
-                    .eq('slug', SYSTEM_HADITHS_SLUG)
-                    .single();
-
-                let hadithStore = (sysData && sysData.config) ? sysData.config : {};
-
-                // Normalize keys? Let's keep original casing from payload 'type' as key if possible, 
-                // but for matching we might need cleaner approach. 
-                // Let's store using the exact string provided by admin panel (e.g. "Ortaokul")
-                hadithStore[type] = hadiths;
-
-                // Persist updates
-                if (sysData) {
-                    await supabase.from('institutions').update({ config: hadithStore }).eq('slug', SYSTEM_HADITHS_SLUG);
-                } else {
-                    await supabase.from('institutions').insert([{
-                        slug: SYSTEM_HADITHS_SLUG,
-                        name: 'System Hadiths Store',
-                        config: hadithStore,
-                        password: Math.random().toString(36)
-                    }]);
-                }
-
-                return response.status(200).json({ success: true, count: updates.length });
             }
 
-            // --- GET HADITHS ---
-            if (action === 'get_hadiths') {
-                const SYSTEM_HADITHS_SLUG = 'system-hadiths';
-                const { data } = await supabase
-                    .from('institutions')
-                    .select('config')
-                    .eq('slug', SYSTEM_HADITHS_SLUG)
-                    .single();
-
-                return response.status(200).json({
-                    success: true,
-                    config: data?.config || {}
-                });
+            if (updates.length > 0) {
+                await Promise.all(updates);
             }
 
-            // --- GET GALLERY ---
-            if (action === 'get_gallery') {
-                const SYSTEM_GALLERY_SLUG = 'system-global-gallery';
-                const { data } = await supabase
-                    .from('institutions')
-                    .select('config')
-                    .eq('slug', SYSTEM_GALLERY_SLUG)
-                    .single();
-
-                return response.status(200).json({
-                    success: true,
-                    gallery: data?.config || { main: [], slider: [] }
-                });
-            }
-
-            // --- SAVE GALLERY ---
-            if (action === 'save_gallery') {
-                const { gallery } = payload;
-                const SYSTEM_GALLERY_SLUG = 'system-global-gallery';
-
-                console.log('save_gallery called with:', JSON.stringify(gallery).substring(0, 500));
-
-                // Use upsert to handle both insert and update
-                const { error: upsertError } = await supabase
-                    .from('institutions')
-                    .upsert({
-                        slug: SYSTEM_GALLERY_SLUG,
-                        name: 'System Gallery',
-                        config: gallery,
-                        password: 'system-internal'
-                    }, {
-                        onConflict: 'slug'
-                    });
-
-                if (upsertError) {
-                    console.error('save_gallery upsert error:', upsertError);
-                    return response.status(500).json({
-                        error: `Galeri kaydetme hatası: ${upsertError.message}`
-                    });
-                }
-
-                console.log('save_gallery success');
-                return response.status(200).json({ success: true });
-            }
-
-            // --- DELETE GALLERY FILE FROM STORAGE ---
-            if (action === 'delete_gallery_file') {
-                const { url } = payload;
-
-                if (!url) {
-                    return response.status(400).json({ error: 'URL gereklidir' });
-                }
-
-                try {
-                    // Extract file path from Supabase public URL
-                    // Format: https://{PROJECT}.supabase.co/storage/v1/object/public/images/{filePath}
-                    const urlParts = url.split('/storage/v1/object/public/images/');
-
-                    if (urlParts.length < 2) {
-                        // Not a Supabase Storage URL, skip deletion
-                        return response.status(200).json({
-                            success: true,
-                            message: 'Not a Storage URL, skipped deletion'
-                        });
-                    }
-
-                    const filePath = urlParts[1];
-
-                    // Delete from Storage
-                    const { error } = await supabase
-                        .storage
-                        .from('images')
-                        .remove([filePath]);
-
-                    if (error) {
-                        console.error('Storage delete error:', error);
-                        return response.status(500).json({
-                            error: `Storage silme hatası: ${error.message}`
-                        });
-                    }
-
-                    return response.status(200).json({
-                        success: true,
-                        message: 'Dosya Storage\'dan silindi'
-                    });
-
-                } catch (err) {
-                    console.error('Delete file error:', err);
-                    return response.status(500).json({
-                        error: `Dosya silme hatası: ${err.message}`
-                    });
-                }
-            }
-
-            // --- BULK DELETE ALL STORAGE FILES ---
-            if (action === 'bulk_delete_all_storage') {
-                try {
-                    // List all files in the images bucket
-                    const { data: fileList, error: listError } = await supabase
-                        .storage
-                        .from('images')
-                        .list('', {
-                            limit: 1000,
-                            offset: 0
-                        });
-
-                    if (listError) {
-                        console.error('List storage error:', listError);
-                        return response.status(500).json({
-                            error: `Storage listeleme hatası: ${listError.message}`
-                        });
-                    }
-
-                    if (!fileList || fileList.length === 0) {
-                        return response.status(200).json({
-                            success: true,
-                            message: 'Storage zaten boş',
-                            deletedCount: 0
-                        });
-                    }
-
-                    // Collect all file paths (including subdirectories)
-                    const allPaths = [];
-
-                    // First, collect top-level files
-                    for (const item of fileList) {
-                        if (item.name) {
-                            allPaths.push(item.name);
-                        }
-                    }
-
-                    // Also list subdirectories (e.g., institution slugs)
-                    for (const item of fileList) {
-                        if (item.id && !item.name.includes('.')) {
-                            // This might be a folder, list its contents
-                            const { data: subFiles } = await supabase
-                                .storage
-                                .from('images')
-                                .list(item.name, { limit: 1000 });
-
-                            if (subFiles) {
-                                for (const subFile of subFiles) {
-                                    if (subFile.name) {
-                                        allPaths.push(`${item.name}/${subFile.name}`);
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    // Delete all files in batches
-                    const { error: deleteError } = await supabase
-                        .storage
-                        .from('images')
-                        .remove(allPaths);
-
-                    if (deleteError) {
-                        console.error('Bulk delete error:', deleteError);
-                        return response.status(500).json({
-                            error: `Toplu silme hatası: ${deleteError.message}`
-                        });
-                    }
-
-                    return response.status(200).json({
-                        success: true,
-                        message: 'Tüm dosyalar Storage\'dan silindi',
-                        deletedCount: allPaths.length
-                    });
-
-                } catch (err) {
-                    console.error('Bulk delete all storage error:', err);
-                    return response.status(500).json({
-                        error: `Toplu silme hatası: ${err.message}`
-                    });
-                }
-            }
-
-
-            // --- BULK PURGE LOCAL CONTENT (TEMİZLİK) ---
-            // --- BULK REMOVE ITEMS (SMART CLEANUP) ---
-            if (action === 'bulk_remove_items') {
-                const { type, targets, items } = payload; // targets: ['gallery_links', ...], items: ["url1", "url2"]
-                const targetType = (type || "").trim().toLowerCase();
-                const itemsToRemove = (items && Array.isArray(items)) ? items : [];
-
-                if (!targetType) return response.status(400).json({ error: 'Type is required' });
-                if (itemsToRemove.length === 0) return response.status(200).json({ success: true, count: 0 });
-
-                // 1. Fetch relevant institutions
-                const { data: insts, error: fetchError } = await supabase
-                    .from('institutions')
-                    .select('*');
-
-                if (fetchError) throw fetchError;
-
-                const updates = [];
-                let affectedCount = 0;
-
-                for (const inst of insts) {
-                    // Skip system users
-                    if (inst.slug.startsWith('system-')) continue;
-
-                    const cfg = inst.config || {};
-                    const currentType = (cfg.institution_type || "Ortaokul").trim().toLowerCase();
-
-                    // Match Type (loose check defaults to Ortaokul if missing)
-                    if (currentType === targetType) {
-                        let changed = false;
-
-                        targets.forEach(targetKey => {
-                            let currentList = [];
-                            // Parse current list
-                            if (Array.isArray(cfg[targetKey])) currentList = cfg[targetKey];
-                            else if (typeof cfg[targetKey] === 'string') {
-                                try { currentList = JSON.parse(cfg[targetKey]); } catch (e) { }
-                            }
-
-                            if (currentList && currentList.length > 0) {
-                                const originalLen = currentList.length;
-                                // FILTER: Remove if URL is in itemsToRemove
-                                currentList = currentList.filter(url => !itemsToRemove.includes(url));
-
-                                if (currentList.length !== originalLen) {
-                                    cfg[targetKey] = currentList;
-                                    changed = true;
-                                }
-                            }
-                        });
-
-                        if (changed) {
-                            const p = supabase
-                                .from('institutions')
-                                .update({ config: cfg })
-                                .eq('slug', inst.slug);
-                            updates.push(p);
-                            affectedCount++;
-                        }
-                    }
-                }
-
-                if (updates.length > 0) {
-                    await Promise.all(updates);
-                }
-
-                return response.status(200).json({ success: true, count: affectedCount });
-            }
-
-            // --- LANDING PAGE CMS (SİSTEM AYARLARI) ---
-            // Özel bir "system-landing-config" slug'ı kullanarak ayarları saklarız.
-            const SYSTEM_CONFIG_SLUG = 'system-landing-config';
-
-            if (action === 'get_landing_config') {
-                const { data, error } = await supabase
-                    .from('institutions')
-                    .select('config')
-                    .eq('slug', SYSTEM_CONFIG_SLUG)
-                    .single();
-
-                // Eğer kayıt yoksa boş dönebilir veya hata verebilir, onu handle edelim
-                if (!data || error) {
-                    return response.status(200).json({ config: null });
-                }
-                return response.status(200).json({ config: data.config });
-            }
-
-            if (action === 'save_landing_config') {
-                const { config } = payload;
-
-                // Mevcut var mı kontrol et
-                const { data: existing } = await supabase
-                    .from('institutions')
-                    .select('slug')
-                    .eq('slug', SYSTEM_CONFIG_SLUG)
-                    .single();
-
-                let result;
-                if (existing) {
-                    // Güncelle
-                    const { data, error } = await supabase
-                        .from('institutions')
-                        .update({ config: config })
-                        .eq('slug', SYSTEM_CONFIG_SLUG)
-                        .select();
-                    if (error) throw error;
-                    result = data[0];
-                } else {
-                    // Oluştur (Gizli bir kurum gibi davranır)
-                    const { data, error } = await supabase
-                        .from('institutions')
-                        .insert([{
-                            slug: SYSTEM_CONFIG_SLUG,
-                            name: 'System Config',
-                            password: Math.random().toString(36), // Rastgele şifre, giriş yapılamaz
-                            config: config
-                        }])
-                        .select();
-                    if (error) throw error;
-                    result = data[0];
-                }
-
-                return response.status(200).json({ success: true, data: result });
-            }
-
-            // --- CENTRAL GALLERY MANAGEMENT ---
-            const GLOBAL_GALLERY_SLUG = 'system-global-gallery';
-
-            if (action === 'get_global_gallery') {
-                const { data, error } = await supabase
-                    .from('institutions')
-                    .select('config')
-                    .eq('slug', GLOBAL_GALLERY_SLUG)
-                    .single();
-
-                if (!data || error) {
-                    return response.status(200).json({ config: {} });
-                }
-                return response.status(200).json({ config: data.config });
-            }
-
-            if (action === 'save_global_gallery') {
-                const { config } = payload; // Expected structure: { 'Ortaokul': { images: [], videos: [] }, ... }
-
-                // Check if exists
-                const { data: existing } = await supabase
-                    .from('institutions')
-                    .select('slug')
-                    .eq('slug', GLOBAL_GALLERY_SLUG)
-                    .single();
-
-                let result;
-                if (existing) {
-                    const { data, error } = await supabase
-                        .from('institutions')
-                        .update({ config: config })
-                        .eq('slug', GLOBAL_GALLERY_SLUG)
-                        .select();
-                    if (error) throw error;
-                    result = data[0];
-                } else {
-                    const { data, error } = await supabase
-                        .from('institutions')
-                        .insert([{
-                            slug: GLOBAL_GALLERY_SLUG,
-                            name: 'System Global Gallery',
-                            password: Math.random().toString(36),
-                            config: config
-                        }])
-                        .select();
-                    if (error) throw error;
-                    result = data[0];
-                }
-
-                return response.status(200).json({ success: true, data: result });
-            }
-
-            // --- CENTRAL ANNOUNCEMENTS MANAGEMENT ---
-            const SYSTEM_ANNOUNCEMENTS_SLUG = 'system-announcements';
-
-            if (action === 'get_central_announcements') {
-                const { data, error } = await supabase
-                    .from('institutions')
-                    .select('config')
-                    .eq('slug', SYSTEM_ANNOUNCEMENTS_SLUG)
-                    .single();
-
-                if (!data || error) {
-                    return response.status(200).json({ config: {} });
-                }
-                return response.status(200).json({ config: data.config });
-            }
-
-            if (action === 'save_central_announcements') {
-                const { config } = payload; // Expected: { 'Ortaokul': ["Duyuru 1", "Duyuru 2"], ... }
-
-                // Check if exists
-                const { data: existing } = await supabase
-                    .from('institutions')
-                    .select('slug')
-                    .eq('slug', SYSTEM_ANNOUNCEMENTS_SLUG)
-                    .single();
-
-                let result;
-                if (existing) {
-                    const { data, error } = await supabase
-                        .from('institutions')
-                        .update({ config: config })
-                        .eq('slug', SYSTEM_ANNOUNCEMENTS_SLUG)
-                        .select();
-                    if (error) throw error;
-                    result = data[0];
-                } else {
-                    const { data, error } = await supabase
-                        .from('institutions')
-                        .insert([{
-                            slug: SYSTEM_ANNOUNCEMENTS_SLUG,
-                            name: 'System Announcements',
-                            password: Math.random().toString(36),
-                            config: config
-                        }])
-                        .select();
-                    if (error) throw error;
-                    result = data[0];
-                }
-
-                return response.status(200).json({ success: true, data: result });
-            }
-
-            // --- EMERGENCY MODE MANAGEMENT ---
-            const EMERGENCY_SLUG = 'system-emergency';
-
-            if (action === 'get_emergency_config') {
-                const { data, error } = await supabase
-                    .from('institutions')
-                    .select('config')
-                    .eq('slug', EMERGENCY_SLUG)
-                    .single();
-
-                if (!data || error) {
-                    return response.status(200).json({ config: { active: false } });
-                }
-                return response.status(200).json({ config: data.config });
-            }
-
-            if (action === 'save_emergency') {
-                const { config } = payload;
-                // Expected: { active: bool, title: str, message: str, style: str, region_filter: str, type_filter: [], start_date: iso, end_date: iso }
-
-                // Check if exists
-                const { data: existing } = await supabase
-                    .from('institutions')
-                    .select('slug')
-                    .eq('slug', EMERGENCY_SLUG)
-                    .single();
-
-                let result;
-                if (existing) {
-                    const { data, error } = await supabase
-                        .from('institutions')
-                        .update({ config: config })
-                        .eq('slug', EMERGENCY_SLUG)
-                        .select();
-                    if (error) throw error;
-                    result = data[0];
-                } else {
-                    const { data, error } = await supabase
-                        .from('institutions')
-                        .insert([{
-                            slug: EMERGENCY_SLUG,
-                            name: 'System Emergency Config',
-                            password: Math.random().toString(36),
-                            config: config
-                        }])
-                        .select();
-                    if (error) throw error;
-                    result = data[0];
-                }
-
-                return response.status(200).json({ success: true, data: result });
-            }
-
-            return response.status(400).json({ error: 'Geçersiz işlem' });
-
-        } catch (err) {
-            console.error('Admin API Hatası:', err);
-            return response.status(500).json({ error: err.message });
+            return response.status(200).json({ success: true, count: affectedCount });
         }
-    } catch (globalError) {
-        console.error('=== GLOBAL ERROR ===');
-        console.error('Error:', globalError);
-        console.error('Stack:', globalError.stack);
-        return response.status(500).json({
-            error: 'Kritik Hata: ' + globalError.message,
-            details: globalError.stack
-        });
+
+        // --- LANDING PAGE CMS (SİSTEM AYARLARI) ---
+        // Özel bir "system-landing-config" slug'ı kullanarak ayarları saklarız.
+        const SYSTEM_CONFIG_SLUG = 'system-landing-config';
+
+        if (action === 'get_landing_config') {
+            const { data, error } = await supabase
+                .from('institutions')
+                .select('config')
+                .eq('slug', SYSTEM_CONFIG_SLUG)
+                .single();
+
+            // Eğer kayıt yoksa boş dönebilir veya hata verebilir, onu handle edelim
+            if (!data || error) {
+                return response.status(200).json({ config: null });
+            }
+            return response.status(200).json({ config: data.config });
+        }
+
+        if (action === 'save_landing_config') {
+            const { config } = payload;
+
+            // Mevcut var mı kontrol et
+            const { data: existing } = await supabase
+                .from('institutions')
+                .select('slug')
+                .eq('slug', SYSTEM_CONFIG_SLUG)
+                .single();
+
+            let result;
+            if (existing) {
+                // Güncelle
+                const { data, error } = await supabase
+                    .from('institutions')
+                    .update({ config: config })
+                    .eq('slug', SYSTEM_CONFIG_SLUG)
+                    .select();
+                if (error) throw error;
+                result = data[0];
+            } else {
+                // Oluştur (Gizli bir kurum gibi davranır)
+                const { data, error } = await supabase
+                    .from('institutions')
+                    .insert([{
+                        slug: SYSTEM_CONFIG_SLUG,
+                        name: 'System Config',
+                        password: Math.random().toString(36), // Rastgele şifre, giriş yapılamaz
+                        config: config
+                    }])
+                    .select();
+                if (error) throw error;
+                result = data[0];
+            }
+
+            return response.status(200).json({ success: true, data: result });
+        }
+
+        // --- CENTRAL GALLERY MANAGEMENT ---
+        const GLOBAL_GALLERY_SLUG = 'system-global-gallery';
+
+        if (action === 'get_global_gallery') {
+            const { data, error } = await supabase
+                .from('institutions')
+                .select('config')
+                .eq('slug', GLOBAL_GALLERY_SLUG)
+                .single();
+
+            if (!data || error) {
+                return response.status(200).json({ config: {} });
+            }
+            return response.status(200).json({ config: data.config });
+        }
+
+        if (action === 'save_global_gallery') {
+            const { config } = payload; // Expected structure: { 'Ortaokul': { images: [], videos: [] }, ... }
+
+            // Check if exists
+            const { data: existing } = await supabase
+                .from('institutions')
+                .select('slug')
+                .eq('slug', GLOBAL_GALLERY_SLUG)
+                .single();
+
+            let result;
+            if (existing) {
+                const { data, error } = await supabase
+                    .from('institutions')
+                    .update({ config: config })
+                    .eq('slug', GLOBAL_GALLERY_SLUG)
+                    .select();
+                if (error) throw error;
+                result = data[0];
+            } else {
+                const { data, error } = await supabase
+                    .from('institutions')
+                    .insert([{
+                        slug: GLOBAL_GALLERY_SLUG,
+                        name: 'System Global Gallery',
+                        password: Math.random().toString(36),
+                        config: config
+                    }])
+                    .select();
+                if (error) throw error;
+                result = data[0];
+            }
+
+            return response.status(200).json({ success: true, data: result });
+        }
+
+        // --- CENTRAL ANNOUNCEMENTS MANAGEMENT ---
+        const SYSTEM_ANNOUNCEMENTS_SLUG = 'system-announcements';
+
+        if (action === 'get_central_announcements') {
+            const { data, error } = await supabase
+                .from('institutions')
+                .select('config')
+                .eq('slug', SYSTEM_ANNOUNCEMENTS_SLUG)
+                .single();
+
+            if (!data || error) {
+                return response.status(200).json({ config: {} });
+            }
+            return response.status(200).json({ config: data.config });
+        }
+
+        if (action === 'save_central_announcements') {
+            const { config } = payload; // Expected: { 'Ortaokul': ["Duyuru 1", "Duyuru 2"], ... }
+
+            // Check if exists
+            const { data: existing } = await supabase
+                .from('institutions')
+                .select('slug')
+                .eq('slug', SYSTEM_ANNOUNCEMENTS_SLUG)
+                .single();
+
+            let result;
+            if (existing) {
+                const { data, error } = await supabase
+                    .from('institutions')
+                    .update({ config: config })
+                    .eq('slug', SYSTEM_ANNOUNCEMENTS_SLUG)
+                    .select();
+                if (error) throw error;
+                result = data[0];
+            } else {
+                const { data, error } = await supabase
+                    .from('institutions')
+                    .insert([{
+                        slug: SYSTEM_ANNOUNCEMENTS_SLUG,
+                        name: 'System Announcements',
+                        password: Math.random().toString(36),
+                        config: config
+                    }])
+                    .select();
+                if (error) throw error;
+                result = data[0];
+            }
+
+            return response.status(200).json({ success: true, data: result });
+        }
+
+        // --- EMERGENCY MODE MANAGEMENT ---
+        const EMERGENCY_SLUG = 'system-emergency';
+
+        if (action === 'get_emergency_config') {
+            const { data, error } = await supabase
+                .from('institutions')
+                .select('config')
+                .eq('slug', EMERGENCY_SLUG)
+                .single();
+
+            if (!data || error) {
+                return response.status(200).json({ config: { active: false } });
+            }
+            return response.status(200).json({ config: data.config });
+        }
+
+        if (action === 'save_emergency') {
+            const { config } = payload;
+            // Expected: { active: bool, title: str, message: str, style: str, region_filter: str, type_filter: [], start_date: iso, end_date: iso }
+
+            // Check if exists
+            const { data: existing } = await supabase
+                .from('institutions')
+                .select('slug')
+                .eq('slug', EMERGENCY_SLUG)
+                .single();
+
+            let result;
+            if (existing) {
+                const { data, error } = await supabase
+                    .from('institutions')
+                    .update({ config: config })
+                    .eq('slug', EMERGENCY_SLUG)
+                    .select();
+                if (error) throw error;
+                result = data[0];
+            } else {
+                const { data, error } = await supabase
+                    .from('institutions')
+                    .insert([{
+                        slug: EMERGENCY_SLUG,
+                        name: 'System Emergency Config',
+                        password: Math.random().toString(36),
+                        config: config
+                    }])
+                    .select();
+                if (error) throw error;
+                result = data[0];
+            }
+
+            return response.status(200).json({ success: true, data: result });
+        }
+
+        return response.status(400).json({ error: 'Geçersiz işlem' });
+
+    } catch (err) {
+        console.error('Admin API Hatası:', err);
+        return response.status(500).json({ error: err.message });
     }
+} catch (globalError) {
+    console.error('=== GLOBAL ERROR ===');
+    console.error('Error:', globalError);
+    console.error('Stack:', globalError.stack);
+    return response.status(500).json({
+        error: 'Kritik Hata: ' + globalError.message,
+        details: globalError.stack
+    });
+}
 };

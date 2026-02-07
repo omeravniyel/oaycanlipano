@@ -8,6 +8,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
 <body class="bg-slate-50 min-h-screen">
@@ -192,59 +193,66 @@
             </div>
 
             <!-- Filters & Actions -->
-            <div class="p-4 bg-white border-b flex flex-col md:flex-row gap-4 items-center justify-between">
-                <div class="flex gap-4 items-center">
-                    <select id="gallery-type" onchange="loadGallery()"
-                        class="p-2 border rounded-lg font-bold text-sm bg-slate-50">
-                        <option>Ortaokul</option>
-                        <option>Lise</option>
-                        <option>Ãœniversite Hazırlık</option>
-                        <option>Daimi</option>
-                        <option>Ãœniversite</option>
-                        <option>Tekamül</option>
-                    </select>
-                    <div class="flex bg-slate-100 p-1 rounded-lg">
-                        <button onclick="switchGalleryTab('main')" id="tab-main"
-                            class="gallery-tab active px-4 py-1.5 rounded text-xs font-bold bg-white shadow-sm">
-                            Ana Galeri
-                        </button>
-                        <button onclick="switchGalleryTab('slider')" id="tab-slider"
-                            class="gallery-tab px-4 py-1.5 rounded text-xs font-bold text-slate-500">
-                            Sol Slider
-                        </button>
-                    </div>
-                </div>
-                <div class="flex gap-2 items-center">
-                    <button onclick="toggleSelectAll()" id="select-all-btn"
-                        class="px-3 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 text-sm font-bold">
-                        <i class="fa-solid fa-check-square"></i> Tümünü Seç
+            <div class="flex gap-4 items-center">
+                <select id="gallery-type" onchange="loadGallery()"
+                    class="p-2 border rounded-lg font-bold text-sm bg-slate-50">
+                    <option>Ortaokul</option>
+                    <option>Lise</option>
+                    <option>Ãœniversite Hazırlık</option>
+                    <option>Daimi</option>
+                    <option>Ãœniversite</option>
+                    <option>Tekamül</option>
+                </select>
+                <div class="flex bg-slate-100 p-1 rounded-lg">
+                    <button onclick="switchGalleryTab('main')" id="tab-main"
+                        class="gallery-tab active px-4 py-1.5 rounded text-xs font-bold bg-white shadow-sm">
+                        Ana Galeri (Sağ)
                     </button>
-                    <button onclick="openBulkEditModal()" id="bulk-edit-btn"
-                        class="px-3 py-2 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 text-sm font-bold border border-purple-100 hidden">
-                        <i class="fa-solid fa-edit"></i> Toplu Düzenle (<span id="selected-count">0</span>)
+                    <button onclick="switchGalleryTab('left')" id="tab-left"
+                        class="gallery-tab px-4 py-1.5 rounded text-xs font-bold text-slate-500 hover:bg-white/50">
+                        Sol Galeri
                     </button>
-                    <button onclick="bulkDeleteSelected()" id="bulk-delete-btn"
-                        class="px-3 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 text-sm font-bold border border-red-100 hidden">
-                        <i class="fa-solid fa-trash"></i> Seçilenleri Sil (<span id="delete-selected-count">0</span>)
-                    </button>
-                    <input type="file" id="gallery-upload-input" class="hidden" multiple accept="image/*">
-                    <button onclick="document.getElementById('gallery-upload-input').click()"
-                        class="px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 text-sm font-bold border border-blue-100">
-                        Yükle
-                    </button>
-                    <button onclick="saveGallery()"
-                        class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-bold shadow-lg">
-                        Kaydet
+                    <button onclick="switchGalleryTab('video')" id="tab-video"
+                        class="gallery-tab px-4 py-1.5 rounded text-xs font-bold text-slate-500 hover:bg-white/50">
+                        Video Galeri
                     </button>
                 </div>
             </div>
-
-            <!-- Image Grid -->
-            <div class="flex-1 overflow-y-auto p-6 bg-slate-50/50">
-                <div id="gallery-grid" class="grid grid-cols-2 md:grid-cols-6 gap-4"></div>
-                <p id="gallery-empty" class="hidden text-center mt-20 text-slate-400">Görsel bulunamadı.</p>
+            <div class="flex gap-2 items-center">
+                <button onclick="openUploadModal()"
+                    class="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-bold shadow-lg shadow-blue-200">
+                    <i class="fa-solid fa-cloud-upload"></i> Yükle...
+                </button>
+                <button onclick="toggleSelectAll()" id="select-all-btn"
+                    class="px-3 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 text-sm font-bold">
+                    <i class="fa-solid fa-check-square"></i> Tümünü Seç
+                </button>
+                <button onclick="openBulkEditModal()" id="bulk-edit-btn"
+                    class="px-3 py-2 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 text-sm font-bold border border-purple-100 hidden">
+                    <i class="fa-solid fa-edit"></i> Toplu Düzenle (<span id="selected-count">0</span>)
+                </button>
+                <button onclick="bulkDeleteSelected()" id="bulk-delete-btn"
+                    class="px-3 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 text-sm font-bold border border-red-100 hidden">
+                    <i class="fa-solid fa-trash"></i> Seçilenleri Sil (<span id="delete-selected-count">0</span>)
+                </button>
+                <input type="file" id="gallery-upload-input" class="hidden" multiple accept="image/*">
+                <button onclick="document.getElementById('gallery-upload-input').click()"
+                    class="px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 text-sm font-bold border border-blue-100">
+                    Yükle
+                </button>
+                <button onclick="saveGallery()"
+                    class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-bold shadow-lg">
+                    Kaydet
+                </button>
             </div>
         </div>
+
+        <!-- Image Grid -->
+        <div class="flex-1 overflow-y-auto p-6 bg-slate-50/50">
+            <div id="gallery-grid" class="grid grid-cols-2 md:grid-cols-6 gap-4"></div>
+            <p id="gallery-empty" class="hidden text-center mt-20 text-slate-400">Görsel bulunamadı.</p>
+        </div>
+    </div>
     </div>
 
     <!-- Image Settings Modal -->
@@ -759,9 +767,28 @@
                             }
                         } catch (e) { }
 
+                        let logoContent = '';
+                        if (logoUrl !== 'https://via.placeholder.com/150' && logoUrl.length > 5) {
+                            logoContent = `<img src="${logoUrl}" class="w-16 h-16 object-contain bg-slate-50 rounded-lg border">`;
+                        } else {
+                            // Generate initials
+                            const words = inst.name.split(' ').filter(w => w.length > 0);
+                            let initials = '';
+                            if (words.length > 0) initials += words[0][0];
+                            if (words.length > 1) initials += words[1][0];
+                            initials = initials.toUpperCase();
+
+                            // Random color based on name length
+                            const colors = ['bg-red-500', 'bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-purple-500', 'bg-pink-500', 'bg-indigo-500', 'bg-teal-500', 'bg-orange-500', 'bg-cyan-500'];
+                            const colorIndex = inst.name.length % colors.length;
+                            const bgClass = colors[colorIndex];
+
+                            logoContent = `<div class="w-16 h-16 flex items-center justify-center ${bgClass} text-white rounded-lg border font-bold text-xl shadow-sm select-none">${initials}</div>`;
+                        }
+
                         html += `
                     <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition border p-4 flex items-center gap-4">
-                        <img src="${logoUrl}" class="w-16 h-16 object-contain bg-slate-50 rounded-lg border">
+                        ${logoContent}
                         <div class="flex-1">
                             <h3 class="font-bold text-slate-800">${inst.name}</h3>
                             <div class="text-xs text-slate-500 mt-1 flex gap-2">
@@ -1055,9 +1082,25 @@
                 }
             }
 
-            // --- GALLERY MANAGEMENT ---
-            let currentGallery = {}; // Root object { Ortaokul: { images: [], videos: [] }, ... }
-            let activeGalleryTab = 'main'; // 'main' (images) or 'slider' (videos)
+            // --- GALLERY ---
+            let currentGallery = {}; // { Ortaokul: { images:[], videos:[], left_images: [] } }
+            let activeGalleryTab = 'main'; // main (right), left, video
+            let supabase = null;
+
+            // Initialize Supabase Client
+            async function initSupabase() {
+                try {
+                    const data = await requestApi('get_upload_config');
+                    if (data.url && data.key && window.supabase) {
+                        supabase = window.supabase.createClient(data.url, data.key);
+                        console.log('Supabase Initialized');
+                    }
+                } catch (e) {
+                    console.error('Supabase init failed', e);
+                }
+            }
+            // Init on load
+            initSupabase();
 
             async function openGalleryModal() {
                 document.getElementById('gallery-modal').classList.remove('hidden');
@@ -1070,48 +1113,54 @@
 
             function switchGalleryTab(tab) {
                 activeGalleryTab = tab;
-                document.querySelectorAll('.gallery-tab').forEach(b => {
-                    b.classList.remove('bg-white', 'shadow-sm', 'text-slate-800');
-                    b.classList.add('text-slate-500');
+
+                // Update buttons
+                document.querySelectorAll('.gallery-tab').forEach(btn => {
+                    btn.classList.remove('active', 'bg-white', 'shadow-sm', 'text-slate-800');
+                    btn.classList.add('text-slate-500', 'hover:bg-white/50');
                 });
-                document.getElementById('tab-' + tab).classList.add('bg-white', 'shadow-sm', 'text-slate-800');
-                document.getElementById('tab-' + tab).classList.remove('text-slate-500');
-                renderGallery();
+
+                const activeBtn = document.getElementById('tab-' + tab);
+                if (activeBtn) {
+                    activeBtn.classList.add('active', 'bg-white', 'shadow-sm', 'text-slate-800');
+                    activeBtn.classList.remove('text-slate-500', 'hover:bg-white/50');
+                }
+
+                loadGallery(); // Reload grid
             }
 
             async function loadGallery() {
+                const grid = document.getElementById('gallery-grid');
+                grid.innerHTML = '<p class="text-center text-gray-500 w-full col-span-full py-8">Yükleniyor...</p>';
+                document.getElementById('gallery-empty').classList.add('hidden');
+
+                updateSelectionUI(); // Reset selection
+
                 try {
                     const data = await requestApi('get_gallery');
-                    currentGallery = data.gallery || {};
+                    currentGallery = data.config || {};
                     renderGallery();
                 } catch (e) {
                     console.error(e);
+                    grid.innerHTML = '<p class="text-center text-red-500 w-full col-span-full">Hata oluştu.</p>';
                 }
             }
 
             function renderGallery() {
+                const type = document.getElementById('gallery-type').value;
                 const grid = document.getElementById('gallery-grid');
                 grid.innerHTML = '';
 
-                const type = document.getElementById('gallery-type').value; // 'Ortaokul' etc.
                 const typeData = currentGallery[type] || {};
 
-                // MAPPING FIX: API returns { images: [...], videos: [...] }
-                // UI 'tab-main' maps to 'images'
-                // UI 'tab-slider' maps to 'videos' (or we repurpose it)
-
-                // Let's assume Tab 'main' -> images, Tab 'slider' -> videos for now
-                // Or rename tabs in HTML to Images/Videos
+                // UI 'tab-main' maps to 'images' (Right)
+                // UI 'tab-left' maps to 'left_images' (Left)
+                // UI 'tab-video' maps to 'videos' (Video URLs)
 
                 let items = [];
                 if (activeGalleryTab === 'main') items = typeData.images || [];
-                else if (activeGalleryTab === 'slider') items = typeData.videos || [];
-
-                // Handle legacy structure (flat array) just in case? 
-                // No, debug output confirmed structured object.
-
-                // If items are objects with { url }, extract url. If strings, use as is.
-                // Debug output showed: images: [ { url: "..." } ... ]
+                else if (activeGalleryTab === 'left') items = typeData.left_images || [];
+                else if (activeGalleryTab === 'video') items = typeData.videos || [];
 
                 if (!items || items.length === 0) {
                     document.getElementById('gallery-empty').classList.remove('hidden');
@@ -1124,16 +1173,27 @@
 
                     const div = document.createElement('div');
                     div.className = 'relative aspect-video bg-white rounded-lg shadow overflow-hidden group border';
+
+                    // Video content shim
+                    let content = `<img src="${url}" class="w-full h-full object-cover">`;
+                    if (activeGalleryTab === 'video') {
+                        if (url.includes('youtube') || url.includes('youtu.be')) {
+                            content = `<div class="w-full h-full flex items-center justify-center bg-black text-white"><i class="fa-brands fa-youtube text-4xl text-red-600"></i></div>`;
+                        } else {
+                            content = `<video src="${url}" class="w-full h-full object-cover" muted></video>`;
+                        }
+                    }
+
                     div.innerHTML = `
                     <input type="checkbox" data-idx="${idx}" data-url="${url}" 
                         onchange="updateSelectionUI()" 
                         class="gallery-checkbox absolute top-2 left-2 w-5 h-5 rounded border-2 border-white shadow-lg cursor-pointer z-10 accent-blue-600">
-                    <img src="${url}" class="w-full h-full object-cover">
+                    ${content}
                     <button onclick="deleteGalleryItem(${idx})" class="absolute top-2 right-2 bg-red-600 text-white w-8 h-8 rounded-full opacity-0 group-hover:opacity-100 transition flex items-center justify-center shadow-lg hover:scale-110">
                         <i class="fa fa-trash text-xs"></i>
                     </button>
                     <!-- Type Badge -->
-                    <span class="absolute bottom-2 left-2 bg-black/50 text-white text-[10px] px-2 py-1 rounded">${activeGalleryTab}</span>
+                    <span class="absolute bottom-2 left-2 bg-black/50 text-white text-[10px] px-2 py-1 rounded capitalize">${activeGalleryTab}</span>
                 `;
                     grid.appendChild(div);
                 });
@@ -1143,98 +1203,137 @@
                 const type = document.getElementById('gallery-type').value;
                 if (!currentGallery[type]) return;
 
-                // Get the item to delete
-                let itemToDelete;
-                if (activeGalleryTab === 'main') {
-                    itemToDelete = currentGallery[type].images?.[idx];
-                } else {
-                    itemToDelete = currentGallery[type].videos?.[idx];
-                }
+                // Determine array to splice
+                let arr = null;
+                if (activeGalleryTab === 'main') arr = currentGallery[type].images;
+                else if (activeGalleryTab === 'left') arr = currentGallery[type].left_images;
+                else if (activeGalleryTab === 'video') arr = currentGallery[type].videos;
 
-                if (!itemToDelete) return;
+                if (!arr) return;
 
-                // Extract URL (handle both string and object format)
-                const url = typeof itemToDelete === 'string' ? itemToDelete : (itemToDelete.url || '');
+                const item = arr[idx];
+                const url = typeof item === 'string' ? item : (item.url || '');
 
-                if (!url) {
-                    Swal.fire('Hata', 'Geçersiz görsel URL\'si', 'error');
-                    return;
-                }
-
-                // Confirm deletion
+                // Confirm
                 const result = await Swal.fire({
-                    title: 'Emin misiniz?',
-                    text: 'Bu görsel hem veritabanından hem de Storage\'dan silinecektir.',
+                    title: 'Silinsin mi?',
+                    text: "Bu öğe galeri listesinden kaldırılacak.",
                     icon: 'warning',
                     showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Evet, sil!',
+                    confirmButtonText: 'Evet, Sil',
                     cancelButtonText: 'İptal'
                 });
 
                 if (!result.isConfirmed) return;
 
+                // Delete from array
+                arr.splice(idx, 1);
+
+                // Attempt storage delete if it looks like our storage file
+                if (url && url.includes('supabase')) {
+                    // Fire and forget storage delete
+                    requestApi('delete_gallery_file', { path: url }).catch(console.error);
+                }
+
+                // Save Config
                 try {
-                    // First, delete from Storage
-                    const deleteResult = await fetch('/api/manage-institutions', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            action: 'delete_gallery_file',
-                            master_password: currentUserPassword,
-                            payload: { url }
-                        })
-                    });
-
-                    const deleteData = await deleteResult.json();
-
-                    if (!deleteData.success) {
-                        throw new Error(deleteData.error || 'Storage silme başarısız');
-                    }
-
-                    // Then remove from config
-                    if (activeGalleryTab === 'main') {
-                        if (currentGallery[type].images) currentGallery[type].images.splice(idx, 1);
-                    } else {
-                        if (currentGallery[type].videos) currentGallery[type].videos.splice(idx, 1);
-                    }
-
-                    // Save to database immediately
                     await requestApi('save_gallery', { gallery: currentGallery });
-
                     renderGallery();
-                    Swal.fire('Silindi!', 'Görsel başarıyla silindi ve kaydedildi.', 'success');
-
-                } catch (err) {
-                    console.error('Delete error:', err);
-                    Swal.fire('Hata', err.message || 'Silme işlemi başarısız', 'error');
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Silindi',
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 2000
+                    });
+                } catch (e) {
+                    Swal.fire('Hata', 'Kaydetme hatası: ' + e.message, 'error');
                 }
             }
 
-            document.getElementById('gallery-upload-input').addEventListener('change', async (e) => {
-                Swal.fire('Bilgi', 'Dosya yükleme özelliği için Storage yapılandırması gereklidir. Şimdilik URL ekleyebilirsiniz.', 'info');
-                const { value: url } = await Swal.fire({
-                    input: 'url',
-                    inputLabel: 'Görsel URL',
-                    inputPlaceholder: 'https://...'
-                });
-                if (url) {
-                    const type = document.getElementById('gallery-type').value;
-                    if (!currentGallery[type]) currentGallery[type] = { images: [], videos: [] };
+            // --- UPLOAD DISTRIBUTION ---
+            function openUploadModal() {
+                document.getElementById('upload-dist-modal').classList.remove('hidden');
+                // Reset defaults
+                document.getElementById('dist-target-general').checked = true;
+                toggleUploadTarget();
+            }
 
-                    const newItem = { url: url };
+            function closeUploadModal() {
+                document.getElementById('upload-dist-modal').classList.add('hidden');
+            }
 
-                    if (activeGalleryTab === 'main') {
-                        if (!currentGallery[type].images) currentGallery[type].images = [];
-                        currentGallery[type].images.push(newItem);
-                    } else {
-                        if (!currentGallery[type].videos) currentGallery[type].videos = [];
-                        currentGallery[type].videos.push(newItem);
-                    }
-                    renderGallery();
+            function toggleUploadTarget() {
+                const target = document.querySelector('input[name="dist-target"]:checked').value;
+                document.getElementById('dist-select-region').classList.add('hidden');
+                document.getElementById('dist-select-institution').classList.add('hidden');
+
+                if (target === 'region') document.getElementById('dist-select-region').classList.remove('hidden');
+                if (target === 'institution') document.getElementById('dist-select-institution').classList.remove('hidden');
+            }
+
+            async function startDistributionUpload() {
+                const files = document.getElementById('dist-files').files;
+                if (files.length === 0) {
+                    Swal.fire('Hata', 'Lütfen en az bir dosya seçin.', 'warning');
+                    return;
                 }
-            });
+
+                if (!supabase) {
+                    Swal.fire('Hata', 'Yükleme servisi başlatılamadı. Sayfayı yenileyip tekrar deneyin.', 'error');
+                    return;
+                }
+
+                const galleryTarget = document.querySelector('input[name="dist-gallery-type"]:checked').value; // main, left
+                const distributionTarget = document.querySelector('input[name="dist-target"]:checked').value; // general, region, institution
+                let distributionValue = '';
+
+                if (distributionTarget === 'region') {
+                    distributionValue = document.getElementById('dist-region-input').value;
+                    if (!distributionValue) { Swal.fire('Uyarı', 'Mıntıka adı giriniz.', 'warning'); return; }
+                }
+                if (distributionTarget === 'institution') {
+                    distributionValue = document.getElementById('dist-institution-input').value;
+                    if (!distributionValue) { Swal.fire('Uyarı', 'Kurum slug veya adı giriniz.', 'warning'); return; }
+                }
+
+                // 1. Upload Files
+                Swal.fire({ title: 'Yükleniyor...', html: 'Dosyalar yükleniyor, lütfen bekleyin.', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+                try {
+                    const uploadedUrls = [];
+                    for (let file of files) {
+                        const fileName = `admin-upload/${Date.now()}-${Math.random().toString(36).substring(7)}-${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
+
+                        const { data, error } = await supabase.storage.from('images').upload(fileName, file);
+                        if (error) throw error;
+
+                        const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(fileName);
+                        uploadedUrls.push(publicUrl);
+                    }
+
+                    // 2. Distribute via API
+                    await requestApi('distribute_gallery_items', {
+                        items: uploadedUrls,
+                        target_type: distributionTarget,
+                        target_value: distributionValue,
+                        gallery_type: galleryTarget,
+                        institution_type: document.getElementById('gallery-type').value // For 'general' target needed context
+                    });
+
+                    Swal.fire('Başarılı', 'Dosyalar başarıyla yüklendi ve hedef kurumlara dağıtıldı.', 'success');
+                    closeUploadModal();
+
+                    // Reload if we updated something visible (General)
+                    if (distributionTarget === 'general') {
+                        loadGallery();
+                    }
+                } catch (e) {
+                    console.error('Upload error:', e);
+                    Swal.fire('Hata', 'Yükleme sırasında hata oluştu: ' + e.message, 'error');
+                }
+            }
 
             async function saveGallery() {
                 try {
@@ -1492,7 +1591,23 @@
                         document.getElementById('cms-hero-title2').value = content.hero.title2 || '';
                         document.getElementById('cms-hero-desc').value = content.hero.description || '';
                     }
-                    // Solutions... fill other fields similarly if needed
+
+                    // Solutions
+                    if (content.solutions) {
+                        document.getElementById('cms-sol1-title').value = content.solutions.sol1?.title || '';
+                        document.getElementById('cms-sol1-desc').value = content.solutions.sol1?.desc || '';
+                        document.getElementById('cms-sol2-title').value = content.solutions.sol2?.title || '';
+                        document.getElementById('cms-sol2-desc').value = content.solutions.sol2?.desc || '';
+                        document.getElementById('cms-sol3-title').value = content.solutions.sol3?.title || '';
+                        document.getElementById('cms-sol3-desc').value = content.solutions.sol3?.desc || '';
+                    }
+
+                    // Contact
+                    if (content.contact) {
+                        document.getElementById('cms-contact-email').value = content.contact.email || '';
+                        document.getElementById('cms-contact-phone').value = content.contact.phone || '';
+                        document.getElementById('cms-whatsapp-link').value = content.contact.whatsapp || '';
+                    }
                 } catch (e) { console.error(e); }
             }
 
@@ -1512,8 +1627,26 @@
                         title1: document.getElementById('cms-hero-title1').value,
                         title2: document.getElementById('cms-hero-title2').value,
                         description: document.getElementById('cms-hero-desc').value
+                    },
+                    solutions: {
+                        sol1: {
+                            title: document.getElementById('cms-sol1-title').value,
+                            desc: document.getElementById('cms-sol1-desc').value
+                        },
+                        sol2: {
+                            title: document.getElementById('cms-sol2-title').value,
+                            desc: document.getElementById('cms-sol2-desc').value
+                        },
+                        sol3: {
+                            title: document.getElementById('cms-sol3-title').value,
+                            desc: document.getElementById('cms-sol3-desc').value
+                        }
+                    },
+                    contact: {
+                        email: document.getElementById('cms-contact-email').value,
+                        phone: document.getElementById('cms-contact-phone').value,
+                        whatsapp: document.getElementById('cms-whatsapp-link').value
                     }
-                    // Add other sections as needed
                 };
 
                 try {
@@ -1564,6 +1697,100 @@
                 if (e.key === 'Enter') doLogin();
             });
         </script>
+        <!-- Distribution Upload Modal -->
+        <div id="upload-dist-modal"
+            class="fixed inset-0 z-[60] hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center">
+            <div class="bg-white rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl">
+                <div class="p-6 border-b flex justify-between items-center bg-blue-50">
+                    <h3 class="font-bold text-xl text-blue-700 flex items-center gap-2">
+                        <i class="fa-solid fa-cloud-upload"></i> Galeri Yükleme
+                    </h3>
+                    <button onclick="closeUploadModal()" class="text-blue-400 hover:text-blue-700">
+                        <i class="fa-solid fa-times text-xl"></i>
+                    </button>
+                </div>
+                <div class="p-6 space-y-6">
+                    <!-- Target Selection -->
+                    <div>
+                        <label class="block text-sm font-bold text-slate-500 uppercase mb-3">Dağıtım Hedefi</label>
+                        <div class="space-y-3">
+                            <label
+                                class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-slate-50">
+                                <input type="radio" name="dist-target" id="dist-target-general" value="general" checked
+                                    onchange="toggleUploadTarget()" class="w-5 h-5 accent-blue-600">
+                                <div>
+                                    <span class="font-bold block text-slate-800">Tüm Kurumlar (Genel)</span>
+                                    <span class="text-xs text-slate-500">Seçili tipteki (örn: Ortaokul) tüm kurumlara
+                                        eklenir.</span>
+                                </div>
+                            </label>
+                            <label
+                                class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-slate-50">
+                                <input type="radio" name="dist-target" value="region" onchange="toggleUploadTarget()"
+                                    class="w-5 h-5 accent-blue-600">
+                                <div>
+                                    <span class="font-bold block text-slate-800">Mıntıka Seç</span>
+                                    <span class="text-xs text-slate-500">Sadece belirli bir mıntıkadaki kurumlara
+                                        eklenir.</span>
+                                </div>
+                            </label>
+                            <!-- Dynamic Region Select -->
+                            <div id="dist-select-region" class="pl-8 hidden">
+                                <input id="dist-region-input" class="w-full p-2 border rounded-lg"
+                                    placeholder="Mıntıka Adı Giriniz (örn: Marmara)">
+                            </div>
+
+                            <label
+                                class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-slate-50">
+                                <input type="radio" name="dist-target" value="institution"
+                                    onchange="toggleUploadTarget()" class="w-5 h-5 accent-blue-600">
+                                <div>
+                                    <span class="font-bold block text-slate-800">Tek Kurum Seç</span>
+                                    <span class="text-xs text-slate-500">Sadece seçilen kuruma eklenir.</span>
+                                </div>
+                            </label>
+                            <!-- Dynamic Institution Select -->
+                            <div id="dist-select-institution" class="pl-8 hidden">
+                                <input id="dist-institution-input" class="w-full p-2 border rounded-lg"
+                                    placeholder="Kurum Slug veya Adı">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gallery Type -->
+                    <div>
+                        <label class="block text-sm font-bold text-slate-500 uppercase mb-3">Galeri Tipi</label>
+                        <div class="flex gap-4">
+                            <label
+                                class="flex-1 flex items-center justify-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-slate-50 has-[:checked]:bg-blue-50 has-[:checked]:border-blue-200">
+                                <input type="radio" name="dist-gallery-type" value="main" checked
+                                    class="accent-blue-600">
+                                <span class="font-bold text-sm">Ana Galeri (Sağ)</span>
+                            </label>
+                            <label
+                                class="flex-1 flex items-center justify-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-slate-50 has-[:checked]:bg-blue-50 has-[:checked]:border-blue-200">
+                                <input type="radio" name="dist-gallery-type" value="left" class="accent-blue-600">
+                                <span class="font-bold text-sm">Sol Galeri</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- File Input -->
+                    <div>
+                        <label class="block text-sm font-bold text-slate-500 uppercase mb-3">Dosyalar</label>
+                        <input type="file" id="dist-files" multiple accept="image/*"
+                            class="w-full p-3 border rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                    </div>
+                </div>
+                <div class="p-6 border-t bg-slate-50 flex justify-end gap-3">
+                    <button onclick="closeUploadModal()"
+                        class="px-5 py-2 hover:bg-slate-200 rounded-lg font-bold text-slate-600">İptal</button>
+                    <button onclick="startDistributionUpload()"
+                        class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow-lg">Yükle
+                        ve Dağıt</button>
+                </div>
+            </div>
+        </div>
 </body>
 
 </html>
