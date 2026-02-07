@@ -862,26 +862,43 @@ module.exports = async (request, response) => {
                 const { gallery } = payload;
                 const SYSTEM_GALLERY_SLUG = 'system-global-gallery';
 
-                const { data: existing } = await supabase
+                console.log('save_gallery called with:', JSON.stringify(gallery).substring(0, 500));
+
+                const { data: existing, error: selectError } = await supabase
                     .from('institutions')
                     .select('id')
                     .eq('slug', SYSTEM_GALLERY_SLUG)
                     .single();
 
+                if (selectError && selectError.code !== 'PGRST116') {
+                    console.error('save_gallery select error:', selectError);
+                }
+
+                let saveError = null;
                 if (existing) {
-                    await supabase
+                    const { error } = await supabase
                         .from('institutions')
                         .update({ config: gallery })
                         .eq('slug', SYSTEM_GALLERY_SLUG);
+                    saveError = error;
                 } else {
-                    await supabase.from('institutions').insert([{
+                    const { error } = await supabase.from('institutions').insert([{
                         slug: SYSTEM_GALLERY_SLUG,
                         name: 'System Gallery',
                         config: gallery,
                         password: Math.random().toString(36)
                     }]);
+                    saveError = error;
                 }
 
+                if (saveError) {
+                    console.error('save_gallery write error:', saveError);
+                    return response.status(500).json({
+                        error: `Galeri kaydetme hatası: ${saveError.message}`
+                    });
+                }
+
+                console.log('save_gallery success');
                 return response.status(200).json({ success: true });
             }
 
