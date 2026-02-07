@@ -1058,8 +1058,11 @@
                         if (currentGallery[type].videos) currentGallery[type].videos.splice(idx, 1);
                     }
 
+                    // Save to database immediately
+                    await requestApi('save_gallery', { gallery: currentGallery });
+
                     renderGallery();
-                    Swal.fire('Silindi!', 'Görsel başarıyla silindi.', 'success');
+                    Swal.fire('Silindi!', 'Görsel başarıyla silindi ve kaydedildi.', 'success');
 
                 } catch (err) {
                     console.error('Delete error:', err);
@@ -1234,13 +1237,20 @@
                     }
                 }
 
+                // Save to database immediately
+                try {
+                    await requestApi('save_gallery', { gallery: currentGallery });
+                } catch (saveErr) {
+                    console.error('Save error:', saveErr);
+                }
+
                 // Reset selection state
                 isAllSelected = false;
 
                 // Close loading and show result
                 Swal.fire({
                     icon: errorCount === 0 ? 'success' : 'warning',
-                    title: `${successCount} görsel silindi`,
+                    title: `${successCount} görsel silindi ve kaydedildi`,
                     text: errorCount > 0 ? `${errorCount} görsel silinemedi` : 'Tüm görseller başarıyla silindi!',
                     timer: 2000,
                     showConfirmButton: false
