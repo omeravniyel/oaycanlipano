@@ -5,10 +5,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Super Admin | Kartaltepe Pano</title>
+    <script>
+        window.onerror = function (msg, url, line, col, error) {
+            const extra = !col ? '' : '\ncolumn: ' + col;
+            const err = 'Error: ' + msg + '\nurl: ' + url + '\nline: ' + line + extra;
+            console.error(err);
+            if (typeof Swal !== 'undefined') Swal.fire('Script Hatası', err, 'error');
+            else alert(err);
+            return false;
+        };
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/admin_panel.js" defer></script>
 </head>
 
 <body class="bg-slate-50 min-h-screen">
@@ -20,9 +30,9 @@
                 <input type="password" id="master-password"
                     class="w-full p-4 border rounded-xl mb-4 text-center text-lg tracking-widest" placeholder="••••••"
                     onkeypress="if(event.key === 'Enter') attemptLogin()">
-                <button type="button" onclick="attemptLogin()"
-                    class="w-full py-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 transition relative z-20">
-                    Giriş Yap
+                <button type="button" onclick="alert('Buton Tıklandı! Fonksiyon kontrol ediliyor...'); attemptLogin()"
+                    class="w-full py-4 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 transition relative z-20 shadow-lg border-2 border-white">
+                    Giriş Yap (Test Modu)
                 </button>
             </div>
         </div>
@@ -31,41 +41,99 @@
     <!-- Main Container -->
     <div id="main-content" class="hidden flex h-screen overflow-hidden">
         <!-- Sidebar -->
-        <aside class="w-72 bg-slate-900 text-slate-300 flex flex-col shadow-2xl">
-            <div class="h-20 flex items-center px-8 border-b border-slate-800/50 text-white font-bold text-xl">
-                PANEL<span class="text-blue-400">V3</span>
+        <!-- Sidebar (Modernized) -->
+        <aside
+            class="w-72 bg-gradient-to-b from-slate-900 to-slate-950 text-slate-300 flex flex-col shadow-2xl relative overflow-hidden z-20">
+            <!-- Decorative glow -->
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-blue-500">
             </div>
-            <nav class="flex-1 py-6 px-4 space-y-1 overflow-y-auto">
+
+            <div class="h-24 flex items-center px-8 text-white shrink-0">
+                <div class="font-black text-2xl tracking-tighter">
+                    YÖNETİM<span class="text-blue-500">PANELİ</span>
+                </div>
+            </div>
+
+            <nav class="flex-1 py-6 px-4 space-y-2 overflow-y-auto custom-scrollbar">
+
+                <!-- Item: Kurumlar (Active Styling) -->
                 <a href="#" onclick="switchView('institutions')" id="nav-institutions"
-                    class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-800 text-white">
-                    <i class="fa-solid fa-school w-5"></i> Kurumlar
+                    class="flex items-center gap-4 px-4 py-4 rounded-xl transition-all duration-300 group bg-white/5 border border-white/5 shadow-lg shadow-blue-900/10">
+                    <div
+                        class="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-inner">
+                        <i class="fa-solid fa-school text-lg"></i>
+                    </div>
+                    <span class="font-bold text-white tracking-wide">Kurumlar</span>
                 </a>
-                <div class="mt-8 mb-2 px-4 text-xs font-bold text-slate-500 uppercase">İçerik</div>
+
+                <div class="mt-8 mb-3 px-4 flex items-center gap-3 opacity-60">
+                    <div class="h-px bg-slate-700 flex-1"></div>
+                    <span class="text-[0.65rem] font-black text-slate-500 uppercase tracking-widest">İÇERİK
+                        YÖNETİMİ</span>
+                    <div class="h-px bg-slate-700 flex-1"></div>
+                </div>
+
+                <!-- Hadis -->
                 <a href="#" onclick="openHadithModal()"
-                    class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-800">
-                    <i class="fa-solid fa-book-quran w-5"></i> Hadis Yönetimi
+                    class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-300 group hover:bg-white/5 border border-transparent hover:border-white/5 hover:translate-x-1">
+                    <div
+                        class="w-9 h-9 rounded-lg bg-slate-800/50 flex items-center justify-center text-slate-400 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-300">
+                        <i class="fa-solid fa-book-quran"></i>
+                    </div>
+                    <span class="font-medium text-slate-400 group-hover:text-slate-100">Hadis Yönetimi</span>
                 </a>
+
+                <!-- Galeri -->
                 <a href="#" onclick="openGalleryModal()"
-                    class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-800">
-                    <i class="fa-solid fa-images w-5"></i> Merkezi Galeri
+                    class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-300 group hover:bg-white/5 border border-transparent hover:border-white/5 hover:translate-x-1">
+                    <div
+                        class="w-9 h-9 rounded-lg bg-slate-800/50 flex items-center justify-center text-slate-400 group-hover:bg-purple-600 group-hover:text-white transition-all duration-300">
+                        <i class="fa-solid fa-images"></i>
+                    </div>
+                    <span class="font-medium text-slate-400 group-hover:text-slate-100">Merkezi Galeri</span>
                 </a>
+
+                <!-- Duyuru -->
                 <a href="#" onclick="openAnnouncementModal()"
-                    class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-800">
-                    <i class="fa-solid fa-bullhorn w-5"></i> Merkezi Duyuru
+                    class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-300 group hover:bg-white/5 border border-transparent hover:border-white/5 hover:translate-x-1">
+                    <div
+                        class="w-9 h-9 rounded-lg bg-slate-800/50 flex items-center justify-center text-slate-400 group-hover:bg-amber-600 group-hover:text-white transition-all duration-300">
+                        <i class="fa-solid fa-bullhorn"></i>
+                    </div>
+                    <span class="font-medium text-slate-400 group-hover:text-slate-100">Merkezi Duyuru</span>
                 </a>
-                <div class="mt-8 mb-2 px-4 text-xs font-bold text-slate-500 uppercase">Sistem</div>
+
+                <div class="mt-8 mb-3 px-4 flex items-center gap-3 opacity-60">
+                    <div class="h-px bg-slate-700 flex-1"></div>
+                    <span class="text-[0.65rem] font-black text-slate-500 uppercase tracking-widest">SİSTEM</span>
+                    <div class="h-px bg-slate-700 flex-1"></div>
+                </div>
+
+                <!-- CMS -->
                 <a href="#" onclick="openCMSModal()"
-                    class="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-slate-800">
-                    <i class="fa-solid fa-desktop w-5"></i> Site CMS
+                    class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-300 group hover:bg-white/5 border border-transparent hover:border-white/5 hover:translate-x-1">
+                    <div
+                        class="w-9 h-9 rounded-lg bg-slate-800/50 flex items-center justify-center text-slate-400 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
+                        <i class="fa-solid fa-desktop"></i>
+                    </div>
+                    <span class="font-medium text-slate-400 group-hover:text-slate-100">Site CMS</span>
                 </a>
+
+                <!-- Acil Durum -->
                 <a href="#" onclick="openEmergencyModal()"
-                    class="flex items-center gap-3 px-4 py-3 rounded-lg text-red-400 hover:bg-red-900/20">
-                    <i class="fa-solid fa-triangle-exclamation w-5"></i> Acil Durum
+                    class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-300 group hover:bg-red-900/10 border border-transparent hover:border-red-500/20 hover:scale-[1.02]">
+                    <div
+                        class="w-9 h-9 rounded-lg bg-red-900/20 flex items-center justify-center text-red-500 group-hover:bg-red-600 group-hover:text-white transition-all duration-300 animate-pulse">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <span class="font-bold text-red-400 group-hover:text-red-300">Acil Durum</span>
                 </a>
             </nav>
-            <div class="p-4 border-t border-slate-800">
-                <button onclick="logout()" class="w-full px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-                    <i class="fa-solid fa-sign-out"></i> Ã‡ıkış
+            <div class="p-4 border-t border-slate-800/50 bg-slate-950/30 shrink-0">
+                <button onclick="logout()"
+                    class="w-full px-4 py-3 bg-slate-800/50 hover:bg-red-600 text-slate-400 hover:text-white rounded-xl transition-all duration-300 flex items-center justify-center gap-3 font-bold group border border-slate-700 hover:border-red-500 shadow-lg">
+                    <i class="fa-solid fa-right-from-bracket group-hover:-translate-x-1 transition-transform"></i>
+                    <span>Çıkış Yap</span>
                 </button>
             </div>
         </aside>
@@ -95,8 +163,9 @@
 
     <!-- Institution Edit Modal -->
     <div id="edit-modal"
-        class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center">
-        <div class="bg-white rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl">
+        class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-md flex items-center justify-center transition-all">
+        <div
+            class="bg-white rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
             <div class="p-4 border-b flex justify-between items-center bg-slate-50">
                 <h3 class="font-bold text-lg">Kurum Düzenle</h3>
                 <button onclick="closeInstitutionModal()" class="text-slate-400 hover:text-slate-600">
@@ -642,1157 +711,106 @@
                 </div>
             </div>
         </div>
-        <script>
-            // --- ADMIN PANEL V3 - FULL CONTROLLER ---
-            const API_URL = '/api/manage-institutions';
-            let currentUserPassword = '';
-
-            // --- AUTH & INIT ---
-            document.addEventListener('DOMContentLoaded', () => {
-                const savedPass = localStorage.getItem('super_admin_pass');
-                if (savedPass) {
-                    document.getElementById('master-password').value = savedPass;
-                    doLogin();
-                }
-            });
-
-            async function doLogin() {
-                const btn = document.querySelector('button[onclick="attemptLogin()"]'); // Fix selector if needed
-                const input = document.getElementById('master-password');
-                const val = input.value.trim();
-
-                if (!val) {
-                    Swal.fire('Uyarı', 'Lütfen şifre giriniz.', 'warning');
-                    return;
-                }
-
-                // UI Feedback
-                if (btn) {
-                    btn.innerText = 'Kontrol Ediliyor...';
-                    btn.disabled = true;
-                }
-                if (input) input.disabled = true;
-
-                try {
-                    // Verify Password via API
-                    const verifyRes = await fetch(API_URL, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            action: 'verify_password',
-                            master_password: val
-                        })
-                    });
-
-                    if (!verifyRes.ok) throw new Error('Sunucu Hatası');
-                    const verifyData = await verifyRes.json();
-
-                    if (!verifyData.success) throw new Error('Şifre Hatalı!');
-
-                    // SUCCESS
-                    currentUserPassword = val;
-                    localStorage.setItem('super_admin_pass', val);
-
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Giriş Başarılı',
-                        timer: 1000,
-                        showConfirmButton: false
-                    });
-
-                    document.getElementById('login-modal').classList.add('hidden');
-                    document.getElementById('main-content').classList.remove('hidden');
-                    document.getElementById('main-content').classList.add('flex');
-
-                    // Load Initial Data
-                    // Load Initial Data
-                    loadInstitutions();
-                    initSupabase(); // Initialize upload config after auth
-
-                } catch (err) {
-                    console.error(err);
-                    if (btn) {
-                        btn.innerText = 'Giriş Yap';
-                        btn.disabled = false;
-                        // Restore original onclick if generic
-                        btn.setAttribute('onclick', 'doLogin()');
-                    }
-                    if (input) input.disabled = false;
-                    localStorage.removeItem('super_admin_pass');
-                    Swal.fire('Hata', err.message, 'error');
-                }
-            }
-
-            // Support both names for safety
-            window.attemptLogin = doLogin;
-
-            async function requestApi(action, payload = {}) {
-                if (!currentUserPassword) throw new Error("Oturum süresi doldu.");
-
-                const res = await fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        action,
-                        master_password: currentUserPassword,
-                        payload
-                    })
-                });
-                const data = await res.json();
-                if (!data.success && !data.config && !data.announcements) throw new Error(data.error || 'İşlem başarısız');
-                return data;
-            }
-
-            // --- INSTITUTIONS ---
-            async function loadInstitutions() {
-                const contentDiv = document.getElementById('institution-list');
-                contentDiv.innerHTML = '<p class="text-center text-gray-500 w-full col-span-3">Veriler yükleniyor...</p>';
-
-                try {
-                    const data = await requestApi('list');
-                    const institutions = data.institutions || [];
-
-                    if (institutions.length === 0) {
-                        contentDiv.innerHTML = '<p class="text-center text-gray-500 w-full col-span-3">Hiç kurum bulunamadı.</p>';
-                        return;
-                    }
-
-                    let html = '';
-                    institutions.forEach(inst => {
-                        let logoUrl = 'https://via.placeholder.com/150';
-                        let region = 'Belirtilmedi';
-                        try {
-                            let cfg = typeof inst.config === 'string' ? JSON.parse(inst.config) : inst.config;
-                            if (cfg) {
-                                if (cfg.institution_logo) logoUrl = cfg.institution_logo;
-                                if (cfg.region) region = cfg.region;
-                            }
-                        } catch (e) { }
-
-                        let logoContent = '';
-                        if (logoUrl !== 'https://via.placeholder.com/150' && logoUrl.length > 5) {
-                            logoContent = `<img src="${logoUrl}" class="w-16 h-16 object-contain bg-slate-50 rounded-lg border">`;
-                        } else {
-                            // Generate initials
-                            const words = inst.name.split(' ').filter(w => w.length > 0);
-                            let initials = '';
-                            if (words.length > 0) initials += words[0][0];
-                            if (words.length > 1) initials += words[1][0];
-                            initials = initials.toUpperCase();
-
-                            // Random color based on name length
-                            const colors = ['bg-red-500', 'bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-purple-500', 'bg-pink-500', 'bg-indigo-500', 'bg-teal-500', 'bg-orange-500', 'bg-cyan-500'];
-                            const colorIndex = inst.name.length % colors.length;
-                            const bgClass = colors[colorIndex];
-
-                            logoContent = `<div class="w-16 h-16 flex items-center justify-center ${bgClass} text-white rounded-lg border font-bold text-xl shadow-sm select-none">${initials}</div>`;
-                        }
-
-                        html += `
-                    <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition border p-4 flex items-center gap-4">
-                        ${logoContent}
-                        <div class="flex-1">
-                            <h3 class="font-bold text-slate-800">${inst.name}</h3>
-                            <div class="text-xs text-slate-500 mt-1 flex gap-2">
-                                <span class="bg-blue-50 text-blue-600 px-2 py-0.5 rounded">${region}</span>
-                                <span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono">${inst.slug}</span>
-                            </div>
-                        </div>
-                        <div class="flex gap-2">
-                            <button onclick="editInstitution('${inst.slug}')" class="px-3 py-2 bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 font-bold text-sm" title="Düzenle">
-                                <i class="fa-solid fa-pen"></i>
-                            </button>
-                            <button onclick="deleteInstitution('${inst.slug}', '${inst.name.replace(/'/g, "\\'")}')" class="px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 font-bold text-sm" title="Sil">
-                                <i class="fa-solid fa-trash"></i>
-                            </button>
-                            <a href="/${inst.slug}/admin" target="_blank" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 font-bold text-sm">
-                                Yönet
-                            </a>
-                        </div>
-                    </div>`;
-                    });
-                    contentDiv.innerHTML = html;
-                } catch (err) {
-                    contentDiv.innerHTML = `<p class="text-red-500 font-bold w-full col-span-3 text-center">Hata: ${err.message}</p>`;
-                }
-            }
-
-            function filterInstitutions() {
-                const term = document.getElementById('search-input').value.toLowerCase();
-                const cards = document.querySelectorAll('#institution-list > div');
-                cards.forEach(card => {
-                    const text = card.innerText.toLowerCase();
-                    card.style.display = text.includes(term) ? 'flex' : 'none';
-                });
-            }
-
-            // --- INSTITUTION CRUD ---
-            let editingSlug = null; // null = new institution, string = editing existing
-
-            function openInstitutionModal(isNew = true) {
-                editingSlug = null;
-                document.getElementById('edit-modal').classList.remove('hidden');
-                if (isNew) {
-                    // Clear form for new institution
-                    document.getElementById('form-slug').value = '';
-                    document.getElementById('form-slug').disabled = false;
-                    document.getElementById('form-name').value = '';
-                    document.getElementById('form-password').value = '';
-                    document.getElementById('form-type').value = 'Ortaokul';
-                    document.getElementById('form-city').value = '';
-                    document.getElementById('form-district').value = '';
-                    document.getElementById('form-region').value = '';
-                    document.getElementById('form-logo').value = '';
-                    document.getElementById('form-contact-name').value = '';
-                    document.getElementById('form-contact-phone').value = '';
-                    document.getElementById('form-contact-email').value = '';
-                    document.getElementById('form-dorm-active').checked = true;
-                    document.getElementById('form-logo-locked').checked = false;
-                }
-            }
-
-            function closeInstitutionModal() {
-                document.getElementById('edit-modal').classList.add('hidden');
-                editingSlug = null;
-            }
-
-            async function editInstitution(slug) {
-                try {
-                    Swal.fire({ title: 'Yükleniyor...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-
-                    const data = await requestApi('get_institution', { slug });
-                    const inst = data.institution;
-                    const cfg = typeof inst.config === 'string' ? JSON.parse(inst.config) : (inst.config || {});
-
-                    editingSlug = slug;
-                    document.getElementById('form-slug').value = inst.slug;
-                    document.getElementById('form-slug').disabled = true; // Can't change slug
-                    document.getElementById('form-name').value = inst.name || '';
-                    document.getElementById('form-password').value = inst.password || '';
-                    document.getElementById('form-type').value = cfg.type || inst.type || 'Ortaokul';
-                    document.getElementById('form-city').value = cfg.city || '';
-                    document.getElementById('form-district').value = cfg.district || '';
-                    document.getElementById('form-region').value = cfg.region || '';
-                    document.getElementById('form-logo').value = cfg.institution_logo || '';
-                    document.getElementById('form-contact-name').value = cfg.admin_contact?.name || '';
-                    document.getElementById('form-contact-phone').value = cfg.admin_contact?.phone || '';
-                    document.getElementById('form-contact-email').value = cfg.admin_contact?.email || '';
-                    document.getElementById('form-dorm-active').checked = cfg.module_dorm_active !== false;
-                    document.getElementById('form-logo-locked').checked = !!cfg.logo_locked;
-
-                    Swal.close();
-                    openInstitutionModal(false);
-                } catch (err) {
-                    Swal.fire('Hata', err.message, 'error');
-                }
-            }
-
-            async function deleteInstitution(slug, name) {
-                const result = await Swal.fire({
-                    title: 'Kurum Silinsin mi?',
-                    html: `<strong>${name}</strong> kurumunu silmek istediğinize emin misiniz?<br><span class="text-red-600 font-bold">Bu işlem geri alınamaz!</span>`,
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Evet, Sil',
-                    cancelButtonText: 'İptal'
-                });
-
-                if (!result.isConfirmed) return;
-
-                try {
-                    Swal.fire({ title: 'Siliniyor...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-                    await requestApi('delete', { slug });
-                    Swal.fire('Silindi!', 'Kurum başarıyla silindi.', 'success');
-                    loadInstitutions();
-                } catch (err) {
-                    Swal.fire('Hata', err.message, 'error');
-                }
-            }
-
-            // Form submit handler
-            document.getElementById('institution-form').addEventListener('submit', async (e) => {
-                e.preventDefault();
-
-                const slug = document.getElementById('form-slug').value.trim();
-                const name = document.getElementById('form-name').value.trim();
-                const password = document.getElementById('form-password').value.trim();
-                const type = document.getElementById('form-type').value;
-
-                if (!slug || !name || !password) {
-                    Swal.fire('Hata', 'Slug, isim ve şifre zorunludur.', 'error');
-                    return;
-                }
-
-                const payload = {
-                    slug,
-                    name,
-                    password,
-                    type,
-                    city: document.getElementById('form-city').value,
-                    district: document.getElementById('form-district').value,
-                    region: document.getElementById('form-region').value,
-                    institution_logo: document.getElementById('form-logo').value,
-                    logo_locked: document.getElementById('form-logo-locked').checked,
-                    module_dorm_active: document.getElementById('form-dorm-active').checked,
-                    admin_contact: {
-                        name: document.getElementById('form-contact-name').value,
-                        phone: document.getElementById('form-contact-phone').value,
-                        email: document.getElementById('form-contact-email').value
-                    }
-                };
-
-                try {
-                    Swal.fire({ title: 'Kaydediliyor...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-
-                    if (editingSlug) {
-                        await requestApi('upsert', payload);
-                    } else {
-                        await requestApi('upsert', payload);
-                    }
-
-                    Swal.fire('Başarılı', editingSlug ? 'Kurum güncellendi.' : 'Kurum oluşturuldu.', 'success');
-                    closeInstitutionModal();
-                    loadInstitutions();
-                } catch (err) {
-                    Swal.fire('Hata', err.message, 'error');
-                }
-            });
-
-            // --- NAVIGATION ---
-            function switchView(viewName) {
-                // Close all modals
-                document.querySelectorAll('[id$="-modal"]').forEach(el => {
-                    if (el.id !== 'login-modal') el.classList.add('hidden');
-                });
-
-                // If Institutions, ensure we are exploring
-                if (viewName === 'institutions') {
-                    loadInstitutions();
-                }
-            }
-
-            function logout() {
-                localStorage.removeItem('super_admin_pass');
-                location.reload();
-            }
-
-            // --- HADITH MANAGEMENT ---
-            let currentHadiths = {};
-
-            async function openHadithModal() {
-                document.getElementById('hadith-modal').classList.remove('hidden');
-                loadHadiths();
-            }
-
-            function closeHadithModal() {
-                document.getElementById('hadith-modal').classList.add('hidden');
-            }
-
-            async function loadHadiths() {
-                const container = document.getElementById('weeks-container');
-                container.innerHTML = 'Yükleniyor...';
-
-                try {
-                    const data = await requestApi('get_hadiths');
-                    currentHadiths = data.config || {};
-                    renderHadithWeeks();
-                } catch (e) {
-                    console.error(e);
-                    container.innerHTML = 'Hata oluştu.';
-                }
-            }
-
-            function renderHadithWeeks() {
-                const type = document.getElementById('hadith-type').value;
-                const container = document.getElementById('weeks-container');
-
-                // DATA MAPPING FIX: keys are "Ortaokul", "Lise" etc. handled by Select value.
-                // But inside, the array has { text, arabic, week } instead of { Hadith, Source }
-                const weeks = currentHadiths[type] || [];
-                const startDate = currentHadiths[type + '_date'];
-
-                if (startDate) document.getElementById('semester-start-date').value = startDate;
-
-                container.innerHTML = '';
-
-                weeks.forEach((week, idx) => {
-                    // MAP DATA KEYS
-                    const hadithText = week.text || week.Hadith || '';
-                    const hadithArabic = week.arabic || '';
-                    const hadithSource = week.Source || ''; // Source might be missing or inside text
-
-                    const div = document.createElement('div');
-                    div.className = 'bg-white p-4 rounded-xl border relative group';
-                    div.innerHTML = `
-                    <div class="flex justify-between items-center mb-2">
-                        <h5 class="font-bold text-slate-700">${idx + 1}. Hafta</h5>
-                        <button onclick="removeWeek(${idx})" class="text-red-400 hover:text-red-600"><i class="fa fa-trash"></i></button>
-                    </div>
-                    <label class="text-xs text-slate-400 font-bold">Türkçe Metin</label>
-                    <textarea onchange="updateWeekContent(${idx}, 'text', this.value)" class="w-full border p-2 rounded text-sm min-h-[80px]" placeholder="Hadis metni...">${hadithText}</textarea>
-                    
-                    <label class="text-xs text-slate-400 font-bold mt-2 block">Arapça Metin</label>
-                    <textarea onchange="updateWeekContent(${idx}, 'arabic', this.value)" class="w-full border p-2 rounded text-sm font-mono text-right" placeholder="Arapça metin...">${hadithArabic}</textarea>
-
-                    <label class="text-xs text-slate-400 font-bold mt-2 block">Kaynak (Opsiyonel)</label>
-                    <input onchange="updateWeekContent(${idx}, 'Source', this.value)" value="${hadithSource}" class="w-full border p-2 rounded text-xs" placeholder="Kaynak (Örn: Buhari)">
-                `;
-                    container.appendChild(div);
-                });
-            }
-
-            function addWeek() {
-                const type = document.getElementById('hadith-type').value;
-                if (!currentHadiths[type]) currentHadiths[type] = [];
-                // Initialize with new structure
-                currentHadiths[type].push({ text: '', arabic: '', week: (currentHadiths[type].length + 1).toString() });
-                renderHadithWeeks();
-            }
-
-            function removeWeek(idx) {
-                const type = document.getElementById('hadith-type').value;
-                currentHadiths[type].splice(idx, 1);
-                renderHadithWeeks();
-            }
-
-            function updateWeekContent(idx, field, val) {
-                const type = document.getElementById('hadith-type').value;
-                // Update specific field (text, arabic, Source)
-                currentHadiths[type][idx][field] = val;
-
-                // Backwards compatibility sync if needed
-                if (field === 'text') currentHadiths[type][idx].Hadith = val;
-            }
-
-            function updateWeekDates() {
-                const type = document.getElementById('hadith-type').value;
-                currentHadiths[type + '_date'] = document.getElementById('semester-start-date').value;
-            }
-
-            async function syncHadithsToApi() {
-                const type = document.getElementById('hadith-type').value;
-                const weeks = currentHadiths[type] || [];
-                const start_date = document.getElementById('semester-start-date').value;
-
-                try {
-                    await requestApi('save_hadith', { type, weeks, start_date });
-                    Swal.fire('Başarılı', 'Hadisler kaydedildi ve dağıtıldı.', 'success');
-                } catch (e) {
-                    Swal.fire('Hata', e.message, 'error');
-                }
-            }
-
-            // --- GALLERY ---
-            let currentGallery = {}; // { Ortaokul: { images:[], videos:[], left_images: [] } }
-            let activeGalleryTab = 'main'; // main (right), left, video
-            let supabase = null;
-
-            // Initialize Supabase Client
-            async function initSupabase() {
-                try {
-                    const data = await requestApi('get_upload_config');
-                    if (data.url && data.key && window.supabase) {
-                        supabase = window.supabase.createClient(data.url, data.key);
-                        console.log('Supabase Initialized');
-                    }
-                } catch (e) {
-                    console.error('Supabase init failed', e);
-                }
-            }
-            // Init on load - REMOVED to prevent blocking login
-            // initSupabase();
-
-            async function openGalleryModal() {
-                document.getElementById('gallery-modal').classList.remove('hidden');
-                loadGallery();
-            }
-
-            function closeGalleryModal() {
-                document.getElementById('gallery-modal').classList.add('hidden');
-            }
-
-            function switchGalleryTab(tab) {
-                activeGalleryTab = tab;
-
-                // Update buttons
-                document.querySelectorAll('.gallery-tab').forEach(btn => {
-                    btn.classList.remove('active', 'bg-white', 'shadow-sm', 'text-slate-800');
-                    btn.classList.add('text-slate-500', 'hover:bg-white/50');
-                });
-
-                const activeBtn = document.getElementById('tab-' + tab);
-                if (activeBtn) {
-                    activeBtn.classList.add('active', 'bg-white', 'shadow-sm', 'text-slate-800');
-                    activeBtn.classList.remove('text-slate-500', 'hover:bg-white/50');
-                }
-
-                loadGallery(); // Reload grid
-            }
-
-            async function loadGallery() {
-                const grid = document.getElementById('gallery-grid');
-                grid.innerHTML = '<p class="text-center text-gray-500 w-full col-span-full py-8">Yükleniyor...</p>';
-                document.getElementById('gallery-empty').classList.add('hidden');
-
-                updateSelectionUI(); // Reset selection
-
-                try {
-                    const data = await requestApi('get_gallery');
-                    currentGallery = data.config || {};
-                    renderGallery();
-                } catch (e) {
-                    console.error(e);
-                    grid.innerHTML = '<p class="text-center text-red-500 w-full col-span-full">Hata oluştu.</p>';
-                }
-            }
-
-            function renderGallery() {
-                const type = document.getElementById('gallery-type').value;
-                const grid = document.getElementById('gallery-grid');
-                grid.innerHTML = '';
-
-                const typeData = currentGallery[type] || {};
-
-                // UI 'tab-main' maps to 'images' (Right)
-                // UI 'tab-left' maps to 'left_images' (Left)
-                // UI 'tab-video' maps to 'videos' (Video URLs)
-
-                let items = [];
-                if (activeGalleryTab === 'main') items = typeData.images || [];
-                else if (activeGalleryTab === 'left') items = typeData.left_images || [];
-                else if (activeGalleryTab === 'video') items = typeData.videos || [];
-
-                if (!items || items.length === 0) {
-                    document.getElementById('gallery-empty').classList.remove('hidden');
-                    return;
-                }
-                document.getElementById('gallery-empty').classList.add('hidden');
-
-                items.forEach((item, idx) => {
-                    const url = typeof item === 'string' ? item : (item.url || '');
-
-                    const div = document.createElement('div');
-                    div.className = 'relative aspect-video bg-white rounded-lg shadow overflow-hidden group border';
-
-                    // Video content shim
-                    let content = `<img src="${url}" class="w-full h-full object-cover">`;
-                    if (activeGalleryTab === 'video') {
-                        if (url.includes('youtube') || url.includes('youtu.be')) {
-                            content = `<div class="w-full h-full flex items-center justify-center bg-black text-white"><i class="fa-brands fa-youtube text-4xl text-red-600"></i></div>`;
-                        } else {
-                            content = `<video src="${url}" class="w-full h-full object-cover" muted></video>`;
-                        }
-                    }
-
-                    div.innerHTML = `
-                    <input type="checkbox" data-idx="${idx}" data-url="${url}" 
-                        onchange="updateSelectionUI()" 
-                        class="gallery-checkbox absolute top-2 left-2 w-5 h-5 rounded border-2 border-white shadow-lg cursor-pointer z-10 accent-blue-600">
-                    ${content}
-                    <button onclick="deleteGalleryItem(${idx})" class="absolute top-2 right-2 bg-red-600 text-white w-8 h-8 rounded-full opacity-0 group-hover:opacity-100 transition flex items-center justify-center shadow-lg hover:scale-110">
-                        <i class="fa fa-trash text-xs"></i>
-                    </button>
-                    <!-- Type Badge -->
-                    <span class="absolute bottom-2 left-2 bg-black/50 text-white text-[10px] px-2 py-1 rounded capitalize">${activeGalleryTab}</span>
-                `;
-                    grid.appendChild(div);
-                });
-            }
-
-            async function deleteGalleryItem(idx) {
-                const type = document.getElementById('gallery-type').value;
-                if (!currentGallery[type]) return;
-
-                // Determine array to splice
-                let arr = null;
-                if (activeGalleryTab === 'main') arr = currentGallery[type].images;
-                else if (activeGalleryTab === 'left') arr = currentGallery[type].left_images;
-                else if (activeGalleryTab === 'video') arr = currentGallery[type].videos;
-
-                if (!arr) return;
-
-                const item = arr[idx];
-                const url = typeof item === 'string' ? item : (item.url || '');
-
-                // Confirm
-                const result = await Swal.fire({
-                    title: 'Silinsin mi?',
-                    text: "Bu öğe galeri listesinden kaldırılacak.",
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonText: 'Evet, Sil',
-                    cancelButtonText: 'İptal'
-                });
-
-                if (!result.isConfirmed) return;
-
-                // Delete from array
-                arr.splice(idx, 1);
-
-                // Attempt storage delete if it looks like our storage file
-                if (url && url.includes('supabase')) {
-                    // Fire and forget storage delete
-                    requestApi('delete_gallery_file', { path: url }).catch(console.error);
-                }
-
-                // Save Config
-                try {
-                    await requestApi('save_gallery', { gallery: currentGallery });
-                    renderGallery();
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Silindi',
-                        toast: true,
-                        position: 'top-end',
-                        showConfirmButton: false,
-                        timer: 2000
-                    });
-                } catch (e) {
-                    Swal.fire('Hata', 'Kaydetme hatası: ' + e.message, 'error');
-                }
-            }
-
-            // --- UPLOAD DISTRIBUTION ---
-            function openUploadModal() {
-                document.getElementById('upload-dist-modal').classList.remove('hidden');
-                // Reset defaults
-                document.getElementById('dist-target-general').checked = true;
-                toggleUploadTarget();
-            }
-
-            function closeUploadModal() {
-                document.getElementById('upload-dist-modal').classList.add('hidden');
-            }
-
-            function toggleUploadTarget() {
-                const target = document.querySelector('input[name="dist-target"]:checked').value;
-                document.getElementById('dist-select-region').classList.add('hidden');
-                document.getElementById('dist-select-institution').classList.add('hidden');
-
-                if (target === 'region') document.getElementById('dist-select-region').classList.remove('hidden');
-                if (target === 'institution') document.getElementById('dist-select-institution').classList.remove('hidden');
-            }
-
-            async function startDistributionUpload() {
-                const files = document.getElementById('dist-files').files;
-                if (files.length === 0) {
-                    Swal.fire('Hata', 'Lütfen en az bir dosya seçin.', 'warning');
-                    return;
-                }
-
-                if (!supabase) {
-                    Swal.fire('Hata', 'Yükleme servisi başlatılamadı. Sayfayı yenileyip tekrar deneyin.', 'error');
-                    return;
-                }
-
-                const galleryTarget = document.querySelector('input[name="dist-gallery-type"]:checked').value; // main, left
-                const distributionTarget = document.querySelector('input[name="dist-target"]:checked').value; // general, region, institution
-                let distributionValue = '';
-
-                if (distributionTarget === 'region') {
-                    distributionValue = document.getElementById('dist-region-input').value;
-                    if (!distributionValue) { Swal.fire('Uyarı', 'Mıntıka adı giriniz.', 'warning'); return; }
-                }
-                if (distributionTarget === 'institution') {
-                    distributionValue = document.getElementById('dist-institution-input').value;
-                    if (!distributionValue) { Swal.fire('Uyarı', 'Kurum slug veya adı giriniz.', 'warning'); return; }
-                }
-
-                // 1. Upload Files
-                Swal.fire({ title: 'Yükleniyor...', html: 'Dosyalar yükleniyor, lütfen bekleyin.', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-
-                try {
-                    const uploadedUrls = [];
-                    for (let file of files) {
-                        const fileName = `admin-upload/${Date.now()}-${Math.random().toString(36).substring(7)}-${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`;
-
-                        const { data, error } = await supabase.storage.from('images').upload(fileName, file);
-                        if (error) throw error;
-
-                        const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(fileName);
-                        uploadedUrls.push(publicUrl);
-                    }
-
-                    // 2. Distribute via API
-                    await requestApi('distribute_gallery_items', {
-                        items: uploadedUrls,
-                        target_type: distributionTarget,
-                        target_value: distributionValue,
-                        gallery_type: galleryTarget,
-                        institution_type: document.getElementById('gallery-type').value // For 'general' target needed context
-                    });
-
-                    Swal.fire('Başarılı', 'Dosyalar başarıyla yüklendi ve hedef kurumlara dağıtıldı.', 'success');
-                    closeUploadModal();
-
-                    // Reload if we updated something visible (General)
-                    if (distributionTarget === 'general') {
-                        loadGallery();
-                    }
-                } catch (e) {
-                    console.error('Upload error:', e);
-                    Swal.fire('Hata', 'Yükleme sırasında hata oluştu: ' + e.message, 'error');
-                }
-            }
-
-            async function saveGallery() {
-                try {
-                    await requestApi('save_gallery', { gallery: currentGallery });
-                    Swal.fire('Başarılı', 'Galeri kaydedildi.', 'success');
-                } catch (e) {
-                    Swal.fire('Hata', e.message, 'error');
-                }
-            }
-
-            // --- GALLERY SELECTION & BULK DELETE ---
-            let isAllSelected = false;
-
-            function toggleSelectAll() {
-                isAllSelected = !isAllSelected;
-                const checkboxes = document.querySelectorAll('.gallery-checkbox');
-                checkboxes.forEach(cb => cb.checked = isAllSelected);
-
-                const btn = document.getElementById('select-all-btn');
-                if (isAllSelected) {
-                    btn.innerHTML = '<i class="fa-solid fa-square"></i> Seçimi Kaldır';
-                    btn.classList.add('bg-blue-100', 'text-blue-600');
-                    btn.classList.remove('bg-slate-100', 'text-slate-600');
-                } else {
-                    btn.innerHTML = '<i class="fa-solid fa-check-square"></i> Tümünü Seç';
-                    btn.classList.remove('bg-blue-100', 'text-blue-600');
-                    btn.classList.add('bg-slate-100', 'text-slate-600');
-                }
-                updateSelectionUI();
-            }
-
-            function updateSelectionUI() {
-                const checkboxes = document.querySelectorAll('.gallery-checkbox:checked');
-                const count = checkboxes.length;
-
-                // Update bulk edit button
-                const editBtn = document.getElementById('bulk-edit-btn');
-                const deleteBtn = document.getElementById('bulk-delete-btn');
-
-                if (count > 0) {
-                    editBtn.classList.remove('hidden');
-                    deleteBtn.classList.remove('hidden');
-                    document.getElementById('selected-count').textContent = count;
-                    document.getElementById('delete-selected-count').textContent = count;
-                } else {
-                    editBtn.classList.add('hidden');
-                    deleteBtn.classList.add('hidden');
-                }
-
-                // Update select all button state
-                const allCheckboxes = document.querySelectorAll('.gallery-checkbox');
-                isAllSelected = allCheckboxes.length > 0 && count === allCheckboxes.length;
-                const btn = document.getElementById('select-all-btn');
-                if (isAllSelected) {
-                    btn.innerHTML = '<i class="fa-solid fa-square"></i> Seçimi Kaldır';
-                    btn.classList.add('bg-blue-100', 'text-blue-600');
-                    btn.classList.remove('bg-slate-100', 'text-slate-600');
-                } else {
-                    btn.innerHTML = '<i class="fa-solid fa-check-square"></i> Tümünü Seç';
-                    btn.classList.remove('bg-blue-100', 'text-blue-600');
-                    btn.classList.add('bg-slate-100', 'text-slate-600');
-                }
-            }
-
-            async function bulkDeleteSelected() {
-                const checkboxes = document.querySelectorAll('.gallery-checkbox:checked');
-                if (checkboxes.length === 0) {
-                    Swal.fire('Uyarı', 'Silmek için önce görsel seçin', 'warning');
-                    return;
-                }
-
-                const result = await Swal.fire({
-                    title: `${checkboxes.length} görsel silinecek!`,
-                    text: 'Bu görseller hem veritabanından hem de Storage\'dan kalıcı olarak silinecektir. Bu işlem geri alınamaz!',
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Evet, hepsini sil!',
-                    cancelButtonText: 'İptal'
-                });
-
-                if (!result.isConfirmed) return;
-
-                const type = document.getElementById('gallery-type').value;
-                if (!currentGallery[type]) return;
-
-                // Collect URLs to delete
-                const urlsToDelete = [];
-                const indicesToDelete = [];
-
-                checkboxes.forEach(cb => {
-                    urlsToDelete.push(cb.dataset.url);
-                    indicesToDelete.push(parseInt(cb.dataset.idx));
-                });
-
-                // Sort indices descending to delete from end first (prevents index shifting issues)
-                indicesToDelete.sort((a, b) => b - a);
-
-                // Show loading
-                Swal.fire({
-                    title: 'Siliniyor...',
-                    html: `<div class="text-slate-500">0 / ${urlsToDelete.length} tamamlandı</div>`,
-                    allowOutsideClick: false,
-                    didOpen: () => Swal.showLoading()
-                });
-
-                let successCount = 0;
-                let errorCount = 0;
-
-                // Delete files from storage one by one
-                for (let i = 0; i < urlsToDelete.length; i++) {
-                    try {
-                        const deleteResult = await fetch('/api/manage-institutions', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                action: 'delete_gallery_file',
-                                master_password: currentUserPassword,
-                                payload: { url: urlsToDelete[i] }
-                            })
-                        });
-                        const data = await deleteResult.json();
-                        if (data.success) successCount++;
-                        else errorCount++;
-                    } catch (e) {
-                        errorCount++;
-                    }
-
-                    // Update progress
-                    Swal.update({
-                        html: `<div class="text-slate-500">${i + 1} / ${urlsToDelete.length} tamamlandı</div>`
-                    });
-                }
-
-                // Remove from config array (using sorted descending indices)
-                for (const idx of indicesToDelete) {
-                    if (activeGalleryTab === 'main' && currentGallery[type].images) {
-                        currentGallery[type].images.splice(idx, 1);
-                    } else if (activeGalleryTab === 'slider' && currentGallery[type].videos) {
-                        currentGallery[type].videos.splice(idx, 1);
-                    }
-                }
-
-                // Save to database immediately
-                try {
-                    await requestApi('save_gallery', { gallery: currentGallery });
-                } catch (saveErr) {
-                    console.error('Save error:', saveErr);
-                }
-
-                // Reset selection state
-                isAllSelected = false;
-
-                // Close loading and show result
-                Swal.fire({
-                    icon: errorCount === 0 ? 'success' : 'warning',
-                    title: `${successCount} görsel silindi ve kaydedildi`,
-                    text: errorCount > 0 ? `${errorCount} görsel silinemedi` : 'Tüm görseller başarıyla silindi!',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-
-                renderGallery();
-            }
-
-
-            // --- ANNOUNCEMENTS ---
-            async function openAnnouncementModal() {
-                document.getElementById('announcement-modal').classList.remove('hidden');
-                loadAnnouncements();
-            }
-
-            function closeAnnouncementModal() {
-                document.getElementById('announcement-modal').classList.add('hidden');
-            }
-
-            async function loadAnnouncements() {
-                const list = document.getElementById('announcements-list');
-                list.innerHTML = 'Yükleniyor...';
-                try {
-                    const data = await requestApi('list_announcements');
-                    const items = data.announcements || [];
-
-                    list.innerHTML = '';
-                    items.forEach(a => {
-                        const div = document.createElement('div');
-                        div.className = 'p-4 border rounded-lg bg-slate-50 flex justify-between items-center';
-                        div.innerHTML = `
-                        <div>
-                            <p class="font-bold text-sm">${a.text}</p>
-                            <span class="text-xs text-slate-400">${new Date(a.created_at).toLocaleDateString()}</span>
-                        </div>
-                        <button onclick="deleteAnnouncement('${a.id}')" class="text-red-500 hover:text-red-700 font-bold text-xs">Sil</button>
-                    `;
-                        list.appendChild(div);
-                    });
-                } catch (e) {
-                    list.innerHTML = 'Yüklenemedi.';
-                }
-            }
-
-            async function broadcastAnnouncement() {
-                const text = document.getElementById('announcement-text').value;
-                if (!text) return;
-
-                // Collect filters
-                const typeSelect = document.getElementById('announcement-type-filter');
-                const selectedTypes = [...typeSelect.options].filter(o => o.selected).map(o => o.value).filter(v => v);
-
-                const regionVal = document.getElementById('announcement-region-filter').value;
-                const regions = regionVal ? regionVal.split(',').map(s => s.trim()) : [];
-
-                try {
-                    await requestApi('broadcast_announcement', {
-                        text,
-                        filters: { types: selectedTypes, regions }
-                    });
-                    document.getElementById('announcement-text').value = '';
-                    loadAnnouncements();
-                    Swal.fire('Başarılı', 'Duyuru yayınlandı.', 'success');
-                } catch (e) {
-                    Swal.fire('Hata', e.message, 'error');
-                }
-            }
-
-            async function deleteAnnouncement(id) {
-                try {
-                    await requestApi('delete_announcement', { announcement_id: id });
-                    loadAnnouncements();
-                } catch (e) {
-                    Swal.fire('Hata', e.message, 'error');
-                }
-            }
-
-            // --- CMS ---
-            async function openCMSModal() {
-                document.getElementById('cms-modal').classList.remove('hidden');
-                loadCMS();
-            }
-
-            function closeCMSModal() {
-                document.getElementById('cms-modal').classList.add('hidden');
-            }
-
-            async function loadCMS() {
-                try {
-                    const data = await requestApi('get_landing_content');
-                    const content = data.content || {};
-
-                    // Hero
-                    if (content.hero) {
-                        document.getElementById('cms-hero-badge').value = content.hero.badge || '';
-                        document.getElementById('cms-hero-title1').value = content.hero.title1 || '';
-                        document.getElementById('cms-hero-title2').value = content.hero.title2 || '';
-                        document.getElementById('cms-hero-desc').value = content.hero.description || '';
-                    }
-
-                    // Solutions
-                    if (content.solutions) {
-                        document.getElementById('cms-sol1-title').value = content.solutions.sol1?.title || '';
-                        document.getElementById('cms-sol1-desc').value = content.solutions.sol1?.desc || '';
-                        document.getElementById('cms-sol2-title').value = content.solutions.sol2?.title || '';
-                        document.getElementById('cms-sol2-desc').value = content.solutions.sol2?.desc || '';
-                        document.getElementById('cms-sol3-title').value = content.solutions.sol3?.title || '';
-                        document.getElementById('cms-sol3-desc').value = content.solutions.sol3?.desc || '';
-                    }
-
-                    // Contact
-                    if (content.contact) {
-                        document.getElementById('cms-contact-email').value = content.contact.email || '';
-                        document.getElementById('cms-contact-phone').value = content.contact.phone || '';
-                        document.getElementById('cms-whatsapp-link').value = content.contact.whatsapp || '';
-                    }
-                } catch (e) { console.error(e); }
-            }
-
-            function switchCMSTab(tab) {
-                ['hero', 'solutions', 'contact'].forEach(t => {
-                    document.getElementById('cms-tab-' + t).classList.add('hidden');
-                    document.getElementById('tab-btn-' + t).classList.remove('border-indigo-600', 'text-indigo-600', 'bg-indigo-50');
-                });
-                document.getElementById('cms-tab-' + tab).classList.remove('hidden');
-                document.getElementById('tab-btn-' + tab).classList.add('border-indigo-600', 'text-indigo-600', 'bg-indigo-50');
-            }
-
-            async function saveCMS() {
-                const content = {
-                    hero: {
-                        badge: document.getElementById('cms-hero-badge').value,
-                        title1: document.getElementById('cms-hero-title1').value,
-                        title2: document.getElementById('cms-hero-title2').value,
-                        description: document.getElementById('cms-hero-desc').value
-                    },
-                    solutions: {
-                        sol1: {
-                            title: document.getElementById('cms-sol1-title').value,
-                            desc: document.getElementById('cms-sol1-desc').value
-                        },
-                        sol2: {
-                            title: document.getElementById('cms-sol2-title').value,
-                            desc: document.getElementById('cms-sol2-desc').value
-                        },
-                        sol3: {
-                            title: document.getElementById('cms-sol3-title').value,
-                            desc: document.getElementById('cms-sol3-desc').value
-                        }
-                    },
-                    contact: {
-                        email: document.getElementById('cms-contact-email').value,
-                        phone: document.getElementById('cms-contact-phone').value,
-                        whatsapp: document.getElementById('cms-whatsapp-link').value
-                    }
-                };
-
-                try {
-                    await requestApi('save_landing_content', { content });
-                    Swal.fire('Başarılı', 'Site güncellendi.', 'success');
-                } catch (e) {
-                    Swal.fire('Hata', e.message, 'error');
-                }
-            }
-
-            // --- EMERGENCY ---
-            async function openEmergencyModal() {
-                document.getElementById('emergency-modal').classList.remove('hidden');
-                try {
-                    const data = await requestApi('get_emergency_config');
-                    const cfg = data.config || {};
-                    document.getElementById('emergency-active').checked = !!cfg.active;
-                    document.getElementById('emergency-title').value = cfg.title || '';
-                    document.getElementById('emergency-message').value = cfg.message || '';
-                    document.getElementById('emergency-style').value = cfg.style || 'red';
-                } catch (e) { }
-            }
-
-            function closeEmergencyModal() {
-                document.getElementById('emergency-modal').classList.add('hidden');
-            }
-
-            async function saveEmergencyConfig() {
-                const config = {
-                    active: document.getElementById('emergency-active').checked,
-                    title: document.getElementById('emergency-title').value,
-                    message: document.getElementById('emergency-message').value,
-                    style: document.getElementById('emergency-style').value,
-                    updated_at: new Date().toISOString()
-                };
-
-                try {
-                    await requestApi('save_emergency', { config });
-                    Swal.fire('Başarılı', 'Acil durum ayarları güncellendi.', 'success');
-                    closeEmergencyModal();
-                } catch (e) {
-                    Swal.fire('Hata', e.message, 'error');
-                }
-            }
-
-            // Enter key for login
-            document.getElementById('master-password').addEventListener('keypress', function (e) {
-                if (e.key === 'Enter') doLogin();
-            });
-        </script>
         <!-- Distribution Upload Modal -->
-        <div id="upload-dist-modal"
-            class="fixed inset-0 z-[60] hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center">
-            <div class="bg-white rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl">
-                <div class="p-6 border-b flex justify-between items-center bg-blue-50">
-                    <h3 class="font-bold text-xl text-blue-700 flex items-center gap-2">
-                        <i class="fa-solid fa-cloud-upload"></i> Galeri Yükleme
-                    </h3>
-                    <button onclick="closeUploadModal()" class="text-blue-400 hover:text-blue-700">
-                        <i class="fa-solid fa-times text-xl"></i>
-                    </button>
-                </div>
-                <div class="p-6 space-y-6">
-                    <!-- Target Selection -->
-                    <div>
-                        <label class="block text-sm font-bold text-slate-500 uppercase mb-3">Dağıtım Hedefi</label>
-                        <div class="space-y-3">
-                            <label
-                                class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-slate-50">
-                                <input type="radio" name="dist-target" id="dist-target-general" value="general" checked
-                                    onchange="toggleUploadTarget()" class="w-5 h-5 accent-blue-600">
-                                <div>
-                                    <span class="font-bold block text-slate-800">Tüm Kurumlar (Genel)</span>
-                                    <span class="text-xs text-slate-500">Seçili tipteki (örn: Ortaokul) tüm kurumlara
-                                        eklenir.</span>
+
+                <!-- Distribution Upload Modal -->
+                <div id="upload-dist-modal"
+                    class="fixed inset-0 z-[60] hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center">
+                    <div class="bg-white rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl">
+                        <div class="p-6 border-b flex justify-between items-center bg-blue-50">
+                            <h3 class="font-bold text-xl text-blue-700 flex items-center gap-2">
+                                <i class="fa-solid fa-cloud-upload"></i> Galeri Yükleme
+                            </h3>
+                            <button onclick="closeUploadModal()" class="text-blue-400 hover:text-blue-700">
+                                <i class="fa-solid fa-times text-xl"></i>
+                            </button>
+                        </div>
+                        <div class="p-6 space-y-6">
+                            <!-- Target Selection -->
+                            <div>
+                                <label class="block text-sm font-bold text-slate-500 uppercase mb-3">Dağıtım
+                                    Hedefi</label>
+                                <div class="space-y-3">
+                                    <label
+                                        class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-slate-50">
+                                        <input type="radio" name="dist-target" id="dist-target-general" value="general"
+                                            checked onchange="toggleUploadTarget()" class="w-5 h-5 accent-blue-600">
+                                        <div>
+                                            <span class="font-bold block text-slate-800">Tüm Kurumlar (Genel)</span>
+                                            <span class="text-xs text-slate-500">Seçili tipteki (örn: Ortaokul) tüm
+                                                kurumlara
+                                                eklenir.</span>
+                                        </div>
+                                    </label>
+                                    <label
+                                        class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-slate-50">
+                                        <input type="radio" name="dist-target" value="region"
+                                            onchange="toggleUploadTarget()" class="w-5 h-5 accent-blue-600">
+                                        <div>
+                                            <span class="font-bold block text-slate-800">Mıntıka Seç</span>
+                                            <span class="text-xs text-slate-500">Sadece belirli bir mıntıkadaki
+                                                kurumlara
+                                                eklenir.</span>
+                                        </div>
+                                    </label>
+                                    <!-- Dynamic Region Select -->
+                                    <div id="dist-select-region" class="pl-8 hidden">
+                                        <input id="dist-region-input" class="w-full p-2 border rounded-lg"
+                                            placeholder="Mıntıka Adı Giriniz (örn: Marmara)">
+                                    </div>
+
+                                    <label
+                                        class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-slate-50">
+                                        <input type="radio" name="dist-target" value="institution"
+                                            onchange="toggleUploadTarget()" class="w-5 h-5 accent-blue-600">
+                                        <div>
+                                            <span class="font-bold block text-slate-800">Tek Kurum Seç</span>
+                                            <span class="text-xs text-slate-500">Sadece seçilen kuruma eklenir.</span>
+                                        </div>
+                                    </label>
+                                    <!-- Dynamic Institution Select -->
+                                    <div id="dist-select-institution" class="pl-8 hidden">
+                                        <input id="dist-institution-input" class="w-full p-2 border rounded-lg"
+                                            placeholder="Kurum Slug veya Adı">
+                                    </div>
                                 </div>
-                            </label>
-                            <label
-                                class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-slate-50">
-                                <input type="radio" name="dist-target" value="region" onchange="toggleUploadTarget()"
-                                    class="w-5 h-5 accent-blue-600">
-                                <div>
-                                    <span class="font-bold block text-slate-800">Mıntıka Seç</span>
-                                    <span class="text-xs text-slate-500">Sadece belirli bir mıntıkadaki kurumlara
-                                        eklenir.</span>
-                                </div>
-                            </label>
-                            <!-- Dynamic Region Select -->
-                            <div id="dist-select-region" class="pl-8 hidden">
-                                <input id="dist-region-input" class="w-full p-2 border rounded-lg"
-                                    placeholder="Mıntıka Adı Giriniz (örn: Marmara)">
                             </div>
 
-                            <label
-                                class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-slate-50">
-                                <input type="radio" name="dist-target" value="institution"
-                                    onchange="toggleUploadTarget()" class="w-5 h-5 accent-blue-600">
-                                <div>
-                                    <span class="font-bold block text-slate-800">Tek Kurum Seç</span>
-                                    <span class="text-xs text-slate-500">Sadece seçilen kuruma eklenir.</span>
+                            <!-- Gallery Type -->
+                            <div>
+                                <label class="block text-sm font-bold text-slate-500 uppercase mb-3">Galeri Tipi</label>
+                                <div class="flex gap-4">
+                                    <label
+                                        class="flex-1 flex items-center justify-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-slate-50 has-[:checked]:bg-blue-50 has-[:checked]:border-blue-200">
+                                        <input type="radio" name="dist-gallery-type" value="main" checked
+                                            class="accent-blue-600">
+                                        <span class="font-bold text-sm">Ana Galeri (Sağ)</span>
+                                    </label>
+                                    <label
+                                        class="flex-1 flex items-center justify-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-slate-50 has-[:checked]:bg-blue-50 has-[:checked]:border-blue-200">
+                                        <input type="radio" name="dist-gallery-type" value="left"
+                                            class="accent-blue-600">
+                                        <span class="font-bold text-sm">Sol Galeri</span>
+                                    </label>
                                 </div>
-                            </label>
-                            <!-- Dynamic Institution Select -->
-                            <div id="dist-select-institution" class="pl-8 hidden">
-                                <input id="dist-institution-input" class="w-full p-2 border rounded-lg"
-                                    placeholder="Kurum Slug veya Adı">
+                            </div>
+
+                            <!-- File Input -->
+                            <div>
+                                <label class="block text-sm font-bold text-slate-500 uppercase mb-3">Dosyalar</label>
+                                <input type="file" id="dist-files" multiple accept="image/*"
+                                    class="w-full p-3 border rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
                             </div>
                         </div>
-                    </div>
-
-                    <!-- Gallery Type -->
-                    <div>
-                        <label class="block text-sm font-bold text-slate-500 uppercase mb-3">Galeri Tipi</label>
-                        <div class="flex gap-4">
-                            <label
-                                class="flex-1 flex items-center justify-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-slate-50 has-[:checked]:bg-blue-50 has-[:checked]:border-blue-200">
-                                <input type="radio" name="dist-gallery-type" value="main" checked
-                                    class="accent-blue-600">
-                                <span class="font-bold text-sm">Ana Galeri (Sağ)</span>
-                            </label>
-                            <label
-                                class="flex-1 flex items-center justify-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-slate-50 has-[:checked]:bg-blue-50 has-[:checked]:border-blue-200">
-                                <input type="radio" name="dist-gallery-type" value="left" class="accent-blue-600">
-                                <span class="font-bold text-sm">Sol Galeri</span>
-                            </label>
+                        <div class="p-6 border-t bg-slate-50 flex justify-end gap-3">
+                            <button onclick="closeUploadModal()"
+                                class="px-5 py-2 hover:bg-slate-200 rounded-lg font-bold text-slate-600">İptal</button>
+                            <button onclick="startDistributionUpload()"
+                                class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow-lg">Yükle
+                                ve Dağıt</button>
                         </div>
                     </div>
-
-                    <!-- File Input -->
-                    <div>
-                        <label class="block text-sm font-bold text-slate-500 uppercase mb-3">Dosyalar</label>
-                        <input type="file" id="dist-files" multiple accept="image/*"
-                            class="w-full p-3 border rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-                    </div>
                 </div>
-                <div class="p-6 border-t bg-slate-50 flex justify-end gap-3">
-                    <button onclick="closeUploadModal()"
-                        class="px-5 py-2 hover:bg-slate-200 rounded-lg font-bold text-slate-600">İptal</button>
-                    <button onclick="startDistributionUpload()"
-                        class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow-lg">Yükle
-                        ve Dağıt</button>
-                </div>
-            </div>
-        </div>
 </body>
 
 </html>
