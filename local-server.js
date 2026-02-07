@@ -44,9 +44,14 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// 2. /admin -> admin.html
-app.get('/admin', (req, res) => {
+// 2. /super-admin -> admin.html
+app.get('/super-admin', (req, res) => {
     res.sendFile(path.join(__dirname, 'admin.html'));
+});
+
+// 2b. Redirect /admin -> /super-admin
+app.get('/admin', (req, res) => {
+    res.redirect('/super-admin');
 });
 
 // 3. /:slug/admin -> panel.html
@@ -80,7 +85,7 @@ app.get(/.*/, async (req, res) => {
 app.listen(PORT, () => {
     console.log(`\n🚀 Local Server Running!`);
     console.log(`📡 URL: http://localhost:${PORT}`);
-    console.log(`🔧 Admin: http://localhost:${PORT}/admin`);
+    console.log(`🔧 Admin: http://localhost:${PORT}/super-admin`);
     console.log(`🏫 Example: http://localhost:${PORT}/test-lisesi`);
     console.log(`\n(Press Ctrl+C to stop)\n`);
 });

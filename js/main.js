@@ -974,12 +974,14 @@ async function fetchConfig() {
                 infoRotationInterval = setInterval(rotateInfo, 10000); // 10 saniyede bir değiştir
             }
         } else {
-            // Veri yoksa durdur
             if (infoRotationInterval) {
                 clearInterval(infoRotationInterval);
                 infoRotationInterval = null;
             }
         }
+
+        // --- 10. Sol Galeri Yükleme ---
+        await fetchLeftGalleryImages();
 
     } catch (error) {
         console.error("Config error:", error);
@@ -1623,22 +1625,38 @@ setTimeout(() => {
 
 // Sol galeri görsellerini yükle
 async function fetchLeftGalleryImages() {
-    // Eğer admin'den dolu geldiyse tekrar çekme
-    if (leftGalleryImages.length > 0) return;
-
     try {
-        const res = await fetch('/api/get-left-gallery');
-        const data = await res.json();
-        leftGalleryImages = data.images || [];
+        // Get slug from URL
+        const path = window.location.pathname;
+        let slug = path.split('/')[1] || '';
 
-        // Eğer görseller varsa rotasyonu başlat
-        if (leftGalleryImages.length > 0) {
+        const ignoredBundles = ['index.html', 'index', 'board.html', 'board'];
+        if (ignoredBundles.includes(slug.toLowerCase())) {
+            slug = '';
+        }
+
+        if (!slug) {
+            console.log('No slug, skipping left gallery');
+            return;
+        }
+
+        const response = await fetch(`/api/get-left-gallery?slug=${slug}`);
+        const data = await response.json();
+
+        if (data.images && Array.isArray(data.images) && data.images.length > 0) {
+            leftGalleryImages = data.images;
+            console.log(`Left gallery loaded: ${leftGalleryImages.length} images`);
             startLeftGalleryRotation();
+        } else {
+            console.log('No left gallery images found');
+            leftGalleryImages = [];
         }
     } catch (error) {
-        console.error('Sol galeri yükleme hatası:', error);
+        console.error('Left gallery fetch error:', error);
+        leftGalleryImages = [];
     }
 }
+
 
 // Sol galeri rotasyonunu başlat
 function startLeftGalleryRotation() {

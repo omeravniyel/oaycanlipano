@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Login</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+
+        .box {
+            background: white;
+            padding: 20px;
+            border: 1px solid #ccc;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        input,
+        button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            box-sizing: border-box;
+        }
+
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #0056b3;
+        }
+
+        #output {
+            margin-top: 20px;
+            white-space: pre-wrap;
+            background: #eee;
+            padding: 10px;
+            border: 1px solid #999;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="box">
+        <h1>Sistem Tanı Aracı (Debug)</h1>
+        <p>V6 - Super Admin Login Test</p>
+
+        <input type="password" id="pass" placeholder="Master Password">
+        <button onclick="testLogin()">Test Login (Verify Only)</button>
+        <button onclick="testFullList()" style="background: #28a745;">Test Full Data Fetch</button>
+
+        <div id="output">Status: Waiting...</div>
+    </div>
+
+    <script>
+        function log(msg) {
+            const out = document.getElementById('output');
+            out.innerText += '\n' + msg;
+            console.log(msg);
+        }
+
+        async function testLogin() {
+            const pass = document.getElementById('pass').value;
+            document.getElementById('output').innerText = 'Testing Password...';
+
+            try {
+                const res = await fetch('/api/manage-institutions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'verify_password',
+                        master_password: pass
+                    })
+                });
+
+                const text = await res.text();
+                log('Status: ' + res.status);
+                log('Response: ' + text);
+
+                if (res.ok) {
+                    try {
+                        const json = JSON.parse(text);
+                        if (json.success) {
+                            log('Login result: SUCCESS ✅');
+                            localStorage.setItem('super_admin_pass', pass);
+                            log('Password saved to localStorage.');
+                        } else {
+                            log('Login result: FAILED ❌');
+                        }
+                    } catch (e) { log('JSON Parse Error'); }
+                }
+
+            } catch (err) {
+                log('FATAL ERROR: ' + err.message);
+            }
+        }
+
+        async function testFullList() {
+            const pass = document.getElementById('pass').value;
+            log('\nFetching Full Data List...');
+
+            try {
+                const res = await fetch('/api/manage-institutions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'list',
+                        master_password: pass
+                    })
+                });
+
+                const text = await res.text();
+                log('Status: ' + res.status);
+                log('Response Length: ' + text.length + ' chars');
+                if (text.length < 500) log('Response Preview: ' + text);
+                else log('Response Preview (First 500): ' + text.substring(0, 500));
+
+            } catch (err) {
+                log('DATA FETCH ERROR: ' + err.message);
+            }
+        }
+    </script>
+</body>
+
+</html>

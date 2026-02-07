@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Storage Temizleme Aracı</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #fff;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+        }
+
+        .warning {
+            background: rgba(255, 193, 7, 0.1);
+            border: 1px solid rgba(255, 193, 7, 0.5);
+            color: #ffc107;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .warning-icon {
+            font-size: 2rem;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            color: #fff;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 16px;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #e91e63;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #dc3545, #c82333);
+            color: #fff;
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(220, 53, 69, 0.4);
+        }
+
+        .btn-danger:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            display: none;
+        }
+
+        .result-success {
+            background: rgba(40, 167, 69, 0.2);
+            border: 1px solid rgba(40, 167, 69, 0.5);
+            color: #28a745;
+        }
+
+        .result-error {
+            background: rgba(220, 53, 69, 0.2);
+            border: 1px solid rgba(220, 53, 69, 0.5);
+            color: #dc3545;
+        }
+
+        .result-info {
+            background: rgba(23, 162, 184, 0.2);
+            border: 1px solid rgba(23, 162, 184, 0.5);
+            color: #17a2b8;
+        }
+
+        .spinner {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-top: 3px solid #fff;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🗑️ Storage Temizleme Aracı</h1>
+
+        <div class="warning">
+            <span class="warning-icon">⚠️</span>
+            <strong>DİKKAT!</strong><br>
+            Bu işlem Supabase Storage'daki TÜM dosyaları kalıcı olarak silecektir.<br>
+            Bu işlem GERİ ALINAMAZ!
+        </div>
+
+        <div class="form-group">
+            <label for="password">Admin Şifresi</label>
+            <input type="password" id="password" placeholder="Master password giriniz..." required>
+        </div>
+
+        <button class="btn btn-danger" id="cleanupBtn" onclick="executeCleanup()">
+            🧹 Tüm Storage Dosyalarını Sil
+        </button>
+
+        <div class="result" id="result"></div>
+    </div>
+
+    <script>
+        async function executeCleanup() {
+            const password = document.getElementById('password').value;
+            const btn = document.getElementById('cleanupBtn');
+            const result = document.getElementById('result');
+
+            if (!password) {
+                showResult('Lütfen şifre giriniz!', 'error');
+                return;
+            }
+
+            // Double confirmation
+            if (!confirm('Bu işlem TÜM dosyaları silecek! Emin misiniz?')) return;
+            if (!confirm('GERÇEKTEN emin misiniz? Bu işlem geri alınamaz!')) return;
+
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span> Siliniyor...';
+
+            try {
+                const response = await fetch('/api/manage-institutions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'bulk_delete_all_storage',
+                        master_password: password
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.success) {
+                    showResult(`✅ İşlem Başarılı!<br>Silinen dosya sayısı: <strong>${data.deletedCount || 0}</strong>`, 'success');
+                } else {
+                    showResult(`❌ Hata: ${data.error || 'Bilinmeyen hata'}`, 'error');
+                }
+            } catch (err) {
+                showResult(`❌ Bağlantı Hatası: ${err.message}`, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '🧹 Tüm Storage Dosyalarını Sil';
+            }
+        }
+
+        function showResult(message, type) {
+            const result = document.getElementById('result');
+            result.className = 'result result-' + type;
+            result.innerHTML = message;
+            result.style.display = 'block';
+        }
+    </script>
+</body>
+
+</html>

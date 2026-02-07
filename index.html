@@ -149,7 +149,7 @@
                 <i class="fa-solid fa-circle text-[10px]"></i> CANLI YAYIN
             </a>
 
-            <a href="admin.html"
+            <a href="/super-admin"
                 class="px-5 py-2 rounded-full border border-slate-200 dark:border-white/10 text-sm font-medium hover:bg-slate-100 dark:hover:bg-white/5 transition-all text-slate-700 dark:text-gray-300">Giriş
                 Yap</a>
             <a href="board.html"
@@ -717,14 +717,23 @@
                         waLink.href = customWa;
                     } else {
                         // Default logic based on phone number
-                        const cleanPhone = phoneDisplay.replace(/[^0-9]/g, '');
+                        // Robust regex to strip all non-digits
+                        let cleanPhone = phoneDisplay.replace(/\D/g, '');
+
+                        // Ensure 90 prefix
+                        if (cleanPhone.length === 10) {
+                            cleanPhone = '90' + cleanPhone;
+                        } else if (cleanPhone.length === 11 && cleanPhone.startsWith('0')) {
+                            cleanPhone = '90' + cleanPhone.substring(1);
+                        } else if (cleanPhone.length === 11 && !cleanPhone.startsWith('90')) {
+                            // Case like 536... without 0 but 11 digits? Unlikely but handling simply
+                            cleanPhone = '90' + cleanPhone;
+                        }
+
                         const msg = "Merhaba, Dijital Pano sistemi hakkında bilgi almak istiyorum.";
                         const encodedMsg = encodeURIComponent(msg);
-                        let finalPhone = cleanPhone;
-                        if (finalPhone.length === 10) finalPhone = '90' + finalPhone;
-                        else if (finalPhone.length === 11 && finalPhone.startsWith('0')) finalPhone = '90' + finalPhone.substring(1);
 
-                        waLink.href = `https://wa.me/${finalPhone}?text=${encodedMsg}`;
+                        waLink.href = `https://wa.me/${cleanPhone}?text=${encodedMsg}`;
                     }
                 }
             }

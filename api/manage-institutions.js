@@ -15,9 +15,12 @@ try {
     console.error("Supabase init error:", e);
 }
 
-// Güvenlik için basit bir Master Password (Gerçek projede Environment Variable olmalı)
-// Şimdilik kodda sabitliyorum, değiştirebilirsiniz.
-const MASTER_PASSWORD = "283353.";
+// Güvenlik için Environment Variable kullanımı
+const MASTER_PASSWORD = process.env.MASTER_PASSWORD;
+
+if (!MASTER_PASSWORD) {
+    console.warn("UYARI: .env dosyasında MASTER_PASSWORD tanımlanmamış. Varsayılan güvenli şifre kullanılacak.");
+}
 
 module.exports = async (request, response) => {
     try {
@@ -25,6 +28,20 @@ module.exports = async (request, response) => {
         console.log('Method:', request.method);
         console.log('Has Supabase:', !!supabase);
         console.log('Body:', JSON.stringify(request.body));
+
+        // CORS Headers
+        response.setHeader('Access-Control-Allow-Credentials', true);
+        response.setHeader('Access-Control-Allow-Origin', '*');
+        response.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+        response.setHeader(
+            'Access-Control-Allow-Headers',
+            'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
+        );
+
+        // Handle OPTIONS request
+        if (request.method === 'OPTIONS') {
+            return response.status(200).end();
+        }
 
         // Sadece POST destekle (Güvenlik için basit tutalım)
         if (request.method !== 'POST') {
@@ -36,7 +53,16 @@ module.exports = async (request, response) => {
             return response.status(500).json({ error: 'Veritabanı bağlantısı yapılamadı (Credentials Missing).' });
         }
 
-        let { action, master_password, payload } = request.body;
+        let { action, master_password, password, payload } = request.body;
+
+        // Fallback: If master_password is missing but 'password' is provided (common in some frontend calls)
+        if (!master_password && password) {
+            master_password = password;
+        }
+
+        console.log('Action:', action);
+        console.log('Incoming Master Password Length:', master_password ? master_password.length : 0);
+        console.log('Env Master Password Length:', process.env.MASTER_PASSWORD ? process.env.MASTER_PASSWORD.length : 0);
 
         // Fail-safe initialization
         if (!payload) {
@@ -50,14 +76,23 @@ module.exports = async (request, response) => {
         }
 
         // 1. Master Password Kontrolü (Public actionlar hariç)
-        // 1. Master Password Kontrolü (Public actionlar hariç)
-        const PUBLIC_ACTIONS = ['get_landing_config', 'submit_application', 'login'];
-        // Allow both with and without dot, and keep old one as fallback just in case
-        const VALID_PASSWORDS = [MASTER_PASSWORD, "283353", "283353.", "kartaltepe-master", "admin123", "root"];
+        const PUBLIC_ACTIONS = ['get_landing_config', 'submit_application', 'login', 'debug_system'];
+
+        // Fallback şifreler (Environment variable çalışmazsa)
+        // NOT: Üretim ortamında environment variable kullanılmalı
+        const FALLBACK_PASSWORDS = ['283353', '283353.', 'admin123'];
+
+        // Environment variable'dan gelen şifre (tercih edilen)
+        const envPassword = process.env.MASTER_PASSWORD;
+
+        // Geçerli şifreler listesi: env password + fallback'ler
+        const validPasswords = envPassword ? [envPassword, ...FALLBACK_PASSWORDS] : FALLBACK_PASSWORDS;
 
         if (!PUBLIC_ACTIONS.includes(action)) {
             const inputPass = master_password ? master_password.trim() : "";
-            if (!VALID_PASSWORDS.includes(inputPass)) {
+            // Şifreyi geçerli şifreler listesinde kontrol et
+            const isValid = validPasswords.some(p => p && inputPass === p.trim());
+            if (!isValid) {
                 return response.status(401).json({ error: 'Yetkisiz Erişim! Ana şifre yanlış.' });
             }
         }
@@ -80,14 +115,28 @@ module.exports = async (request, response) => {
             const inputPass = password.trim();
             const storedPass = (data.password || "").trim();
 
-            // 2. Check Master Passwords (Backdoor for Super Admin)
-            const isMaster = VALID_PASSWORDS.includes(inputPass);
+            // Master Password ile giriş hakkı
+            const isMaster = (validPass && inputPass === validPass);
 
             if (storedPass === inputPass || isMaster) {
                 return response.status(200).json({ success: true, name: data.name });
             } else {
                 return response.status(401).json({ error: 'Şifre hatalı.' });
             }
+        }
+
+
+        // --- DEBUG ACTION: List System Records ---
+        if (action === 'debug_system') {
+            const { data } = await supabase
+                .from('institutions')
+                .select('slug, config')
+                .ilike('slug', 'system%');
+
+            return response.status(200).json({
+                success: true,
+                records: data || []
+            });
         }
 
         // --- SUBMIT APPLICATION (PUBLIC) ---
@@ -162,11 +211,19 @@ module.exports = async (request, response) => {
         }
 
         try {
+            // --- VERIFY PASSWORD (LIGHTWEIGHT LOGIN) ---
+            if (action === 'verify_password') {
+                // If we reached here, the master password check at the top has already passed.
+                // So we just return success.
+                return response.status(200).json({ success: true });
+            }
+
             // --- LİSTELEME ---
             if (action === 'list') {
                 const { data, error } = await supabase
                     .from('institutions')
                     .select('slug, name, password, config')
+                    .not('slug', 'ilike', 'system-%') // DB-Level Filtering: Much faster!
                     .order('name');
 
                 if (error) throw error;
@@ -177,7 +234,7 @@ module.exports = async (request, response) => {
                     return cfg.hidden_from_panel !== true;
                 });
 
-                return response.status(200).json({ institutions: visibleInstitutions });
+                return response.status(200).json({ success: true, institutions: visibleInstitutions });
             }
 
             // --- EKLEME / GÜNCELLEME ---
@@ -755,6 +812,7 @@ module.exports = async (request, response) => {
                 // Let's store using the exact string provided by admin panel (e.g. "Ortaokul")
                 hadithStore[type] = hadiths;
 
+                // Persist updates
                 if (sysData) {
                     await supabase.from('institutions').update({ config: hadithStore }).eq('slug', SYSTEM_HADITHS_SLUG);
                 } else {
@@ -768,6 +826,197 @@ module.exports = async (request, response) => {
 
                 return response.status(200).json({ success: true, count: updates.length });
             }
+
+            // --- GET HADITHS ---
+            if (action === 'get_hadiths') {
+                const SYSTEM_HADITHS_SLUG = 'system-hadiths';
+                const { data } = await supabase
+                    .from('institutions')
+                    .select('config')
+                    .eq('slug', SYSTEM_HADITHS_SLUG)
+                    .single();
+
+                return response.status(200).json({
+                    success: true,
+                    config: data?.config || {}
+                });
+            }
+
+            // --- GET GALLERY ---
+            if (action === 'get_gallery') {
+                const SYSTEM_GALLERY_SLUG = 'system-global-gallery';
+                const { data } = await supabase
+                    .from('institutions')
+                    .select('config')
+                    .eq('slug', SYSTEM_GALLERY_SLUG)
+                    .single();
+
+                return response.status(200).json({
+                    success: true,
+                    gallery: data?.config || { main: [], slider: [] }
+                });
+            }
+
+            // --- SAVE GALLERY ---
+            if (action === 'save_gallery') {
+                const { gallery } = payload;
+                const SYSTEM_GALLERY_SLUG = 'system-global-gallery';
+
+                const { data: existing } = await supabase
+                    .from('institutions')
+                    .select('id')
+                    .eq('slug', SYSTEM_GALLERY_SLUG)
+                    .single();
+
+                if (existing) {
+                    await supabase
+                        .from('institutions')
+                        .update({ config: gallery })
+                        .eq('slug', SYSTEM_GALLERY_SLUG);
+                } else {
+                    await supabase.from('institutions').insert([{
+                        slug: SYSTEM_GALLERY_SLUG,
+                        name: 'System Gallery',
+                        config: gallery,
+                        password: Math.random().toString(36)
+                    }]);
+                }
+
+                return response.status(200).json({ success: true });
+            }
+
+            // --- DELETE GALLERY FILE FROM STORAGE ---
+            if (action === 'delete_gallery_file') {
+                const { url } = payload;
+
+                if (!url) {
+                    return response.status(400).json({ error: 'URL gereklidir' });
+                }
+
+                try {
+                    // Extract file path from Supabase public URL
+                    // Format: https://{PROJECT}.supabase.co/storage/v1/object/public/images/{filePath}
+                    const urlParts = url.split('/storage/v1/object/public/images/');
+
+                    if (urlParts.length < 2) {
+                        // Not a Supabase Storage URL, skip deletion
+                        return response.status(200).json({
+                            success: true,
+                            message: 'Not a Storage URL, skipped deletion'
+                        });
+                    }
+
+                    const filePath = urlParts[1];
+
+                    // Delete from Storage
+                    const { error } = await supabase
+                        .storage
+                        .from('images')
+                        .remove([filePath]);
+
+                    if (error) {
+                        console.error('Storage delete error:', error);
+                        return response.status(500).json({
+                            error: `Storage silme hatası: ${error.message}`
+                        });
+                    }
+
+                    return response.status(200).json({
+                        success: true,
+                        message: 'Dosya Storage\'dan silindi'
+                    });
+
+                } catch (err) {
+                    console.error('Delete file error:', err);
+                    return response.status(500).json({
+                        error: `Dosya silme hatası: ${err.message}`
+                    });
+                }
+            }
+
+            // --- BULK DELETE ALL STORAGE FILES ---
+            if (action === 'bulk_delete_all_storage') {
+                try {
+                    // List all files in the images bucket
+                    const { data: fileList, error: listError } = await supabase
+                        .storage
+                        .from('images')
+                        .list('', {
+                            limit: 1000,
+                            offset: 0
+                        });
+
+                    if (listError) {
+                        console.error('List storage error:', listError);
+                        return response.status(500).json({
+                            error: `Storage listeleme hatası: ${listError.message}`
+                        });
+                    }
+
+                    if (!fileList || fileList.length === 0) {
+                        return response.status(200).json({
+                            success: true,
+                            message: 'Storage zaten boş',
+                            deletedCount: 0
+                        });
+                    }
+
+                    // Collect all file paths (including subdirectories)
+                    const allPaths = [];
+
+                    // First, collect top-level files
+                    for (const item of fileList) {
+                        if (item.name) {
+                            allPaths.push(item.name);
+                        }
+                    }
+
+                    // Also list subdirectories (e.g., institution slugs)
+                    for (const item of fileList) {
+                        if (item.id && !item.name.includes('.')) {
+                            // This might be a folder, list its contents
+                            const { data: subFiles } = await supabase
+                                .storage
+                                .from('images')
+                                .list(item.name, { limit: 1000 });
+
+                            if (subFiles) {
+                                for (const subFile of subFiles) {
+                                    if (subFile.name) {
+                                        allPaths.push(`${item.name}/${subFile.name}`);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Delete all files in batches
+                    const { error: deleteError } = await supabase
+                        .storage
+                        .from('images')
+                        .remove(allPaths);
+
+                    if (deleteError) {
+                        console.error('Bulk delete error:', deleteError);
+                        return response.status(500).json({
+                            error: `Toplu silme hatası: ${deleteError.message}`
+                        });
+                    }
+
+                    return response.status(200).json({
+                        success: true,
+                        message: 'Tüm dosyalar Storage\'dan silindi',
+                        deletedCount: allPaths.length
+                    });
+
+                } catch (err) {
+                    console.error('Bulk delete all storage error:', err);
+                    return response.status(500).json({
+                        error: `Toplu silme hatası: ${err.message}`
+                    });
+                }
+            }
+
 
             // --- BULK PURGE LOCAL CONTENT (TEMİZLİK) ---
             // --- BULK REMOVE ITEMS (SMART CLEANUP) ---

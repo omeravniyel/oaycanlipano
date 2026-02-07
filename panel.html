@@ -815,7 +815,7 @@
             // Expecting /slug/admin -> slug
             // If path is just /panel.html, ignore it
             const candidate = pathParts[0];
-            if (candidate && !['panel', 'panel.html', 'admin', 'admin.html'].includes(candidate)) {
+            if (candidate && !['panel', 'panel.html', 'admin', 'admin.html', 'super-admin'].includes(candidate)) {
                 currentSlug = candidate;
             }
         }

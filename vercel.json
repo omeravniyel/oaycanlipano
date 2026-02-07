@@ -1,11 +1,9 @@
 {
-    "crons": [
-        {
-            "path": "/api/cron-reminder",
-            "schedule": "0 17 * * 0"
-        }
-    ],
     "rewrites": [
+        {
+            "source": "/super-admin",
+            "destination": "/admin.html"
+        },
         {
             "source": "/api/(.*)",
             "destination": "/api/$1"
@@ -19,32 +17,12 @@
             "destination": "/broadcast.html"
         },
         {
-            "source": "/admin",
-            "destination": "/admin.html"
-        },
-        {
             "source": "/board",
             "destination": "/board.html"
         },
         {
             "source": "/",
             "destination": "/index.html"
-        },
-        {
-            "source": "/admin.html",
-            "destination": "/admin.html"
-        },
-        {
-            "source": "/super-admin",
-            "destination": "/admin.html"
-        },
-        {
-            "source": "/super-admin.html",
-            "destination": "/admin.html"
-        },
-        {
-            "source": "/admin-clean",
-            "destination": "/admin-clean.html"
         },
         {
             "source": "/panel.html",
@@ -59,12 +37,27 @@
             "destination": "/debug_db.html"
         },
         {
+            "source": "/test-login.html",
+            "destination": "/test-login.html"
+        },
+        {
+            "source": "/cleanup-storage.html",
+            "destination": "/cleanup-storage.html"
+        },
+        {
             "source": "/:slug/admin",
             "destination": "/panel.html"
         },
         {
-            "source": "/(.*)",
+            "source": "/((?!api/|js/|css/|img/|admin\\.html|debug\\.html|panel\\.html|board\\.html|favicon\\.ico).*)",
             "destination": "/api/serve-board?path=$1"
+        }
+    ],
+    "redirects": [
+        {
+            "source": "/admin.html",
+            "destination": "/super-admin",
+            "permanent": true
         }
     ]
 }

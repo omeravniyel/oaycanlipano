@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Admin V2 (Safe Mode) | Kartaltepe Pano</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+
+    <!-- LOGIN MODAL -->
+    <div id="login-modal" class="fixed inset-0 z-50 bg-gray-900 flex items-center justify-center">
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md p-8">
+            <h2 class="text-3xl font-bold text-center mb-2 text-gray-800">Yönetici Girişi</h2>
+            <p class="text-center text-gray-500 mb-6">V2 Safe Mode</p>
+
+            <div class="relative">
+                <input type="password" id="master-password"
+                    class="w-full p-4 border-2 border-gray-300 rounded-xl mb-4 text-center text-xl tracking-widest focus:outline-none focus:border-blue-500 transition-colors"
+                    placeholder="••••••">
+                <button type="button" id="login-btn" onclick="doLogin()"
+                    class="w-full py-4 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 active:scale-95 transition-all shadow-lg hover:shadow-blue-500/30">
+                    Giriş Yap
+                </button>
+            </div>
+            <div id="error-msg" class="mt-4 text-center text-red-500 font-bold hidden"></div>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT (Hidden initially) -->
+    <div id="main-content" class="hidden container mx-auto p-4">
+        <h1 class="text-3xl font-bold mb-6 text-gray-800">Kurum Yönetim Paneli</h1>
+        <div id="dashboard-content" class="bg-white p-6 rounded-xl shadow-lg">
+            <p class="text-gray-500">Veriler yükleniyor...</p>
+        </div>
+        <button onclick="window.location.reload()"
+            class="mt-4 px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600">Çıkış / Yenile</button>
+    </div>
+
+    <script>
+        // --- SAFE MODE SCRIPT ---
+
+        async function doLogin() {
+            const btn = document.getElementById('login-btn');
+            const input = document.getElementById('master-password');
+            const errDiv = document.getElementById('error-msg');
+            const val = input.value.trim();
+
+            if (!val) {
+                Swal.fire('Uyarı', 'Lütfen şifre giriniz.', 'warning');
+                return;
+            }
+
+            // UI Feedback
+            btn.innerText = 'Kontrol Ediliyor...';
+            btn.disabled = true;
+            input.disabled = true;
+            errDiv.classList.add('hidden');
+
+            try {
+                // Verify Password via API
+                const verifyRes = await fetch('/api/manage-institutions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'verify_password',
+                        master_password: val
+                    })
+                });
+
+                if (!verifyRes.ok) {
+                    const txt = await verifyRes.text();
+                    throw new Error(`Sunucu Hatası (${verifyRes.status}): ${txt.substring(0, 50)}...`);
+                }
+
+                const verifyData = await verifyRes.json();
+                if (!verifyData.success) {
+                    throw new Error('Şifre Hatalı!');
+                }
+
+                // SUCCESS
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Giriş Başarılı',
+                    timer: 1000,
+                    showConfirmButton: false
+                });
+
+                document.getElementById('login-modal').classList.add('hidden');
+                document.getElementById('main-content').classList.remove('hidden');
+
+                // Load Data
+                loadInstitutions(val);
+
+            } catch (err) {
+                console.error(err);
+                btn.innerText = 'Giriş Yap';
+                btn.disabled = false;
+                input.disabled = false;
+                errDiv.innerText = err.message;
+                errDiv.classList.remove('hidden');
+                Swal.fire('Hata', err.message, 'error');
+            }
+        }
+
+        async function loadInstitutions(password) {
+            const contentDiv = document.getElementById('dashboard-content');
+
+            try {
+                const res = await fetch('/api/manage-institutions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'list',
+                        master_password: password
+                    })
+                });
+
+                if (!res.ok) throw new Error('Veri çekilemedi');
+
+                const data = await res.json();
+
+                if (!data.success) throw new Error(data.error || 'Bilinmeyen hata');
+
+                // Render Institutions
+                if (data.institutions.length === 0) {
+                    contentDiv.innerHTML = '<p class="text-center text-gray-500">Hiç kurum bulunamadı.</p>';
+                    return;
+                }
+
+                let html = `
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-gray-100 border-b">
+                                    <th class="p-3 font-bold text-gray-600">Logo</th>
+                                    <th class="p-3 font-bold text-gray-600">Kurum Adı</th>
+                                    <th class="p-3 font-bold text-gray-600">Slug (Link)</th>
+                                    <th class="p-3 font-bold text-gray-600">İşlemler</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                `;
+
+                data.institutions.forEach(inst => {
+                    // Extract Logo
+                    let logoUrl = 'https://via.placeholder.com/40';
+                    try {
+                        let cfg = typeof inst.config === 'string' ? JSON.parse(inst.config) : inst.config;
+                        if (cfg && cfg.institution_logo) logoUrl = cfg.institution_logo;
+                    } catch (e) { }
+
+                    html += `
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="p-3">
+                                <img src="${logoUrl}" class="w-10 h-10 object-contain rounded bg-white border">
+                            </td>
+                            <td class="p-3 font-medium text-gray-800">${inst.name}</td>
+                            <td class="p-3 text-blue-600 font-mono text-sm">${inst.slug}</td>
+                            <td class="p-3">
+                                <a href="/${inst.slug}/admin" target="_blank" class="px-3 py-1 bg-green-100 text-green-700 rounded hover:bg-green-200 text-sm font-bold">
+                                    Yönet
+                                </a>
+                            </td>
+                        </tr>
+                    `;
+                });
+
+                html += '</tbody></table></div>';
+                contentDiv.innerHTML = html;
+
+            } catch (err) {
+                contentDiv.innerHTML = `<p class="text-red-500 font-bold">Veri Yükleme Hatası: ${err.message}</p>`;
+            }
+        }
+
+        // Enter key support
+        document.getElementById('master-password').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') doLogin();
+        });
+    </script>
+</body>
+
+</html>

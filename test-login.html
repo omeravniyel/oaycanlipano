@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Login Test</title>
+</head>
+
+<body>
+    <h1>Super Admin Login Test</h1>
+    <input type="password" id="pass" placeholder="Şifre">
+    <button onclick="testLogin()">Test</button>
+    <pre id="result"></pre>
+
+    <script>
+        async function testLogin() {
+            const pass = document.getElementById('pass').value;
+            const resultEl = document.getElementById('result');
+            resultEl.textContent = 'Testing...';
+
+            try {
+                const res = await fetch('/api/manage-institutions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'list',
+                        master_password: pass
+                    })
+                });
+
+                const data = await res.json();
+                resultEl.textContent = `Status: ${res.status}\n\n${JSON.stringify(data, null, 2)}`;
+            } catch (e) {
+                resultEl.textContent = 'Error: ' + e.message;
+            }
+        }
+    </script>
+</body>
+
+</html>

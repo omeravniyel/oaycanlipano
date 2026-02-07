@@ -14,6 +14,14 @@ export default async function handler(request, response) {
     try {
         const { filename, fileBase64, contentType, slug } = request.body;
 
+        console.log('=== UPLOAD DEBUG ===');
+        console.log('Filename:', filename);
+        console.log('ContentType:', contentType);
+        console.log('Slug:', slug);
+        console.log('FileBase64 length:', fileBase64 ? fileBase64.length : 0);
+        console.log('Has Supabase URL:', !!supabaseUrl);
+        console.log('Has Supabase Key:', !!supabaseKey);
+
         if (!filename || !fileBase64) {
             return response.status(400).json({ error: 'Dosya verisi eksik' });
         }

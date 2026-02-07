@@ -12,6 +12,18 @@ module.exports = async (request, response) => {
         pathStr = query.path;
     }
 
+    // --- FORCE REDIRECTS (Legacy Path Failsafe) ---
+    // --- FORCE REDIRECTS (Legacy Path Failsafe) ---
+    const legacyPaths = ['/admin', '/admin-clean', '/super-admin.html'];
+    // Check if the path (ignoring query strings) matches any legacy path
+    const normalizedPath = pathStr.split('?')[0].replace(/\/$/, ''); // remove trailing slash
+
+    if (legacyPaths.includes(normalizedPath) || legacyPaths.includes('/' + normalizedPath)) {
+        response.writeHead(301, { Location: '/super-admin' });
+        return response.end();
+    }
+    // ----------------------------------------------
+
     // Clean up
     const cleanUrl = pathStr.split('?')[0];
     const pathParts = cleanUrl.replace(/^\//, '').split('/'); // Remove leading slash and split
