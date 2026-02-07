@@ -76,7 +76,7 @@ module.exports = async (request, response) => {
         }
 
         // 1. Master Password Kontrolü (Public actionlar hariç)
-        const PUBLIC_ACTIONS = ['get_landing_config', 'submit_application', 'login', 'debug_system'];
+        const PUBLIC_ACTIONS = ['get_landing_config', 'submit_application', 'login', 'debug_system', 'delete_gallery_file'];
 
         // Fallback şifreler (Environment variable çalışmazsa)
         // NOT: Üretim ortamında environment variable kullanılmalı
