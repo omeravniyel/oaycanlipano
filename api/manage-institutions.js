@@ -48,7 +48,7 @@ module.exports = async (request, response) => {
             return response.status(405).json({ error: 'Method Not Allowed' });
         }
 
-        if (!supabase) {
+        if (!supabase && action !== 'verify_password' && action !== 'get_upload_config') {
             console.error('Supabase client is null!');
             return response.status(500).json({ error: 'Veritabanı bağlantısı yapılamadı (Credentials Missing).' });
         }

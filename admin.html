@@ -705,7 +705,9 @@
                     document.getElementById('main-content').classList.add('flex');
 
                     // Load Initial Data
+                    // Load Initial Data
                     loadInstitutions();
+                    initSupabase(); // Initialize upload config after auth
 
                 } catch (err) {
                     console.error(err);
@@ -1099,8 +1101,8 @@
                     console.error('Supabase init failed', e);
                 }
             }
-            // Init on load
-            initSupabase();
+            // Init on load - REMOVED to prevent blocking login
+            // initSupabase();
 
             async function openGalleryModal() {
                 document.getElementById('gallery-modal').classList.remove('hidden');
