@@ -237,6 +237,27 @@ module.exports = async (request, response) => {
                 return response.status(200).json({ success: true, institutions: visibleInstitutions });
             }
 
+            // --- TEK KURUM GETİRME ---
+            if (action === 'get_institution') {
+                const { slug } = payload;
+
+                if (!slug) {
+                    return response.status(400).json({ error: 'Slug gereklidir' });
+                }
+
+                const { data, error } = await supabase
+                    .from('institutions')
+                    .select('*')
+                    .eq('slug', slug)
+                    .single();
+
+                if (error) {
+                    return response.status(404).json({ error: 'Kurum bulunamadı' });
+                }
+
+                return response.status(200).json({ success: true, institution: data });
+            }
+
             // --- EKLEME / GÜNCELLEME ---
             if (action === 'upsert') {
                 let { slug, name, password, type, institution_logo, logo_locked, institution_subtitle, institution_slogan1, institution_slogan2, cover, city, district, region, weekly_hadiths, admin_contact, module_dorm_active, module_bottom_right_type } = payload || {};

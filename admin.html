@@ -769,9 +769,17 @@
                                 <span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono">${inst.slug}</span>
                             </div>
                         </div>
-                        <a href="/${inst.slug}/admin" target="_blank" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 font-bold text-sm">
-                            Yönet
-                        </a>
+                        <div class="flex gap-2">
+                            <button onclick="editInstitution('${inst.slug}')" class="px-3 py-2 bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 font-bold text-sm" title="Düzenle">
+                                <i class="fa-solid fa-pen"></i>
+                            </button>
+                            <button onclick="deleteInstitution('${inst.slug}', '${inst.name.replace(/'/g, "\\'")}')" class="px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 font-bold text-sm" title="Sil">
+                                <i class="fa-solid fa-trash"></i>
+                            </button>
+                            <a href="/${inst.slug}/admin" target="_blank" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 font-bold text-sm">
+                                Yönet
+                            </a>
+                        </div>
                     </div>`;
                     });
                     contentDiv.innerHTML = html;
@@ -788,6 +796,140 @@
                     card.style.display = text.includes(term) ? 'flex' : 'none';
                 });
             }
+
+            // --- INSTITUTION CRUD ---
+            let editingSlug = null; // null = new institution, string = editing existing
+
+            function openInstitutionModal(isNew = true) {
+                editingSlug = null;
+                document.getElementById('edit-modal').classList.remove('hidden');
+                if (isNew) {
+                    // Clear form for new institution
+                    document.getElementById('form-slug').value = '';
+                    document.getElementById('form-slug').disabled = false;
+                    document.getElementById('form-name').value = '';
+                    document.getElementById('form-password').value = '';
+                    document.getElementById('form-type').value = 'Ortaokul';
+                    document.getElementById('form-city').value = '';
+                    document.getElementById('form-district').value = '';
+                    document.getElementById('form-region').value = '';
+                    document.getElementById('form-logo').value = '';
+                    document.getElementById('form-contact-name').value = '';
+                    document.getElementById('form-contact-phone').value = '';
+                    document.getElementById('form-contact-email').value = '';
+                    document.getElementById('form-dorm-active').checked = true;
+                    document.getElementById('form-logo-locked').checked = false;
+                }
+            }
+
+            function closeInstitutionModal() {
+                document.getElementById('edit-modal').classList.add('hidden');
+                editingSlug = null;
+            }
+
+            async function editInstitution(slug) {
+                try {
+                    Swal.fire({ title: 'Yükleniyor...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+                    const data = await requestApi('get_institution', { slug });
+                    const inst = data.institution;
+                    const cfg = typeof inst.config === 'string' ? JSON.parse(inst.config) : (inst.config || {});
+
+                    editingSlug = slug;
+                    document.getElementById('form-slug').value = inst.slug;
+                    document.getElementById('form-slug').disabled = true; // Can't change slug
+                    document.getElementById('form-name').value = inst.name || '';
+                    document.getElementById('form-password').value = inst.password || '';
+                    document.getElementById('form-type').value = cfg.type || inst.type || 'Ortaokul';
+                    document.getElementById('form-city').value = cfg.city || '';
+                    document.getElementById('form-district').value = cfg.district || '';
+                    document.getElementById('form-region').value = cfg.region || '';
+                    document.getElementById('form-logo').value = cfg.institution_logo || '';
+                    document.getElementById('form-contact-name').value = cfg.admin_contact?.name || '';
+                    document.getElementById('form-contact-phone').value = cfg.admin_contact?.phone || '';
+                    document.getElementById('form-contact-email').value = cfg.admin_contact?.email || '';
+                    document.getElementById('form-dorm-active').checked = cfg.module_dorm_active !== false;
+                    document.getElementById('form-logo-locked').checked = !!cfg.logo_locked;
+
+                    Swal.close();
+                    openInstitutionModal(false);
+                } catch (err) {
+                    Swal.fire('Hata', err.message, 'error');
+                }
+            }
+
+            async function deleteInstitution(slug, name) {
+                const result = await Swal.fire({
+                    title: 'Kurum Silinsin mi?',
+                    html: `<strong>${name}</strong> kurumunu silmek istediğinize emin misiniz?<br><span class="text-red-600 font-bold">Bu işlem geri alınamaz!</span>`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Evet, Sil',
+                    cancelButtonText: 'İptal'
+                });
+
+                if (!result.isConfirmed) return;
+
+                try {
+                    Swal.fire({ title: 'Siliniyor...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                    await requestApi('delete', { slug });
+                    Swal.fire('Silindi!', 'Kurum başarıyla silindi.', 'success');
+                    loadInstitutions();
+                } catch (err) {
+                    Swal.fire('Hata', err.message, 'error');
+                }
+            }
+
+            // Form submit handler
+            document.getElementById('institution-form').addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const slug = document.getElementById('form-slug').value.trim();
+                const name = document.getElementById('form-name').value.trim();
+                const password = document.getElementById('form-password').value.trim();
+                const type = document.getElementById('form-type').value;
+
+                if (!slug || !name || !password) {
+                    Swal.fire('Hata', 'Slug, isim ve şifre zorunludur.', 'error');
+                    return;
+                }
+
+                const payload = {
+                    slug,
+                    name,
+                    password,
+                    type,
+                    city: document.getElementById('form-city').value,
+                    district: document.getElementById('form-district').value,
+                    region: document.getElementById('form-region').value,
+                    institution_logo: document.getElementById('form-logo').value,
+                    logo_locked: document.getElementById('form-logo-locked').checked,
+                    module_dorm_active: document.getElementById('form-dorm-active').checked,
+                    admin_contact: {
+                        name: document.getElementById('form-contact-name').value,
+                        phone: document.getElementById('form-contact-phone').value,
+                        email: document.getElementById('form-contact-email').value
+                    }
+                };
+
+                try {
+                    Swal.fire({ title: 'Kaydediliyor...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+                    if (editingSlug) {
+                        await requestApi('upsert', payload);
+                    } else {
+                        await requestApi('upsert', payload);
+                    }
+
+                    Swal.fire('Başarılı', editingSlug ? 'Kurum güncellendi.' : 'Kurum oluşturuldu.', 'success');
+                    closeInstitutionModal();
+                    loadInstitutions();
+                } catch (err) {
+                    Swal.fire('Hata', err.message, 'error');
+                }
+            });
 
             // --- NAVIGATION ---
             function switchView(viewName) {
