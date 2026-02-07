@@ -864,37 +864,22 @@ module.exports = async (request, response) => {
 
                 console.log('save_gallery called with:', JSON.stringify(gallery).substring(0, 500));
 
-                const { data: existing, error: selectError } = await supabase
+                // Use upsert to handle both insert and update
+                const { error: upsertError } = await supabase
                     .from('institutions')
-                    .select('id')
-                    .eq('slug', SYSTEM_GALLERY_SLUG)
-                    .single();
-
-                if (selectError && selectError.code !== 'PGRST116') {
-                    console.error('save_gallery select error:', selectError);
-                }
-
-                let saveError = null;
-                if (existing) {
-                    const { error } = await supabase
-                        .from('institutions')
-                        .update({ config: gallery })
-                        .eq('slug', SYSTEM_GALLERY_SLUG);
-                    saveError = error;
-                } else {
-                    const { error } = await supabase.from('institutions').insert([{
+                    .upsert({
                         slug: SYSTEM_GALLERY_SLUG,
                         name: 'System Gallery',
                         config: gallery,
-                        password: Math.random().toString(36)
-                    }]);
-                    saveError = error;
-                }
+                        password: 'system-internal'
+                    }, {
+                        onConflict: 'slug'
+                    });
 
-                if (saveError) {
-                    console.error('save_gallery write error:', saveError);
+                if (upsertError) {
+                    console.error('save_gallery upsert error:', upsertError);
                     return response.status(500).json({
-                        error: `Galeri kaydetme hatası: ${saveError.message}`
+                        error: `Galeri kaydetme hatası: ${upsertError.message}`
                     });
                 }
 
