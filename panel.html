@@ -1046,22 +1046,65 @@
             });
         }
 
-        function deleteImage(type, index) {
-            Swal.fire({
+        async function deleteImage(type, index) {
+            const items = type === 'main' ? galleryMain : galleryLeft;
+            const url = items[index];
+
+            const result = await Swal.fire({
                 title: 'Silinsin mi?',
-                text: "Bu görsel listeden kaldırılacak.",
+                text: "Bu görsel hem listeden hem de Storage'dan silinecek.",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
                 cancelButtonColor: '#3085d6',
                 confirmButtonText: 'Evet, Sil'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    if (type === 'main') galleryMain.splice(index, 1);
-                    else galleryLeft.splice(index, 1);
-                    renderGalleries();
-                }
             });
+
+            if (!result.isConfirmed) return;
+
+            // Show loading
+            Swal.fire({
+                title: 'Siliniyor...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            try {
+                // Delete from Supabase Storage first
+                const deleteRes = await fetch('/api/manage-institutions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'delete_gallery_file',
+                        master_password: currentPassword,
+                        payload: { url: url }
+                    })
+                });
+
+                const deleteData = await deleteRes.json();
+
+                // Even if storage delete fails (maybe not a storage URL), still remove from config
+                if (!deleteData.success && !deleteData.message?.includes('skipped')) {
+                    console.warn('Storage delete warning:', deleteData.error);
+                }
+
+                // Remove from local array
+                if (type === 'main') galleryMain.splice(index, 1);
+                else galleryLeft.splice(index, 1);
+
+                renderGalleries();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Silindi!',
+                    text: 'Görsel başarıyla kaldırıldı.',
+                    timer: 1500,
+                    showConfirmButton: false
+                });
+
+            } catch (err) {
+                console.error('Delete error:', err);
+                Swal.fire('Hata', err.message || 'Silme işlemi başarısız', 'error');
+            }
         }
 
         // --- SIDEBAR TOGGLE ---
