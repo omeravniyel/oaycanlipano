@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Debug Login</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body class="bg-gray-900 text-white flex items-center justify-center min-h-screen">
+    <div class="bg-gray-800 p-8 rounded-xl shadow-lg w-96">
+        <h1 class="text-2xl font-bold mb-4 text-center">Debug Giriş</h1>
+        <div class="space-y-4">
+            <input type="password" id="master-password" placeholder="Şifre (283353)"
+                class="w-full p-3 rounded bg-gray-700 border border-gray-600 focus:border-blue-500 outline-none">
+            <button onclick="doLogin()" id="login-btn"
+                class="w-full bg-blue-600 hover:bg-blue-700 py-3 rounded font-bold transition">
+                Giriş Dene
+            </button>
+        </div>
+        <div id="status-log" class="mt-4 text-xs font-mono text-gray-400 p-2 bg-black/50 rounded h-40 overflow-y-auto">
+            Loglar burada görünecek...
+        </div>
+    </div>
+
+    <script>
+        const API_URL = '/api/manage-institutions';
+        let supabaseClient = null;
+
+        function log(msg) {
+            const el = document.getElementById('status-log');
+            el.innerHTML += `<div>[${new Date().toLocaleTimeString()}] ${msg}</div>`;
+            el.scrollTop = el.scrollHeight;
+            console.log(msg);
+        }
+
+        async function doLogin() {
+            const input = document.getElementById('master-password');
+            const btn = document.getElementById('login-btn');
+            const val = input.value.trim();
+
+            if (!val) return alert('Şifre giriniz');
+
+            btn.disabled = true;
+            btn.innerText = 'Deniyor...';
+            log('Giriş deneniyor: ' + val.substring(0, 2) + '***');
+
+            try {
+                // 1. API Test
+                log('API isteği gönderiliyor...');
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'verify_password', master_password: val })
+                });
+
+                log('API Yanıt Durumu: ' + res.status);
+
+                if (!res.ok) {
+                    const text = await res.text();
+                    throw new Error('API Hatası: ' + res.status + ' - ' + text);
+                }
+
+                const data = await res.json();
+                log('API Data: ' + JSON.stringify(data));
+
+                if (data.success) {
+                    log('Şifre DOĞRU!');
+                    // 2. Init Supabase
+                    await initSupabase(val);
+                } else {
+                    throw new Error('Şifre YANLIŞ');
+                }
+
+            } catch (e) {
+                log('HATA: ' + e.message);
+                if (typeof Swal !== 'undefined') Swal.fire('Hata', e.message, 'error');
+                else alert(e.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'Giriş Dene';
+            }
+        }
+
+        async function initSupabase(password) {
+            log('Supabase başlatılıyor...');
+            try {
+                const res = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'get_upload_config', master_password: password })
+                });
+                const config = await res.json();
+
+                if (config.url && config.key) {
+                    if (window.supabase) {
+                        supabaseClient = window.supabase.createClient(config.url, config.key);
+                        log('Supabase Client: BAŞARILI ✅');
+                        Swal.fire('Başarılı', 'Giriş ve Supabase bağlantısı sorunsuz çalışıyor!', 'success');
+                    } else {
+                        log('window.supabase TANIMSIZ ❌');
+                        alert('Kritik: Supabase kütüphanesi yüklenmedi!');
+                    }
+                } else {
+                    log('Supabase Config EKSİK ❌');
+                    log(JSON.stringify(config));
+                }
+            } catch (e) {
+                log('Supabase Init Hata: ' + e.message);
+            }
+        }
+    </script>
+</body>
+
+</html>

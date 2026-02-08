@@ -1,0 +1,1811 @@
+<!DOCTYPE html>
+<html lang="tr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super Admin | Kartaltepe Pano</title>
+    <script>
+        window.onerror = function (msg, url, line, col, error) {
+            const extra = !col ? '' : '\ncolumn: ' + col;
+            const err = 'Error: ' + msg + '\nurl: ' + url + '\nline: ' + line + extra;
+            console.error(err);
+            if (typeof Swal !== 'undefined') Swal.fire('Script Hatası', err, 'error');
+            else alert(err);
+            return false;
+        };
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/admin_panel.js" defer></script>
+</head>
+
+<body class="bg-slate-50 min-h-screen">
+    <!-- Login Modal -->
+    <div id="login-modal" class="fixed inset-0 z-50 bg-slate-900 flex items-center justify-center">
+        <div class="bg-white rounded-3xl shadow-2xl w-full max-w-md p-8">
+            <h2 class="text-2xl font-bold text-center mb-6">Yönetici Girişi</h2>
+            <div id="admin-login-container" class="relative">
+                <input type="password" id="master-password"
+                    class="w-full p-4 border rounded-xl mb-4 text-center text-lg tracking-widest" placeholder="••••••"
+                    onkeypress="if(event.key === 'Enter') attemptLogin()">
+                <button type="button" onclick="alert('Buton Tıklandı! Fonksiyon kontrol ediliyor...'); attemptLogin()"
+                    class="w-full py-4 bg-orange-600 text-white rounded-xl font-bold hover:bg-orange-700 transition relative z-20 shadow-lg border-2 border-white">
+                    Giriş Yap (Test Modu)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div id="main-content" class="hidden flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <!-- Sidebar (Modernized) -->
+        <aside
+            class="w-72 bg-gradient-to-b from-slate-900 to-slate-950 text-slate-300 flex flex-col shadow-2xl relative overflow-hidden z-20">
+            <!-- Decorative glow -->
+            <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-blue-500">
+            </div>
+
+            <div class="h-24 flex items-center px-8 text-white shrink-0">
+                <div class="font-black text-2xl tracking-tighter">
+                    YÖNETİM<span class="text-blue-500">PANELİ</span>
+                </div>
+            </div>
+
+            <nav class="flex-1 py-6 px-4 space-y-2 overflow-y-auto custom-scrollbar">
+
+                <!-- Item: Kurumlar (Active Styling) -->
+                <a href="#" onclick="switchView('institutions')" id="nav-institutions"
+                    class="flex items-center gap-4 px-4 py-4 rounded-xl transition-all duration-300 group bg-white/5 border border-white/5 shadow-lg shadow-blue-900/10">
+                    <div
+                        class="w-10 h-10 rounded-lg bg-blue-600 flex items-center justify-center text-white shadow-inner">
+                        <i class="fa-solid fa-school text-lg"></i>
+                    </div>
+                    <span class="font-bold text-white tracking-wide">Kurumlar</span>
+                </a>
+
+                <div class="mt-8 mb-3 px-4 flex items-center gap-3 opacity-60">
+                    <div class="h-px bg-slate-700 flex-1"></div>
+                    <span class="text-[0.65rem] font-black text-slate-500 uppercase tracking-widest">İÇERİK
+                        YÖNETİMİ</span>
+                    <div class="h-px bg-slate-700 flex-1"></div>
+                </div>
+
+                <!-- Hadis -->
+                <a href="#" onclick="openHadithModal()"
+                    class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-300 group hover:bg-white/5 border border-transparent hover:border-white/5 hover:translate-x-1">
+                    <div
+                        class="w-9 h-9 rounded-lg bg-slate-800/50 flex items-center justify-center text-slate-400 group-hover:bg-emerald-600 group-hover:text-white transition-all duration-300">
+                        <i class="fa-solid fa-book-quran"></i>
+                    </div>
+                    <span class="font-medium text-slate-400 group-hover:text-slate-100">Hadis Yönetimi</span>
+                </a>
+
+                <!-- Galeri -->
+                <a href="#" onclick="openGalleryModal()"
+                    class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-300 group hover:bg-white/5 border border-transparent hover:border-white/5 hover:translate-x-1">
+                    <div
+                        class="w-9 h-9 rounded-lg bg-slate-800/50 flex items-center justify-center text-slate-400 group-hover:bg-purple-600 group-hover:text-white transition-all duration-300">
+                        <i class="fa-solid fa-images"></i>
+                    </div>
+                    <span class="font-medium text-slate-400 group-hover:text-slate-100">Merkezi Galeri</span>
+                </a>
+
+                <!-- Duyuru -->
+                <a href="#" onclick="openAnnouncementModal()"
+                    class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-300 group hover:bg-white/5 border border-transparent hover:border-white/5 hover:translate-x-1">
+                    <div
+                        class="w-9 h-9 rounded-lg bg-slate-800/50 flex items-center justify-center text-slate-400 group-hover:bg-amber-600 group-hover:text-white transition-all duration-300">
+                        <i class="fa-solid fa-bullhorn"></i>
+                    </div>
+                    <span class="font-medium text-slate-400 group-hover:text-slate-100">Merkezi Duyuru</span>
+                </a>
+
+                <div class="mt-8 mb-3 px-4 flex items-center gap-3 opacity-60">
+                    <div class="h-px bg-slate-700 flex-1"></div>
+                    <span class="text-[0.65rem] font-black text-slate-500 uppercase tracking-widest">SİSTEM</span>
+                    <div class="h-px bg-slate-700 flex-1"></div>
+                </div>
+
+                <!-- CMS -->
+                <a href="#" onclick="openCMSModal()"
+                    class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-300 group hover:bg-white/5 border border-transparent hover:border-white/5 hover:translate-x-1">
+                    <div
+                        class="w-9 h-9 rounded-lg bg-slate-800/50 flex items-center justify-center text-slate-400 group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
+                        <i class="fa-solid fa-desktop"></i>
+                    </div>
+                    <span class="font-medium text-slate-400 group-hover:text-slate-100">Site CMS</span>
+                </a>
+
+                <!-- Acil Durum -->
+                <a href="#" onclick="openEmergencyModal()"
+                    class="flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-300 group hover:bg-red-900/10 border border-transparent hover:border-red-500/20 hover:scale-[1.02]">
+                    <div
+                        class="w-9 h-9 rounded-lg bg-red-900/20 flex items-center justify-center text-red-500 group-hover:bg-red-600 group-hover:text-white transition-all duration-300 animate-pulse">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                    </div>
+                    <span class="font-bold text-red-400 group-hover:text-red-300">Acil Durum</span>
+                </a>
+            </nav>
+            <div class="p-4 border-t border-slate-800/50 bg-slate-950/30 shrink-0">
+                <button onclick="logout()"
+                    class="w-full px-4 py-3 bg-slate-800/50 hover:bg-red-600 text-slate-400 hover:text-white rounded-xl transition-all duration-300 flex items-center justify-center gap-3 font-bold group border border-slate-700 hover:border-red-500 shadow-lg">
+                    <i class="fa-solid fa-right-from-bracket group-hover:-translate-x-1 transition-transform"></i>
+                    <span>Çıkış Yap</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Area -->
+        <main class="flex-1 flex flex-col bg-slate-50 overflow-hidden">
+            <!-- Header -->
+            <header class="h-20 bg-white border-b flex items-center justify-between px-8">
+                <div class="flex items-center gap-4">
+                    <input type="text" id="search-input" oninput="filterInstitutions()"
+                        class="bg-slate-100 rounded-xl px-4 py-2 w-64" placeholder="Kurum Ara...">
+                </div>
+                <div class="flex items-center gap-3">
+                    <button onclick="openInstitutionModal()"
+                        class="bg-blue-600 text-white px-5 py-2 rounded-xl text-sm font-bold hover:bg-blue-700">
+                        + Yeni Kurum
+                    </button>
+                </div>
+            </header>
+
+            <!-- Content -->
+            <div class="flex-1 p-8 overflow-y-auto">
+                <div id="institution-list" class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Institution Edit Modal -->
+    <div id="edit-modal"
+        class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-md flex items-center justify-center transition-all">
+        <div
+            class="bg-white rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl animate-in fade-in zoom-in-95 duration-200">
+            <div class="p-4 border-b flex justify-between items-center bg-slate-50">
+                <h3 class="font-bold text-lg">Kurum Düzenle</h3>
+                <button onclick="closeInstitutionModal()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+            <form id="institution-form" class="p-6 space-y-4 max-h-[80vh] overflow-y-auto">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Slug (URL)</label>
+                        <input id="form-slug" class="w-full border p-3 rounded-lg" placeholder="ornek-kurum" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Kurum Adı</label>
+                        <input id="form-name" class="w-full border p-3 rounded-lg" placeholder="Örnek Kurum" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Şifre</label>
+                        <input id="form-password" class="w-full border p-3 rounded-lg" placeholder="****" required>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Kurum Tipi</label>
+                        <select id="form-type" class="w-full border p-3 rounded-lg">
+                            <option>Ortaokul</option>
+                            <option>Lise</option>
+                            <option>Ãœniversite Hazırlık</option>
+                            <option>Daimi</option>
+                            <option>Ãœniversite</option>
+                            <option>Tekamül</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">İl</label>
+                        <input id="form-city" class="w-full border p-3 rounded-lg" placeholder="İstanbul">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">İlçe</label>
+                        <input id="form-district" class="w-full border p-3 rounded-lg" placeholder="Kadıköy">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Mıntıka (Bölge)</label>
+                        <input id="form-region" class="w-full border p-3 rounded-lg" placeholder="Merkez">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">İletişim Bilgileri</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <input id="form-contact-name" placeholder="Ad Soyad" class="border p-3 rounded-lg">
+                        <input id="form-contact-phone" placeholder="Telefon" class="border p-3 rounded-lg">
+                        <input id="form-contact-email" placeholder="E-posta" class="border p-3 rounded-lg">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Logo</label>
+                    <div class="flex gap-2">
+                        <input id="form-logo" class="flex-1 border p-3 rounded-lg" placeholder="Logo URL">
+                        <input type="file" id="upload-logo-input" class="hidden" accept="image/*">
+                        <button type="button" onclick="document.getElementById('upload-logo-input').click()"
+                            class="bg-slate-100 px-4 rounded-lg hover:bg-slate-200">
+                            Yükle
+                        </button>
+                    </div>
+                </div>
+                <div class="flex gap-4">
+                    <label class="flex items-center gap-2">
+                        <input type="checkbox" id="form-dorm-active" checked>
+                        <span>Yurt Modülü</span>
+                    </label>
+                    <label class="flex items-center gap-2">
+                        <input type="checkbox" id="form-logo-locked">
+                        <span>Logo Kilitle</span>
+                    </label>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-xl font-bold hover:bg-blue-700">
+                    Kaydet
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Global Gallery Modal -->
+    <div id="gallery-modal" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-sm">
+        <div class="absolute inset-0" onclick="closeGalleryModal()"></div>
+        <div
+            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-6xl h-[90vh] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+            <!-- Header -->
+            <div class="px-6 py-4 border-b flex justify-between items-center bg-slate-50">
+                <div class="flex items-center gap-3 text-lg font-bold">
+                    <i class="fa-solid fa-images text-blue-600"></i> Merkezi Galeri
+                </div>
+                <button onclick="closeGalleryModal()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Filters & Actions -->
+            <div class="flex gap-4 items-center">
+                <select id="gallery-type" onchange="loadGallery()"
+                    class="p-2 border rounded-lg font-bold text-sm bg-slate-50">
+                    <option>Ortaokul</option>
+                    <option>Lise</option>
+                    <option>Ãœniversite Hazırlık</option>
+                    <option>Daimi</option>
+                    <option>Ãœniversite</option>
+                    <option>Tekamül</option>
+                </select>
+                <div class="flex bg-slate-100 p-1 rounded-lg">
+                    <button onclick="switchGalleryTab('main')" id="tab-main"
+                        class="gallery-tab active px-4 py-1.5 rounded text-xs font-bold bg-white shadow-sm">
+                        Ana Galeri (Sağ)
+                    </button>
+                    <button onclick="switchGalleryTab('left')" id="tab-left"
+                        class="gallery-tab px-4 py-1.5 rounded text-xs font-bold text-slate-500 hover:bg-white/50">
+                        Sol Galeri
+                    </button>
+                    <button onclick="switchGalleryTab('video')" id="tab-video"
+                        class="gallery-tab px-4 py-1.5 rounded text-xs font-bold text-slate-500 hover:bg-white/50">
+                        Video Galeri
+                    </button>
+                </div>
+            </div>
+            <div class="flex gap-2 items-center">
+                <button onclick="openUploadModal()"
+                    class="px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-bold shadow-lg shadow-blue-200">
+                    <i class="fa-solid fa-cloud-upload"></i> Yükle...
+                </button>
+                <button onclick="toggleSelectAll()" id="select-all-btn"
+                    class="px-3 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 text-sm font-bold">
+                    <i class="fa-solid fa-check-square"></i> Tümünü Seç
+                </button>
+                <button onclick="openBulkEditModal()" id="bulk-edit-btn"
+                    class="px-3 py-2 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 text-sm font-bold border border-purple-100 hidden">
+                    <i class="fa-solid fa-edit"></i> Toplu Düzenle (<span id="selected-count">0</span>)
+                </button>
+                <button onclick="bulkDeleteSelected()" id="bulk-delete-btn"
+                    class="px-3 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 text-sm font-bold border border-red-100 hidden">
+                    <i class="fa-solid fa-trash"></i> Seçilenleri Sil (<span id="delete-selected-count">0</span>)
+                </button>
+                <input type="file" id="gallery-upload-input" class="hidden" multiple accept="image/*">
+                <button onclick="document.getElementById('gallery-upload-input').click()"
+                    class="px-4 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 text-sm font-bold border border-blue-100">
+                    Yükle
+                </button>
+                <button onclick="saveGallery()"
+                    class="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-bold shadow-lg">
+                    Kaydet
+                </button>
+            </div>
+        </div>
+
+        <!-- Image Grid -->
+        <div class="flex-1 overflow-y-auto p-6 bg-slate-50/50">
+            <div id="gallery-grid" class="grid grid-cols-2 md:grid-cols-6 gap-4"></div>
+            <p id="gallery-empty" class="hidden text-center mt-20 text-slate-400">Görsel bulunamadı.</p>
+        </div>
+    </div>
+    </div>
+
+    <!-- Image Settings Modal -->
+    <div id="image-settings-modal"
+        class="fixed inset-0 z-[60] hidden bg-black/20 backdrop-blur-sm flex items-center justify-center">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-96">
+            <h3 class="font-bold text-lg mb-4">Görsel Ayarları</h3>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Bölge (Mıntıka)</label>
+                    <input id="image-region" class="w-full p-2 border rounded-lg" placeholder="Tümü için boş bırakın">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Özel Kurum (Slug)</label>
+                    <input id="image-slug" class="w-full p-2 border rounded-lg" placeholder="Tümü için boş bırakın">
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end gap-2">
+                <button onclick="closeImageSettingsModal()" class="px-4 py-2 text-slate-500">
+                    İptal
+                </button>
+                <button onclick="applyImageSettings()" class="px-6 py-2 bg-blue-600 text-white rounded-lg font-bold">
+                    Uygula
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Edit Modal -->
+    <div id="bulk-edit-modal"
+        class="fixed inset-0 z-[60] hidden bg-black/20 backdrop-blur-sm flex items-center justify-center">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-96">
+            <h3 class="font-bold text-lg mb-4">Toplu Düzenleme</h3>
+            <p class="text-sm text-slate-500 mb-4">
+                <span id="bulk-selected-count">0</span> görsel seçildi
+            </p>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Bölge (Mıntıka)</label>
+                    <select id="bulk-region" class="w-full p-2 border rounded-lg bg-white">
+                        <!-- Options will be populated dynamically from institutions -->
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Özel Kurum (Slug)</label>
+                    <input id="bulk-slug" class="w-full p-2 border rounded-lg" placeholder="Örn: avniyel,hamidiye">
+                </div>
+            </div>
+            <div class="mt-6 flex justify-end gap-2">
+                <button onclick="closeBulkEditModal()" class="px-4 py-2 text-slate-500">
+                    İptal
+                </button>
+                <button onclick="applyBulkEdit()"
+                    class="px-6 py-2 bg-purple-600 text-white rounded-lg font-bold hover:bg-purple-700">
+                    Uygula
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hadith Modal -->
+    <div id="hadith-modal" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-sm">
+        <div class="absolute inset-0" onclick="closeHadithModal()"></div>
+        <div
+            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-5xl h-[90vh] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+            <!-- Header -->
+            <div class="p-6 border-b flex justify-between items-center bg-slate-50">
+                <h3 class="font-bold text-lg">Hadis Yönetimi</h3>
+                <button onclick="closeHadithModal()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Content -->
+            <div class="p-6 overflow-y-auto flex-1 bg-slate-50/30">
+                <!-- Controls -->
+                <div class="flex gap-4 mb-6">
+                    <div class="flex-1 bg-white p-4 rounded border">
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Kurum Tipi</label>
+                        <select id="hadith-type" class="w-full p-2 border rounded font-bold" onchange="loadHadiths()">
+                            <option>Ortaokul</option>
+                            <option>Lise</option>
+                            <option>Ãœniversite Hazırlık</option>
+                            <option>Daimi</option>
+                            <option>Ãœniversite</option>
+                            <option>Tekamül</option>
+                        </select>
+                    </div>
+                    <div class="flex-1 bg-white p-4 rounded border">
+                        <label class="block text-xs font-bold text-slate-400 uppercase mb-1">İlk Haftanın Başlangıç
+                            Tarihi (Pazartesi)</label>
+                        <input type="date" id="semester-start-date" class="w-full p-2 border rounded"
+                            onchange="updateWeekDates()">
+                    </div>
+                </div>
+
+                <!-- Weeks Container -->
+                <div id="weeks-container" class="space-y-4"></div>
+
+                <!-- Add Week Button -->
+                <button onclick="addWeek()"
+                    class="w-full py-4 mt-6 border-2 border-dashed border-slate-300 rounded-xl hover:bg-white hover:border-blue-400 text-slate-500 font-bold transition-all">
+                    + Yeni Hafta Ekle
+                </button>
+            </div>
+
+            <!-- Footer -->
+            <div class="p-4 border-t flex justify-end gap-3 bg-white">
+                <button onclick="syncHadithsToApi()"
+                    class="px-8 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl shadow-lg">
+                    Kaydet ve Dağıt
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Announcement Modal -->
+    <div id="announcement-modal" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-sm">
+        <div class="absolute inset-0" onclick="closeAnnouncementModal()"></div>
+        <div
+            class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl h-[90vh] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+            <!-- Header -->
+            <div class="p-6 border-b flex justify-between items-center bg-slate-50">
+                <h3 class="font-bold text-lg">Merkezi Duyurular</h3>
+                <button onclick="closeAnnouncementModal()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Content -->
+            <div class="flex-1 overflow-y-auto p-6 bg-slate-50/30">
+                <!-- Create New Announcement -->
+                <div class="bg-white p-6 rounded-xl border mb-6">
+                    <h4 class="font-bold mb-4 text-slate-700">Yeni Duyuru Oluştur</h4>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Duyuru Metni</label>
+                            <textarea id="announcement-text" rows="3" class="w-full border rounded-lg p-3"
+                                placeholder="Duyuru metnini girin..."></textarea>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Kurum Tipi (İsteğe
+                                    Bağlı)</label>
+                                <select id="announcement-type-filter" multiple
+                                    class="w-full border rounded-lg p-2 h-32">
+                                    <option value="">Tümü</option>
+                                    <option>Ortaokul</option>
+                                    <option>Lise</option>
+                                    <option>Ãœniversite Hazırlık</option>
+                                    <option>Daimi</option>
+                                    <option>Ãœniversite</option>
+                                    <option>Tekamül</option>
+                                </select>
+                                <p class="text-xs text-slate-400 mt-1">Ctrl tuşuyla çoklu seçim yapabilirsiniz</p>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Bölge (İsteğe
+                                    Bağlı)</label>
+                                <input id="announcement-region-filter" class="w-full border rounded-lg p-3"
+                                    placeholder="Örn: İstanbul, Ankara">
+                                <p class="text-xs text-slate-400 mt-1">Virgülle ayırın: İstanbul, Ankara</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center gap-4">
+                            <button onclick="broadcastAnnouncement()"
+                                class="px-6 py-3 bg-amber-600 hover:bg-amber-700 text-white font-bold rounded-xl">
+                                <i class="fa-solid fa-bullhorn mr-2"></i>
+                                Dağıt
+                            </button>
+                            <span id="broadcast-status" class="text-sm text-slate-500"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Active Announcements List -->
+                <div class="bg-white p-6 rounded-xl border">
+                    <h4 class="font-bold mb-4 text-slate-700">Aktif Duyurular</h4>
+                    <div id="announcements-list" class="space-y-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CMS Modal -->
+        <div id="cms-modal" class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-sm">
+            <div class="absolute inset-0" onclick="closeCMSModal()"></div>
+            <div
+                class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-5xl h-[90vh] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden">
+                <!-- Header -->
+                <div class="p-6 border-b flex justify-between items-center bg-slate-50">
+                    <h3 class="font-bold text-lg">Site İçerik Yönetimi (CMS)</h3>
+                    <button onclick="closeCMSModal()" class="text-slate-400 hover:text-slate-600">
+                        <i class="fa-solid fa-times"></i>
+                    </button>
+                </div>
+
+                <!-- Tabs -->
+                <div class="flex border-b">
+                    <button onclick="switchCMSTab('hero')" id="tab-btn-hero"
+                        class="flex-1 py-4 text-sm font-bold border-b-2 border-indigo-600 text-indigo-600 bg-indigo-50 transition-colors">
+                        Hero Alanı
+                    </button>
+                    <button onclick="switchCMSTab('solutions')" id="tab-btn-solutions"
+                        class="flex-1 py-4 text-sm font-bold border-b-2 border-transparent text-slate-500 hover:bg-slate-50 transition-colors">
+                        Ã‡özümler
+                    </button>
+                    <button onclick="switchCMSTab('contact')" id="tab-btn-contact"
+                        class="flex-1 py-4 text-sm font-bold border-b-2 border-transparent text-slate-500 hover:bg-slate-50 transition-colors">
+                        İletişim
+                    </button>
+                </div>
+
+                <!-- Content -->
+                <div class="flex-1 overflow-y-auto p-8 bg-slate-50/30">
+
+                    <!-- Hero Tab -->
+                    <div id="cms-tab-hero" class="space-y-6">
+                        <div class="bg-white p-6 rounded-xl border">
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Ãœst Rozet
+                                Metni</label>
+                            <input id="cms-hero-badge" class="w-full border p-3 rounded-lg"
+                                placeholder="DAHA HIZLI, DAHA AKILLI">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-6">
+                            <div class="bg-white p-6 rounded-xl border">
+                                <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Başlık Satır
+                                    1</label>
+                                <input id="cms-hero-title1" class="w-full border p-3 rounded-lg"
+                                    placeholder="Kurumunuza Özel">
+                            </div>
+                            <div class="bg-white p-6 rounded-xl border">
+                                <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Başlık Satır 2
+                                    (Renkli)</label>
+                                <input id="cms-hero-title2" class="w-full border p-3 rounded-lg"
+                                    placeholder="Modern İletişim Ã‡özümü">
+                            </div>
+                        </div>
+
+                        <div class="bg-white p-6 rounded-xl border">
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Açıklama Metni</label>
+                            <textarea id="cms-hero-desc" rows="3" class="w-full border p-3 rounded-lg"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Solutions Tab -->
+                    <div id="cms-tab-solutions" class="hidden space-y-6">
+                        <!-- Solution 1 -->
+                        <div class="bg-white p-6 rounded-xl border relative overflow-hidden">
+                            <div class="absolute top-0 right-0 w-20 h-20 bg-blue-100 rounded-bl-full opacity-50"></div>
+                            <h4 class="font-bold text-blue-600 mb-4">1. Kart: Hız & Performans</h4>
+                            <div class="space-y-4">
+                                <input id="cms-sol1-title" class="w-full border p-3 rounded-lg" placeholder="Başlık">
+                                <textarea id="cms-sol1-desc" rows="2" class="w-full border p-3 rounded-lg"
+                                    placeholder="Açıklama"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Solution 2 -->
+                        <div class="bg-white p-6 rounded-xl border relative overflow-hidden">
+                            <div class="absolute top-0 right-0 w-20 h-20 bg-purple-100 rounded-bl-full opacity-50">
+                            </div>
+                            <h4 class="font-bold text-purple-600 mb-4">2. Kart: Özelleştirme</h4>
+                            <div class="space-y-4">
+                                <input id="cms-sol2-title" class="w-full border p-3 rounded-lg" placeholder="Başlık">
+                                <textarea id="cms-sol2-desc" rows="2" class="w-full border p-3 rounded-lg"
+                                    placeholder="Açıklama"></textarea>
+                            </div>
+                        </div>
+
+                        <!-- Solution 3 -->
+                        <div class="bg-white p-6 rounded-xl border relative overflow-hidden">
+                            <div class="absolute top-0 right-0 w-20 h-20 bg-orange-100 rounded-bl-full opacity-50">
+                            </div>
+                            <h4 class="font-bold text-orange-600 mb-4">3. Kart: Mobil Uyum</h4>
+                            <div class="space-y-4">
+                                <input id="cms-sol3-title" class="w-full border p-3 rounded-lg" placeholder="Başlık">
+                                <textarea id="cms-sol3-desc" rows="2" class="w-full border p-3 rounded-lg"
+                                    placeholder="Açıklama"></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contact Tab -->
+                    <div id="cms-tab-contact" class="hidden space-y-6">
+                        <div class="bg-white p-6 rounded-xl border">
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-2">E-posta Adresi</label>
+                            <input id="cms-contact-email" class="w-full border p-3 rounded-lg"
+                                placeholder="iletisim@...">
+                        </div>
+                        <div class="bg-white p-6 rounded-xl border">
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-2">Telefon
+                                Numarası</label>
+                            <input id="cms-contact-phone" class="w-full border p-3 rounded-lg" placeholder="05XX...">
+                        </div>
+                        <div class="bg-white p-6 rounded-xl border">
+                            <label class="block text-xs font-bold text-slate-400 uppercase mb-2">WhatsApp Linki</label>
+                            <input id="cms-whatsapp-link" class="w-full border p-3 rounded-lg"
+                                placeholder="https://wa.me/...">
+                            <p class="text-xs text-slate-400 mt-1">Tam URL giriniz (https://...)</p>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Footer -->
+                <div class="p-6 border-t flex justify-end bg-white">
+                    <button onclick="saveCMS()"
+                        class="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg flex items-center gap-2">
+                        <i class="fa-solid fa-save"></i>
+                        Siteyi Güncelle
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Emergency Modal -->
+        <div id="emergency-modal"
+            class="fixed inset-0 z-50 hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center">
+            <div class="bg-white rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl">
+                <div class="p-6 border-b flex justify-between items-center bg-red-50">
+                    <h3 class="font-bold text-xl text-red-700 flex items-center gap-2">
+                        <i class="fa-solid fa-triangle-exclamation"></i> ACİL DURUM YÖNETİMİ
+                    </h3>
+                    <button onclick="closeEmergencyModal()" class="text-red-400 hover:text-red-700">
+                        <i class="fa-solid fa-times text-xl"></i>
+                    </button>
+                </div>
+                <div class="p-6 space-y-6">
+                    <div class="flex items-center justify-between p-4 bg-slate-50 rounded-xl border">
+                        <div>
+                            <h4 class="font-bold text-lg">Acil Durum Modu</h4>
+                            <p class="text-sm text-slate-500">Aktif edildiğinde tüm panolarda sadece bu mesaj görünür.
+                            </p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="emergency-active" class="sr-only peer">
+                            <div
+                                class="w-14 h-7 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-red-600">
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-bold text-slate-500 uppercase mb-2">Başlık</label>
+                            <input id="emergency-title" class="w-full p-3 border rounded-lg font-bold"
+                                placeholder="Örn: DEPREM UYARISI" value="ACİL DURUM">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-500 uppercase mb-2">Stil (Renk)</label>
+                            <select id="emergency-style" class="w-full p-3 border rounded-lg font-bold">
+                                <option value="red">🔴 KIRMIZI (Kritik)</option>
+                                <option value="yellow">🟡 SARI (Dikkat)</option>
+                                <option value="blue">🔵 MAVİ (Bilgilendirme)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-slate-500 uppercase mb-2">Mesaj İçeriği</label>
+                        <textarea id="emergency-message" rows="4" class="w-full p-3 border rounded-lg"
+                            placeholder="Detaylı acil durum mesajını buraya giriniz..."></textarea>
+                    </div>
+
+                    <div class="bg-yellow-50 p-4 rounded-lg border border-yellow-100 flex items-start gap-3">
+                        <i class="fa-solid fa-triangle-exclamation text-yellow-600 mt-1"></i>
+                        <p class="text-sm text-yellow-800">
+                            <strong>Dikkat:</strong> Bu ayar kaydedildiği anda sisteme bağlı <u>TÃœM EKRANLARDA</u>
+                            normal
+                            yayın kesilecek ve bu mesaj gösterilecektir.
+                        </p>
+                    </div>
+                </div>
+                <div class="p-4 bg-slate-50 flex justify-end gap-3 border-t">
+                    <button onclick="closeEmergencyModal()"
+                        class="px-6 py-2 text-slate-500 font-bold hover:bg-slate-200 rounded-lg">
+                        İptal
+                    </button>
+                    <button onclick="saveEmergencyConfig()"
+                        class="px-8 py-2 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 shadow-lg shadow-red-200">
+                        KAYDET VE YAYINLA
+                    </button>
+                </div>
+            </div>
+        </div>
+        <!-- Distribution Upload Modal -->
+
+
+
+
+        <!-- Distribution Upload Modal -->
+
+        <!-- Distribution Upload Modal -->
+        icon: 'success' , title: 'Giriş Başarılı' , timer: 1000, showConfirmButton: false }); } const
+        loginModal=document.getElementById('login-modal'); const
+        mainContent=document.getElementById('main-content'); if (loginModal) loginModal.classList.add('hidden'); if
+        (mainContent) { mainContent.classList.remove('hidden'); mainContent.classList.add('flex'); } // Load Initial
+        Data if (typeof loadInstitutions==='function' ) loadInstitutions(); } catch (err) { console.error('Login
+        Error:', err); const btn=document.querySelector('button[onclick="attemptLogin()" ]'); const
+        input=document.getElementById('master-password'); if (btn) { btn.innerText='Giriş Yap' ; btn.disabled=false;
+        btn.setAttribute('onclick', 'attemptLogin()' ); } if (input) input.disabled=false;
+        localStorage.removeItem('super_admin_pass'); if (typeof Swal !=='undefined' ) Swal.fire('Hata',
+        err.message, 'error' ); else alert('Hata: ' + err.message);
+        }
+        }
+
+        // Support both names for safety
+        window.attemptLogin = doLogin;
+
+        async function requestApi(action, payload = {}) {
+        if (!currentUserPassword) throw new Error("Oturum süresi doldu.");
+
+        const res = await fetch(API_URL, {
+        method: ' POST', headers: { 'Content-Type' : 'application/json' }, body: JSON.stringify({ action,
+        master_password: currentUserPassword, payload }) }); const data=await res.json(); if (!data.success &&
+        !data.config && !data.announcements) throw new Error(data.error || 'İşlem başarısız' ); return data; } //
+        --- INSTITUTIONS --- async function loadInstitutions() { const
+        contentDiv=document.getElementById('institution-list');
+        contentDiv.innerHTML='<p class="text-center text-gray-500 w-full col-span-3">Veriler yükleniyor...</p>' ;
+        try { const data=await requestApi('list'); const institutions=data.institutions || []; <span
+            class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded font-mono">${inst.slug}</span>
+    </div>
+    </div>
+    <div class="flex gap-2">
+        <button onclick="editInstitution('${inst.slug}')"
+            class="px-3 py-2 bg-amber-100 text-amber-700 rounded-lg hover:bg-amber-200 font-bold text-sm"
+            title="Düzenle">
+            <i class="fa-solid fa-pen"></i>
+        </button>
+        <button onclick="deleteInstitution('${inst.slug}', '${inst.name.replace(/'/g, " \\'")}')"
+            class="px-3 py-2 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 font-bold text-sm" title="Sil">
+            <i class="fa-solid fa-trash"></i>
+        </button>
+        <a href="/${inst.slug}/admin" target="_blank"
+            class="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg hover:bg-slate-200 font-bold text-sm">
+            Yönet
+        </a>
+    </div>
+    </div> `;
+    });
+    contentDiv.innerHTML = html;
+    } catch (err) {
+    contentDiv.innerHTML = `< p class="text-red-500 font-bold w-full col-span-3 text-center"> Hata: ${ err.message }</p>
+        `;
+        }
+        }
+
+        function filterInstitutions() {
+        const term = document.getElementById('search-input').value.toLowerCase();
+        const cards = document.querySelectorAll('#institution-list > div');
+        cards.forEach(card => {
+        const text = card.innerText.toLowerCase();
+        card.style.display = text.includes(term) ? 'flex' : 'none';
+        });
+        }
+
+        // --- INSTITUTION CRUD ---
+        let editingSlug = null; // null = new institution, string = editing existing
+
+        function openInstitutionModal(isNew = true) {
+        editingSlug = null;
+        document.getElementById('edit-modal').classList.remove('hidden');
+        if (isNew) {
+        // Clear form for new institution
+        document.getElementById('form-slug').value = '';
+        document.getElementById('form-slug').disabled = false;
+        document.getElementById('form-name').value = '';
+        document.getElementById('form-password').value = '';
+        document.getElementById('form-type').value = 'Ortaokul';
+        document.getElementById('form-city').value = '';
+        document.getElementById('form-district').value = '';
+        document.getElementById('form-region').value = '';
+        document.getElementById('form-logo').value = '';
+        document.getElementById('form-contact-name').value = '';
+        document.getElementById('form-contact-phone').value = '';
+        document.getElementById('form-contact-email').value = '';
+        document.getElementById('form-dorm-active').checked = true;
+        document.getElementById('form-logo-locked').checked = false;
+        }
+        }
+
+        function closeInstitutionModal() {
+        document.getElementById('edit-modal').classList.add('hidden');
+        editingSlug = null;
+        }
+
+        async function editInstitution(slug) {
+        try {
+        Swal.fire({ title: 'Yükleniyor...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+        const data = await requestApi('get_institution', { slug });
+        const inst = data.institution;
+        const cfg = typeof inst.config === 'string' ? JSON.parse(inst.config) : (inst.config || {});
+
+        editingSlug = slug;
+        document.getElementById('form-slug').value = inst.slug;
+        document.getElementById('form-slug').disabled = true; // Can't change slug
+        document.getElementById('form-name').value = inst.name || '';
+        document.getElementById('form-password').value = inst.password || '';
+        document.getElementById('form-type').value = cfg.type || inst.type || 'Ortaokul';
+        document.getElementById('form-city').value = cfg.city || '';
+        document.getElementById('form-district').value = cfg.district || '';
+        document.getElementById('form-region').value = cfg.region || '';
+        document.getElementById('form-logo').value = cfg.institution_logo || '';
+        document.getElementById('form-contact-name').value = cfg.admin_contact?.name || '';
+        document.getElementById('form-contact-phone').value = cfg.admin_contact?.phone || '';
+        document.getElementById('form-contact-email').value = cfg.admin_contact?.email || '';
+        document.getElementById('form-dorm-active').checked = cfg.module_dorm_active !== false;
+        document.getElementById('form-logo-locked').checked = !!cfg.logo_locked;
+
+        Swal.close();
+        openInstitutionModal(false);
+        } catch (err) {
+        Swal.fire('Hata', err.message, 'error');
+        }
+        }
+
+        async function deleteInstitution(slug, name) {
+        const result = await Swal.fire({
+        title: 'Kurum Silinsin mi?',
+        html: `< strong> ${ name }</strong> kurumunu silmek istediğinize emin misiniz ? <br><span
+                class="text-red-600 font-bold">Bu işlem geri alınamaz!</span>`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Evet, Sil',
+            cancelButtonText: 'İptal'
+            });
+
+            if (!result.isConfirmed) return;
+
+            try {
+            Swal.fire({ title: 'Siliniyor...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+            await requestApi('delete', {slug});
+            Swal.fire('Silindi!', 'Kurum başarıyla silindi.', 'success');
+            loadInstitutions();
+            } catch (err) {
+            Swal.fire('Hata', err.message, 'error');
+            }
+            }
+
+            // Form submit handler
+            document.getElementById('institution-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const slug = document.getElementById('form-slug').value.trim();
+            const name = document.getElementById('form-name').value.trim();
+            const password = document.getElementById('form-password').value.trim();
+            const type = document.getElementById('form-type').value;
+
+            if (!slug || !name || !password) {
+            Swal.fire('Hata', 'Slug, isim ve şifre zorunludur.', 'error');
+            return;
+            }
+
+            const payload = {
+            slug,
+            name,
+            password,
+            type,
+            city: document.getElementById('form-city').value,
+            district: document.getElementById('form-district').value,
+            region: document.getElementById('form-region').value,
+            institution_logo: document.getElementById('form-logo').value,
+            logo_locked: document.getElementById('form-logo-locked').checked,
+            module_dorm_active: document.getElementById('form-dorm-active').checked,
+            admin_contact: {
+            name: document.getElementById('form-contact-name').value,
+            phone: document.getElementById('form-contact-phone').value,
+            email: document.getElementById('form-contact-email').value
+            }
+            };
+
+            try {
+            Swal.fire({ title: 'Kaydediliyor...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+            if (editingSlug) {
+            await requestApi('upsert', payload);
+            } else {
+            await requestApi('upsert', payload);
+            }
+
+            Swal.fire('Başarılı', editingSlug ? 'Kurum güncellendi.' : 'Kurum oluşturuldu.', 'success');
+            closeInstitutionModal();
+            loadInstitutions();
+            } catch (err) {
+            Swal.fire('Hata', err.message, 'error');
+            }
+            });
+
+            // --- NAVIGATION ---
+            function switchView(viewName) {
+            // Close all modals
+            document.querySelectorAll('[id$="-modal"]').forEach(el => {
+            if (el.id !== 'login-modal') el.classList.add('hidden');
+            });
+
+            // If Institutions, ensure we are exploring
+            if (viewName === 'institutions') {
+            loadInstitutions();
+            }
+            }
+
+            function logout() {
+            localStorage.removeItem('super_admin_pass');
+            location.reload();
+            }
+
+            // --- HADITH MANAGEMENT ---
+            let currentHadiths = { };
+
+            async function openHadithModal() {
+            document.getElementById('hadith-modal').classList.remove('hidden');
+            loadHadiths();
+            }
+
+            function closeHadithModal() {
+            document.getElementById('hadith-modal').classList.add('hidden');
+            }
+
+            async function loadHadiths() {
+            const container = document.getElementById('weeks-container');
+            container.innerHTML = 'Yükleniyor...';
+
+            try {
+            const data = await requestApi('get_hadiths');
+            currentHadiths = data.config || { };
+            renderHadithWeeks();
+            } catch (e) {
+            console.error(e);
+            container.innerHTML = `<div class="text-red-500 text-center p-4">Hata: ${e.message}</div>`;
+            }
+            }
+
+
+            function renderHadithWeeks() {
+            const type = document.getElementById('hadith-type').value;
+            const container = document.getElementById('weeks-container');
+
+            // Get existing data or initialize
+            let rawWeeks = currentHadiths[type];
+            if (typeof rawWeeks === 'string') {
+            try {rawWeeks = JSON.parse(rawWeeks); } catch (e) {rawWeeks = []; }
+            }
+            const weeks = Array.isArray(rawWeeks) ? rawWeeks : [];
+
+            // Get the first item or create empty
+            const currentWeek = weeks.length > 0 ? weeks[0] : {text: '', arabic: '', Source: '' };
+
+            // Date
+            let startDate = currentHadiths[type + '_date'];
+
+            // Helper: Get Current Monday
+            function getCurrentMonday() {
+            const d = new Date();
+            const day = d.getDay();
+            const diff = d.getDate() - day + (day === 0 ? -6 : 1); // adjust when day is sunday
+            const monday = new Date(d.setDate(diff));
+            return monday.toISOString().split('T')[0];
+            }
+
+            if (!startDate) {
+            startDate = getCurrentMonday();
+            // Auto-set the internal overlap tracker too
+            currentHadiths[type + '_date'] = startDate;
+            }
+
+            if (startDate) document.getElementById('semester-start-date').value = startDate;
+
+            // Render SIMPLE FORM
+            container.innerHTML = `
+            <div class="bg-white p-6 rounded-xl border shadow-sm">
+                <div class="mb-4">
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Haftanın Başlangıç Tarihi
+                        (Pazartesi)</label>
+                    <input type="date" id="single-date" onchange="updateSingleDate(this.value)" value="${startDate}"
+                        class="w-full border p-2 rounded">
+                    <p class="text-xs text-slate-400 mt-1">Bu tarihi seçtiğiniz haftanın Pazartesi günü olarak
+                        ayarlayın.</p>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Hadis-i Şerif (Türkçe)</label>
+                    <textarea onchange="updateSingleHadith('text', this.value)" class="w-full border p-3 rounded h-32"
+                        placeholder="Hadis metnini buraya giriniz...">${currentWeek.text || currentWeek.Hadith || ''}</textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Arapça Metin</label>
+                    <textarea onchange="updateSingleHadith('arabic', this.value)"
+                        class="w-full border p-3 rounded h-24 font-mono text-right"
+                        placeholder="Arapça metnini buraya giriniz...">${currentWeek.arabic || ''}</textarea>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-2">Kaynak</label>
+                    <input onchange="updateSingleHadith('Source', this.value)" value="${currentWeek.Source || ''}"
+                        class="w-full border p-2 rounded" placeholder="Örn: Buhari">
+                </div>
+            </div>
+            `;
+            }
+
+            // --- SINGLE MODE UPDATERS ---
+            window.updateSingleDate = function (val) {
+            const type = document.getElementById('hadith-type').value;
+            currentHadiths[type + '_date'] = val;
+            // Also update the hidden original input if needed, but we use strict sync now
+            document.getElementById('semester-start-date').value = val;
+            }
+
+            window.updateSingleHadith = function (field, val) {
+            const type = document.getElementById('hadith-type').value;
+
+            // Ensure array exists
+            if (!currentHadiths[type] || !Array.isArray(currentHadiths[type])) {
+            currentHadiths[type] = [];
+            }
+
+            // Ensure first item exists
+            if (currentHadiths[type].length === 0) {
+            currentHadiths[type].push({ text: '', arabic: '', Source: '' });
+            }
+
+            // Update
+            currentHadiths[type][0][field] = val;
+
+            // Legacy sync
+            if (field === 'text') currentHadiths[type][0].Hadith = val;
+            }
+
+            // Expose render
+            window.renderHadithWeeks = renderHadithWeeks;
+
+            // These are no longer used but kept empty to prevent ReferenceErrors if called
+            window.addWeek = function () { };
+            window.removeWeek = function () { };
+            window.updateWeekContent = function () { };
+            window.updateWeekDates = function () { };
+
+            async function syncHadithsToApi() {
+            const type = document.getElementById('hadith-type').value;
+            // Ensure we send what we have
+            const weeks = currentHadiths[type] || [];
+            const start_date = document.getElementById('semester-start-date').value;
+
+            try {
+            await requestApi('save_hadith', { type, weeks, start_date });
+            Swal.fire('Başarılı', 'Hadis güncellendi.', 'success');
+            } catch (e) {
+            Swal.fire('Hata', e.message, 'error');
+            }
+            }
+            window.syncHadithsToApi = syncHadithsToApi;
+
+            // --- GALLERY ---
+            let currentGallery = { }; // {Ortaokul: {images:[], videos:[], left_images: [] } }
+
+            // Initialize Supabase Client
+            async function initSupabase() {
+            try {
+            const data = await requestApi('get_upload_config');
+            if (data.url && data.key && window.supabase) {
+            supabaseClient = window.supabase.createClient(data.url, data.key);
+            console.log('Supabase Initialized');
+            }
+            } catch (e) {
+            console.error('Supabase init failed', e);
+            }
+            }
+            // Init on load - REMOVED to prevent blocking login
+            // initSupabase();
+
+            async function openGalleryModal() {
+            document.getElementById('gallery-modal').classList.remove('hidden');
+            loadGallery();
+            }
+
+            function closeGalleryModal() {
+            document.getElementById('gallery-modal').classList.add('hidden');
+            }
+
+            function switchGalleryTab(tab) {
+            activeGalleryTab = tab;
+
+            // Update buttons
+            document.querySelectorAll('.gallery-tab').forEach(btn => {
+            btn.classList.remove('active', 'bg-white', 'shadow-sm', 'text-slate-800');
+            btn.classList.add('text-slate-500', 'hover:bg-white/50');
+            });
+
+            const activeBtn = document.getElementById('tab-' + tab);
+            if (activeBtn) {
+            activeBtn.classList.add('active', 'bg-white', 'shadow-sm', 'text-slate-800');
+            activeBtn.classList.remove('text-slate-500', 'hover:bg-white/50');
+            }
+
+            loadGallery(); // Reload grid
+            }
+
+            async function loadGallery() {
+            const grid = document.getElementById('gallery-grid');
+            grid.innerHTML = '<p class="text-center text-gray-500 w-full col-span-full py-8">Yükleniyor...</p>';
+            document.getElementById('gallery-empty').classList.add('hidden');
+
+            updateSelectionUI(); // Reset selection
+
+            try {
+            const data = await requestApi('get_gallery');
+            currentGallery = data.gallery || data.config || { };
+            renderGallery();
+            } catch (e) {
+            console.error(e);
+            grid.innerHTML = '<p class="text-center text-red-500 w-full col-span-full">Hata oluştu.</p>';
+            }
+            }
+
+            function renderGallery() {
+            const type = document.getElementById('gallery-type').value;
+            const grid = document.getElementById('gallery-grid');
+            grid.innerHTML = '';
+
+            const typeData = currentGallery[type] || { };
+
+            // UI 'tab-main' maps to 'images' (Right)
+            // UI 'tab-left' maps to 'left_images' (Left)
+            // UI 'tab-video' maps to 'videos' (Video URLs)
+
+            let items = [];
+            if (activeGalleryTab === 'main') items = typeData.images || [];
+            else if (activeGalleryTab === 'left') items = typeData.left_images || [];
+            else if (activeGalleryTab === 'video') items = typeData.videos || [];
+
+            if (!items || items.length === 0) {
+            document.getElementById('gallery-empty').classList.remove('hidden');
+            return;
+            }
+            document.getElementById('gallery-empty').classList.add('hidden');
+
+            items.forEach((item, idx) => {
+            const url = typeof item === 'string' ? item : (item.url || '');
+
+            const div = document.createElement('div');
+            div.className = 'relative aspect-video bg-white rounded-lg shadow overflow-hidden group border';
+
+            // Video content shim
+            let content = `<img src="${url}" class="w-full h-full object-cover">`;
+            if (activeGalleryTab === 'video') {
+            if (url.includes('youtube') || url.includes('youtu.be')) {
+            content = `<div class="w-full h-full flex items-center justify-center bg-black text-white"><i
+                    class="fa-brands fa-youtube text-4xl text-red-600"></i></div>`;
+            } else {
+            content = `<video src="${url}" class="w-full h-full object-cover" muted></video>`;
+            }
+            }
+
+            div.innerHTML = `
+            <input type="checkbox" data-idx="${idx}" data-url="${url}" onchange="updateSelectionUI()"
+                class="gallery-checkbox absolute top-2 left-2 w-5 h-5 rounded border-2 border-white shadow-lg cursor-pointer z-10 accent-blue-600">
+            ${content}
+            <button onclick="deleteGalleryItem(${idx})"
+                class="absolute top-2 right-2 bg-red-600 text-white w-8 h-8 rounded-full opacity-0 group-hover:opacity-100 transition flex items-center justify-center shadow-lg hover:scale-110">
+                <i class="fa fa-trash text-xs"></i>
+            </button>
+            <!-- Type Badge -->
+            <span
+                class="absolute bottom-2 left-2 bg-black/50 text-white text-[10px] px-2 py-1 rounded capitalize">${activeGalleryTab}</span>
+            `;
+            grid.appendChild(div);
+            });
+            }
+
+            async function deleteGalleryItem(idx) {
+            const type = document.getElementById('gallery-type').value;
+            if (!currentGallery[type]) return;
+
+            // Determine array to splice
+            let arr = null;
+            if (activeGalleryTab === 'main') arr = currentGallery[type].images;
+            else if (activeGalleryTab === 'left') arr = currentGallery[type].left_images;
+            else if (activeGalleryTab === 'video') arr = currentGallery[type].videos;
+
+            if (!arr) return;
+
+            const item = arr[idx];
+            const url = typeof item === 'string' ? item : (item.url || '');
+
+            // Confirm
+            const result = await Swal.fire({
+            title: 'Silinsin mi?',
+            text: "Bu öğe galeri listesinden kaldırılacak.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Evet, Sil',
+            cancelButtonText: 'İptal'
+            });
+
+            if (!result.isConfirmed) return;
+
+            // Delete from array
+            arr.splice(idx, 1);
+
+            // Attempt storage delete if it looks like our storage file
+            if (url && url.includes('supabase')) {
+            // Fire and forget storage delete
+            requestApi('delete_gallery_file', { path: url }).catch(console.error);
+            }
+
+            // Save Config
+            try {
+            await requestApi('save_gallery', { gallery: currentGallery });
+            renderGallery();
+            Swal.fire({
+            icon: 'success',
+            title: 'Silindi',
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 2000
+            });
+            } catch (e) {
+            Swal.fire('Hata', 'Kaydetme hatası: ' + e.message, 'error');
+            }
+            }
+
+            // --- UPLOAD DISTRIBUTION ---
+            function openUploadModal() {
+            document.getElementById('upload-dist-modal').classList.remove('hidden');
+            // Reset defaults
+            document.getElementById('dist-target-general').checked = true;
+            toggleUploadTarget();
+            }
+
+            function closeUploadModal() {
+            document.getElementById('upload-dist-modal').classList.add('hidden');
+            }
+
+            function toggleUploadTarget() {
+            const target = document.querySelector('input[name="dist-target"]:checked').value;
+            document.getElementById('dist-select-region').classList.add('hidden');
+            document.getElementById('dist-select-institution').classList.add('hidden');
+
+            if (target === 'region') document.getElementById('dist-select-region').classList.remove('hidden');
+            if (target === 'institution') document.getElementById('dist-select-institution').classList.remove('hidden');
+            }
+
+            async function startDistributionUpload() {
+            const files = document.getElementById('dist-files').files;
+            if (files.length === 0) {
+            Swal.fire('Hata', 'Lütfen en az bir dosya seçin.', 'warning');
+            return;
+            }
+
+            if (!supabase) {
+            Swal.fire('Hata', 'Yükleme servisi başlatılamadı. Sayfayı yenileyip tekrar deneyin.', 'error');
+            return;
+            }
+
+            const galleryTarget = document.querySelector('input[name="dist-gallery-type"]:checked').value; // main, left
+            const distributionTarget = document.querySelector('input[name="dist-target"]:checked').value; // general,
+            region, institution
+            let distributionValue = '';
+
+            if (distributionTarget === 'region') {
+            distributionValue = document.getElementById('dist-region-input').value;
+            if (!distributionValue) {Swal.fire('Uyarı', 'Mıntıka adı giriniz.', 'warning'); return; }
+            }
+            if (distributionTarget === 'institution') {
+            distributionValue = document.getElementById('dist-institution-input').value;
+            if (!distributionValue) {Swal.fire('Uyarı', 'Kurum slug veya adı giriniz.', 'warning'); return; }
+            }
+
+            // 1. Upload Files
+            Swal.fire({title: 'Yükleniyor...', html: 'Dosyalar yükleniyor, lütfen bekleyin.', allowOutsideClick: false,
+            didOpen: () => Swal.showLoading() });
+
+            try {
+            const uploadedUrls = [];
+            for (let file of files) {
+            const fileName =
+            `admin-upload/${Date.now()}-${Math.random().toString(36).substring(7)}-${file.name.replace(/[^a-zA-Z0-9.]/g,
+            '_')}`;
+
+            const {data, error} = await supabaseClient.storage.from('images').upload(fileName, file);
+            if (error) throw error;
+
+            const {data: {publicUrl} } = supabaseClient.storage.from('images').getPublicUrl(fileName);
+            uploadedUrls.push(publicUrl);
+            }
+
+            // 2. Distribute via API
+            await requestApi('distribute_gallery_items', {
+            items: uploadedUrls,
+            target_type: distributionTarget,
+            target_value: distributionValue,
+            gallery_type: galleryTarget,
+            institution_type: document.getElementById('gallery-type').value // For 'general' target needed context
+            });
+
+            Swal.fire('Başarılı', 'Dosyalar başarıyla yüklendi ve hedef kurumlara dağıtıldı.', 'success');
+            closeUploadModal();
+
+            // Reload if we updated something visible (General)
+            if (distributionTarget === 'general') {
+            loadGallery();
+            }
+            } catch (e) {
+            console.error('Upload error:', e);
+            Swal.fire('Hata', 'Yükleme sırasında hata oluştu: ' + e.message, 'error');
+            }
+            }
+
+            async function saveGallery() {
+            try {
+            await requestApi('save_gallery', { gallery: currentGallery });
+            Swal.fire('Başarılı', 'Galeri kaydedildi.', 'success');
+            } catch (e) {
+            Swal.fire('Hata', e.message, 'error');
+            }
+            }
+
+            // --- GALLERY SELECTION & BULK DELETE ---
+            let isAllSelected = false;
+
+            function toggleSelectAll() {
+            isAllSelected = !isAllSelected;
+            const checkboxes = document.querySelectorAll('.gallery-checkbox');
+            checkboxes.forEach(cb => cb.checked = isAllSelected);
+
+            const btn = document.getElementById('select-all-btn');
+            if (isAllSelected) {
+            btn.innerHTML = '<i class="fa-solid fa-square"></i> Seçimi Kaldır';
+            btn.classList.add('bg-blue-100', 'text-blue-600');
+            btn.classList.remove('bg-slate-100', 'text-slate-600');
+            } else {
+            btn.innerHTML = '<i class="fa-solid fa-check-square"></i> Tümünü Seç';
+            btn.classList.remove('bg-blue-100', 'text-blue-600');
+            btn.classList.add('bg-slate-100', 'text-slate-600');
+            }
+            updateSelectionUI();
+            }
+
+            function updateSelectionUI() {
+            const checkboxes = document.querySelectorAll('.gallery-checkbox:checked');
+            const count = checkboxes.length;
+
+            // Update bulk edit button
+            const editBtn = document.getElementById('bulk-edit-btn');
+            const deleteBtn = document.getElementById('bulk-delete-btn');
+
+            if (count > 0) {
+            editBtn.classList.remove('hidden');
+            deleteBtn.classList.remove('hidden');
+            document.getElementById('selected-count').textContent = count;
+            document.getElementById('delete-selected-count').textContent = count;
+            } else {
+            editBtn.classList.add('hidden');
+            deleteBtn.classList.add('hidden');
+            }
+
+            // Update select all button state
+            const allCheckboxes = document.querySelectorAll('.gallery-checkbox');
+            isAllSelected = allCheckboxes.length > 0 && count === allCheckboxes.length;
+            const btn = document.getElementById('select-all-btn');
+            if (isAllSelected) {
+            btn.innerHTML = '<i class="fa-solid fa-square"></i> Seçimi Kaldır';
+            btn.classList.add('bg-blue-100', 'text-blue-600');
+            btn.classList.remove('bg-slate-100', 'text-slate-600');
+            } else {
+            btn.innerHTML = '<i class="fa-solid fa-check-square"></i> Tümünü Seç';
+            btn.classList.remove('bg-blue-100', 'text-blue-600');
+            btn.classList.add('bg-slate-100', 'text-slate-600');
+            }
+            }
+
+            async function bulkDeleteSelected() {
+            const checkboxes = document.querySelectorAll('.gallery-checkbox:checked');
+            if (checkboxes.length === 0) {
+            Swal.fire('Uyarı', 'Silmek için önce görsel seçin', 'warning');
+            return;
+            }
+
+            const result = await Swal.fire({
+            title: `${checkboxes.length} görsel silinecek!`,
+            text: 'Bu görseller hem veritabanından hem de Storage\'dan kalıcı olarak silinecektir. Bu işlem geri
+            alınamaz!',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Evet, hepsini sil!',
+            cancelButtonText: 'İptal'
+            });
+
+            if (!result.isConfirmed) return;
+
+            const type = document.getElementById('gallery-type').value;
+            if (!currentGallery[type]) return;
+
+            // Collect URLs to delete
+            const urlsToDelete = [];
+            const indicesToDelete = [];
+
+            checkboxes.forEach(cb => {
+            urlsToDelete.push(cb.dataset.url);
+            indicesToDelete.push(parseInt(cb.dataset.idx));
+            });
+
+            // Sort indices descending to delete from end first (prevents index shifting issues)
+            indicesToDelete.sort((a, b) => b - a);
+
+            // Show loading
+            Swal.fire({
+            title: 'Siliniyor...',
+            html: `<div class="text-slate-500">0 / ${urlsToDelete.length} tamamlandı</div>`,
+            allowOutsideClick: false,
+            didOpen: () => Swal.showLoading()
+            });
+
+            let successCount = 0;
+            let errorCount = 0;
+
+            // Delete files from storage one by one
+            for (let i = 0; i < urlsToDelete.length; i++) { try { const deleteResult=await
+                fetch('/api/manage-institutions', { method: 'POST' , headers: {'Content-Type': 'application/json' },
+                body: JSON.stringify({ action: 'delete_gallery_file' , master_password: currentUserPassword, payload:
+                {url: urlsToDelete[i] } }) }); const data=await deleteResult.json(); if (data.success) successCount++;
+                else errorCount++; } catch (e) { errorCount++; } // Update progress Swal.update({ html: `<div
+                class="text-slate-500">${i + 1} / ${urlsToDelete.length} tamamlandı</div>`
+                });
+                }
+
+                // Remove from config array (using sorted descending indices)
+                for (const idx of indicesToDelete) {
+                if (activeGalleryTab === 'main' && currentGallery[type].images) {
+                currentGallery[type].images.splice(idx, 1);
+                } else if (activeGalleryTab === 'slider' && currentGallery[type].videos) {
+                currentGallery[type].videos.splice(idx, 1);
+                }
+                }
+
+                // Save to database immediately
+                try {
+                await requestApi('save_gallery', { gallery: currentGallery });
+                } catch (saveErr) {
+                console.error('Save error:', saveErr);
+                }
+
+                // Reset selection state
+                isAllSelected = false;
+
+                // Close loading and show result
+                Swal.fire({
+                icon: errorCount === 0 ? 'success' : 'warning',
+                title: `${successCount} görsel silindi ve kaydedildi`,
+                text: errorCount > 0 ? `${errorCount} görsel silinemedi` : 'Tüm görseller başarıyla silindi!',
+                timer: 2000,
+                showConfirmButton: false
+                });
+
+                renderGallery();
+                }
+
+
+                // --- ANNOUNCEMENTS ---
+                async function openAnnouncementModal() {
+                document.getElementById('announcement-modal').classList.remove('hidden');
+                loadAnnouncements();
+                }
+
+                function closeAnnouncementModal() {
+                document.getElementById('announcement-modal').classList.add('hidden');
+                }
+
+                async function loadAnnouncements() {
+                const list = document.getElementById('announcements-list');
+                list.innerHTML = 'Yükleniyor...';
+                try {
+                const data = await requestApi('list_announcements');
+                const items = data.announcements || [];
+
+                list.innerHTML = '';
+                items.forEach(a => {
+                const div = document.createElement('div');
+                div.className = 'p-4 border rounded-lg bg-slate-50 flex justify-between items-center';
+                div.innerHTML = `
+                <div>
+                    <p class="font-bold text-sm">${a.text}</p>
+                    <span class="text-xs text-slate-400">${new Date(a.created_at).toLocaleDateString()}</span>
+                </div>
+                <button onclick="deleteAnnouncement('${a.id}')"
+                    class="text-red-500 hover:text-red-700 font-bold text-xs">Sil</button>
+                `;
+                list.appendChild(div);
+                });
+                } catch (e) {
+                list.innerHTML = 'Yüklenemedi.';
+                }
+                }
+
+                async function broadcastAnnouncement() {
+                const text = document.getElementById('announcement-text').value;
+                if (!text) return;
+
+                // Collect filters
+                const typeSelect = document.getElementById('announcement-type-filter');
+                const selectedTypes = [...typeSelect.options].filter(o => o.selected).map(o => o.value).filter(v => v);
+
+                const regionVal = document.getElementById('announcement-region-filter').value;
+                const regions = regionVal ? regionVal.split(',').map(s => s.trim()) : [];
+
+                try {
+                await requestApi('broadcast_announcement', {
+                text,
+                filters: { types: selectedTypes, regions }
+                });
+                document.getElementById('announcement-text').value = '';
+                loadAnnouncements();
+                Swal.fire('Başarılı', 'Duyuru yayınlandı.', 'success');
+                } catch (e) {
+                Swal.fire('Hata', e.message, 'error');
+                }
+                }
+
+                async function deleteAnnouncement(id) {
+                try {
+                await requestApi('delete_announcement', { announcement_id: id });
+                loadAnnouncements();
+                } catch (e) {
+                Swal.fire('Hata', e.message, 'error');
+                }
+                }
+
+                // --- CMS ---
+                async function openCMSModal() {
+                document.getElementById('cms-modal').classList.remove('hidden');
+                loadCMS();
+                }
+
+                function closeCMSModal() {
+                document.getElementById('cms-modal').classList.add('hidden');
+                }
+
+                async function loadCMS() {
+                try {
+                const data = await requestApi('get_landing_content');
+                const content = data.content || { };
+
+                // Hero
+                if (content.hero) {
+                document.getElementById('cms-hero-badge').value = content.hero.badge || '';
+                document.getElementById('cms-hero-title1').value = content.hero.title1 || '';
+                document.getElementById('cms-hero-title2').value = content.hero.title2 || '';
+                document.getElementById('cms-hero-desc').value = content.hero.description || '';
+                }
+
+                // Solutions
+                if (content.solutions) {
+                document.getElementById('cms-sol1-title').value = content.solutions.sol1?.title || '';
+                document.getElementById('cms-sol1-desc').value = content.solutions.sol1?.desc || '';
+                document.getElementById('cms-sol2-title').value = content.solutions.sol2?.title || '';
+                document.getElementById('cms-sol2-desc').value = content.solutions.sol2?.desc || '';
+                document.getElementById('cms-sol3-title').value = content.solutions.sol3?.title || '';
+                document.getElementById('cms-sol3-desc').value = content.solutions.sol3?.desc || '';
+                }
+
+                // Contact
+                if (content.contact) {
+                document.getElementById('cms-contact-email').value = content.contact.email || '';
+                document.getElementById('cms-contact-phone').value = content.contact.phone || '';
+                document.getElementById('cms-whatsapp-link').value = content.contact.whatsapp || '';
+                }
+                } catch (e) {console.error(e); }
+                }
+
+                function switchCMSTab(tab) {
+                ['hero', 'solutions', 'contact'].forEach(t => {
+                document.getElementById('cms-tab-' + t).classList.add('hidden');
+                document.getElementById('tab-btn-' + t).classList.remove('border-indigo-600', 'text-indigo-600',
+                'bg-indigo-50');
+                });
+                document.getElementById('cms-tab-' + tab).classList.remove('hidden');
+                document.getElementById('tab-btn-' + tab).classList.add('border-indigo-600', 'text-indigo-600',
+                'bg-indigo-50');
+                }
+
+                async function saveCMS() {
+                const content = {
+                hero: {
+                badge: document.getElementById('cms-hero-badge').value,
+                title1: document.getElementById('cms-hero-title1').value,
+                title2: document.getElementById('cms-hero-title2').value,
+                description: document.getElementById('cms-hero-desc').value
+                },
+                solutions: {
+                sol1: {
+                title: document.getElementById('cms-sol1-title').value,
+                desc: document.getElementById('cms-sol1-desc').value
+                },
+                sol2: {
+                title: document.getElementById('cms-sol2-title').value,
+                desc: document.getElementById('cms-sol2-desc').value
+                },
+                sol3: {
+                title: document.getElementById('cms-sol3-title').value,
+                desc: document.getElementById('cms-sol3-desc').value
+                }
+                },
+                contact: {
+                email: document.getElementById('cms-contact-email').value,
+                phone: document.getElementById('cms-contact-phone').value,
+                whatsapp: document.getElementById('cms-whatsapp-link').value
+                }
+                };
+
+                try {
+                await requestApi('save_landing_content', { content });
+                Swal.fire('Başarılı', 'Site güncellendi.', 'success');
+                } catch (e) {
+                Swal.fire('Hata', e.message, 'error');
+                }
+                }
+
+                // --- EMERGENCY ---
+                async function openEmergencyModal() {
+                document.getElementById('emergency-modal').classList.remove('hidden');
+                try {
+                const data = await requestApi('get_emergency_config');
+                const cfg = data.config || { };
+                document.getElementById('emergency-active').checked = !!cfg.active;
+                document.getElementById('emergency-title').value = cfg.title || '';
+                document.getElementById('emergency-message').value = cfg.message || '';
+                document.getElementById('emergency-style').value = cfg.style || 'red';
+                } catch (e) { }
+                }
+
+                function closeEmergencyModal() {
+                document.getElementById('emergency-modal').classList.add('hidden');
+                }
+
+                async function saveEmergencyConfig() {
+                const config = {
+                active: document.getElementById('emergency-active').checked,
+                title: document.getElementById('emergency-title').value,
+                message: document.getElementById('emergency-message').value,
+                style: document.getElementById('emergency-style').value,
+                updated_at: new Date().toISOString()
+                };
+
+                try {
+                await requestApi('save_emergency', { config });
+                Swal.fire('Başarılı', 'Acil durum ayarları güncellendi.', 'success');
+                closeEmergencyModal();
+                } catch (e) {
+                Swal.fire('Hata', e.message, 'error');
+                }
+                }
+
+                // Enter key for login
+                document.getElementById('master-password').addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') doLogin();
+                });
+
+                // --- MISSING FUNCTIONS RESTORED ---
+                async function initSupabase() {
+                console.log('Initializing Supabase...');
+                try {
+                const res = await fetch(API_URL, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json' },
+                body: JSON.stringify({action: 'get_upload_config', master_password: currentUserPassword })
+                });
+                const config = await res.json();
+                console.log('Supabase Config:', config);
+
+                if (config.url && config.key) {
+                supabaseClient = window.supabase.createClient(config.url, config.key);
+                console.log('Supabase Client Ready');
+                } else {
+                console.error('Supabase Config Missing URL/Key');
+
+                <!-- Distribution Upload Modal -->
+                <div id="upload-dist-modal"
+                    class="fixed inset-0 z-[60] hidden bg-slate-900/50 backdrop-blur-sm flex items-center justify-center">
+                    <div class="bg-white rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl">
+                        <div class="p-6 border-b flex justify-between items-center bg-blue-50">
+                            <h3 class="font-bold text-xl text-blue-700 flex items-center gap-2">
+                                <i class="fa-solid fa-cloud-upload"></i> Galeri Yükleme
+                            </h3>
+                            <button onclick="closeUploadModal()" class="text-blue-400 hover:text-blue-700">
+                                <i class="fa-solid fa-times text-xl"></i>
+                            </button>
+                        </div>
+                        <div class="p-6 space-y-6">
+                            <!-- Target Selection -->
+                            <div>
+                                <label class="block text-sm font-bold text-slate-500 uppercase mb-3">Dağıtım
+                                    Hedefi</label>
+                                <div class="space-y-3">
+                                    <label
+                                        class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-slate-50">
+                                        <input type="radio" name="dist-target" id="dist-target-general" value="general"
+                                            checked onchange="toggleUploadTarget()" class="w-5 h-5 accent-blue-600">
+                                        <div>
+                                            <span class="font-bold block text-slate-800">Tüm Kurumlar (Genel)</span>
+                                            <span class="text-xs text-slate-500">Seçili tipteki (örn: Ortaokul) tüm
+                                                kurumlara
+                                                eklenir.</span>
+                                        </div>
+                                    </label>
+                                    <label
+                                        class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-slate-50">
+                                        <input type="radio" name="dist-target" value="region"
+                                            onchange="toggleUploadTarget()" class="w-5 h-5 accent-blue-600">
+                                        <div>
+                                            <span class="font-bold block text-slate-800">Mıntıka Seç</span>
+                                            <span class="text-xs text-slate-500">Sadece belirli bir mıntıkadaki
+                                                kurumlara
+                                                eklenir.</span>
+                                        </div>
+                                    </label>
+                                    <!-- Dynamic Region Select -->
+                                    <div id="dist-select-region" class="pl-8 hidden">
+                                        <input id="dist-region-input" class="w-full p-2 border rounded-lg"
+                                            placeholder="Mıntıka Adı Giriniz (örn: Marmara)">
+                                    </div>
+
+                                    <label
+                                        class="flex items-center gap-3 p-3 border rounded-lg cursor-pointer hover:bg-slate-50">
+                                        <input type="radio" name="dist-target" value="institution"
+                                            onchange="toggleUploadTarget()" class="w-5 h-5 accent-blue-600">
+                                        <div>
+                                            <span class="font-bold block text-slate-800">Tek Kurum Seç</span>
+                                            <span class="text-xs text-slate-500">Sadece seçilen kuruma eklenir.</span>
+                                        </div>
+                                    </label>
+                                    <!-- Dynamic Institution Select -->
+                                    <div id="dist-select-institution" class="pl-8 hidden">
+                                        <input id="dist-institution-input" class="w-full p-2 border rounded-lg"
+                                            placeholder="Kurum Slug veya Adı">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Gallery Type -->
+                            <div>
+                                <label class="block text-sm font-bold text-slate-500 uppercase mb-3">Galeri Tipi</label>
+                                <div class="flex gap-4">
+                                    <label
+                                        class="flex-1 flex items-center justify-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-slate-50 has-[:checked]:bg-blue-50 has-[:checked]:border-blue-200">
+                                        <input type="radio" name="dist-gallery-type" value="main" checked
+                                            class="accent-blue-600">
+                                        <span class="font-bold text-sm">Ana Galeri (Sağ)</span>
+                                    </label>
+                                    <label
+                                        class="flex-1 flex items-center justify-center gap-2 p-3 border rounded-lg cursor-pointer hover:bg-slate-50 has-[:checked]:bg-blue-50 has-[:checked]:border-blue-200">
+                                        <input type="radio" name="dist-gallery-type" value="left"
+                                            class="accent-blue-600">
+                                        <span class="font-bold text-sm">Sol Galeri</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- File Input -->
+                            <div>
+                                <label class="block text-sm font-bold text-slate-500 uppercase mb-3">Dosyalar</label>
+                                <input type="file" id="dist-files" multiple accept="image/*"
+                                    class="w-full p-3 border rounded-lg file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                            </div>
+                        </div>
+                        <div class="p-6 border-t bg-slate-50 flex justify-end gap-3">
+                            <button onclick="closeUploadModal()"
+                                class="px-5 py-2 hover:bg-slate-200 rounded-lg font-bold text-slate-600">İptal</button>
+                            <button onclick="startDistributionUpload()"
+                                class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-bold shadow-lg">Yükle
+                                ve Dağıt</button>
+                        </div>
+                    </div>
+                </div>
+</body>
+
+</html>

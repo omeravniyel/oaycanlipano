@@ -1,5 +1,5 @@
 // js/main.js
-console.log("Pano uygulaması başlatılıyor...");
+// console.log("Pano uygulaması başlatılıyor...");
 
 // --- Saat & Tarih & Hicri Güncelleme (Her Saniye) ---
 function updateClock() {
@@ -157,7 +157,7 @@ async function fetchConfig() {
 
         if (isDemoMode) {
             // --- DEMO CONFIGURATION ---
-            console.log("Demo Modu Aktif: Örnek veriler yükleniyor...");
+            // console.log("Demo Modu Aktif: Örnek veriler yükleniyor...");
             config = {
                 institution_title: "Örnek Koleji",
                 institution_subtitle: "Eğitimde Mükemmeliyet",
@@ -282,7 +282,8 @@ async function fetchConfig() {
         else document.getElementById('header-slogan2').innerText = 'buluştuğu yer';
 
         if (config.institution_logo && config.institution_logo.trim() !== "") {
-            document.getElementById('header-logo').src = config.institution_logo;
+            const logoEl = document.getElementById('header-logo');
+            if (logoEl) logoEl.src = config.institution_logo;
 
             // --- DYNAMIC FAVICON ---
             let link = document.querySelector("link[rel~='icon']");
@@ -294,12 +295,11 @@ async function fetchConfig() {
             link.href = config.institution_logo;
 
         } else {
-            // Fallback to default logo if specific one is missing, 
-            // or keep the HTML default (src="logo.png")
-            // Here we ensure it matches the config if provided, otherwise generic.
-            document.getElementById('header-logo').src = 'logo.png';
+            // Fallback to default logo
+            const logoEl = document.getElementById('header-logo');
+            if (logoEl) logoEl.src = 'logo.png';
 
-            // Reset favicon to default if logo is missing
+            // Reset favicon
             let link = document.querySelector("link[rel~='icon']");
             if (link) link.href = 'logo.png';
         }
@@ -401,6 +401,19 @@ async function fetchConfig() {
             // Boşlukları temizle ve filtrele
             return parts.map(p => p.trim()).filter(p => p.length > 0);
         };
+
+        // 0. Marquee Text (Yeni Panel Standardı)
+        if (config.marquee_text) {
+            const parsed = parseNumberedText(config.marquee_text);
+            // If parse returns empty (no numbers), use the whole text as one item
+            if (parsed.length === 0 && config.marquee_text.trim().length > 0) {
+                marqueeItems.push(config.marquee_text);
+            } else {
+                parsed.forEach(p => {
+                    if (!marqueeItems.includes(p)) marqueeItems.push(p);
+                });
+            }
+        }
 
         // 1. Duyurular (Dizi veya Tekil olabilir) - İPTAL EDİLDİ (Kayan yazıda çıkmasın istendi)
         /*
@@ -531,7 +544,7 @@ async function fetchConfig() {
         }
 
         // Dorm section visibility check
-        const dormActive = (config.module_dorm_active !== undefined) ? config.module_dorm_active : true;
+        const dormActive = (config.module_dorm_active !== undefined) ? config.module_dorm_active : false;
         const dormCard = document.getElementById('dorm-card');
         const hadithCard = document.getElementById('hadith-card');
 
@@ -575,6 +588,20 @@ async function fetchConfig() {
             }
         }
 
+        // MOCK DATA FALLBACK (For Design Testing when API fails)
+        if (!weeklyHadithsArray || weeklyHadithsArray.length === 0) {
+            console.warn("API Data missing, using MOCK data for design verification.");
+            weeklyHadithsArray = [{
+                text: "Mücahid, Allah yolunda nefsi ile cihad eden kimsedir.",
+                arabic: "الْمُجَاهِدُ مَنْ جَاهَدَ نَفْسَهُ فِي سَبِيلِ اللَّهِ",
+                source: "Tirmizî, Fedâilü'l-Cihâd, 2"
+            }];
+            // Set start date to a past date to ensure week 1 is selected
+            let d = new Date();
+            d.setDate(d.getDate() - 7);
+            semesterStartDate = d.toISOString().split('T')[0];
+        }
+
         if (weeklyHadithsArray && weeklyHadithsArray.length > 0) {
             try {
                 const startDate = new Date(semesterStartDate || '2025-09-08');
@@ -588,10 +615,11 @@ async function fetchConfig() {
                 // Calculate AVAILABLE week index (for hadith selection)
                 let availableWeekIndex = actualWeekIndex;
                 if (availableWeekIndex >= weeklyHadithsArray.length) {
-                    availableWeekIndex = weeklyHadithsArray.length - 1;
+                    // Loop or stick to last? Let's modulo for mock data to always show something
+                    availableWeekIndex = actualWeekIndex % weeklyHadithsArray.length;
                 }
 
-                if (availableWeekIndex >= 0 && availableWeekIndex < weeklyHadithsArray.length) {
+                if (availableWeekIndex >= 0) {
                     const wData = weeklyHadithsArray[availableWeekIndex];
                     if (wData) {
                         selectedHadith = {
@@ -604,7 +632,9 @@ async function fetchConfig() {
                         console.log(`Displaying week ${actualWeekIndex + 1} with hadith from array index ${availableWeekIndex}`);
                     }
                 }
-            } catch (e) { console.error('Haftalık hadis hatası:', e); }
+            } catch (e) {
+                console.error('Haftalık hadis hatası:', e);
+            }
         }
 
         // 2. Manuel Hadis (Fallback)
@@ -671,58 +701,52 @@ async function fetchConfig() {
             }
 
             // Metin Kontrolü - Boşsa fallback metin
-            let hadithText = h.text || '...';
-            let arabicText = h.arabic || '';
+            let hadithText = h.text || ''; // Genellikle Arapça burada
+            let turkishText = h.arabic || ''; // Genellikle Türkçe burada
 
-            // --- SMART SPLIT for Legacy Data (Arabic / Turkish) ---
-            // Eğer Arapça alanı boşsa VE metin içinde Türkçe karakterler ve / varsa ayırmayı dene
-            if (!arabicText && hadithText.includes('/')) {
-                // Arapça Unicode Aralığı: \u0600 - \u06FF
-                const hasArabicChar = /[\u0600-\u06FF]/.test(hadithText);
-                if (hasArabicChar) {
-                    const parts = hadithText.split('/');
-                    if (parts.length >= 2) {
-                        // Genellikle format: ARAPÇA / TÜRKÇE
-                        // İlk parçada Arapça harf var mı?
-                        if (/[\u0600-\u06FF]/.test(parts[0])) {
-                            arabicText = parts[0].trim();
-                            hadithText = parts.slice(1).join('/').trim(); // Geri kalan hepsi Türkçe
-                        }
-                    }
+            // --- AKILLI VERİ EŞLEŞTİRME (Smart Data Swap) ---
+            // Eğer 'turkishText' (h.arabic) alanı Arapça karakter içeriyorsa ve 'hadithText' içermiyorsa yer değiştir
+            const isActuallyArabic = (str) => /[\u0600-\u06FF]/.test(str);
+
+            let finalArabic = "";
+            let finalTurkish = "";
+
+            if (isActuallyArabic(hadithText) && !isActuallyArabic(turkishText)) {
+                // Beklenen durum: Text=Arapça, Arabic=Türkçe
+                finalArabic = hadithText;
+                finalTurkish = turkishText;
+            } else if (isActuallyArabic(turkishText) && !isActuallyArabic(hadithText)) {
+                // TERS DURUM: Arabic=Arapça, Text=Türkçe
+                finalArabic = turkishText;
+                finalTurkish = hadithText;
+            } else if (isActuallyArabic(hadithText) && isActuallyArabic(turkishText)) {
+                // İkisi de Arapçaysa (nadir), text'i Türkçe kabul etmeye çalış (slash varsa ayır)
+                finalArabic = hadithText;
+                finalTurkish = turkishText;
+            } else {
+                // Hiçbiri Arapça değilse veya karmaşıksa varsayılan ata
+                finalArabic = "";
+                finalTurkish = hadithText || turkishText;
+            }
+
+            // --- SMART SPLIT for Legacy Data (Slash separated) ---
+            if (!finalArabic && finalTurkish.includes('/')) {
+                const parts = finalTurkish.split('/');
+                if (isActuallyArabic(parts[0])) {
+                    finalArabic = parts[0].trim();
+                    finalTurkish = parts.slice(1).join('/').trim();
                 }
             }
 
-            document.getElementById('hadith-content').innerHTML = hadithText;
+            // UI'ya Yazdır
+            document.getElementById('hadith-content').innerHTML = finalTurkish.trim() || '...';
 
             const arabDiv = document.getElementById('hadith-arabic');
-            arabDiv.innerText = arabicText;
-            arabDiv.style.display = arabicText ? 'block' : 'none';
+            arabDiv.innerText = finalArabic.trim();
+            arabDiv.style.display = finalArabic ? 'block' : 'none';
 
-            // --- AUTO FONT SIZING (More Aggressive) ---
-            // Arabic Scaling
-            arabDiv.style.textWrap = 'balance';
-            arabDiv.style.lineHeight = '1.6';
-
-            if (arabicText.length > 100) {
-                arabDiv.style.fontSize = '1.5rem';
-            } else if (arabicText.length > 60) {
-                arabDiv.style.fontSize = '1.9rem';
-            } else {
-                arabDiv.style.fontSize = '2.4rem';
-            }
-
-            // Turkish Scaling
-            const trDiv = document.getElementById('hadith-content').parentElement;
-            if (hadithText.length > 150) {
-                trDiv.style.fontSize = '1rem';
-                trDiv.style.marginTop = '5px';
-            } else if (hadithText.length > 80) {
-                trDiv.style.fontSize = '1.2rem';
-                trDiv.style.marginTop = '8px';
-            } else {
-                trDiv.style.fontSize = '1.5rem';
-                trDiv.style.marginTop = '15px';
-            }
+            // --- FONT SIZING (Controlled via board.html CSS) ---
+            // Removed inline scaling to allow CSS styles to take effect
 
             // Resim varsa
             if (h.img) {
@@ -746,10 +770,10 @@ async function fetchConfig() {
                 rawAnnouncements.push({
                     type: 'announcement',
                     title: 'DUYURULAR',
-                    badge: 'ÖNEMLİ', // Sol üst köşe
-                    circle: '', // Daire içi,
-                    topLabel: 'BİLGİLENDİRME', // Sağ üst
-                    content: text // Ana metin
+                    badge: 'ÖNEMLİ',
+                    circle: '<i class="fas fa-bullhorn text-4xl text-white"></i>',
+                    topLabel: 'BİLGİLENDİRME',
+                    content: text
                 });
             });
         }
@@ -773,33 +797,17 @@ async function fetchConfig() {
                 let score = '';
 
                 // Regex to capture [Class] (optional), Name, - Score (optional)
-                const match = fullStr.match(/^(?:\[(.*?)\]\s*)?(.*?)(?:\s*-\s*(.*))?$/);
+                const scoreParts = fullStr.split(' - ');
+                const studentAndClass = scoreParts[0];
+                score = scoreParts[1] || "";
 
-                if (match) {
-                    className = match[1] ? match[1].trim() : '';
-                    studentName = match[2] ? match[2].trim() : '';
-                    score = match[3] ? match[3].trim() : '';
-                } else {
-                    // Fallback
-                    studentName = fullStr;
-                }
+                const classMatches = studentAndClass.match(/\[(.*?)\]/);
+                className = classMatches ? classMatches[1] : "";
+                studentName = studentAndClass.replace(/\[.*?\]/, "").trim();
 
-                // Fallback for score if inside name (Legacy spaces split)
-                if (!score && !className) {
-                    const spaces = studentName.split(' ');
-                    const last = spaces[spaces.length - 1];
-                    if (spaces.length > 1 && !isNaN(last)) {
-                        score = last;
-                        studentName = spaces.slice(0, -1).join(' ');
-                    }
-                }
-
-                // Construct Display String (HTML Based)
                 let displayStr = '';
                 if (className) displayStr += `<span class="bg-yellow-400 text-purple-900 px-3 py-1 rounded-lg text-lg align-middle mr-2 shadow-sm inline-block font-extrabold">${className}</span>`;
-
                 displayStr += `<span class="font-bold inline-block align-middle">${studentName}</span>`;
-
                 if (score) displayStr += `<span class="bg-green-500 text-white px-3 py-1 rounded-lg text-lg align-middle ml-2 shadow-sm inline-block font-bold">${score} PUAN</span>`;
 
                 rawExams.push({
@@ -809,9 +817,60 @@ async function fetchConfig() {
                     circle: '<svg class="w-16 h-16 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M20.2 2H19.5H18C17.1 2 16.3 2.4 15.8 3C15.3 2.4 14.6 2 13.5 2H12.2C11.6 2 11 2.2 10.6 2.6L10 3.3L9.4 2.6C9 2.2 8.4 2 7.8 2H6.5C5.4 2 4.7 2.4 4.2 3C3.7 2.4 2.9 2 2 2H1.3H0V6C0 9.3 2.7 12 6 12H7.2L10 16.2L12.8 12H14C17.3 12 20 9.3 20 6V2H20.2ZM6 10C3.8 10 2 8.2 2 6V4H2.2H3.5C4.1 4 4.5 4.4 4.5 5V6C4.5 6.6 4.9 7 5.5 7H6C6.6 7 7 6.6 7 6V4H7.8C8.4 4 9 4.6 9 5.2V6.5L10 8L11 6.5V5.2C11 4.6 11.6 4 12.2 4H13C13.6-4 14 3.6 14 3H14.5H15.8C16.4 4 17 4.6 17 5.2V6.5L18 8L19 6.5V5.2C19 4.6 19.6 4 20.2 4H21.5H22V6C22 8.2 20.2 10 18 10H14.6L12.8 12.7L10 16.9L7.2 12.7L5.4 10H6ZM10 18H14V22H10V18Z"/></svg>',
                     topLabel: 'TEBRİK EDERİZ',
                     content: displayStr,
-                    image: imageUrl // Pass image
+                    image: imageUrl
                 });
             });
+        }
+
+        // --- NEW: DYNAMIC EXAM WINNERS (Priority: List -> Legacy 1-4) ---
+        const examList = (Array.isArray(config.exam_winners_list) && config.exam_winners_list.length > 0)
+            ? config.exam_winners_list
+            : [];
+
+        if (examList.length > 0) {
+            examList.forEach(student => {
+                if (student.name && student.name.trim()) {
+                    let displayStr = '';
+                    if (student.class) displayStr += `<span class="bg-yellow-400 text-purple-900 px-3 py-1 rounded-lg text-lg align-middle mr-2 shadow-sm inline-block font-extrabold">${student.class}</span>`;
+                    displayStr += `<span class="font-bold inline-block align-middle">${student.name}</span>`;
+                    if (student.points) displayStr += `<span class="bg-green-500 text-white px-3 py-1 rounded-lg text-lg align-middle ml-2 shadow-sm inline-block font-bold">${student.points} PUAN</span>`;
+
+                    rawExams.push({
+                        type: 'exam',
+                        title: (config.exam_name ? config.exam_name + ' ŞAMPİYONLARI' : 'SINAV ŞAMPİYONLARI'),
+                        badge: 'MAŞAALLAH',
+                        circle: '<svg class="w-16 h-16 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M20.2 2H19.5H18C17.1 2 16.3 2.4 15.8 3C15.3 2.4 14.6 2 13.5 2H12.2C11.6 2 11 2.2 10.6 2.6L10 3.3L9.4 2.6C9 2.2 8.4 2 7.8 2H6.5C5.4 2 4.7 2.4 4.2 3C3.7 2.4 2.9 2 2 2H1.3H0V6C0 9.3 2.7 12 6 12H7.2L10 16.2L12.8 12H14C17.3 12 20 9.3 20 6V2H20.2ZM6 10C3.8 10 2 8.2 2 6V4H2.2H3.5C4.1 4 4.5 4.4 4.5 5V6C4.5 6.6 4.9 7 5.5 7H6C6.6 7 7 6.6 7 6V4H7.8C8.4 4 9 4.6 9 5.2V6.5L10 8L11 6.5V5.2C11 4.6 11.6 4 12.2 4H13C13.6-4 14 3.6 14 3H14.5H15.8C16.4 4 17 4.6 17 5.2V6.5L18 8L19 6.5V5.2C19 4.6 19.6 4 20.2 4H21.5H22V6C22 8.2 20.2 10 18 10H14.6L12.8 12.7L10 16.9L7.2 12.7L5.4 10H6ZM10 18H14V22H10V18Z"/></svg>',
+                        topLabel: 'TEBRİK EDERİZ',
+                        content: displayStr,
+                        image: student.image || ''
+                    });
+                }
+            });
+        } else {
+            // Fallback to Legacy 1-4
+            for (let i = 1; i <= 4; i++) {
+                const name = config[`exam_s_${i}_name`];
+                if (name && name.trim()) {
+                    const className = config[`exam_s_${i}_class`] || '';
+                    const score = config[`exam_s_${i}_points`] || '';
+                    const imageUrl = config[`exam_s_${i}_image`] || '';
+
+                    let displayStr = '';
+                    if (className) displayStr += `<span class="bg-yellow-400 text-purple-900 px-3 py-1 rounded-lg text-lg align-middle mr-2 shadow-sm inline-block font-extrabold">${className}</span>`;
+                    displayStr += `<span class="font-bold inline-block align-middle">${name}</span>`;
+                    if (score) displayStr += `<span class="bg-green-500 text-white px-3 py-1 rounded-lg text-lg align-middle ml-2 shadow-sm inline-block font-bold">${score} PUAN</span>`;
+
+                    rawExams.push({
+                        type: 'exam',
+                        title: (config.exam_name ? config.exam_name + ' ŞAMPİYONLARI' : 'SINAV ŞAMPİYONLARI'),
+                        badge: 'MAŞAALLAH',
+                        circle: '<svg class="w-16 h-16 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M20.2 2H19.5H18C17.1 2 16.3 2.4 15.8 3C15.3 2.4 14.6 2 13.5 2H12.2C11.6 2 11 2.2 10.6 2.6L10 3.3L9.4 2.6C9 2.2 8.4 2 7.8 2H6.5C5.4 2 4.7 2.4 4.2 3C3.7 2.4 2.9 2 2 2H1.3H0V6C0 9.3 2.7 12 6 12H7.2L10 16.2L12.8 12H14C17.3 12 20 9.3 20 6V2H20.2ZM6 10C3.8 10 2 8.2 2 6V4H2.2H3.5C4.1 4 4.5 4.4 4.5 5V6C4.5 6.6 4.9 7 5.5 7H6C6.6 7 7 6.6 7 6V4H7.8C8.4 4 9 4.6 9 5.2V6.5L10 8L11 6.5V5.2C11 4.6 11.6 4 12.2 4H13C13.6-4 14 3.6 14 3H14.5H15.8C16.4 4 17 4.6 17 5.2V6.5L18 8L19 6.5V5.2C19 4.6 19.6 4 20.2 4H21.5H22V6C22 8.2 20.2 10 18 10H14.6L12.8 12.7L10 16.9L7.2 12.7L5.4 10H6ZM10 18H14V22H10V18Z"/></svg>',
+                        topLabel: 'TEBRİK EDERİZ',
+                        content: displayStr,
+                        image: imageUrl
+                    });
+                }
+            }
         }
 
         const rawMenus = [];
@@ -819,15 +878,19 @@ async function fetchConfig() {
         if (config.dinner_menu) rawMenus.push({ type: 'menu', title: 'AKŞAM YEMEĞİ', badge: 'AFİYET OLSUN', circle: '<svg class="w-16 h-16 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M11 9H9V2H7V9H5V2H3V9C3 11.12 4.66 12.84 6.75 12.97V22H9.25V12.97C11.34 12.84 13 11.12 13 9V2H11V9ZM16 6V14H18.5V22H21V2C18.24 2 16 4.24 16 6Z"/></svg>', topLabel: 'GÜNÜN MENÜSÜ', content: config.dinner_menu });
 
         const rawStudent = [];
-        if (config.student_of_week && config.student_of_week.name) {
+        let sow = config.student_of_week;
+        if (typeof sow === 'string' && sow.trim()) {
+            try { sow = JSON.parse(sow); } catch (e) { sow = null; }
+        }
+        if (sow && sow.name) {
             rawStudent.push({
                 type: 'student',
                 title: 'HAFTANIN TALEBESİ',
-                badge: config.student_of_week.class || 'BAŞARI',
+                badge: sow.class || 'BAŞARI',
                 circle: '<svg class="w-16 h-16 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21L16.54 13.97L22 9.24L14.81 8.62L12 2L9.19 8.62L2 9.24L7.45 13.97L5.82 21L12 17.27Z"/></svg>', // Image handled in rotation
                 topLabel: 'GURUR TABLOMUZ',
-                content: `${config.student_of_week.name}\n${config.student_of_week.message || ''}`,
-                image: config.student_of_week.image
+                content: `${sow.name}\n${sow.message || ''}`,
+                image: sow.image
             });
         }
 
@@ -844,15 +907,12 @@ async function fetchConfig() {
                 // Reuse Announcement Style Logic but with Timer Type
                 rawAnnouncements.push({
                     type: 'countdown',
-                    title: 'GERİ SAYIM',
+                    title: config.countdown_event || 'GERİ SAYIM',
+                    target: config.countdown_date,
                     badge: 'HEYECAN',
                     circle: '<i class="fas fa-hourglass-half text-4xl"></i>',
-                    topLabel: config.countdown_event || 'ETKİNLİK',
-                    content: `<div class="flex flex-col items-center justify-center gap-2">
-                                <div class="text-6xl font-black text-yellow-300 drop-shadow-lg">${days} GÜN</div>
-                                <div class="text-2xl font-bold text-white opacity-90">${hours} SAAT KALDI</div>
-                                <div class="text-sm text-purple-200 mt-2 uppercase tracking-widest opacity-75">${config.countdown_event || 'Etkinlik'}</div>
-                               </div>`
+                    topLabel: 'GERİ SAYIM',
+                    content: ''
                 });
             }
         }
@@ -860,17 +920,93 @@ async function fetchConfig() {
         const rawImproved = [];
         if (config.most_improved_list && Array.isArray(config.most_improved_list)) {
             config.most_improved_list.forEach(item => {
-                const parts = item.split('-');
-                const name = parts[0].trim();
-                const score = parts[1] ? parts[1].trim() : '<svg class="w-6 h-6 text-white inline-block" fill="currentColor" viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.59-6.59L22 12V6z"/></svg>';
+                // Format could be "Name - Score" or "Name - Score - Points"
+                const parts = item.split('-').map(p => p.trim());
+                const name = parts[0] || "Öğrenci";
+                const score = parts[1] || "—";
+                const points = parts[2] || "0";
+
                 rawImproved.push({
                     type: 'improved',
                     title: 'EN ÇOK GELİŞENLER',
                     badge: score,
-                    circle: '<svg class="w-10 h-10 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.59-6.59L22 12V6z"/></svg>',
+                    points: points,
+                    circle: '<i class="fas fa-chart-line text-2xl text-white"></i>',
                     topLabel: 'AZİM VE GAYRET',
                     content: name
                 });
+            });
+        }
+
+        // --- NEW: DYNAMIC IMPROVED STUDENTS (Priority: List -> Legacy 1-4) ---
+        const improvedList = (Array.isArray(config.improved_list) && config.improved_list.length > 0)
+            ? config.improved_list
+            : [];
+
+        if (improvedList.length > 0) {
+            improvedList.forEach(student => {
+                if (student.name && student.name.trim()) {
+                    rawImproved.push({
+                        type: 'improved',
+                        title: 'EN ÇOK GELİŞENLER',
+                        badge: student.class || 'BAŞARI',
+                        points: student.points || '0',
+                        circle: '<i class="fas fa-chart-line text-2xl text-white"></i>',
+                        topLabel: 'AZİM VE GAYRET',
+                        content: student.name,
+                        image: student.image || ''
+                    });
+                }
+            });
+        } else {
+            // Fallback to Legacy 1-4
+            for (let i = 1; i <= 4; i++) {
+                const name = config[`improved_s_${i}_name`];
+                if (name && name.trim()) {
+                    const className = config[`improved_s_${i}_class`] || '';
+                    const points = config[`improved_s_${i}_points`] || '0';
+                    const imageUrl = config[`improved_s_${i}_image`] || '';
+
+                    rawImproved.push({
+                        type: 'improved',
+                        title: 'EN ÇOK GELİŞENLER',
+                        badge: className || 'BAŞARI', // If no class, use BAŞARI badge
+                        points: points,
+                        circle: '<i class="fas fa-chart-line text-2xl text-white"></i>',
+                        topLabel: 'AZİM VE GAYRET',
+                        content: name,
+                        image: imageUrl
+                    });
+                }
+            }
+        }
+
+        // --- NEW: TEA TALKS MODULE ---
+        const rawTeaTalks = [];
+        if (config.module_tea_active && Array.isArray(config.tea_talks)) {
+            config.tea_talks.forEach(t => {
+                if (t.name && t.name.trim()) {
+                    let dateStr = t.day || '';
+                    if (dateStr) {
+                        try {
+                            const d = new Date(dateStr);
+                            if (!isNaN(d.getTime())) {
+                                dateStr = d.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', weekday: 'short' });
+                            }
+                        } catch (e) { }
+                    }
+
+                    rawTeaTalks.push({
+                        type: 'tea',
+                        title: 'ÇAY SOHBETLERİ',
+                        badge: 'RANDEVU',
+                        circle: '<i class="fas fa-mug-hot text-3xl text-white"></i>',
+                        topLabel: 'BİREBİR GÖRÜŞME',
+                        content: t.name,
+                        date: dateStr,
+                        time: t.time || ''
+                    });
+                }
             });
         }
 
@@ -910,13 +1046,13 @@ async function fetchConfig() {
             infoData = rawCountdown;
         } else {
             // AUTO: Sadece DOLU olanları listeye ekle
-            infoData = [...rawCountdown, ...rawAnnouncements, ...rawExams, ...rawMenus, ...rawStudent, ...rawImproved];
+            infoData = [...rawCountdown, ...rawAnnouncements, ...rawExams, ...rawMenus, ...rawStudent, ...rawImproved, ...rawTeaTalks];
         }
 
         // Eğer seçilen tipte veri yoksa (veya auto seçilip hepsi boşsa) boş dizide kalır.
         // Fallback: Seçilen tip boşsa, otomatik moda düşerek dolu olan diğerlerini göster.
         if (infoData.length === 0 && selectedType !== 'auto') {
-            infoData = [...rawAnnouncements, ...rawExams, ...rawMenus, ...rawStudent, ...rawImproved];
+            infoData = [...rawAnnouncements, ...rawExams, ...rawMenus, ...rawStudent, ...rawImproved, ...rawTeaTalks];
         }
 
         // 7. Video Listesi (Playlist)
@@ -1008,18 +1144,63 @@ function rotateInfo() {
 
     setTimeout(() => {
         const item = infoData[infoIndex];
+
+        // Kart arkaplan rengini ve dekorasyonları temizle
+        let cardContainer = container.parentElement;
+        // Tüm dekoratif ikonları temizle (megaphone vb.)
+        const decos = cardContainer.querySelectorAll('.fas.fa-bullhorn.absolute');
+        decos.forEach(d => d.remove());
+
+        let mainText = document.getElementById('info-main-text');
+        if (mainText) {
+            mainText.classList.remove('text-5xl', 'text-4xl', 'text-2xl', 'text-xl', 'text-sm', 'leading-normal', 'leading-tight', 'whitespace-pre-wrap', 'columns-2', 'gap-8', 'text-left', 'text-center', 'w-full', 'flex', 'items-center', 'justify-center');
+            mainText.style.fontSize = '';
+            mainText.innerHTML = '';
+        }
+
         document.getElementById('info-title').innerText = item.title;
-        document.getElementById('info-badge').innerText = item.badge;
+        const badge = document.getElementById('info-badge');
+        badge.innerText = item.badge;
+
+        // Önemli rozeti için pulse efekti (sadece duyuruda)
+        badge.classList.remove('animate-pulse');
+        if (item.type === 'announcement') {
+            badge.classList.add('animate-pulse');
+        }
         // document.getElementById('info-circle-badge').innerHTML = item.circle; // Managed below
 
         // Kart arkaplan rengini değiştir (yemek için özel)
-        const cardContainer = container.parentElement;
+        cardContainer = container.parentElement;
         if (item.type === 'menu') {
             // Yemek menüsü için özel gradient
             cardContainer.className = 'w-2/3 bg-gradient-to-br from-orange-500 via-red-500 to-pink-500 rounded-xl shadow-lg p-5 flex flex-col relative overflow-hidden text-white border border-orange-700';
         } else if (item.type === 'countdown') {
             // Countdown için özel gradient (Gece mavisi / koyu tema)
             cardContainer.className = 'w-2/3 bg-gradient-to-br from-slate-800 via-indigo-900 to-slate-900 rounded-xl shadow-lg p-5 flex flex-col relative overflow-hidden text-white border border-indigo-500/50';
+        } else if (item.type === 'tea') {
+            // Çay Sohbetleri için sıcak amber/turuncu gradient
+            cardContainer.className = 'w-2/3 bg-gradient-to-br from-amber-600 via-orange-600 to-amber-700 rounded-xl shadow-lg p-5 flex flex-col relative overflow-hidden text-white border border-orange-500/50';
+        } else if (item.type === 'announcement') {
+            // Duyurular için derin gece mavisi gradient
+            cardContainer.className = 'w-2/3 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 rounded-xl shadow-lg p-5 flex flex-col relative overflow-hidden text-white border border-blue-500/30';
+            // Arka plana hafif bir megaphone ikonu ekleyelim (dekoratif)
+            const decorative = document.createElement('i');
+            decorative.className = 'fas fa-bullhorn absolute -right-10 -bottom-10 text-[15rem] text-white opacity-5 rotate-12 pointer-events-none';
+            cardContainer.appendChild(decorative);
+        } else if (item.type === 'student') {
+            // Haftanın Öğrencisi için Altın/Amber Gradient
+            cardContainer.className = 'w-2/3 bg-gradient-to-br from-yellow-500 via-amber-600 to-yellow-700 rounded-xl shadow-lg p-5 flex flex-col relative overflow-hidden text-white border border-yellow-400/50';
+            // Dekoratif Yıldızlar
+            const decorative = document.createElement('i');
+            decorative.className = 'fas fa-star absolute -right-8 -top-8 text-[12rem] text-white opacity-10 rotate-12 pointer-events-none';
+            cardContainer.appendChild(decorative);
+        } else if (item.type === 'improved') {
+            // Gelişim Gösterenler için Zümrüt Yeşili Gradient
+            cardContainer.className = 'w-2/3 bg-gradient-to-br from-emerald-600 via-teal-700 to-emerald-800 rounded-xl shadow-lg p-5 flex flex-col relative overflow-hidden text-white border border-emerald-400/30';
+            // Dekoratif Grafik İkonu
+            const decorative = document.createElement('i');
+            decorative.className = 'fas fa-chart-line absolute -right-5 -bottom-5 text-[10rem] text-white opacity-5 pointer-events-none';
+            cardContainer.appendChild(decorative);
         } else {
             // Diğerleri için mor gradient
             cardContainer.className = 'w-2/3 bg-gradient-to-br from-[#4c1d95] to-[#7c3aed] rounded-xl shadow-lg p-5 flex flex-col relative overflow-hidden text-white border border-purple-800';
@@ -1039,14 +1220,17 @@ function rotateInfo() {
         circle.style.display = 'flex';
 
         if (item.image) {
-            circle.innerHTML = `<img src="${item.image}" class="w-full h-full object-cover rounded-full shadow-lg">`;
+            circle.innerHTML = `<img src="${item.image}" class="w-full h-full object-cover rounded-full shadow-lg border-4 border-white/30">`;
             circle.classList.remove('bg-yellow-500', 'bg-blue-500', 'bg-orange-500', 'bg-green-500', 'bg-purple-500', 'bg-pink-500');
 
-            // Görseli Büyüt (w-16 = 4rem, biz 6rem yapalım ~ 1.5 katı)
-            circle.style.width = '6rem';
-            circle.style.height = '6rem';
+            // Eğer Haftanın Öğrencisi ise Altın Çerçeve
+            if (item.type === 'student') {
+                circle.querySelector('img').classList.add('border-yellow-300', 'ring-4', 'ring-yellow-500/30');
+            }
 
-            // Çerçeveyi Kaldır
+            // Görseli Büyüt
+            circle.style.width = '7rem';
+            circle.style.height = '7rem';
             circle.style.border = 'none';
             circle.classList.remove('border-4', 'border-yellow-300'); // HTML default classlarını temizle
         } else if (item.circle) {
@@ -1079,12 +1263,15 @@ function rotateInfo() {
         } else if (item.type === 'improved') {
             circle.style.fontSize = '1.5rem';
             circle.classList.add('bg-green-500');
-        } else if (item.type === 'improved') {
-            circle.style.fontSize = '1.5rem';
-            circle.classList.add('bg-green-500');
         } else if (item.type === 'countdown') {
             circle.style.fontSize = '1.5rem';
             circle.classList.add('bg-indigo-600');
+        } else if (item.type === 'tea') {
+            circle.style.fontSize = '1.5rem';
+            circle.classList.add('bg-orange-500');
+        } else if (item.type === 'announcement') {
+            circle.style.fontSize = '2rem';
+            circle.classList.add('bg-blue-600', 'shadow-2xl');
         } else {
             // Default (e.g. Announcement)
             circle.style.fontSize = '1.5rem';
@@ -1093,7 +1280,7 @@ function rotateInfo() {
 
         document.getElementById('info-top-label').innerText = item.topLabel; // "BİRİNCİSİ"
 
-        const mainText = document.getElementById('info-main-text');
+        mainText = document.getElementById('info-main-text');
 
         // Menü ise özel HTML formatı (İkonlu Liste)
         if (item.type === 'menu') {
@@ -1107,15 +1294,69 @@ function rotateInfo() {
                 </div>
             `).join('');
 
-            mainText.classList.remove('text-2xl', 'text-center', 'whitespace-pre-wrap');
             mainText.classList.add('text-xl', 'leading-normal', 'columns-2', 'gap-8', 'text-left');
 
-            mainText.classList.remove('text-2xl', 'text-center', 'whitespace-pre-wrap');
-            mainText.classList.add('text-xl', 'leading-normal', 'columns-2', 'gap-8', 'text-left');
+        } else if (item.type === 'tea') {
+            mainText.innerHTML = `
+                <div class="flex flex-col items-center justify-center space-y-4">
+                    <span class="text-4xl font-black uppercase tracking-tight drop-shadow-md text-white">${item.content}</span>
+                    <div class="flex items-center gap-3 text-2xl font-bold bg-white/10 px-5 py-2.5 rounded-full backdrop-blur-md shadow-2xl border border-white/20">
+                        <i class="far fa-calendar-alt text-orange-200 opacity-90"></i>
+                        <span class="text-orange-100">${item.date}</span>
+                        <span class="w-1.5 h-1.5 bg-white/30 rounded-full"></span>
+                        <span class="text-orange-50 font-black">${item.time}</span>
+                    </div>
+                </div>
+            `;
+            mainText.classList.add('text-center');
+            mainText.classList.remove('text-2xl', 'whitespace-pre-wrap', 'columns-2', 'gap-8', 'text-left');
+        } else if (item.type === 'announcement') {
+            const container = mainText.parentElement;
+
+            // 1. Reset & Clear to Measure Pure Container
+            mainText.className = '';
+            mainText.style.cssText = '';
+            mainText.innerHTML = ''; // Clear content so container resets to natural size
+
+            // Measure "Empty" Container
+            const availableHeight = container.clientHeight;
+            const availableWidth = container.clientWidth;
+
+            // 2. Set Content & Styles
+            mainText.innerHTML = item.content;
+
+            // V5: Explicit Pixel Height & Strict Overflow
+            mainText.classList.add('w-full', 'flex', 'items-center', 'justify-center', 'text-center', 'leading-tight', 'px-8', 'py-2', 'font-black', 'uppercase', 'tracking-normal', 'drop-shadow-md', 'overflow-hidden');
+            mainText.style.wordBreak = 'break-word';
+
+            // FORCE HEIGHT TO PIXEL VALUE
+            // This prevents the flex container from expanding at all
+            if (availableHeight > 0) {
+                mainText.style.height = availableHeight + 'px';
+                mainText.style.maxHeight = availableHeight + 'px';
+            } else {
+                // Fallback if measurement failed (hidden tab etc)
+                mainText.classList.add('h-full', 'max-h-full');
+            }
+
+            // 3. Auto-Scale Logic
+            let fontSize = 3.2;
+            mainText.style.fontSize = `${fontSize}rem`;
+
+            let iterations = 0;
+            // Check overflow against the CLAMPED clientHeight
+            while (
+                (mainText.scrollHeight > mainText.clientHeight || mainText.scrollWidth > availableWidth)
+                && fontSize > 0.5
+                && iterations < 100
+            ) {
+                fontSize -= 0.1;
+                mainText.style.fontSize = `${fontSize}rem`;
+                iterations++;
+            }
 
         } else if (item.type === 'countdown') {
             // COUNTDOWN RENDER
-            mainText.classList.remove('text-xl', 'text-sm', 'leading-normal', 'columns-2', 'gap-8', 'text-left', 'whitespace-pre-wrap');
             mainText.classList.add('text-center', 'w-full', 'flex', 'items-center', 'justify-center');
             mainText.style.fontSize = '';
 
@@ -1162,6 +1403,36 @@ function rotateInfo() {
             updateTimer(); // Initial call
             countdownInterval = setInterval(updateTimer, 1000);
 
+        } else if (item.type === 'student') {
+            mainText.innerHTML = `
+                <div class="flex flex-col items-center justify-center">
+                    <div class="text-[0.7rem] font-black tracking-[0.2em] text-yellow-200 mb-1 opacity-80 uppercase">HAFTANIN YILDIZI</div>
+                    <span class="text-4xl font-black uppercase tracking-tight drop-shadow-lg text-white mb-2">${item.content}</span>
+                    <div class="inline-flex items-center gap-2 bg-black/20 px-4 py-1.5 rounded-full border border-white/10 backdrop-blur-sm">
+                        <i class="fas fa-medal text-yellow-500"></i>
+                        <span class="text-xs font-bold text-yellow-100 uppercase tracking-wider">${item.badge}</span>
+                    </div>
+                </div>
+            `;
+            mainText.classList.add('text-center');
+        } else if (item.type === 'improved') {
+            const points = item.points || "0";
+            mainText.innerHTML = `
+                <div class="flex flex-col items-center justify-center">
+                    <span class="text-4xl font-black uppercase tracking-tight drop-shadow-lg text-white mb-2">${item.content}</span>
+                    <div class="flex items-center gap-4">
+                        <div class="bg-emerald-500/20 px-3 py-1 rounded-lg border border-emerald-400/30">
+                            <span class="text-[0.6rem] font-bold text-emerald-200 uppercase block leading-none mb-1">DERECE</span>
+                            <span class="text-lg font-black text-white leading-none">${item.badge}</span>
+                        </div>
+                        <div class="bg-emerald-400 text-emerald-950 px-3 py-1 rounded-lg font-black flex items-center gap-1.5 shadow-lg transform rotate-2">
+                            <i class="fas fa-arrow-up text-sm"></i>
+                            <span class="text-lg">+${points}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            mainText.classList.add('text-center');
         } else {
             // Temizle ve Hazırla
             mainText.innerHTML = item.content;
@@ -1650,6 +1921,8 @@ async function fetchLeftGalleryImages() {
         } else {
             console.log('No left gallery images found');
             leftGalleryImages = [];
+            document.getElementById('left-gallery-container').classList.add('hidden');
+            document.getElementById('left-normal-content').classList.remove('hidden');
         }
     } catch (error) {
         console.error('Left gallery fetch error:', error);
@@ -1660,10 +1933,17 @@ async function fetchLeftGalleryImages() {
 
 // Sol galeri rotasyonunu başlat
 function startLeftGalleryRotation() {
-    if (leftGalleryImages.length === 0) return;
+    if (leftGalleryImages.length === 0) {
+        document.getElementById('left-gallery-container').classList.add('hidden');
+        document.getElementById('left-normal-content').classList.remove('hidden');
+        return;
+    }
 
     // Mevcut timeout'u temizle
     if (leftGalleryTimeout) clearTimeout(leftGalleryTimeout);
+
+    // İndeksi sıfırla (Race condition prevention)
+    leftGalleryIndex = 0;
 
     // Görseli göster
     showLeftGalleryImage();
@@ -1676,8 +1956,27 @@ function showLeftGalleryImage() {
     const galleryImage = document.getElementById('left-gallery-image');
     const normalContent = document.getElementById('left-normal-content');
 
+    // Güvenlik Kontrolü
+    if (!leftGalleryImages || leftGalleryImages.length === 0) {
+        galleryContainer.classList.add('hidden');
+        normalContent.classList.remove('hidden');
+        return;
+    }
+
+    // İndeks kontrolü
+    if (leftGalleryIndex >= leftGalleryImages.length) {
+        leftGalleryIndex = 0;
+    }
+
     // Mevcut görseli al
     const currentImage = leftGalleryImages[leftGalleryIndex];
+
+    if (!currentImage) {
+        // Görsel yoksa normal içeriğe dön (Siyah ekranı engelle)
+        galleryContainer.classList.add('hidden');
+        normalContent.classList.remove('hidden');
+        return;
+    }
 
     // İlk açılış mı kontrolü (Container gizliyse)
     if (galleryContainer.classList.contains('hidden')) {
@@ -1713,6 +2012,9 @@ function showLeftGalleryImage() {
     if (leftGalleryIndex >= leftGalleryImages.length) {
         // 10 saniye sonra galeriyi gizle (GÜNCELLENDİ: 18sn)
         leftGalleryTimeout = setTimeout(() => {
+            // Eğer tam bekleme aşamasındayken config fetch tetiklenirse,
+            // startLeftGalleryRotation indexi 0 yapacak, bu timeout çakışabilir.
+            // Bu yüzden normalContent checki yapıyoruz.
             galleryContainer.classList.add('hidden');
             normalContent.classList.remove('hidden');
 
@@ -1723,8 +2025,19 @@ function showLeftGalleryImage() {
             }, 20000); // 20 saniye bekleme
         }, 18000); // Son görseli 18 saniye göster
     } else {
-        // 10 saniye sonra bir sonraki görseli göster (GÜNCELLENDİ: 18sn)
+        // 18 saniye sonra bir sonraki görseli göster
         leftGalleryTimeout = setTimeout(showLeftGalleryImage, 18000);
+    }
+}
+
+// Görsel yükleme hatası durumunda normal içeriğe dön
+function handleGalleryError() {
+    console.warn("Galeri görseli yüklenemedi, normal içeriğe dönülüyor.");
+    const galleryContainer = document.getElementById('left-gallery-container');
+    const normalContent = document.getElementById('left-normal-content');
+    if (galleryContainer && normalContent) {
+        galleryContainer.classList.add('hidden');
+        normalContent.classList.remove('hidden');
     }
 }
 

@@ -43,7 +43,7 @@ module.exports = async (req, res) => {
         // 1. Get institution's region and type
         const { data: institution, error: instError } = await supabase
             .from('institutions')
-            .select('config, region')
+            .select('config')
             .eq('slug', slug)
             .single();
 

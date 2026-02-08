@@ -23,9 +23,13 @@ app.use('/api/:functionName', async (req, res) => {
 
     if (fs.existsSync(apiPath)) {
         try {
-            const apiFunction = require(apiPath);
+            let apiFunction = require(apiPath);
+            // Handle ESM default export if present
+            if (apiFunction.default) apiFunction = apiFunction.default;
+
             // Vercel Serverless Function Signature: (req, res)
             await apiFunction(req, res);
+            delete require.cache[require.resolve(apiPath)]; // Clear cache for hot-reload feel
         } catch (error) {
             console.error(`API Error (${functionName}):`, error);
             if (!res.headersSent) {

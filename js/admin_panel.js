@@ -561,28 +561,61 @@ function renderGallery() {
         const url = typeof item === 'string' ? item : (item.url || '');
 
         const div = document.createElement('div');
-        div.className = 'relative aspect-video bg-white rounded-lg shadow overflow-hidden group border';
+        // Modern Card Container
+        div.className = 'group relative aspect-[4/3] bg-slate-100 rounded-xl overflow-hidden border border-slate-200 hover:border-blue-400 hover:shadow-lg transition-all duration-300';
 
-        // Video content shim
-        let content = `<img src="${url}" class="w-full h-full object-cover">`;
+        // Content Logic
+        let content = `<img src="${url}" class="w-full h-full object-contain drop-shadow-sm transition-transform duration-500 group-hover:scale-105" loading="lazy">`;
+
         if (activeGalleryTab === 'video') {
             if (url.includes('youtube') || url.includes('youtu.be')) {
-                content = `<div class="w-full h-full flex items-center justify-center bg-black text-white"><i class="fa-brands fa-youtube text-4xl text-red-600"></i></div>`;
+                // YouTube Embed Preview
+                const videoId = url.split('v=')[1] || url.split('/').pop();
+                const thumbUrl = `https://img.youtube.com/vi/${videoId}/0.jpg`;
+                content = `
+                    <div class="relative w-full h-full">
+                        <img src="${thumbUrl}" class="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity">
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center shadow-lg text-white">
+                                <i class="fa-solid fa-play ml-1"></i>
+                            </div>
+                        </div>
+                    </div>`;
             } else {
+                // Direct Video
                 content = `<video src="${url}" class="w-full h-full object-cover" muted></video>`;
             }
         }
 
         div.innerHTML = `
-        <input type="checkbox" data-idx="${idx}" data-url="${url}"
-            onchange="updateSelectionUI()" 
-            class="gallery-checkbox absolute top-2 left-2 w-5 h-5 rounded border-2 border-white shadow-lg cursor-pointer z-10 accent-blue-600">
-        ${content}
-        <button onclick="deleteGalleryItem(${idx})" class="absolute top-2 right-2 bg-red-600 text-white w-8 h-8 rounded-full opacity-0 group-hover:opacity-100 transition flex items-center justify-center shadow-lg hover:scale-110">
-            <i class="fa fa-trash text-xs"></i>
+        <!-- Selection Checkbox -->
+        <div class="absolute top-2 left-2 z-20">
+            <input type="checkbox" data-idx="${idx}" data-url="${url}"
+            onchange="updateSelectionUI(this)" 
+            class="gallery-checkbox w-5 h-5 accent-blue-600 cursor-pointer shadow-sm rounded border-gray-300 focus:ring-blue-500">
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="w-full h-full flex items-center justify-center bg-slate-100">
+            ${content}
+        </div>
+
+        <!-- Actions Overlay (Gradient) -->
+        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
+
+        <!-- Delete Button -->
+        <button onclick="deleteGalleryItem(${idx})" 
+            class="absolute top-2 right-2 z-20 bg-white text-red-500 w-8 h-8 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 hover:bg-red-50 hover:scale-110 flex items-center justify-center transform translate-y-2 group-hover:translate-y-0"
+            title="Sil">
+            <i class="fa fa-trash text-sm"></i>
         </button>
-        <!-- Type Badge -->
-        <span class="absolute bottom-2 left-2 bg-black/50 text-white text-[10px] px-2 py-1 rounded capitalize">${activeGalleryTab}</span>
+        
+        <!-- Info Badge -->
+        <div class="absolute bottom-3 left-3 right-3 flex justify-between items-end opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+             <span class="bg-white/90 backdrop-blur-sm text-slate-800 text-[10px] px-2 py-1 rounded font-bold shadow-sm uppercase tracking-wide border border-white/50">
+                ${activeGalleryTab === 'main' ? 'Ana Galeri' : activeGalleryTab === 'left' ? 'Sol Galeri' : 'Video'}
+             </span>
+        </div>
         `;
         grid.appendChild(div);
     });
@@ -754,7 +787,33 @@ function toggleSelectAll() {
     updateSelectionUI();
 }
 
-function updateSelectionUI() {
+function updateSelectionUI(context) {
+    // 1. Visual Feedback (Card Highlight)
+    if (context && context.tagName === 'INPUT') {
+        // Single Checkbox Changed
+        const card = context.closest('.group');
+        if (card) {
+            if (context.checked) {
+                card.classList.add('ring-2', 'ring-blue-500', 'border-transparent');
+            } else {
+                card.classList.remove('ring-2', 'ring-blue-500', 'border-transparent');
+            }
+        }
+    } else {
+        // Bulk Update (Select All or Init)
+        document.querySelectorAll('.gallery-checkbox').forEach(cb => {
+            const card = cb.closest('.group');
+            if (card) {
+                if (cb.checked) {
+                    card.classList.add('ring-2', 'ring-blue-500', 'border-transparent');
+                } else {
+                    card.classList.remove('ring-2', 'ring-blue-500', 'border-transparent');
+                }
+            }
+        });
+    }
+
+    // 2. Update Counts & Buttons
     const checkboxes = document.querySelectorAll('.gallery-checkbox:checked');
     const count = checkboxes.length;
 
@@ -767,6 +826,9 @@ function updateSelectionUI() {
         deleteBtn.classList.remove('hidden');
         document.getElementById('selected-count').textContent = count;
         document.getElementById('delete-selected-count').textContent = count;
+        // Opsiyonel: Bulk edit modalındaki sayıyı da güncelle
+        const bulkCountSpan = document.getElementById('bulk-selected-count');
+        if (bulkCountSpan) bulkCountSpan.textContent = count;
     } else {
         editBtn.classList.add('hidden');
         deleteBtn.classList.add('hidden');
@@ -774,16 +836,21 @@ function updateSelectionUI() {
 
     // Update select all button state
     const allCheckboxes = document.querySelectorAll('.gallery-checkbox');
-    isAllSelected = allCheckboxes.length > 0 && count === allCheckboxes.length;
+    const isAllSelected = allCheckboxes.length > 0 && count === allCheckboxes.length;
     const btn = document.getElementById('select-all-btn');
-    if (isAllSelected) {
-        btn.innerHTML = '<i class="fa-solid fa-square"></i> Seçimi Kaldır';
-        btn.classList.add('bg-blue-100', 'text-blue-600');
-        btn.classList.remove('bg-slate-100', 'text-slate-600');
-    } else {
-        btn.innerHTML = '<i class="fa-solid fa-check-square"></i> Tümünü Seç';
-        btn.classList.remove('bg-blue-100', 'text-blue-600');
-        btn.classList.add('bg-slate-100', 'text-slate-600');
+
+    if (btn) {
+        if (isAllSelected) {
+            btn.innerHTML = '<i class="fa-solid fa-square-check"></i> Seçimi Kaldır';
+            btn.classList.add('bg-blue-100', 'text-blue-600');
+            btn.classList.remove('bg-slate-100', 'text-slate-600');
+        } else {
+            btn.innerHTML = '<i class="fa-solid fa-check-square"></i> Tümünü Seç';
+            btn.classList.remove('bg-blue-100', 'text-blue-600');
+            btn.classList.add('bg-slate-100', 'text-slate-600');
+        }
+        // Ensure click handler handles the toggle correctly
+        btn.onclick = toggleSelectAll;
     }
 }
 

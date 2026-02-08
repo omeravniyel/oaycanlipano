@@ -25,13 +25,7 @@ const supabaseUrl = process.env.SUPABASE_URL;
 // Use Service Role Key to bypass RLS for sensitive operations (like checking passwords)
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
 
-console.log('DEBUG ENV VARS:', {
-    NODE_ENV: process.env.NODE_ENV,
-    HAS_URL: !!supabaseUrl,
-    HAS_KEY: !!supabaseKey,
-    URL_LEN: supabaseUrl ? supabaseUrl.length : 0,
-    KEY_LEN: supabaseKey ? supabaseKey.length : 0
-});
+// console.log('DEBUG ENV VARS:', { ... });
 
 let supabase;
 try {
@@ -59,10 +53,7 @@ const GLOBAL_GALLERY_SLUG = 'system-global-gallery';
 
 module.exports = async (request, response) => {
     try {
-        console.log('=== API CALLED ===');
-        console.log('Method:', request.method);
-        console.log('Has Supabase:', !!supabase);
-        console.log('Body:', JSON.stringify(request.body));
+        // console.log('=== API CALLED ===');
 
         // CORS Headers
         response.setHeader('Access-Control-Allow-Credentials', true);
@@ -112,9 +103,7 @@ module.exports = async (request, response) => {
             master_password = password;
         }
 
-        console.log('Action:', action);
-        console.log('Incoming Master Password Length:', master_password ? master_password.length : 0);
-        console.log('Env Master Password Length:', process.env.MASTER_PASSWORD ? process.env.MASTER_PASSWORD.length : 0);
+        // console.log('Action:', action);
 
         // Fail-safe initialization
         if (!payload) {
@@ -580,6 +569,13 @@ module.exports = async (request, response) => {
                 result = data[0];
             }
 
+            // Log the action
+            await logAction(existing ? 'update_institution' : 'create_institution', {
+                slug: slug,
+                name: name,
+                type: type || 'Ortaokul'
+            });
+
             return response.status(200).json({ success: true, data: result });
         }
 
@@ -595,6 +591,13 @@ module.exports = async (request, response) => {
                     .eq('slug', slug);
 
                 if (error) throw error;
+
+                // Log deletion
+                await logAction('delete_institution', {
+                    slug: slug,
+                    type: 'hard_delete'
+                });
+
                 return response.status(200).json({ success: true });
 
             } catch (deleteError) {
@@ -630,6 +633,12 @@ module.exports = async (request, response) => {
                             .eq('slug', slug);
 
                         if (updateError) throw updateError;
+
+                        // Log soft deletion
+                        await logAction('delete_institution', {
+                            slug: slug,
+                            type: 'soft_delete'
+                        });
 
                         return response.status(200).json({ success: true, message: 'Kurum pano verileri sıfırlandı ve listeden gizlendi (Karne verileri korundu).' });
                     }
@@ -834,6 +843,13 @@ module.exports = async (request, response) => {
                 }]);
             }
 
+            // Log announcement broadcast
+            await logAction('broadcast_announcement', {
+                text: text.substring(0, 50) + '...',
+                delivered_to: updates.length,
+                filters: filters
+            });
+
             return response.status(200).json({
                 success: true,
                 delivered_to: updates.length
@@ -943,6 +959,11 @@ module.exports = async (request, response) => {
                     password: Math.random().toString(36)
                 }]);
             }
+
+            // Log CMS update
+            await logAction('save_landing_content', {
+                message: 'Landing page content updated'
+            });
 
             return response.status(200).json({ success: true });
         }
@@ -1078,6 +1099,11 @@ module.exports = async (request, response) => {
                     error: `Galeri kaydetme hatası: ${upsertError.message}`
                 });
             }
+
+            // Log gallery save
+            await logAction('save_gallery', {
+                message: 'Global gallery configuration saved'
+            });
 
             console.log('save_gallery success');
             return response.status(200).json({ success: true });
@@ -1563,7 +1589,193 @@ module.exports = async (request, response) => {
                 result = data[0];
             }
 
+            // Log emergency config update
+            await logAction('save_emergency', {
+                active: config.active,
+                title: config.title
+            });
+
             return response.status(200).json({ success: true, data: result });
+        }
+
+        // --- ANNOUNCEMENTS ---
+        if (action === 'get_announcements') {
+            const { data, error } = await supabase
+                .from('institutions')
+                .select('config')
+                .eq('slug', SYSTEM_ANNOUNCEMENTS_SLUG)
+                .single();
+
+            if (!data || error) {
+                return response.status(200).json({ success: true, announcements: [] });
+            }
+            return response.status(200).json({ success: true, announcements: data.config || [] });
+        }
+
+        if (action === 'save_announcements') {
+            const { announcements } = payload;
+
+            if (!Array.isArray(announcements)) {
+                return response.status(400).json({ error: 'Geçersiz veri formatı.' });
+            }
+
+            const { error } = await supabase
+                .from('institutions')
+                .upsert({
+                    slug: SYSTEM_ANNOUNCEMENTS_SLUG,
+                    name: 'System Announcements',
+                    password: Math.random().toString(36),
+                    config: announcements
+                }, { onConflict: 'slug' });
+
+            if (error) throw error;
+
+            await logAction('broadcast_announcement', {
+                count: announcements.length,
+                timestamp: new Date().toISOString()
+            });
+
+            return response.status(200).json({ success: true });
+        }
+
+        // --- AUDIT LOGGING HELPER ---
+        async function logAction(actionName, details = {}) {
+            try {
+                // UUID Helper
+                const generateUUID = () => {
+                    if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID();
+                    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+                        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+                        return v.toString(16);
+                    });
+                };
+
+                const { data: existing } = await supabase
+                    .from('institutions')
+                    .select('config')
+                    .eq('slug', 'system-audit-logs')
+                    .single();
+
+                let logs = [];
+                if (existing && existing.config) {
+                    logs = Array.isArray(existing.config) ? existing.config : [];
+                }
+
+                const newLog = {
+                    id: generateUUID(),
+                    timestamp: new Date().toISOString(),
+                    action: actionName,
+                    details: details,
+                    ip: request.headers['x-forwarded-for'] || request.headers['x-real-ip'] || 'unknown'
+                };
+
+                logs.unshift(newLog); // Most recent first
+
+                // Keep last 500 logs only (performance)
+                if (logs.length > 500) logs = logs.slice(0, 500);
+
+                if (existing) {
+                    await supabase
+                        .from('institutions')
+                        .update({ config: logs })
+                        .eq('slug', 'system-audit-logs');
+                } else {
+                    await supabase
+                        .from('institutions')
+                        .insert([{
+                            slug: 'system-audit-logs',
+                            name: 'System Audit Logs',
+                            password: Math.random().toString(36),
+                            config: logs
+                        }]);
+                }
+            } catch (err) {
+                console.error('Audit logging failed:', err);
+                // Don't throw - logging shouldn't break the main operation
+            }
+        }
+
+        // --- GET AUDIT LOGS ---
+        if (action === 'get_audit_logs') {
+            try {
+                const { data, error } = await supabase
+                    .from('institutions')
+                    .select('config')
+                    .eq('slug', 'system-audit-logs')
+                    .single();
+
+                const logs = (data && data.config) ? data.config : [];
+                return response.status(200).json({ success: true, logs: logs });
+            } catch (err) {
+                console.error('Get audit logs error:', err);
+                return response.status(200).json({ success: true, logs: [] });
+            }
+        }
+
+        // --- CHANGE PASSWORD ---
+        if (action === 'change_password') {
+            const { current_password, new_password } = payload;
+
+            if (!current_password || !new_password) {
+                return response.status(400).json({ error: 'Tüm alanlar gereklidir.' });
+            }
+
+            // Verify current password
+            const isCurrentValid = validPasswords.some(p => p && current_password.trim() === p.trim());
+            if (!isCurrentValid) {
+                return response.status(401).json({ error: 'Mevcut şifre hatalı.' });
+            }
+
+            // Validate new password
+            if (new_password.length < 6) {
+                return response.status(400).json({ error: 'Yeni şifre en az 6 karakter olmalıdır.' });
+            }
+
+            try {
+                // Store new password in system settings
+                const { data: existing } = await supabase
+                    .from('institutions')
+                    .select('config')
+                    .eq('slug', 'system-settings')
+                    .single();
+
+                const settings = (existing && existing.config) ? existing.config : {};
+                settings.master_password = new_password.trim();
+                settings.password_updated_at = new Date().toISOString();
+
+                if (existing) {
+                    await supabase
+                        .from('institutions')
+                        .update({ config: settings })
+                        .eq('slug', 'system-settings');
+                } else {
+                    await supabase
+                        .from('institutions')
+                        .insert([{
+                            slug: 'system-settings',
+                            name: 'System Settings',
+                            password: Math.random().toString(36),
+                            config: settings
+                        }]);
+                }
+
+                // Log the password change
+                await logAction('change_password', {
+                    message: 'Master password changed',
+                    timestamp: new Date().toISOString()
+                });
+
+                // Update runtime environment (will persist until next deployment)
+                process.env.MASTER_PASSWORD = new_password.trim();
+
+                return response.status(200).json({
+                    success: true,
+                    message: 'Şifre başarıyla güncellendi. Not: Vercel ortamında kalıcı olması için environment variable\'ı manuel güncellemeniz gerekir.'
+                });
+            } catch (err) {
+                console.error('Password change error:', err);
+                return response.status(500).json({ error: 'Şifre güncellenirken hata oluştu: ' + err.message });
+            }
         }
 
         return response.status(400).json({ error: 'Geçersiz işlem' });
