@@ -1,8 +1,37 @@
+// Load environment variables for local development (ROBUST METHOD)
+if (process.env.NODE_ENV !== 'production' && !process.env.SUPABASE_URL) {
+    try {
+        const fs = require('fs');
+        const path = require('path');
+        const dotenv = require('dotenv');
+
+        const envPath = path.resolve(process.cwd(), '.env.local');
+        if (fs.existsSync(envPath)) {
+            const envConfig = dotenv.parse(fs.readFileSync(envPath));
+            for (const k in envConfig) {
+                if (!process.env[k]) process.env[k] = envConfig[k];
+            }
+            console.log('Manually loaded .env.local keys:', Object.keys(envConfig));
+        } else {
+            console.warn('.env.local not found at:', envPath);
+        }
+    } catch (e) {
+        console.error('Manual .env loading failed:', e);
+    }
+}
 const { createClient } = require('@supabase/supabase-js');
 
 const supabaseUrl = process.env.SUPABASE_URL;
 // Use Service Role Key to bypass RLS for sensitive operations (like checking passwords)
 const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY;
+
+console.log('DEBUG ENV VARS:', {
+    NODE_ENV: process.env.NODE_ENV,
+    HAS_URL: !!supabaseUrl,
+    HAS_KEY: !!supabaseKey,
+    URL_LEN: supabaseUrl ? supabaseUrl.length : 0,
+    KEY_LEN: supabaseKey ? supabaseKey.length : 0
+});
 
 let supabase;
 try {
@@ -22,6 +51,12 @@ if (!MASTER_PASSWORD) {
     console.warn("UYARI: .env dosyasında MASTER_PASSWORD tanımlanmamış. Varsayılan güvenli şifre kullanılacak.");
 }
 
+// Global Constants
+const SYSTEM_ANNOUNCEMENTS_SLUG = 'system-announcements';
+const EMERGENCY_SLUG = 'system-emergency';
+const HADITH_SLUG = 'system-hadiths';
+const GLOBAL_GALLERY_SLUG = 'system-global-gallery';
+
 module.exports = async (request, response) => {
     try {
         console.log('=== API CALLED ===');
@@ -38,6 +73,21 @@ module.exports = async (request, response) => {
             'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version'
         );
 
+        // Helper to ensure response methods exist (Vercel/Node fallback)
+        if (!response.status) {
+            response.status = (code) => {
+                response.statusCode = code;
+                return response;
+            };
+        }
+        if (!response.json) {
+            response.json = (data) => {
+                response.setHeader('Content-Type', 'application/json');
+                response.end(JSON.stringify(data));
+                return response;
+            };
+        }
+
         // Handle OPTIONS request
         if (request.method === 'OPTIONS') {
             return response.status(200).end();
@@ -48,12 +98,14 @@ module.exports = async (request, response) => {
             return response.status(405).json({ error: 'Method Not Allowed' });
         }
 
+        // Safely access body
+        const bodyContent = request.body || {};
+        let { action, master_password, password, payload } = bodyContent;
+
         if (!supabase && action !== 'verify_password' && action !== 'get_upload_config') {
             console.error('Supabase client is null!');
             return response.status(500).json({ error: 'Veritabanı bağlantısı yapılamadı (Credentials Missing).' });
         }
-
-        let { action, master_password, password, payload } = request.body;
 
         // Fallback: If master_password is missing but 'password' is provided (common in some frontend calls)
         if (!master_password && password) {
@@ -116,7 +168,7 @@ module.exports = async (request, response) => {
             const storedPass = (data.password || "").trim();
 
             // Master Password ile giriş hakkı
-            const isMaster = (validPass && inputPass === validPass);
+            const isMaster = validPasswords.some(p => p === inputPass);
 
             if (storedPass === inputPass || isMaster) {
                 return response.status(200).json({ success: true, name: data.name });
@@ -210,59 +262,56 @@ module.exports = async (request, response) => {
             }
         }
 
-        try {
-            // --- VERIFY PASSWORD (LIGHTWEIGHT LOGIN) ---
-            if (action === 'verify_password') {
-                // If we reached here, the master password check at the top has already passed.
-                // So we just return success.
-                return response.status(200).json({ success: true });
+
+        // --- VERIFY PASSWORD (LIGHTWEIGHT LOGIN) ---
+        if (action === 'verify_password') {
+            // If we reached here, the master password check at the top has already passed.
+            // So we just return success.
+            return response.status(200).json({ success: true });
+        }
+
+        // --- LİSTELEME ---
+        if (action === 'list') {
+            const { data, error } = await supabase
+                .from('institutions')
+                .select('slug, name, password, config')
+                .not('slug', 'ilike', 'system-%') // DB-Level Filtering: Much faster!
+                .order('name');
+
+            if (error) throw error;
+
+            // Filter out hidden institutions (Smart Delete)
+            const visibleInstitutions = data.filter(inst => {
+                const cfg = inst.config || {};
+                return cfg.hidden_from_panel !== true;
+            });
+
+            return response.status(200).json({ success: true, institutions: visibleInstitutions });
+        }
+
+        // --- TEK KURUM GETİRME ---
+        if (action === 'get_institution') {
+            const { slug } = payload;
+
+            if (!slug) {
+                return response.status(400).json({ error: 'Slug gereklidir' });
             }
 
-            // --- LİSTELEME ---
-            if (action === 'list') {
-                const { data, error } = await supabase
-                    .from('institutions')
-                    .select('slug, name, password, config')
-                    .not('slug', 'ilike', 'system-%') // DB-Level Filtering: Much faster!
-                    .order('name');
+            const { data, error } = await supabase
+                .from('institutions')
+                .select('*')
+                .eq('slug', slug)
+                .single();
 
-                if (error) throw error;
-
-                // Filter out hidden institutions (Smart Delete)
-                const visibleInstitutions = data.filter(inst => {
-                    const cfg = inst.config || {};
-                    return cfg.hidden_from_panel !== true;
-                });
-
-                return response.status(200).json({ success: true, institutions: visibleInstitutions });
-            }
-
-            // --- TEK KURUM GETİRME ---
-            if (action === 'get_institution') {
-                const { slug } = payload;
-
-                if (!slug) {
-                    return response.status(400).json({ error: 'Slug gereklidir' });
-                }
-
-                const { data, error } = await supabase
-                    .from('institutions')
-                    .select('*')
-                    .eq('slug', slug)
-                    .single();
-
-                if (error) {
-                    return response.status(404).json({ error: 'Kurum bulunamadı' });
-                }
-
-                return response.status(200).json({ success: true, institution: data });
+            if (error) {
+                return response.status(404).json({ error: 'Kurum bulunamadı' });
             }
 
             return response.status(200).json({ success: true, institution: data });
         }
 
-            // --- UPLOAD CONFIG & DISTRIBUTION ---
-            if (action === 'get_upload_config') {
+        // --- UPLOAD CONFIG & DISTRIBUTION ---
+        if (action === 'get_upload_config') {
             return response.status(200).json({
                 url: process.env.SUPABASE_URL,
                 key: process.env.SUPABASE_ANON_KEY
@@ -1345,7 +1394,7 @@ module.exports = async (request, response) => {
         }
 
         // --- CENTRAL ANNOUNCEMENTS MANAGEMENT ---
-        const SYSTEM_ANNOUNCEMENTS_SLUG = 'system-announcements';
+        // const SYSTEM_ANNOUNCEMENTS_SLUG = 'system-announcements'; // Moved to top
 
         if (action === 'get_central_announcements') {
             const { data, error } = await supabase
@@ -1397,7 +1446,75 @@ module.exports = async (request, response) => {
         }
 
         // --- EMERGENCY MODE MANAGEMENT ---
-        const EMERGENCY_SLUG = 'system-emergency';
+        // Constants are defined at the top of the file to prevent duplicates
+
+        if (action === 'get_hadiths') {
+            const { data, error } = await supabase
+                .from('institutions')
+                .select('config')
+                .eq('slug', HADITH_SLUG)
+                .single();
+
+            if (!data || error) {
+                return response.status(200).json({ config: {} });
+            }
+            return response.status(200).json({ config: data.config });
+        }
+
+        if (action === 'save_hadith') {
+            const { type, weeks, start_date } = payload;
+
+            // 1. Get existing
+            const { data: existing } = await supabase
+                .from('institutions')
+                .select('config')
+                .eq('slug', HADITH_SLUG)
+                .single();
+
+            let newConfig = existing ? (existing.config || {}) : {};
+
+            // Update specific type
+            if (type) newConfig[type] = weeks;
+            if (start_date) newConfig[type + '_date'] = start_date;
+
+            // Upsert
+            const { data, error } = await supabase
+                .from('institutions')
+                .upsert({
+                    slug: HADITH_SLUG,
+                    name: 'System Hadiths Config',
+                    password: Math.random().toString(36),
+                    config: newConfig
+                }, { onConflict: 'slug' })
+                .select();
+
+            if (error) throw error;
+
+            // 2. Distribute to all institutions of this type
+            if (type) {
+                const { data: institutions } = await supabase
+                    .from('institutions')
+                    .select('slug, config')
+                    //.eq('institution_type', type) 
+                    .not('slug', 'like', 'system-%');
+
+                if (institutions) {
+                    for (const inst of institutions) {
+                        const cfg = inst.config || {};
+                        if (cfg.institution_type === type) {
+                            cfg.weekly_hadiths = weeks;
+                            cfg.semester_start_date = start_date;
+
+                            await supabase
+                                .from('institutions')
+                                .update({ config: cfg })
+                                .eq('slug', inst.slug);
+                        }
+                    }
+                }
+            }
+            return response.status(200).json({ success: true });
+        }
 
         if (action === 'get_emergency_config') {
             const { data, error } = await supabase
@@ -1451,17 +1568,25 @@ module.exports = async (request, response) => {
 
         return response.status(400).json({ error: 'Geçersiz işlem' });
 
-    } catch (err) {
-        console.error('Admin API Hatası:', err);
-        return response.status(500).json({ error: err.message });
+
+    } catch (globalError) {
+        console.error('=== GLOBAL ERROR ===');
+        console.error('Error:', globalError);
+        console.error('Stack:', globalError.stack);
+        // Safe error response
+        console.error('CRITICAL RESPONSE ERROR');
+        if (response.status) {
+            return response.status(500).json({
+                error: 'Kritik Hata: ' + globalError.message,
+                details: globalError.stack
+            });
+        } else {
+            // Ultimate fallback
+            response.statusCode = 500;
+            response.setHeader('Content-Type', 'application/json');
+            response.end(JSON.stringify({
+                error: 'Kritik Hata (Native): ' + globalError.message
+            }));
+        }
     }
-} catch (globalError) {
-    console.error('=== GLOBAL ERROR ===');
-    console.error('Error:', globalError);
-    console.error('Stack:', globalError.stack);
-    return response.status(500).json({
-        error: 'Kritik Hata: ' + globalError.message,
-        details: globalError.stack
-    });
-}
 };
