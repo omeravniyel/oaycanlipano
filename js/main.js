@@ -823,11 +823,13 @@ async function fetchConfig() {
         }
 
         // --- NEW: DYNAMIC EXAM WINNERS (Priority: List -> Legacy 1-4) ---
-        const examList = (Array.isArray(config.exam_winners_list) && config.exam_winners_list.length > 0)
-            ? config.exam_winners_list
-            : [];
+        // Eğer config.exam_winners_list tanımlıysa (boş array olsa bile), yeni sistemi kullan.
+        // Sadece undefined ise eski sisteme (fallback) düş.
+        const hasExamList = Array.isArray(config.exam_winners_list);
+        const examList = hasExamList ? config.exam_winners_list : [];
 
-        if (examList.length > 0) {
+        if (hasExamList) {
+            // Yeni Sistem: Liste boşsa bile buraya girer ve döngü çalışmadığı için boş kalır (Fallback çalışmaz)
             examList.forEach(student => {
                 if (student.name && student.name.trim()) {
                     let displayStr = '';
@@ -839,7 +841,7 @@ async function fetchConfig() {
                         type: 'exam',
                         title: (config.exam_name ? config.exam_name + ' ŞAMPİYONLARI' : 'SINAV ŞAMPİYONLARI'),
                         badge: 'MAŞAALLAH',
-                        circle: '<svg class="w-16 h-16 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M20.2 2H19.5H18C17.1 2 16.3 2.4 15.8 3C15.3 2.4 14.6 2 13.5 2H12.2C11.6 2 11 2.2 10.6 2.6L10 3.3L9.4 2.6C9 2.2 8.4 2 7.8 2H6.5C5.4 2 4.7 2.4 4.2 3C3.7 2.4 2.9 2 2 2H1.3H0V6C0 9.3 2.7 12 6 12H7.2L10 16.2L12.8 12H14C17.3 12 20 9.3 20 6V2H20.2ZM6 10C3.8 10 2 8.2 2 6V4H2.2H3.5C4.1 4 4.5 4.4 4.5 5V6C4.5 6.6 4.9 7 5.5 7H6C6.6 7 7 6.6 7 6V4H7.8C8.4 4 9 4.6 9 5.2V6.5L10 8L11 6.5V5.2C11 4.6 11.6 4 12.2 4H13C13.6-4 14 3.6 14 3H14.5H15.8C16.4 4 17 4.6 17 5.2V6.5L18 8L19 6.5V5.2C19 4.6 19.6 4 20.2 4H21.5H22V6C22 8.2 20.2 10 18 10H14.6L12.8 12.7L10 16.9L7.2 12.7L5.4 10H6ZM10 18H14V22H10V18Z"/></svg>',
+                        circle: `<svg class="w-16 h-16 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M20.2 2H19.5H18C17.1 2 16.3 2.4 15.8 3C15.3 2.4 14.6 2 13.5 2H12.2C11.6 2 11 2.2 10.6 2.6L10 3.3L9.4 2.6C9 2.2 8.4 2 7.8 2H6.5C5.4 2 4.7 2.4 4.2 3C3.7 2.4 2.9 2 2 2H1.3H0V6C0 9.3 2.7 12 6 12H7.2L10 16.2L12.8 12H14C17.3 12 20 9.3 20 6V2H20.2ZM6 10C3.8 10 2 8.2 2 6V4H2.2H3.5C4.1 4 4.5 4.4 4.5 5V6C4.5 6.6 4.9 7 5.5 7H6C6.6 7 7 6.6 7 6V4H7.8C8.4 4 9 4.6 9 5.2V6.5L10 8L11 6.5V5.2C11 4.6 11.6 4 12.2 4H13C13.6-4 14 3.6 14 3H14.5H15.8C16.4 4 17 4.6 17 5.2V6.5L18 8L19 6.5V5.2C19 4.6 19.6 4 20.2 4H21.5H22V6C22 8.2 20.2 10 18 10H14.6L12.8 12.7L10 16.9L7.2 12.7L5.4 10H6ZM10 18H14V22H10V18Z"/></svg>`,
                         topLabel: 'TEBRİK EDERİZ',
                         content: displayStr,
                         image: student.image || ''
@@ -847,7 +849,7 @@ async function fetchConfig() {
                 }
             });
         } else {
-            // Fallback to Legacy 1-4
+            // Fallback to Legacy 1-4 (Sadece yeni liste YOKSA)
             for (let i = 1; i <= 4; i++) {
                 const name = config[`exam_s_${i}_name`];
                 if (name && name.trim()) {
@@ -864,7 +866,7 @@ async function fetchConfig() {
                         type: 'exam',
                         title: (config.exam_name ? config.exam_name + ' ŞAMPİYONLARI' : 'SINAV ŞAMPİYONLARI'),
                         badge: 'MAŞAALLAH',
-                        circle: '<svg class="w-16 h-16 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M20.2 2H19.5H18C17.1 2 16.3 2.4 15.8 3C15.3 2.4 14.6 2 13.5 2H12.2C11.6 2 11 2.2 10.6 2.6L10 3.3L9.4 2.6C9 2.2 8.4 2 7.8 2H6.5C5.4 2 4.7 2.4 4.2 3C3.7 2.4 2.9 2 2 2H1.3H0V6C0 9.3 2.7 12 6 12H7.2L10 16.2L12.8 12H14C17.3 12 20 9.3 20 6V2H20.2ZM6 10C3.8 10 2 8.2 2 6V4H2.2H3.5C4.1 4 4.5 4.4 4.5 5V6C4.5 6.6 4.9 7 5.5 7H6C6.6 7 7 6.6 7 6V4H7.8C8.4 4 9 4.6 9 5.2V6.5L10 8L11 6.5V5.2C11 4.6 11.6 4 12.2 4H13C13.6-4 14 3.6 14 3H14.5H15.8C16.4 4 17 4.6 17 5.2V6.5L18 8L19 6.5V5.2C19 4.6 19.6 4 20.2 4H21.5H22V6C22 8.2 20.2 10 18 10H14.6L12.8 12.7L10 16.9L7.2 12.7L5.4 10H6ZM10 18H14V22H10V18Z"/></svg>',
+                        circle: `<svg class="w-16 h-16 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M20.2 2H19.5H18C17.1 2 16.3 2.4 15.8 3C15.3 2.4 14.6 2 13.5 2H12.2C11.6 2 11 2.2 10.6 2.6L10 3.3L9.4 2.6C9 2.2 8.4 2 7.8 2H6.5C5.4 2 4.7 2.4 4.2 3C3.7 2.4 2.9 2 2 2H1.3H0V6C0 9.3 2.7 12 6 12H7.2L10 16.2L12.8 12H14C17.3 12 20 9.3 20 6V2H20.2ZM6 10C3.8 10 2 8.2 2 6V4H2.2H3.5C4.1 4 4.5 4.4 4.5 5V6C4.5 6.6 4.9 7 5.5 7H6C6.6 7 7 6.6 7 6V4H7.8C8.4 4 9 4.6 9 5.2V6.5L10 8L11 6.5V5.2C11 4.6 11.6 4 12.2 4H13C13.6-4 14 3.6 14 3H14.5H15.8C16.4 4 17 4.6 17 5.2V6.5L18 8L19 6.5V5.2C19 4.6 19.6 4 20.2 4H21.5H22V6C22 8.2 20.2 10 18 10H14.6L12.8 12.7L10 16.9L7.2 12.7L5.4 10H6ZM10 18H14V22H10V18Z"/></svg>`,
                         topLabel: 'TEBRİK EDERİZ',
                         content: displayStr,
                         image: imageUrl
@@ -939,11 +941,11 @@ async function fetchConfig() {
         }
 
         // --- NEW: DYNAMIC IMPROVED STUDENTS (Priority: List -> Legacy 1-4) ---
-        const improvedList = (Array.isArray(config.improved_list) && config.improved_list.length > 0)
-            ? config.improved_list
-            : [];
+        // Aynı mantık: Liste tanımlıysa (boş olsa bile) yeni sistem.
+        const hasImprovedList = Array.isArray(config.improved_list);
+        const improvedList = hasImprovedList ? config.improved_list : [];
 
-        if (improvedList.length > 0) {
+        if (hasImprovedList) {
             improvedList.forEach(student => {
                 if (student.name && student.name.trim()) {
                     rawImproved.push({
@@ -959,7 +961,7 @@ async function fetchConfig() {
                 }
             });
         } else {
-            // Fallback to Legacy 1-4
+            // Fallback to Legacy 1-4 (Sadece yeni liste YOKSA)
             for (let i = 1; i <= 4; i++) {
                 const name = config[`improved_s_${i}_name`];
                 if (name && name.trim()) {
@@ -1441,19 +1443,34 @@ function rotateInfo() {
             mainText.style.whiteSpace = '';
 
             if (item.type === 'announcement') {
-                // Duyurular: Normal Wrapping, biraz daha küçük font
-                mainText.classList.add('text-xl', 'text-center', 'whitespace-pre-wrap');
-                mainText.classList.remove('text-2xl');
+                // Duyurular: Normal Wrapping, ama taşarsa küçült
+                mainText.classList.add('text-center', 'whitespace-pre-wrap');
+                mainText.classList.remove('text-2xl', 'text-xl');
+
+                // Başlangıç boyutu
+                let size = 1.5; // 1.5rem ~ 24px (text-2xl)
+                mainText.style.fontSize = size + 'rem';
+                mainText.style.lineHeight = '1.3';
+
+                // DOM güncellemesi sonrası taşma kontrolü
+                // (Senkron çalışır çünkü içerik değişti, browser layout'u hesaplar)
+                // Max iterasyon: 30 (0.7rem'e kadar iner)
+                let iterations = 0;
+                // scrollHeight > clientHeight olduğu sürece küçült
+                while (mainText.scrollHeight > mainText.clientHeight && size > 0.7 && iterations < 30) {
+                    size -= 0.05;
+                    mainText.style.fontSize = size + 'rem';
+                    iterations++;
+                }
+
             } else {
-                // İsimler/Sınavlar: Tek satıra sığdırmaya çalış (Auto-Scale)
+                // İsimler/Sınavlar: Tek satıra sığdırmaya çalış (Auto-Scale Horizontal)
                 mainText.classList.add('text-center');
                 mainText.classList.remove('whitespace-pre-wrap');
                 mainText.style.whiteSpace = 'nowrap';
-                mainText.style.fontSize = '1.7rem'; // Başlangıç (text-2xl civarı)
+                mainText.style.fontSize = '1.7rem'; // Başlangıç
 
                 // Sığana kadar küçült (Min: 0.9rem)
-                // DOM update sonrası ölçüm için kısa bir gecikme gerekebilir ama senkron genellikle çalışır.
-                // Güvenlik için max iterasyon: 20
                 let size = 1.7;
                 let iterations = 0;
                 while (mainText.scrollWidth > mainText.clientWidth && iterations < 20) {
@@ -1895,6 +1912,8 @@ setTimeout(() => {
 // (Değişkenler yukarı taşındı)
 
 // Sol galeri görsellerini yükle
+/*
+// Sol galeri görsellerini yükle
 async function fetchLeftGalleryImages() {
     try {
         // Get slug from URL
@@ -1929,6 +1948,7 @@ async function fetchLeftGalleryImages() {
         leftGalleryImages = [];
     }
 }
+*/
 
 
 // Sol galeri rotasyonunu başlat
@@ -1942,11 +1962,19 @@ function startLeftGalleryRotation() {
     // Mevcut timeout'u temizle
     if (leftGalleryTimeout) clearTimeout(leftGalleryTimeout);
 
-    // İndeksi sıfırla (Race condition prevention)
+    // İndeksi sıfırla
     leftGalleryIndex = 0;
 
-    // Görseli göster
-    showLeftGalleryImage();
+    // --- MANUEL DÜZELTME: Önce Hadis görünsün, sonra Galeri ---
+    // Galeriyi gizle, Normal içeriği göster
+    document.getElementById('left-gallery-container').classList.add('hidden');
+    document.getElementById('left-normal-content').classList.remove('hidden');
+
+    // 15 saniye Hadis/Normal içerik göster, sonra galeriye geç
+    console.log("Sol galeri rotasyonu başlatıldı (15sn gecikmeli)...");
+    leftGalleryTimeout = setTimeout(() => {
+        showLeftGalleryImage();
+    }, 15000);
 }
 
 // Görseli göster (Tek kutu)
@@ -2042,8 +2070,8 @@ function handleGalleryError() {
 }
 
 // Sayfa yüklendiğinde sol galeriyi başlat
-// Sayfa yüklendiğinde sol galeriyi başlat (fetchConfig içinde çağrılıyor artık)
-// fetchLeftGalleryImages();
+// Sayfa yüklendiğinde sol galeriyi başlat
+// fetchLeftGalleryImages(); // REDUNDANT: fetchConfig already handles this with merged data
 
 // Regular Config Polling (1 Minute)
 // TV ekranında verilerin (kayan yazı vb.) güncel kalması için her dakika config çek
