@@ -1118,8 +1118,7 @@ async function fetchConfig() {
             }
         }
 
-        // --- 10. Sol Galeri Yükleme ---
-        await fetchLeftGalleryImages();
+        // await fetchLeftGalleryImages(); // REMOVED: Redundant and undefined
 
     } catch (error) {
         console.error("Config error:", error);
