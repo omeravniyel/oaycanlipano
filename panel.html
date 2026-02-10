@@ -2418,9 +2418,10 @@
             const previewId = 'preview-' + uniqueId + '-img';
 
             const div = document.createElement('div');
-            div.className = 'flex items-center gap-4 group/row bg-slate-50/50 p-2 rounded-2xl border border-dashed border-slate-100 hover:border-purple-200 transition-colors relative exam-row';
+            // Added w-full, reduced padding to p-3, gap-3 for better fit
+            div.className = 'w-full flex items-center gap-3 group/row bg-white p-3 rounded-2xl border border-slate-200 shadow-sm hover:border-purple-300 hover:shadow-md transition-all relative exam-row';
             div.innerHTML = `
-                <div class="relative w-12 h-12 shrink-0 rounded-full overflow-hidden border-2 border-dashed border-slate-200 group-hover/row:border-purple-400 transition-colors cursor-pointer bg-white"
+                <div class="relative w-12 h-12 shrink-0 rounded-2xl overflow-hidden border border-slate-100 group-hover/row:border-purple-200 transition-colors cursor-pointer bg-slate-50"
                     onclick="triggerUpload('${uniqueId}-image')">
                     <div id="${previewId}" class="w-full h-full flex items-center justify-center">
                         ${data.image ? `<img src="${data.image}" class="w-full h-full object-cover">` : `<i class="fas fa-user text-slate-300"></i>`}
@@ -2431,13 +2432,15 @@
                 </div>
                 <input type="hidden" id="${imageId}" value="${data.image || ''}" class="exam-image-input">
 
-                <div class="flex-1 flex gap-2">
-                    <input type="text" value="${data.class || ''}" class="exam-class-input w-16 px-3 py-2.5 bg-white border border-slate-200 rounded-xl focus:border-purple-500 outline-none text-xs font-bold text-slate-700 text-center" placeholder="Sınıf">
-                    <input type="text" value="${data.name || ''}" class="exam-name-input flex-1 px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:border-purple-500 outline-none text-xs font-bold text-slate-700" placeholder="Öğrenci Adı Soyadı">
-                    <input type="text" value="${data.points || ''}" class="exam-points-input w-24 px-3 py-2.5 bg-white border border-slate-200 rounded-xl focus:border-purple-500 outline-none text-xs font-bold text-slate-700 text-center" placeholder="Puan/Net">
+                <div class="flex-1 flex gap-2 overflow-hidden">
+                    <input type="text" value="${data.class || ''}" class="exam-class-input w-16 px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-purple-500 outline-none text-xs font-bold text-slate-700 text-center transition-all" placeholder="Sınıf">
+                    <input type="text" value="${data.name || ''}" class="exam-name-input flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-purple-500 outline-none text-xs font-bold text-slate-700 transition-all min-w-0" placeholder="Öğrenci Adı Soyadı">
+                    <input type="text" value="${data.points || ''}" class="exam-points-input w-20 px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-purple-500 outline-none text-xs font-bold text-slate-700 text-center transition-all" placeholder="Puan">
                 </div>
-                <button type="button" onclick="this.parentElement.remove()" class="w-8 h-8 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 flex items-center justify-center transition-colors absolute -right-2 -top-2 shadow-sm opacity-0 group-hover/row:opacity-100">
-                    <i class="fas fa-times text-xs"></i>
+                
+                <button type="button" onclick="this.closest('.exam-row').remove()" 
+                    class="w-10 h-10 rounded-xl bg-red-50 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center transition-all shadow-sm hover:shadow-red-200 shrink-0">
+                    <i class="fas fa-trash-alt"></i>
                 </button>
             `;
             list.appendChild(div);
@@ -2452,9 +2455,9 @@
             const previewId = 'preview-' + uniqueId + '-img';
 
             const div = document.createElement('div');
-            div.className = 'flex items-center gap-4 group/row bg-slate-50/50 p-2 rounded-2xl border border-dashed border-slate-100 hover:border-emerald-200 transition-colors relative improved-row';
+            div.className = 'w-full flex items-center gap-3 group/row bg-white p-3 rounded-2xl border border-slate-200 shadow-sm hover:border-emerald-300 hover:shadow-md transition-all relative improved-row';
             div.innerHTML = `
-                <div class="relative w-12 h-12 shrink-0 rounded-full overflow-hidden border-2 border-dashed border-slate-200 group-hover/row:border-emerald-400 transition-colors cursor-pointer bg-white"
+                <div class="relative w-12 h-12 shrink-0 rounded-2xl overflow-hidden border border-slate-100 group-hover/row:border-emerald-200 transition-colors cursor-pointer bg-slate-50"
                     onclick="triggerUpload('${uniqueId}-image')">
                     <div id="${previewId}" class="w-full h-full flex items-center justify-center">
                         ${data.image ? `<img src="${data.image}" class="w-full h-full object-cover">` : `<i class="fas fa-user text-slate-300"></i>`}
@@ -2465,13 +2468,15 @@
                 </div>
                 <input type="hidden" id="${imageId}" value="${data.image || ''}" class="improved-image-input">
 
-                <div class="flex-1 flex gap-2">
-                    <input type="text" value="${data.class || ''}" class="improved-class-input w-16 px-3 py-2.5 bg-white border border-slate-200 rounded-xl focus:border-emerald-500 outline-none text-xs font-bold text-slate-700 text-center" placeholder="Sınıf">
-                    <input type="text" value="${data.name || ''}" class="improved-name-input flex-1 px-4 py-2.5 bg-white border border-slate-200 rounded-xl focus:border-emerald-500 outline-none text-xs font-bold text-slate-700" placeholder="Öğrenci Adı Soyadı">
-                    <input type="text" value="${data.points || ''}" class="improved-points-input w-24 px-3 py-2.5 bg-white border border-slate-200 rounded-xl focus:border-emerald-500 outline-none text-xs font-bold text-slate-700 text-center" placeholder="Artış">
+                <div class="flex-1 flex gap-2 overflow-hidden">
+                    <input type="text" value="${data.class || ''}" class="improved-class-input w-16 px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-emerald-500 outline-none text-xs font-bold text-slate-700 text-center transition-all" placeholder="Sınıf">
+                    <input type="text" value="${data.name || ''}" class="improved-name-input flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-emerald-500 outline-none text-xs font-bold text-slate-700 transition-all min-w-0" placeholder="Öğrenci Adı Soyadı">
+                    <input type="text" value="${data.points || ''}" class="improved-points-input w-20 px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-emerald-500 outline-none text-xs font-bold text-slate-700 text-center transition-all" placeholder="Artış">
                 </div>
-                <button type="button" onclick="this.parentElement.remove()" class="w-8 h-8 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 flex items-center justify-center transition-colors absolute -right-2 -top-2 shadow-sm opacity-0 group-hover/row:opacity-100">
-                    <i class="fas fa-times text-xs"></i>
+                
+                <button type="button" onclick="this.closest('.improved-row').remove()" 
+                    class="w-10 h-10 rounded-xl bg-red-50 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center transition-all shadow-sm hover:shadow-red-200 shrink-0">
+                    <i class="fas fa-trash-alt"></i>
                 </button>
             `;
             list.appendChild(div);
@@ -2515,7 +2520,7 @@
 
         async function loadConfig() {
             try {
-                const res = await fetch(`/api/get-config?slug=${currentSlug}`);
+                const res = await fetch(`/api/get-config?slug=${currentSlug}&raw=true`);
                 if (!res.ok) throw new Error("API Hatası");
                 currentConfig = await res.json();
                 populateForm(currentConfig);
@@ -2816,6 +2821,19 @@
                     image: row.querySelector('.improved-image-input').value
                 })).filter(s => s.name.trim());
 
+                // EXPLICITLY CLEAR LEGACY KEYS TO PREVENT FALLBACK RESURRECTION
+                for (let i = 1; i <= 4; i++) {
+                    newConfig[`exam_s_${i}_name`] = null;
+                    newConfig[`exam_s_${i}_class`] = null;
+                    newConfig[`exam_s_${i}_points`] = null;
+                    newConfig[`exam_s_${i}_image`] = null;
+
+                    newConfig[`improved_s_${i}_name`] = null;
+                    newConfig[`improved_s_${i}_class`] = null;
+                    newConfig[`improved_s_${i}_points`] = null;
+                    newConfig[`improved_s_${i}_image`] = null;
+                }
+
                 newConfig.student_of_week = JSON.stringify({
                     name: document.getElementById('input-student-name').value,
                     class: document.getElementById('input-student-class').value,
@@ -2830,6 +2848,11 @@
                         style: document.querySelector('input[name="emergency-style"]:checked')?.value || 'red'
                     });
                 } else { newConfig.emergency_alert = null; }
+
+                console.log("[DEBUG] Saving config with lists:", {
+                    exam: newConfig.exam_winners_list,
+                    improved: newConfig.improved_list
+                });
 
                 const res = await fetch('/api/save-config', {
                     method: 'POST',

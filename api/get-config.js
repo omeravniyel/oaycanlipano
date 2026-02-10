@@ -27,6 +27,13 @@ module.exports = async (request, response) => {
     // Config JSON kolonunu direkt döndür
     let config = record.config || {};
 
+    // --- RAW MODE (For Admin Panel) ---
+    // If raw=true, return ONLY the local config without merging system data.
+    const { raw } = request.query;
+    if (raw === 'true') {
+        return response.status(200).json(config);
+    }
+
     // --- GLOBAL MERGE LOGIC ---
     // Eğer bu bir 'System' kaydı değilse ve 'institution_type' varsa global veriyi merge et
     if (!slug.startsWith('system-') && config.institution_type) {
