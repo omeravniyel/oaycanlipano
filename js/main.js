@@ -2080,3 +2080,39 @@ setInterval(() => {
     // Animasyonlar CSS tabanlı olduğu için DOM update anlık bir "göz kırpma" yapabilir ama veri güncelliği için gereklidir.
     fetchConfig();
 }, 60 * 1000);
+
+// --- SCALE TO FIT LOGIC (TV DISPLAY FIX) ---
+function resizeApp() {
+    const appRoot = document.getElementById('app-root');
+    if (!appRoot) return;
+
+    const targetWidth = 1920;
+    const targetHeight = 1080;
+
+    const winWidth = window.innerWidth;
+    const winHeight = window.innerHeight;
+
+    // Calculate scale factor to FIT within the window
+    const scaleX = winWidth / targetWidth;
+    const scaleY = winHeight / targetHeight;
+    const scale = Math.min(scaleX, scaleY);
+
+    // Apply scale
+    appRoot.style.transform = `scale(${scale})`;
+
+    // Optional: Center vertically via margin if scaling leaves space
+    // (Flexbox on body already handles centering, but this ensures transform origin behaves)
+    // appRoot is origin-center, so it shrinks towards center.
+}
+
+// Init Scale
+window.addEventListener('resize', resizeApp);
+window.addEventListener('load', () => {
+    resizeApp();
+    // Re-trigger after a short delay to handle slow initial layouts
+    setTimeout(resizeApp, 100);
+    setTimeout(resizeApp, 500);
+});
+
+// Also trigger on DOMContentLoaded
+document.addEventListener('DOMContentLoaded', resizeApp);
