@@ -1098,20 +1098,33 @@ async function fetchConfig() {
         startDormNameRotation();
 
         // --- 9. Bilgi Kartı Rotasyonunu Başlat ---
-        // if (infoRotationInterval) clearInterval(infoRotationInterval); // ARTIK SIFIRLAMIYORUZ
+        // OPTIMIZASYON: Eğer sadece 1 öğe varsa rotasyonu durdur ve sabit göster.
+        const currentDataStr = JSON.stringify(infoData);
+        const lastDataStr = window.lastInfoDataStr || "";
 
         if (infoData && infoData.length > 0) {
-            // Eğer index tanımlı değilse veya yeni veri sayısından büyükse başa al
-            if (typeof infoIndex === 'undefined' || infoIndex >= infoData.length) {
-                infoIndex = 0;
+            // Veri değiştiyse veya henüz hiç gösterilmediyse
+            if (currentDataStr !== lastDataStr) {
+                window.lastInfoDataStr = currentDataStr;
+                infoIndex = 0; // Başa al
+                rotateInfo(); // Hemen göster
             }
 
-            // Eğer rotenasyon zaten çalışıyorsa DOKUNMA, çalışmıyorsa başlat
-            if (!infoRotationInterval) {
-                rotateInfo(); // İlkini hemen göster
-                infoRotationInterval = setInterval(rotateInfo, 10000); // 10 saniyede bir değiştir
+            // Rotasyon Yönetimi
+            if (infoData.length > 1) {
+                // Birden fazla öğe varsa rotasyon başlat
+                if (!infoRotationInterval) {
+                    infoRotationInterval = setInterval(rotateInfo, 10000); // 10 saniyede bir değiştir
+                }
+            } else {
+                // Tek öğe varsa rotasyonu durdur (sabit kalsın)
+                if (infoRotationInterval) {
+                    clearInterval(infoRotationInterval);
+                    infoRotationInterval = null;
+                }
             }
         } else {
+            // Hiç veri yoksa durdur
             if (infoRotationInterval) {
                 clearInterval(infoRotationInterval);
                 infoRotationInterval = null;
