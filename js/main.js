@@ -2108,10 +2108,10 @@ function resizeApp() {
     // Calculate scale factor to FIT within the window
     const scaleX = winWidth / targetWidth;
     const scaleY = winHeight / targetHeight;
-    const scale = Math.min(scaleX, scaleY);
 
-    // Apply scale
-    appRoot.style.transform = `scale(${scale})`;
+    // STRETCH TO FILL (User Request: "Tam ekrana sığsın")
+    // This allows distortion to eliminate black bars
+    appRoot.style.transform = `scale(${scaleX}, ${scaleY})`;
 
     // Optional: Center vertically via margin if scaling leaves space
     // (Flexbox on body already handles centering, but this ensures transform origin behaves)
