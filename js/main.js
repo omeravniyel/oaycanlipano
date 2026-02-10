@@ -2094,4 +2094,35 @@ setInterval(() => {
     fetchConfig();
 }, 60 * 1000);
 
+// --- Smart Scale: Ana Ekran Ölçeklendirme ---
+function resizeApp() {
+    const appRoot = document.getElementById('app-scaler');
+    if (!appRoot) return;
+
+    const baseWidth = 1920;
+    const baseHeight = 1080;
+
+    // Ekranın hem genişliğine hem yüksekliğine bakarak en küçük oranı seç
+    // Bu sayede laptop ekranlarında kutular asla birbirinin üzerine binmez.
+    const scaleX = window.innerWidth / baseWidth;
+    const scaleY = window.innerHeight / baseHeight;
+    const scale = Math.min(scaleX, scaleY);
+
+    // Ölçeği uygula
+    appRoot.style.transform = `scale(${scale})`;
+
+    // Origin her zaman merkezde kalsın (Body flex ile tam ortalanır)
+    appRoot.style.transformOrigin = 'center center';
+}
+
+// Event Listeners for Scaling
+window.addEventListener('resize', resizeApp);
+window.addEventListener('load', () => {
+    resizeApp();
+    setTimeout(resizeApp, 100);
+    setTimeout(resizeApp, 500);
+});
+document.addEventListener('DOMContentLoaded', resizeApp);
+
+
 
