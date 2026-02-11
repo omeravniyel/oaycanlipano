@@ -1394,20 +1394,20 @@ function rotateInfo() {
                 // Modern Grid Layout
                 mainText.innerHTML = `
                     <div class="grid grid-cols-4 gap-2 w-full max-w-sm">
-                        <div class="bg-white/10 rounded-lg p-2 text-center backdrop-blur-sm border border-white/10">
-                            <div class="text-3xl md:text-4xl font-black text-white leading-none mb-1">${days}</div>
+                        <div class="bg-white/10 rounded-lg p-1.5 text-center backdrop-blur-sm border border-white/10">
+                            <div class="text-3xl md:text-4xl font-black text-white leading-none mb-0.5">${days}</div>
                             <div class="text-[0.6rem] uppercase tracking-wider text-indigo-200 font-bold">GÜN</div>
                         </div>
-                        <div class="bg-white/10 rounded-lg p-2 text-center backdrop-blur-sm border border-white/10">
-                            <div class="text-3xl md:text-4xl font-black text-white leading-none mb-1">${hours}</div>
+                        <div class="bg-white/10 rounded-lg p-1.5 text-center backdrop-blur-sm border border-white/10">
+                            <div class="text-3xl md:text-4xl font-black text-white leading-none mb-0.5">${hours}</div>
                             <div class="text-[0.6rem] uppercase tracking-wider text-indigo-200 font-bold">SAAT</div>
                         </div>
-                        <div class="bg-white/10 rounded-lg p-2 text-center backdrop-blur-sm border border-white/10">
-                            <div class="text-3xl md:text-4xl font-black text-white leading-none mb-1">${minutes}</div>
+                        <div class="bg-white/10 rounded-lg p-1.5 text-center backdrop-blur-sm border border-white/10">
+                            <div class="text-3xl md:text-4xl font-black text-white leading-none mb-0.5">${minutes}</div>
                             <div class="text-[0.6rem] uppercase tracking-wider text-indigo-200 font-bold">DK</div>
                         </div>
-                        <div class="bg-indigo-500/20 rounded-lg p-2 text-center backdrop-blur-sm border border-indigo-400/30">
-                            <div class="text-3xl md:text-4xl font-black text-yellow-300 leading-none mb-1">${seconds}</div>
+                        <div class="bg-indigo-500/20 rounded-lg p-1.5 text-center backdrop-blur-sm border border-indigo-400/30">
+                            <div class="text-3xl md:text-4xl font-black text-yellow-300 leading-none mb-0.5">${seconds}</div>
                             <div class="text-[0.6rem] uppercase tracking-wider text-indigo-200 font-bold">SN</div>
                         </div>
                     </div>
