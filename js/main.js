@@ -2094,7 +2094,7 @@ setInterval(() => {
     fetchConfig();
 }, 60 * 1000);
 
-// --- PIXEL-PERFECT STRETCH-TO-FILL (Final TV Fit) ---
+// --- UNIVERSAL PIXEL-PERFECT SCALING (LG, Samsung, Vestel & More) ---
 function resizeApp() {
     const appRoot = document.getElementById('app-scaler');
     if (!appRoot) return;
@@ -2102,12 +2102,24 @@ function resizeApp() {
     const baseWidth = 1920;
     const baseHeight = 1080;
 
-    // Genişlik ve yüksekliği bağımsız ölçeklendirerek köşelere tam yapıştır (Stretch)
-    const scaleX = window.innerWidth / baseWidth;
-    const scaleY = window.innerHeight / baseHeight;
+    // Daha kararlı döküman boyutu ölçümü (TV tarayıcıları için)
+    const viewportWidth = document.documentElement.clientWidth || window.innerWidth;
+    const viewportHeight = document.documentElement.clientHeight || window.innerHeight;
 
-    // Ölçeği uygula ve her zaman sol-üstten başlat
-    appRoot.style.transform = `scale(${scaleX}, ${scaleY})`;
+    if (viewportWidth === 0 || viewportHeight === 0) return;
+
+    // Genişlik ve yüksekliği bağımsız ölçeklendirerek köşelere tam yapıştır (Stretch)
+    const scaleX = viewportWidth / baseWidth;
+    const scaleY = viewportHeight / baseHeight;
+
+    // Vendor Prefixleri (Eski Smart TV'ler için kritik)
+    const transformStr = `scale(${scaleX}, ${scaleY})`;
+    appRoot.style.webkitTransform = transformStr;
+    appRoot.style.mozTransform = transformStr;
+    appRoot.style.msTransform = transformStr;
+    appRoot.style.oTransform = transformStr;
+    appRoot.style.transform = transformStr;
+
     appRoot.style.transformOrigin = 'top left';
 }
 
