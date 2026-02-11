@@ -2094,5 +2094,35 @@ setInterval(() => {
     fetchConfig();
 }, 60 * 1000);
 
+// --- PIXEL-PERFECT SCALING (TV & Laptop Harmony) ---
+function resizeApp() {
+    const appRoot = document.getElementById('app-scaler');
+    if (!appRoot) return;
+
+    const baseWidth = 1920;
+    const baseHeight = 1080;
+
+    // En kısıtlı boyuta göre (genişlik veya yükseklik) ölçek oranını hesapla
+    const scale = Math.min(
+        window.innerWidth / baseWidth,
+        window.innerHeight / baseHeight
+    );
+
+    // Ölçeği uygula ve her zaman merkezde tut
+    appRoot.style.transform = `scale(${scale})`;
+    appRoot.style.transformOrigin = 'center center';
+}
+
+// Event Listeners for Scaling
+window.addEventListener('resize', resizeApp);
+window.addEventListener('load', () => {
+    resizeApp();
+    setTimeout(resizeApp, 100);
+    setTimeout(resizeApp, 500);
+    setTimeout(resizeApp, 2000); // Browser toolbars/Vercel bars için son bir kontrol
+});
+document.addEventListener('DOMContentLoaded', resizeApp);
+
+
 
 
