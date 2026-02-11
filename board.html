@@ -658,26 +658,26 @@
     </style>
 </head>
 
-<body class="bg-[#0f172a] w-screen h-screen overflow-hidden flex items-center justify-center m-0 p-0">
+<body class="bg-[#0f172a] w-screen h-screen overflow-hidden flex items-start justify-start m-0 p-0">
 
     <!-- Global Fullscreen Weather Overlay -->
     <div id="global-weather-overlay"></div>
 
     <!-- PIXEL-PERFECT CANVAS (Fixed 1920x1080 Base) -->
     <div id="app-scaler"
-        class="w-[1920px] h-[1080px] bg-[#eef2f6] flex flex-col p-4 gap-4 box-border overflow-hidden relative shadow-2xl origin-center shrink-0">
+        class="w-[1920px] h-[1080px] bg-[#eef2f6] flex flex-col p-6 gap-6 box-border overflow-hidden relative origin-top-left shrink-0">
 
         <!-- Ana İçerik Grid (Sabit Oranlar) -->
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 w-full flex-grow overflow-hidden">
+        <div class="grid grid-cols-12 gap-6 w-full flex-grow overflow-hidden">
 
             <!-- SOL SÜTUN (5 Birim) -->
-            <div class="lg:col-span-5 grid grid-rows-[13vh_auto] gap-3 h-full">
+            <div class="col-span-5 flex flex-col gap-6 h-full">
 
-                <!-- HEADER (Grid Satırı: 15vh) -->
+                <!-- HEADER (Sabit Yükseklik: 140px) -->
                 <div
-                    class="bg-[#1e1f35] rounded-xl shadow-lg p-3 flex items-center justify-between text-white w-full h-full relative overflow-hidden">
-                    <div class="flex items-center gap-4">
-                        <div class="w-20 h-20 flex items-center justify-center relative overflow-hidden">
+                    class="h-[140px] bg-[#1e1f35] rounded-xl shadow-lg p-4 flex items-center justify-between text-white w-full relative overflow-hidden flex-none">
+                    <div class="flex items-center gap-6">
+                        <div class="w-24 h-24 flex items-center justify-center relative overflow-hidden">
                             <img id="header-logo" src="logo.png" alt="Kurum Logo"
                                 class="w-full h-full object-contain brightness-0 invert">
                         </div>
@@ -780,9 +780,9 @@
                             <div id="hijri-date" class="hidden"></div>
                         </div>
 
-                        <!-- YURT KARTI (Sabit Oran: %35) -->
+                        <!-- YURT KARTI (Sabit Yükseklik: 280px) -->
                         <div id="dorm-card"
-                            class="bg-gradient-to-br from-rose-500 via-orange-500 to-amber-500 rounded-xl shadow-2xl p-0 flex flex-col relative overflow-hidden flex-none h-[35%] transition-all duration-500 border border-white/20">
+                            class="h-[280px] bg-gradient-to-br from-rose-500 via-orange-500 to-amber-500 rounded-xl shadow-2xl p-0 flex flex-col relative overflow-hidden flex-none transition-all duration-500 border border-white/20">
 
                             <!-- Dekoratif Arka Plan İkonu -->
                             <i
@@ -856,7 +856,7 @@
             </div>
 
             <!-- SAĞ SÜTUN (7 Birim) -->
-            <div class="lg:col-span-7 grid grid-rows-[auto_22vh] gap-3 h-full">
+            <div class="col-span-7 flex flex-col gap-6 h-full">
 
                 <!-- VİDEO ALANI (Grid ile otomatik kalan alan) -->
                 <div
@@ -867,8 +867,8 @@
                     </div>
                 </div>
 
-                <!-- ALT BİLGİ ŞERİDİ (Grid Satırı: 25vh) -->
-                <div class="flex gap-3 h-full w-full overflow-hidden">
+                <!-- ALT BİLGİ ŞERİDİ (Sabit Yükseklik: 240px) -->
+                <div class="h-[240px] flex gap-6 w-full flex-none overflow-hidden pb-2">
 
                     <!-- Sol Kısım (Saat & Hava) -->
                     <div class="flex flex-col gap-3 w-1/3 h-full">
@@ -928,7 +928,7 @@
                                 class="flex-grow flex flex-col items-center justify-center p-2 relative overflow-hidden w-full min-h-0">
 
                                 <!-- Icon -->
-                                <div class="w-20 h-20 rounded-full bg-yellow-500 flex items-center justify-center text-white font-bold text-lg shadow-lg border-4 border-yellow-300 transform transition-transform duration-500 hover:scale-110 mb-2 shrink-0"
+                                <div class="w-16 h-16 rounded-full bg-yellow-500 flex items-center justify-center text-white font-bold text-lg shadow-lg border-4 border-yellow-300 transform transition-transform duration-500 hover:scale-110 mb-2 shrink-0"
                                     id="info-circle-badge">
                                     <!-- JS fills this -->
                                 </div>

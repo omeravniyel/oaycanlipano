@@ -2094,7 +2094,7 @@ setInterval(() => {
     fetchConfig();
 }, 60 * 1000);
 
-// --- PIXEL-PERFECT SCALING (TV & Laptop Harmony) ---
+// --- PIXEL-PERFECT STRETCH-TO-FILL (Final TV Fit) ---
 function resizeApp() {
     const appRoot = document.getElementById('app-scaler');
     if (!appRoot) return;
@@ -2102,15 +2102,13 @@ function resizeApp() {
     const baseWidth = 1920;
     const baseHeight = 1080;
 
-    // En kısıtlı boyuta göre (genişlik veya yükseklik) ölçek oranını hesapla
-    const scale = Math.min(
-        window.innerWidth / baseWidth,
-        window.innerHeight / baseHeight
-    );
+    // Genişlik ve yüksekliği bağımsız ölçeklendirerek köşelere tam yapıştır (Stretch)
+    const scaleX = window.innerWidth / baseWidth;
+    const scaleY = window.innerHeight / baseHeight;
 
-    // Ölçeği uygula ve her zaman merkezde tut
-    appRoot.style.transform = `scale(${scale})`;
-    appRoot.style.transformOrigin = 'center center';
+    // Ölçeği uygula ve her zaman sol-üstten başlat
+    appRoot.style.transform = `scale(${scaleX}, ${scaleY})`;
+    appRoot.style.transformOrigin = 'top left';
 }
 
 // Event Listeners for Scaling
@@ -2119,7 +2117,8 @@ window.addEventListener('load', () => {
     resizeApp();
     setTimeout(resizeApp, 100);
     setTimeout(resizeApp, 500);
-    setTimeout(resizeApp, 2000); // Browser toolbars/Vercel bars için son bir kontrol
+    setTimeout(resizeApp, 1000);
+    setTimeout(resizeApp, 3000); // Browser toolbars/Vercel bars için son bir kontrol
 });
 document.addEventListener('DOMContentLoaded', resizeApp);
 
