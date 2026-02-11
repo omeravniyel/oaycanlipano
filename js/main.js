@@ -2127,10 +2127,15 @@ function resizeApp() {
 window.addEventListener('resize', resizeApp);
 window.addEventListener('load', () => {
     resizeApp();
-    setTimeout(resizeApp, 100);
-    setTimeout(resizeApp, 500);
-    setTimeout(resizeApp, 1000);
-    setTimeout(resizeApp, 3000); // Browser toolbars/Vercel bars için son bir kontrol
+
+    // TV'lerdeki gecikmeli çözünürlük bildirimleri için kademeli kontrol
+    [100, 500, 1000, 2000, 5000].forEach(delay => {
+        setTimeout(resizeApp, delay);
+    });
+
+    // İlk 10 saniye boyunca her 2 saniyede bir zorla kontrol et (Bootscreen vb. durumlara karşı)
+    const bootCheck = setInterval(resizeApp, 2000);
+    setTimeout(() => clearInterval(bootCheck), 10000);
 });
 document.addEventListener('DOMContentLoaded', resizeApp);
 
