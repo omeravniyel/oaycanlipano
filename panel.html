@@ -2176,7 +2176,8 @@
                         reader.readAsDataURL(file);
                     });
                 } catch (e) {
-                    console.error(e);
+                    console.error("Upload Loop Error:", e);
+                    showToast("Dosya işlenirken hata oluştu: " + (e.message || "Bilinmeyen hata"), "error");
                 }
             }
 
@@ -2185,7 +2186,10 @@
                 renderGalleries();
             }
 
-            if (totalFiles === 1) {
+            if (successCount === 0) {
+                Swal.close();
+                showToast("Yükleme başarısız oldu. Lütfen dosya boyutunu veya formatını kontrol edin.", "error");
+            } else if (totalFiles === 1) {
                 showToast("Dosya başarıyla yüklendi.", "success");
             } else {
                 Swal.close();
@@ -3086,36 +3090,72 @@
             const container = document.getElementById('toast-container');
             const toast = document.createElement('div');
 
-            const colors = {
-                success: 'from-emerald-500 to-teal-500',
-                error: 'from-red-500 to-pink-500',
-                info: 'from-blue-500 to-indigo-500'
+            // Modern color palettes with gradients and borders
+            const styles = {
+                success: {
+                    bg: 'bg-white',
+                    border: 'border-emerald-100',
+                    text: 'text-slate-700',
+                    icon: 'fa-check-circle',
+                    iconColor: 'text-emerald-500',
+                    gradient: 'bg-gradient-to-r from-emerald-500 to-teal-500' // strip on left
+                },
+                error: {
+                    bg: 'bg-white',
+                    border: 'border-red-100',
+                    text: 'text-slate-700',
+                    icon: 'fa-exclamation-circle',
+                    iconColor: 'text-red-500',
+                    gradient: 'bg-gradient-to-r from-red-500 to-pink-500'
+                },
+                info: {
+                    bg: 'bg-white',
+                    border: 'border-blue-100',
+                    text: 'text-slate-700',
+                    icon: 'fa-info-circle',
+                    iconColor: 'text-blue-500',
+                    gradient: 'bg-gradient-to-r from-blue-500 to-indigo-500'
+                }
             };
 
-            const icons = {
-                success: 'fa-check-circle',
-                error: 'fa-exclamation-circle',
-                info: 'fa-info-circle'
-            };
+            const style = styles[type];
 
-            toast.className = `bg - gradient - to - r ${colors[type]} text - white px - 6 py - 4 rounded - xl shadow - 2xl flex items - center gap - 3 transform translate - x - full transition - all duration - 300 min - w - [300px]`;
+            // Modern Floating Card Design
+            toast.className = `group relative overflow-hidden bg-white border ${style.border} shadow-2xl shadow-slate-200/50 rounded-2xl p-4 pr-10 flex items-center gap-4 transform translate-x-full transition-all duration-500 ease-out min-w-[320px] max-w-md pointer-events-auto`;
+
             toast.innerHTML = `
-                                < i class="fas ${icons[type]} text-2xl" ></i >
-                                    <span class="font-semibold">${message}</span>
+                <!-- Left Accent Line -->
+                <div class="absolute left-0 top-0 bottom-0 w-1.5 ${style.gradient}"></div>
+                
+                <!-- Icon Box -->
+                <div class="w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center flex-shrink-0">
+                    <i class="fas ${style.icon} ${style.iconColor} text-xl"></i>
+                </div>
+
+                <!-- Content -->
+                <div class="flex-1">
+                    <h4 class="font-bold text-sm ${style.text} uppercase tracking-wider mb-0.5">${type === 'success' ? 'Başarılı' : (type === 'error' ? 'Hata' : 'Bilgi')}</h4>
+                    <p class="text-xs font-medium text-slate-500 leading-snug">${message}</p>
+                </div>
+
+                <!-- Close Button -->
+                <button onclick="this.parentElement.remove()" class="absolute right-2 top-2 text-slate-300 hover:text-slate-500 transition-colors p-1">
+                    <i class="fas fa-times text-xs"></i>
+                </button>
             `;
 
             container.appendChild(toast);
 
-            // Slide in
-            setTimeout(() => {
-                toast.style.transform = 'translateX(0)';
-            }, 10);
+            // Animate In with slight bounce
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-x-full');
+            });
 
-            // Slide out and remove
+            // Auto Dismiss
             setTimeout(() => {
-                toast.style.transform = 'translateX(150%)';
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
+                toast.classList.add('translate-x-full', 'opacity-0');
+                setTimeout(() => toast.remove(), 500);
+            }, 4000);
         }
     </script>
 
