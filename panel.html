@@ -2220,25 +2220,21 @@
                     showToast("Dosya işlenirken hata oluştu: " + (e.message || "Bilinmeyen hata"), "error");
                 }
             }
-            console.error("Upload Loop Error:", e);
-            showToast("Dosya işlenirken hata oluştu: " + (e.message || "Bilinmeyen hata"), "error");
-        }
+
+            // Render gallery after all uploads
+            if (targetType.includes('gallery')) {
+                renderGalleries();
             }
 
-        // Render gallery after all uploads
-        if (targetType.includes('gallery')) {
-            renderGalleries();
-        }
-
-        if (successCount === 0) {
-            Swal.close();
-            showToast("Yükleme başarısız oldu. Lütfen dosya boyutunu veya formatını kontrol edin.", "error");
-        } else if (totalFiles === 1) {
-            showToast("Dosya başarıyla yüklendi.", "success");
-        } else {
-            Swal.close();
-            showToast(`${successCount}/${totalFiles} dosya başarıyla yüklendi.`, "success");
-        }
+            if (successCount === 0) {
+                Swal.close();
+                showToast("Yükleme başarısız oldu. Lütfen dosya boyutunu veya formatını kontrol edin.", "error");
+            } else if (totalFiles === 1) {
+                showToast("Dosya başarıyla yüklendi.", "success");
+            } else {
+                Swal.close();
+                showToast(`${successCount}/${totalFiles} dosya başarıyla yüklendi.`, "success");
+            }
         }
 
         // --- 3. AUTH LOGIC ---
