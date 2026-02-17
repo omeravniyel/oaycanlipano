@@ -222,32 +222,40 @@ async function fetchConfig() {
 
         // --- ACİL DURUM KONTROLÜ (EMERGENCY MODE) ---
         if (config.emergency_alert) {
-            const { title, message, style } = config.emergency_alert;
+            let em = config.emergency_alert;
+            // Eğer string olarak gelmişse parse et (Bazı DB sürümlerinde string gelebilir)
+            if (typeof em === 'string') {
+                try { em = JSON.parse(em); } catch (e) { console.error("Emergency parse error:", e); }
+            }
 
-            // Renk Temaları
-            const styles = {
-                red: 'from-red-600 to-red-900',
-                yellow: 'from-yellow-500 to-orange-600',
-                blue: 'from-blue-600 to-indigo-900'
-            };
-            const bgGradient = styles[style] || styles.red;
-            const icon = style === 'yellow' ? '⚠️' : (style === 'blue' ? 'ℹ️' : '🚨');
+            if (em && typeof em === 'object') {
+                const title = em.title || "DİKKAT";
+                const message = em.message || "";
+                const style = em.style || "red";
 
-            document.body.innerHTML = `
-                <div class="fixed inset-0 z-[99999] bg-gradient-to-br ${bgGradient} text-white flex flex-col items-center justify-center p-10 text-center animate-pulse">
-                    <div class="text-[10rem] mb-4 drop-shadow-lg">${icon}</div>
-                    <h1 class="text-[8rem] font-black uppercase tracking-tighter leading-none mb-8 drop-shadow-xl bg-black/20 px-8 rounded-xl">${title}</h1>
-                    <p class="text-[4rem] font-bold leading-tight max-w-6xl bg-black/10 px-10 py-4 rounded-2xl border-2 border-white/20 shadow-2xl backdrop-blur-sm">
-                        ${message}
-                    </p>
-                    <div class="mt-20 text-2xl font-mono opacity-80 bg-black/30 px-6 py-2 rounded-lg">
-                        Sistem Yöneticisi Tarafından Gönderilen Acil Durum Mesajı
+                // Renk Temaları
+                const styles = {
+                    red: 'from-red-600 to-red-900',
+                    yellow: 'from-yellow-400 to-amber-600',
+                    blue: 'from-blue-600 to-indigo-900'
+                };
+                const bgGradient = styles[style] || styles.red;
+                const icon = style === 'yellow' ? '⚠️' : (style === 'blue' ? 'ℹ️' : '🚨');
+
+                document.body.innerHTML = `
+                    <div class="fixed inset-0 z-[99999] bg-gradient-to-br ${bgGradient} text-white flex flex-col items-center justify-center p-10 text-center animate-pulse">
+                        <div class="text-[10rem] mb-4 drop-shadow-lg">${icon}</div>
+                        <h1 class="text-[8rem] font-black uppercase tracking-tighter leading-none mb-8 drop-shadow-xl bg-black/20 px-8 rounded-xl">${title}</h1>
+                        <p class="text-[4rem] font-bold leading-tight max-w-6xl bg-black/10 px-10 py-4 rounded-2xl border-2 border-white/20 shadow-2xl backdrop-blur-sm">
+                            ${message.replace(/\n/g, '<br>')}
+                        </p>
+                        <div class="mt-20 text-2xl font-mono opacity-80 bg-black/30 px-6 py-2 rounded-lg">
+                            Sistem Yöneticisi Tarafından Gönderilen Acil Durum Mesajı
+                        </div>
                     </div>
-                </div>
-            `;
-            // Kalan kodun (diğer panoların) çalışmasını engellemek için return
-            // Ama hava durumu vb. arkada çalışsa da olur, görsel tamamen değiştiği için sorun yok.
-            return;
+                `;
+                return;
+            }
         }
 
         // --- WEATHER ANIMATION TOGGLE ---
@@ -779,13 +787,33 @@ async function fetchConfig() {
         }
 
         const rawExams = [];
-        if (config.exam_winners && Array.isArray(config.exam_winners) && config.exam_winners.length > 0) {
+        // --- EXAM WINNER PRIORITIZATION: List -> String Array (exam_winners) -> Individual Legacy fields ---
+        if (config.exam_winners_list && Array.isArray(config.exam_winners_list)) {
+            // Newest System: Dynamic List (Priority 1)
+            config.exam_winners_list.forEach(student => {
+                if (student.name && student.name.trim()) {
+                    let displayStr = '';
+                    if (student.class) displayStr += `<span class="bg-yellow-400 text-purple-900 px-3 py-1 rounded-lg text-lg align-middle mr-2 shadow-sm inline-block font-extrabold">${student.class}</span>`;
+                    displayStr += `<span class="font-bold inline-block align-middle">${student.name}</span>`;
+                    if (student.points) displayStr += `<span class="bg-green-500 text-white px-3 py-1 rounded-lg text-lg align-middle ml-2 shadow-sm inline-block font-bold">${student.points} PUAN</span>`;
+
+                    rawExams.push({
+                        type: 'exam',
+                        title: (config.exam_name ? config.exam_name + ' ŞAMPİYONLARI' : 'SINAV ŞAMPİYONLARI'),
+                        badge: 'MAŞAALLAH',
+                        circle: `<svg class="w-16 h-16 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M20.2 2H19.5H18C17.1 2 16.3 2.4 15.8 3C15.3 2.4 14.6 2 13.5 2H12.2C11.6 2 11 2.2 10.6 2.6L10 3.3L9.4 2.6C9 2.2 8.4 2 7.8 2H6.5C5.4 2 4.7 2.4 4.2 3C3.7 2.4 2.9 2 2 2H1.3H0V6C0 9.3 2.7 12 6 12H7.2L10 16.2L12.8 12H14C17.3 12 20 9.3 20 6V2H20.2ZM6 10C3.8 10 2 8.2 2 6V4H2.2H3.5C4.1 4 4.5 4.4 4.5 5V6C4.5 6.6 4.9 7 5.5 7H6C6.6 7 7 6.6 7 6V4H7.8C8.4 4 9 4.6 9 5.2V6.5L10 8L11 6.5V5.2C11 4.6 11.6 4 12.2 4H13C13.6-4 14 3.6 14 3H14.5H15.8C16.4 4 17 4.6 17 5.2V6.5L18 8L19 6.5V5.2C19 4.6 19.6 4 20.2 4H21.5H22V6C22 8.2 20.2 10 18 10H14.6L12.8 12.7L10 16.9L7.2 12.7L5.4 10H6ZM10 18H14V22H10V18Z"/></svg>`,
+                        topLabel: 'TEBRİK EDERİZ',
+                        content: displayStr,
+                        image: student.image || ''
+                    });
+                }
+            });
+        }
+        else if (config.exam_winners && Array.isArray(config.exam_winners)) {
+            // Mid-Legacy: config.exam_winners array (Priority 2)
             config.exam_winners.forEach(w => {
-                // Parse format: [Class] Name - Score | IMG:url
                 let fullStr = w.trim();
                 let imageUrl = '';
-
-                // Extract Image first
                 const parts = fullStr.split(' | IMG:');
                 if (parts.length > 1) {
                     fullStr = parts[0].trim();
@@ -796,7 +824,6 @@ async function fetchConfig() {
                 let studentName = '';
                 let score = '';
 
-                // Regex to capture [Class] (optional), Name, - Score (optional)
                 const scoreParts = fullStr.split(' - ');
                 const studentAndClass = scoreParts[0];
                 score = scoreParts[1] || "";
@@ -820,36 +847,8 @@ async function fetchConfig() {
                     image: imageUrl
                 });
             });
-        }
-
-        // --- NEW: DYNAMIC EXAM WINNERS (Priority: List -> Legacy 1-4) ---
-        // Eğer config.exam_winners_list tanımlıysa (boş array olsa bile), yeni sistemi kullan.
-        // Sadece undefined ise eski sisteme (fallback) düş.
-        const hasExamList = Array.isArray(config.exam_winners_list);
-        const examList = hasExamList ? config.exam_winners_list : [];
-
-        if (hasExamList) {
-            // Yeni Sistem: Liste boşsa bile buraya girer ve döngü çalışmadığı için boş kalır (Fallback çalışmaz)
-            examList.forEach(student => {
-                if (student.name && student.name.trim()) {
-                    let displayStr = '';
-                    if (student.class) displayStr += `<span class="bg-yellow-400 text-purple-900 px-3 py-1 rounded-lg text-lg align-middle mr-2 shadow-sm inline-block font-extrabold">${student.class}</span>`;
-                    displayStr += `<span class="font-bold inline-block align-middle">${student.name}</span>`;
-                    if (student.points) displayStr += `<span class="bg-green-500 text-white px-3 py-1 rounded-lg text-lg align-middle ml-2 shadow-sm inline-block font-bold">${student.points} PUAN</span>`;
-
-                    rawExams.push({
-                        type: 'exam',
-                        title: (config.exam_name ? config.exam_name + ' ŞAMPİYONLARI' : 'SINAV ŞAMPİYONLARI'),
-                        badge: 'MAŞAALLAH',
-                        circle: `<svg class="w-16 h-16 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M20.2 2H19.5H18C17.1 2 16.3 2.4 15.8 3C15.3 2.4 14.6 2 13.5 2H12.2C11.6 2 11 2.2 10.6 2.6L10 3.3L9.4 2.6C9 2.2 8.4 2 7.8 2H6.5C5.4 2 4.7 2.4 4.2 3C3.7 2.4 2.9 2 2 2H1.3H0V6C0 9.3 2.7 12 6 12H7.2L10 16.2L12.8 12H14C17.3 12 20 9.3 20 6V2H20.2ZM6 10C3.8 10 2 8.2 2 6V4H2.2H3.5C4.1 4 4.5 4.4 4.5 5V6C4.5 6.6 4.9 7 5.5 7H6C6.6 7 7 6.6 7 6V4H7.8C8.4 4 9 4.6 9 5.2V6.5L10 8L11 6.5V5.2C11 4.6 11.6 4 12.2 4H13C13.6-4 14 3.6 14 3H14.5H15.8C16.4 4 17 4.6 17 5.2V6.5L18 8L19 6.5V5.2C19 4.6 19.6 4 20.2 4H21.5H22V6C22 8.2 20.2 10 18 10H14.6L12.8 12.7L10 16.9L7.2 12.7L5.4 10H6ZM10 18H14V22H10V18Z"/></svg>`,
-                        topLabel: 'TEBRİK EDERİZ',
-                        content: displayStr,
-                        image: student.image || ''
-                    });
-                }
-            });
         } else {
-            // Fallback to Legacy 1-4 (Sadece yeni liste YOKSA)
+            // Full-Legacy fields 1-4
             for (let i = 1; i <= 4; i++) {
                 const name = config[`exam_s_${i}_name`];
                 if (name && name.trim()) {
@@ -920,9 +919,27 @@ async function fetchConfig() {
         }
 
         const rawImproved = [];
-        if (config.most_improved_list && Array.isArray(config.most_improved_list)) {
+        // --- IMPROVED STUDENT PRIORITIZATION: List (improved_list) -> String Array (most_improved_list) -> Individual Legacy fields ---
+        if (config.improved_list && Array.isArray(config.improved_list)) {
+            // Priority 1: New Dynamic List
+            config.improved_list.forEach(student => {
+                if (student.name && student.name.trim()) {
+                    rawImproved.push({
+                        type: 'improved',
+                        title: 'EN ÇOK GELİŞENLER',
+                        badge: student.class || 'BAŞARI',
+                        points: student.points || '0',
+                        circle: `<i class="fas fa-chart-line text-2xl text-white"></i>`,
+                        topLabel: 'AZİM VE GAYRET',
+                        content: student.name,
+                        image: student.image || ''
+                    });
+                }
+            });
+        }
+        else if (config.most_improved_list && Array.isArray(config.most_improved_list)) {
+            // Priority 2: Mid-legacy list
             config.most_improved_list.forEach(item => {
-                // Format could be "Name - Score" or "Name - Score - Points"
                 const parts = item.split('-').map(p => p.trim());
                 const name = parts[0] || "Öğrenci";
                 const score = parts[1] || "—";
@@ -938,30 +955,7 @@ async function fetchConfig() {
                     content: name
                 });
             });
-        }
-
-        // --- NEW: DYNAMIC IMPROVED STUDENTS (Priority: List -> Legacy 1-4) ---
-        // Aynı mantık: Liste tanımlıysa (boş olsa bile) yeni sistem.
-        const hasImprovedList = Array.isArray(config.improved_list);
-        const improvedList = hasImprovedList ? config.improved_list : [];
-
-        if (hasImprovedList) {
-            improvedList.forEach(student => {
-                if (student.name && student.name.trim()) {
-                    rawImproved.push({
-                        type: 'improved',
-                        title: 'EN ÇOK GELİŞENLER',
-                        badge: student.class || 'BAŞARI',
-                        points: student.points || '0',
-                        circle: '<i class="fas fa-chart-line text-2xl text-white"></i>',
-                        topLabel: 'AZİM VE GAYRET',
-                        content: student.name,
-                        image: student.image || ''
-                    });
-                }
-            });
         } else {
-            // Fallback to Legacy 1-4 (Sadece yeni liste YOKSA)
             for (let i = 1; i <= 4; i++) {
                 const name = config[`improved_s_${i}_name`];
                 if (name && name.trim()) {
@@ -972,7 +966,7 @@ async function fetchConfig() {
                     rawImproved.push({
                         type: 'improved',
                         title: 'EN ÇOK GELİŞENLER',
-                        badge: className || 'BAŞARI', // If no class, use BAŞARI badge
+                        badge: className || 'BAŞARI',
                         points: points,
                         circle: '<i class="fas fa-chart-line text-2xl text-white"></i>',
                         topLabel: 'AZİM VE GAYRET',
@@ -1149,10 +1143,26 @@ function rotateInfo() {
         countdownInterval = null;
     }
 
-    if (!infoData || infoData.length === 0) return;
+    const container = document.getElementById('info-carousel');
+    const cardContainer = container ? container.parentElement : null;
+
+    if (!infoData || infoData.length === 0) {
+        if (container) {
+            container.style.opacity = '0';
+            container.innerHTML = '';
+        }
+        if (cardContainer) {
+            cardContainer.classList.add('hidden');
+        }
+        return;
+    }
+
+    // Ensure index is valid (safety check)
+    if (infoIndex >= infoData.length) infoIndex = 0;
+
+    if (cardContainer) cardContainer.classList.remove('hidden');
 
     // Fade out
-    const container = document.getElementById('info-carousel');
     container.style.opacity = '0';
     container.style.transform = 'translateY(10px)';
 

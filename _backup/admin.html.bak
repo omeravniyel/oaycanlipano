@@ -469,9 +469,25 @@
         function loadLocalHadiths() { const t = document.getElementById('hadith-target-type').value; hadithWeeks = JSON.parse(localStorage.getItem(`sa_h_${t}`) || '[]'); const savedDate = localStorage.getItem(`sa_h_date_${t}`); if (savedDate) document.getElementById('semester-start-date').value = savedDate; if (hadithWeeks.length === 0) addNewWeek(); renderWeeks(); }
 
         function addNewWeek() {
-            // Default to next week number but editable
-            hadithWeeks.push({ week: hadithWeeks.length + 1, text: '', arabic: '' });
-            renderWeeks(); saveLocal();
+            const dateVal = document.getElementById('semester-start-date').value;
+            let weekNumber = hadithWeeks.length + 1;
+            
+            // Eğer başlangıç tarihi seçilmişse, bugünün kaçıncı hafta olduğunu hesapla
+            if (dateVal) {
+                const startDate = new Date(dateVal);
+                const today = new Date();
+                const daysDiff = Math.floor((today - startDate) / (1000 * 60 * 60 * 24));
+                const calculatedWeek = Math.max(1, Math.floor(daysDiff / 7) + 1);
+                
+                // Eğer hesaplanan hafta mevcut hafta sayısından büyükse onu kullan
+                if (calculatedWeek > hadithWeeks.length) {
+                    weekNumber = calculatedWeek;
+                }
+            }
+            
+            hadithWeeks.push({ week: weekNumber, text: '', arabic: '' });
+            renderWeeks(); 
+            saveLocal();
         }
 
         function updateWeekDates() {
