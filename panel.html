@@ -1984,7 +1984,7 @@
                 </div>
 
                 <!-- Hidden inputs for file upload -->
-                <input type="file" id="upload-trigger" class="hidden">
+                <input type="file" id="upload-trigger" class="hidden" multiple accept="image/*,video/*">
                 <input type="hidden" id="upload-target-type">
                 <input type="hidden" id="input-institution-logo">
         </main>
@@ -2069,75 +2069,127 @@
         async function handleFileUpload(inputElement, targetType) {
             console.log("[DEBUG] handleFileUpload called. Type:", targetType);
             if (!inputElement.files || inputElement.files.length === 0) return;
-            const file = inputElement.files[0];
 
-            const toast = showToast("Dosya yükleniyor...", "info");
+            const files = Array.from(inputElement.files);
+            const totalFiles = files.length;
 
-            try {
-                const reader = new FileReader();
-                reader.onload = async (e) => {
-                    const base64 = e.target.result.split(',')[1];
-                    const res = await fetch('/api/upload', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            filename: file.name,
-                            contentType: file.type,
-                            fileBase64: base64,
-                            slug: currentSlug
-                        })
+            // Show progress for multiple files
+            if (totalFiles > 1) {
+                Swal.fire({
+                    title: `${totalFiles} Dosya Yükleniyor...`,
+                    html: '<b></b> dosya yüklendi.',
+                    timer: totalFiles * 2000,
+                    timerProgressBar: true,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    },
+                    willClose: () => { }
+                });
+            }
+
+            let successCount = 0;
+            let target = null;
+
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+
+                try {
+                    const reader = new FileReader();
+
+                    await new Promise((resolve, reject) => {
+                        reader.onload = async (e) => {
+                            try {
+                                const base64 = e.target.result.split(',')[1];
+                                const res = await fetch('/api/upload', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        filename: file.name,
+                                        contentType: file.type,
+                                        fileBase64: base64,
+                                        slug: currentSlug
+                                    })
+                                });
+                                const data = await res.json();
+
+                                if (data.url) {
+                                    if (targetType === 'logo') {
+                                        document.getElementById('input-institution-logo').value = data.url;
+                                        const preview = document.getElementById('preview-logo-main');
+                                        if (preview) {
+                                            preview.src = data.url;
+                                            preview.classList.remove('brightness-0', 'invert', 'opacity-40');
+                                            preview.classList.add('opacity-100');
+                                        }
+                                    } else if (targetType === 'hadith') {
+                                        document.getElementById('input-hadith-image').value = data.url;
+                                        document.getElementById('preview-hadith-img').innerHTML = `<img src=\"${data.url}\" class=\"w-full h-full object-cover\">`;
+                                    } else if (targetType === 'student_of_week') {
+                                        document.getElementById('input-student-image').value = data.url;
+                                        document.getElementById('preview-student-img').innerHTML = `<img src=\"${data.url}\" class=\"w-full h-full object-cover\">`;
+                                    } else if (targetType === 'dorm1-image') {
+                                        document.getElementById('input-dorm1-image').value = data.url;
+                                        document.getElementById('preview-dorm1-img').innerHTML = `<img src=\"${data.url}\" class=\"w-full h-full object-cover\">`;
+                                    } else if (targetType === 'dorm2-image') {
+                                        document.getElementById('input-dorm2-image').value = data.url;
+                                        document.getElementById('preview-dorm2-img').innerHTML = `<img src=\"${data.url}\" class=\"w-full h-full object-cover\">`;
+                                    } else if (targetType.startsWith('exam-s-') && targetType.endsWith('-image')) {
+                                        const index = targetType.split('-')[2];
+                                        document.getElementById(`input-exam-s-${index}-image`).value = data.url;
+                                        document.getElementById(`preview-exam-s-${index}-img`).innerHTML = `<img src=\"${data.url}\" class=\"w-full h-full object-cover\">`;
+                                    } else if (targetType === 'gallery' || targetType === 'gallery-main' || targetType === 'gallery-left') {
+                                        // Only ask once for first file
+                                        if (target === null) {
+                                            if (targetType === 'gallery') {
+                                                target = await showGalleryPrompt();
+                                            } else if (targetType === 'gallery-left') {
+                                                target = 'left';
+                                            } else {
+                                                target = 'main';
+                                            }
+                                        }
+
+                                        if (target === 'main') {
+                                            galleryMain.push(data.url);
+                                        } else if (target === 'left') {
+                                            galleryLeft.push(data.url);
+                                        }
+                                    }
+                                    successCount++;
+
+                                    // Update progress
+                                    if (totalFiles > 1 && Swal.isVisible()) {
+                                        const content = Swal.getHtmlContainer();
+                                        if (content) {
+                                            content.querySelector('b').textContent = `${successCount}/${totalFiles}`;
+                                        }
+                                    }
+                                }
+                                resolve();
+                            } catch (err) {
+                                console.error('Upload error:', err);
+                                reject(err);
+                            }
+                        };
+
+                        reader.onerror = reject;
+                        reader.readAsDataURL(file);
                     });
-                    const data = await res.json();
-                    if (data.url) {
-                        if (targetType === 'logo') {
-                            document.getElementById('input-institution-logo').value = data.url;
-                            const preview = document.getElementById('preview-logo-main');
-                            if (preview) {
-                                preview.src = data.url;
-                                preview.classList.remove('brightness-0', 'invert', 'opacity-40');
-                                preview.classList.add('opacity-100');
-                            }
-                        } else if (targetType === 'hadith') {
-                            document.getElementById('input-hadith-image').value = data.url;
-                            document.getElementById('preview-hadith-img').innerHTML = `<img src="${data.url}" class="w-full h-full object-cover">`;
-                        } else if (targetType === 'student_of_week') {
-                            document.getElementById('input-student-image').value = data.url;
-                            document.getElementById('preview-student-img').innerHTML = `<img src="${data.url}" class="w-full h-full object-cover">`;
-                        } else if (targetType === 'dorm1-image') {
-                            document.getElementById('input-dorm1-image').value = data.url;
-                            document.getElementById('preview-dorm1-img').innerHTML = `<img src="${data.url}" class="w-full h-full object-cover">`;
-                        } else if (targetType === 'dorm2-image') {
-                            document.getElementById('input-dorm2-image').value = data.url;
-                            document.getElementById('preview-dorm2-img').innerHTML = `<img src="${data.url}" class="w-full h-full object-cover">`;
-                        } else if (targetType.startsWith('exam-s-') && targetType.endsWith('-image')) {
-                            const index = targetType.split('-')[2];
-                            document.getElementById(`input-exam-s-${index}-image`).value = data.url;
-                            document.getElementById(`preview-exam-s-${index}-img`).innerHTML = `<img src="${data.url}" class="w-full h-full object-cover">`;
-                        } else if (targetType === 'gallery' || targetType === 'gallery-main' || targetType === 'gallery-left') {
-                            let target = 'main';
-                            if (targetType === 'gallery') {
-                                target = await showGalleryPrompt();
-                            } else if (targetType === 'gallery-left') {
-                                target = 'left';
-                            }
+                } catch (e) {
+                    console.error(e);
+                }
+            }
 
-                            if (target === 'main') {
-                                galleryMain.push(data.url);
-                                renderGalleries();
-                            } else if (target === 'left') {
-                                galleryLeft.push(data.url);
-                                renderGalleries();
-                            }
-                        }
-                        showToast("Dosya başarıyla yüklendi.", "success");
-                    } else {
-                        showToast(data.error || "Yükleme hatası", "error");
-                    }
-                };
-                reader.readAsDataURL(file);
-            } catch (e) {
-                console.error(e);
-                showToast("Sistem hatası", "error");
+            // Render gallery after all uploads
+            if (targetType.includes('gallery')) {
+                renderGalleries();
+            }
+
+            if (totalFiles === 1) {
+                showToast("Dosya başarıyla yüklendi.", "success");
+            } else {
+                Swal.close();
+                showToast(`${successCount}/${totalFiles} dosya başarıyla yüklendi.`, "success");
             }
         }
 
@@ -2230,6 +2282,10 @@
         }
 
         // --- 4. GALLERY UI ---
+        // Selection state for bulk delete
+        window.selectedGalleryMain = new Set();
+        window.selectedGalleryLeft = new Set();
+
         function renderGalleries() {
             renderGrid('main', galleryMain);
             renderGrid('left', galleryLeft);
@@ -2240,8 +2296,31 @@
             const countLabel = document.getElementById(`count-${type}`);
             if (!container || !countLabel) return;
 
+            const selected = type === 'main' ? selectedGalleryMain : selectedGalleryLeft;
             container.innerHTML = '';
             countLabel.innerText = `${items.length} Görsel`;
+
+            // Add bulk action buttons if there are items
+            if (items.length > 0) {
+                const bulkActions = document.createElement('div');
+                bulkActions.className = "col-span-3 flex items-center justify-between gap-2 mb-2 p-3 bg-slate-50 rounded-xl border border-slate-200";
+                bulkActions.innerHTML = `
+                    <div class="flex items-center gap-2">
+                        <label class="flex items-center gap-2 cursor-pointer hover:text-blue-600">
+                            <input type="checkbox" id="select-all-${type}" onchange="toggleSelectAll('${type}')" 
+                                class="w-4 h-4 text-blue-600 rounded cursor-pointer">
+                            <span class="text-xs font-bold text-slate-600">Tümünü Seç</span>
+                        </label>
+                        <span class="text-xs text-slate-400" id="selected-count-${type}">0 seçili</span>
+                    </div>
+                    <button onclick="deleteSelectedImages('${type}')" id="delete-selected-${type}"
+                        class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white text-xs font-bold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                        disabled>
+                        <i class="fas fa-trash-alt"></i> Seçilenleri Sil
+                    </button>
+                `;
+                container.appendChild(bulkActions);
+            }
 
             if (items.length === 0) {
                 container.innerHTML = `<div class="col-span-3 text-center py-10 text-slate-400 text-sm border-2 border-dashed border-slate-100 rounded-xl">Görsel bulunamadı.<br>Yüklemek için yukarıdaki alanı kullanın.</div>`;
@@ -2256,6 +2335,9 @@
 
                 const div = document.createElement('div');
                 div.className = "relative aspect-square rounded-lg overflow-hidden group shadow-sm bg-slate-50 border hover:border-blue-500 transition-all";
+                const isSelected = selected.has(idx);
+                if (isSelected) div.classList.add('ring-4', 'ring-blue-500');
+
                 div.innerHTML = `
                     ${content}
                     <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
@@ -2263,8 +2345,121 @@
                         <button onclick="deleteImage('${type}', ${idx})" class="w-8 h-8 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-full"><i class="fas fa-trash"></i></button>
                     </div>
                     <div class="absolute top-1 left-1 bg-black/40 text-white text-[10px] px-1.5 rounded font-mono backdrop-blur">${idx + 1}</div>
+                    <div class="absolute top-1 right-1">
+                        <label class="cursor-pointer block">
+                            <input type="checkbox" 
+                                class="w-5 h-5 text-blue-600 rounded cursor-pointer ${isSelected ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity"
+                                ${isSelected ? 'checked' : ''}
+                                onchange="toggleImageSelection('${type}', ${idx})">
+                        </label>
+                    </div>
                 `;
                 container.appendChild(div);
+            });
+            updateBulkDeleteUI(type); // Initial update for the UI elements
+        }
+
+        function toggleImageSelection(type, idx) {
+            const selected = type === 'main' ? selectedGalleryMain : selectedGalleryLeft;
+            if (selected.has(idx)) {
+                selected.delete(idx);
+            } else {
+                selected.add(idx);
+            }
+            updateBulkDeleteUI(type);
+            renderGrid(type, type === 'main' ? galleryMain : galleryLeft);
+        }
+
+        function toggleSelectAll(type) {
+            const checkbox = document.getElementById(`select-all-${type}`);
+            const selected = type === 'main' ? selectedGalleryMain : selectedGalleryLeft;
+            const items = type === 'main' ? galleryMain : galleryLeft;
+
+            if (checkbox.checked) {
+                // Select all
+                selected.clear();
+                items.forEach((_, idx) => selected.add(idx));
+            } else {
+                // Deselect all
+                selected.clear();
+            }
+            updateBulkDeleteUI(type);
+            renderGrid(type, items);
+        }
+
+        function updateBulkDeleteUI(type) {
+            const selected = type === 'main' ? selectedGalleryMain : selectedGalleryLeft;
+            const countLabel = document.getElementById(`selected-count-${type}`);
+            const deleteBtn = document.getElementById(`delete-selected-${type}`);
+            const selectAllCheckbox = document.getElementById(`select-all-${type}`);
+            const items = type === 'main' ? galleryMain : galleryLeft;
+
+            if (countLabel) countLabel.innerText = `${selected.size} seçili`;
+            if (deleteBtn) deleteBtn.disabled = selected.size === 0;
+            if (selectAllCheckbox) {
+                selectAllCheckbox.checked = selected.size === items.length && items.length > 0;
+            }
+        }
+
+        async function deleteSelectedImages(type) {
+            const selected = type === 'main' ? selectedGalleryMain : selectedGalleryLeft;
+            const items = type === 'main' ? galleryMain : galleryLeft;
+
+            if (selected.size === 0) return;
+
+            const result = await Swal.fire({
+                title: `${selected.size} Görsel Silinsin mi?`,
+                text: "Seçili görseller hem listeden hem de Storage'dan silinecek.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Evet, Sil',
+                cancelButtonText: 'İptal'
+            });
+
+            if (!result.isConfirmed) return;
+
+            Swal.fire({
+                title: `${selected.size} Görsel Siliniyor...`,
+                html: '<b>0</b>/<b>' + selected.size + '</b> silindi.',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            let deletedCount = 0;
+            const sortedIndices = Array.from(selected).sort((a, b) => b - a); // Delete from end to maintain indices
+
+            for (const idx of sortedIndices) {
+                const url = items[idx];
+                try {
+                    await fetch('/api/manage-institutions', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'delete_gallery_file',
+                            master_password: currentPassword,
+                            payload: { url: url }
+                        })
+                    });
+
+                    items.splice(idx, 1);
+                    deletedCount++;
+
+                    const content = Swal.getHtmlContainer();
+                    if (content) content.querySelectorAll('b')[0].textContent = deletedCount;
+                } catch (err) {
+                    console.error('Delete error:', err);
+                }
+            }
+
+            selected.clear();
+            renderGalleries();
+            Swal.fire({
+                icon: 'success',
+                title: `${deletedCount} Görsel Silindi!`,
+                timer: 1500,
+                showConfirmButton: false
             });
         }
 
@@ -2833,6 +3028,9 @@
                     newConfig[`improved_s_${i}_points`] = null;
                     newConfig[`improved_s_${i}_image`] = null;
                 }
+                // Clear mid-legacy arrays too
+                newConfig.exam_winners = null;
+                newConfig.most_improved_list = null;
 
                 newConfig.student_of_week = JSON.stringify({
                     name: document.getElementById('input-student-name').value,
