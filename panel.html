@@ -2183,10 +2183,27 @@
                         } else if (targetType === 'dorm2-image') {
                             document.getElementById('input-dorm2-image').value = data.url;
                             document.getElementById('preview-dorm2-img').innerHTML = `<img src=\"${data.url}\" class=\"w-full h-full object-cover\">`;
-                        } else if (targetType.startsWith('exam-s-') && targetType.endsWith('-image')) {
+                        } else if ((targetType.startsWith('exam-') || targetType.startsWith('improved-')) && targetType.endsWith('-image')) {
+                            // Dynamic list items (Exam & Improved)
+                            // targetType format: 'exam-123456-abcde-image'
+                            // Input ID: 'input-' + targetType
+                            // Preview ID: 'preview-' + targetType.replace('-image', '-img')
+
+                            const inputId = 'input-' + targetType;
+                            const previewId = 'preview-' + targetType.replace('-image', '-img');
+
+                            const inputEl = document.getElementById(inputId);
+                            const previewEl = document.getElementById(previewId);
+
+                            if (inputEl) inputEl.value = data.url;
+                            if (previewEl) previewEl.innerHTML = `<img src="${data.url}" class="w-full h-full object-cover">`;
+                        } else if (targetType.startsWith('exam-s-')) {
+                            // LEGACY SUPPORT ONLY (Can be removed if sure no old HTML exists)
                             const index = targetType.split('-')[2];
-                            document.getElementById(`input-exam-s-${index}-image`).value = data.url;
-                            document.getElementById(`preview-exam-s-${index}-img`).innerHTML = `<img src=\"${data.url}\" class=\"w-full h-full object-cover\">`;
+                            const input = document.getElementById(`input-exam-s-${index}-image`);
+                            const preview = document.getElementById(`preview-exam-s-${index}-img`);
+                            if (input) input.value = data.url;
+                            if (preview) preview.innerHTML = `<img src="${data.url}" class="w-full h-full object-cover">`;
                         } else if (targetType === 'gallery' || targetType === 'gallery-main' || targetType === 'gallery-left') {
                             // Only ask once for first file
                             if (target === null) {
