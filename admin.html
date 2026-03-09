@@ -714,6 +714,7 @@
                         <select id="hadith-type"
                             class="w-full p-3 bg-slate-900 border border-slate-700 rounded-lg text-white font-bold outline-none"
                             onchange="loadHadiths()">
+                            <option value="Tümü">Tüm Kurumlar</option>
                             <option>Ortaokul</option>
                             <option>Lise</option>
                             <option>Üniversite Hazırlık</option>
@@ -723,9 +724,9 @@
                         </select>
                     </div>
                     <div class="flex-1 bg-slate-800/50 p-4 rounded-xl border border-slate-700/50">
-                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">İlk Haftanın Tarihi
+                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2">Dönem Başlangıç Tarihi
                             (Pazartesi)</label>
-                        <input type="date" id="semester-start-date"
+                        <input type="date" id="semester-start-date" onchange="updateSemesterStartDate(this.value)"
                             class="w-full p-3 bg-slate-900 border border-slate-700 rounded-lg text-white font-bold outline-none">
                     </div>
                 </div>

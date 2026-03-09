@@ -366,6 +366,7 @@ async function fetchConfig() {
                     // Eğer swiper zaten çalışıyorsa güncelle
                     if (window.mySwiperInstance) {
                         try {
+                            if (window.reachEndTimeout) clearTimeout(window.reachEndTimeout);
                             window.mySwiperInstance.update();
                             window.mySwiperInstance.slideTo(0);
                             window.mySwiperInstance.autoplay.start();
@@ -1732,13 +1733,11 @@ function switchMedia(mode) {
         if (!window.mySwiperInstance) {
             window.mySwiperInstance = new Swiper(".mySwiper", {
                 spaceBetween: 30,
-                spaceBetween: 30,
                 effect: "fade",
                 centeredSlides: true,
                 fadeEffect: {
                     crossFade: true
                 },
-                centeredSlides: true,
                 observer: true, // DOM değişikliklerini izle
                 observeParents: true, // Parent değişikliklerini izle
                 autoplay: {
@@ -1749,14 +1748,27 @@ function switchMedia(mode) {
                 speed: 1500, // Daha yavaş, süslü geçiş
                 on: {
                     reachEnd: function () {
-                        // Slayt bitti -> Videoya geç (Eğer video varsa)
-                        if (videoPlaylist.length > 0) {
-                            // Beklemeden videoya geç
-                            switchMedia('video');
-                        } else {
-                            // Video yoksa başa sar
-                            this.slideTo(0);
-                            this.autoplay.start();
+                        // Slaytın son görseline ulaşıldı. Bu görselin de ekranda 12 saniye kalmasını bekle
+                        if (window.reachEndTimeout) clearTimeout(window.reachEndTimeout);
+                        const swiperObj = this;
+
+                        window.reachEndTimeout = setTimeout(() => {
+                            if (currentMediaState !== 'slide' || !swiperObj.isEnd) return;
+
+                            // 12 Saniye dolduktan sonra işlem yap
+                            if (videoPlaylist.length > 0) {
+                                switchMedia('video');
+                            } else {
+                                swiperObj.slideTo(0);
+                                swiperObj.autoplay.start();
+                            }
+                        }, 12000);
+                    },
+                    slideChange: function () {
+                        // Eğer kullanıcı manuel geri kaydırırsa veya başa dönerse timeout'u iptal et
+                        if (!this.isEnd && window.reachEndTimeout) {
+                            clearTimeout(window.reachEndTimeout);
+                            window.reachEndTimeout = null;
                         }
                     }
                 }

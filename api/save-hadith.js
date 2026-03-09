@@ -47,9 +47,19 @@ module.exports = async function handler(request, response) {
     let allHadiths = currentData?.config_value || {};
 
     // 2. Update specific type
-    allHadiths[type] = weeks;
-    if (start_date) {
-        allHadiths[type + '_date'] = start_date;
+    if (type === 'Tümü') {
+        const allTypes = ['Ortaokul', 'Lise', 'Üniversite Hazırlık', 'Daimi', 'Üniversite', 'Tekamül', 'Tümü'];
+        allTypes.forEach(t => {
+            allHadiths[t] = weeks;
+            if (start_date) {
+                allHadiths[t + '_date'] = start_date;
+            }
+        });
+    } else {
+        allHadiths[type] = weeks;
+        if (start_date) {
+            allHadiths[type + '_date'] = start_date;
+        }
     }
 
     // 3. Upsert back to DB

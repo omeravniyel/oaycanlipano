@@ -673,11 +673,19 @@ module.exports = async (request, response) => {
             let hadithStore = (sysData && sysData.config) ? sysData.config : {};
 
             // Store weeks array directly (legacy format compatibility)
-            hadithStore[cleanType] = weeks;
-
-            // Store start_date separately with _date suffix
-            if (start_date) {
-                hadithStore[`${cleanType}_date`] = start_date;
+            if (cleanType === 'Tümü') {
+                const allTypes = ['Ortaokul', 'Lise', 'Üniversite Hazırlık', 'Daimi', 'Üniversite', 'Tekamül', 'Tümü'];
+                allTypes.forEach(t => {
+                    hadithStore[t] = weeks;
+                    if (start_date) {
+                        hadithStore[`${t}_date`] = start_date;
+                    }
+                });
+            } else {
+                hadithStore[cleanType] = weeks;
+                if (start_date) {
+                    hadithStore[`${cleanType}_date`] = start_date;
+                }
             }
 
             if (sysData) {
@@ -713,7 +721,7 @@ module.exports = async (request, response) => {
 
                 console.log(`Institution: ${inst.slug}, Type: "${currentType}", Target: "${targetTypeLower}", Match: ${currentType === targetTypeLower}`);
 
-                if (currentType === targetTypeLower) {
+                if (cleanType === 'Tümü' || currentType === targetTypeLower) {
                     matchedCount++;
                     cfg.weekly_hadiths = weeks; // Store as array
                     cfg.hadith_start_date = start_date; // Store start date for week calculation

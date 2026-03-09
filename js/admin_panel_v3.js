@@ -1283,120 +1283,104 @@ function renderHadithWeeks() {
 
     if (startDate) document.getElementById('semester-start-date').value = startDate;
 
+    // --- NEW LOGIC FOR CALCULATING EDIT WEEK ---
+    if (typeof window.currentEditWeekIndex === 'undefined') {
+        const startObj = new Date(startDate);
+        const now = new Date();
+        let calcInd = Math.floor((now - startObj) / (1000 * 60 * 60 * 24 * 7));
+        window.currentEditWeekIndex = calcInd >= 0 ? calcInd : 0;
+    }
 
+    // Ensure array has enough items for the edit index
+    while (weeks.length <= window.currentEditWeekIndex) {
+        weeks.push({ text: '', arabic: '', Source: '' });
+    }
+    // Update reference back to object to make sure we modify correctly
+    currentHadiths[type] = weeks;
+
+    // Get the calculated week item 
+    const currentWeek = weeks[window.currentEditWeekIndex] || { text: '', arabic: '', Source: '' };
+
+    // Calculate the single-date for THIS week (Monday)
+    const startObj = new Date(startDate);
+    const singleDateObj = new Date(startObj.getTime() + (window.currentEditWeekIndex * 7 * 24 * 60 * 60 * 1000));
+    const singleDateStr = singleDateObj.toISOString().split('T')[0];
 
     // Render DARK FORM
-
     container.innerHTML = `
-
     <div class="glass-card p-6 rounded-xl border border-slate-700/50 shadow-lg relative overflow-hidden group">
-
         <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 opacity-50"></div>
-
         <div class="relative z-10">
-
+            <h4 class="text-emerald-400 font-bold mb-4 text-sm uppercase tracking-wider"><i class="fas fa-calendar-alt mr-2"></i> ${window.currentEditWeekIndex + 1}. Hafta Düzenleniyor</h4>
+            
             <div class="mb-5">
-
                 <label class="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Haftanın Başlangıç Tarihi (Pazartesi)</label>
-
-                <input type="date" id="single-date" onchange="updateSingleDate(this.value)" value="${startDate}" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg p-3 text-white focus:border-blue-500 outline-none transition-colors shadow-inner">
-
-                <p class="text-[10px] text-slate-500 mt-1.5 font-medium"><i class="fa-solid fa-info-circle mr-1"></i>Bu tarihi seçtiğiniz haftanın Pazartesi günü olarak ayarlayın.</p>
-
+                <input type="date" id="single-date" onchange="updateSingleDate(this.value)" value="${singleDateStr}" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg p-3 text-white focus:border-blue-500 outline-none transition-colors shadow-inner">
+                <p class="text-[10px] text-slate-500 mt-1.5 font-medium"><i class="fa-solid fa-info-circle mr-1"></i>Bu tarihi değiştirdiğinizde, sistem otomatik olarak hangi haftaya ait olduğunu bulup o haftanın hadisini getirir.</p>
             </div>
 
-
-
             <div class="mb-5">
-
                 <label class="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Hadis-i Şerif (Türkçe)</label>
-
                 <textarea onchange="updateSingleHadith('text', this.value)" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg p-4 text-white h-32 focus:border-emerald-500 outline-none transition-colors shadow-inner leading-relaxed" placeholder="Hadis metnini buraya giriniz...">${currentWeek.text || currentWeek.Hadith || ''}</textarea>
-
             </div>
-
-
 
             <div class="mb-5">
-
                 <label class="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Arapça Metin</label>
-
                 <textarea onchange="updateSingleHadith('arabic', this.value)" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg p-4 text-white h-28 font-mono text-right focus:border-emerald-500 outline-none transition-colors shadow-inner text-lg" placeholder="Arapça metnini buraya giriniz...">${currentWeek.arabic || ''}</textarea>
-
             </div>
-
-
 
             <div>
-
                 <label class="block text-xs font-bold text-slate-500 uppercase mb-2 tracking-wider">Kaynak</label>
-
                 <input onchange="updateSingleHadith('Source', this.value)" value="${currentWeek.Source || ''}" class="w-full bg-slate-900/80 border border-slate-700 rounded-lg p-3 text-white focus:border-blue-500 outline-none transition-colors shadow-inner" placeholder="Örn: Buhari">
-
             </div>
-
         </div>
-
     </div>
-
     `;
-
 }
-
-
 
 // --- SINGLE MODE UPDATERS ---
-
-window.updateSingleDate = function (val) {
-
+window.updateSemesterStartDate = function (val) {
     const type = document.getElementById('hadith-type').value;
-
     currentHadiths[type + '_date'] = val;
-
-    // Also update the hidden original input if needed, but we use strict sync now
-
-    document.getElementById('semester-start-date').value = val;
-
+    window.currentEditWeekIndex = undefined;
+    renderHadithWeeks();
 }
 
+window.updateSingleDate = function (val) {
+    const type = document.getElementById('hadith-type').value;
+    const startDateStr = currentHadiths[type + '_date'] || '2025-09-08';
+    const startObj = new Date(startDateStr);
+    const selectedObj = new Date(val);
 
+    let newIndex = Math.floor((selectedObj - startObj) / (1000 * 60 * 60 * 24 * 7));
+    if (newIndex < 0) newIndex = 0;
+
+    // Update the index memory
+    window.currentEditWeekIndex = newIndex;
+
+    // Re-render inputs to show that week's data!
+    renderHadithWeeks();
+}
 
 window.updateSingleHadith = function (field, val) {
-
     const type = document.getElementById('hadith-type').value;
-
-
+    const idx = window.currentEditWeekIndex !== undefined ? window.currentEditWeekIndex : 0;
 
     // Ensure array exists
-
     if (!currentHadiths[type] || !Array.isArray(currentHadiths[type])) {
-
         currentHadiths[type] = [];
-
     }
 
-
-
-    // Ensure first item exists
-
-    if (currentHadiths[type].length === 0) {
-
+    // Ensure item fields exist up to idx
+    while (currentHadiths[type].length <= idx) {
         currentHadiths[type].push({ text: '', arabic: '', Source: '' });
-
     }
-
-
 
     // Update
-
-    currentHadiths[type][0][field] = val;
-
-
+    currentHadiths[type][idx][field] = val;
 
     // Legacy sync
-
-    if (field === 'text') currentHadiths[type][0].Hadith = val;
-
+    if (field === 'text') currentHadiths[type][idx].Hadith = val;
 }
 
 
