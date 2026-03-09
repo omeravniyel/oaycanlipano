@@ -1262,9 +1262,7 @@ function renderHadithWeeks() {
 
 
 
-    // Get the first item or create empty
-
-    const currentWeek = weeks.length > 0 ? weeks[0] : { text: '', arabic: '', Source: '' };
+    // (first item getting replaced by calculated index below)
 
 
 
