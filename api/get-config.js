@@ -165,7 +165,7 @@ module.exports = async (request, response) => {
                 const typeConfig = globalGallery.config[type];
 
                 if (typeConfig) {
-                    // MERGE IMAGES (Central FIRST)
+                    // MERGE IMAGES (Local FIRST, Central AFTER)
                     if (typeConfig.images && Array.isArray(typeConfig.images) && typeConfig.images.length > 0) {
                         let localGallery = [];
                         try {
@@ -175,12 +175,12 @@ module.exports = async (request, response) => {
 
                         const centralImages = processCentralItems(typeConfig.images, slug, config);
 
-                        // Deduplicate: Local overrides central if exact duplicate? checking URL uniqueness
-                        const combined = [...centralImages, ...localGallery].map(url => typeof url === 'string' ? url.trim() : url);
+                        // Local first, then central (deduplicate)
+                        const combined = [...localGallery, ...centralImages].map(url => typeof url === 'string' ? url.trim() : url);
                         config.gallery_links = [...new Set(combined)];
                     }
 
-                    // MERGE VIDEOS (Central FIRST)
+                    // MERGE VIDEOS (Local FIRST, Central AFTER)
                     if (typeConfig.videos && Array.isArray(typeConfig.videos) && typeConfig.videos.length > 0) {
                         let localVideos = [];
                         try {
@@ -195,11 +195,12 @@ module.exports = async (request, response) => {
                         localVideos = localVideos.filter(v => v && v.length > 5);
                         const centralVideos = processCentralItems(typeConfig.videos, slug, config);
 
-                        const combinedVideos = [...centralVideos, ...localVideos].map(v => typeof v === 'string' ? v.trim() : v);
+                        // Local first, then central (deduplicate)
+                        const combinedVideos = [...localVideos, ...centralVideos].map(v => typeof v === 'string' ? v.trim() : v);
                         config.video_urls = [...new Set(combinedVideos)];
                     }
 
-                    // MERGE LEFT GALLERY (Central FIRST)
+                    // MERGE LEFT GALLERY (Local FIRST, Central AFTER)
                     if (typeConfig.left_images && Array.isArray(typeConfig.left_images) && typeConfig.left_images.length > 0) {
                         let localLeft = [];
                         try {
@@ -209,7 +210,8 @@ module.exports = async (request, response) => {
 
                         const centralLeft = processCentralItems(typeConfig.left_images, slug, config);
 
-                        const combinedLeft = [...centralLeft, ...localLeft].map(url => typeof url === 'string' ? url.trim() : url);
+                        // Local first, then central (deduplicate)
+                        const combinedLeft = [...localLeft, ...centralLeft].map(url => typeof url === 'string' ? url.trim() : url);
                         config.left_gallery_links = [...new Set(combinedLeft)];
                     }
                 }

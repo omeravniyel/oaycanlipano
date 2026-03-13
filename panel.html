@@ -1356,166 +1356,194 @@
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div id="tab-hadith" class="tab-content max-w-5xl mx-auto hidden space-y-6">
+                    <!-- Merkezi Galeri Yönetimi -->
                     <div
-                        class="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-200 overflow-hidden group">
+                        class="bg-white rounded-[2rem] shadow-xl shadow-slate-200/50 border border-slate-200 overflow-hidden">
                         <div
-                            class="bg-gradient-to-r from-teal-500 to-emerald-600 p-6 text-white text-center sm:text-left">
+                            class="bg-gradient-to-r from-orange-500 to-amber-500 px-8 py-6 text-white flex justify-between items-center">
                             <div class="flex items-center gap-4">
                                 <div
-                                    class="w-12 h-12 bg-white/20 rounded-2xl backdrop-blur-md flex items-center justify-center text-2xl">
-                                    <i class="fas fa-book-quran"></i>
+                                    class="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center text-2xl">
+                                    <i class="fas fa-broadcast-tower"></i>
                                 </div>
-                                <div class="flex-1">
-                                    <h3 class="text-xl font-bold">Haftanın Mesajı / Hadisi</h3>
-                                    <p class="text-teal-50 text-sm opacity-90">Manevi değerlerimizi yansıtan haftalık
-                                        mesajı buradan düzenleyin.</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="p-8 space-y-8">
-                            <div class="flex flex-col md:flex-row items-center gap-8 pb-8 border-b border-slate-100">
-                                <div class="w-40 h-40 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-3 group/hadith cursor-pointer hover:border-teal-500 hover:bg-teal-50/30 transition-all overflow-hidden relative"
-                                    onclick="triggerUpload('hadith')">
-                                    <div id="preview-hadith-img" class="w-full h-full flex items-center justify-center">
-                                        <i
-                                            class="fas fa-image text-3xl text-slate-300 group-hover/hadith:text-teal-400 group-hover/hadith:scale-110 transition-all"></i>
-                                    </div>
-                                    <div
-                                        class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/hadith:opacity-100 transition-opacity">
-                                        <i class="fas fa-camera text-white text-2xl"></i>
-                                    </div>
-                                </div>
-                                <div class="flex-1 space-y-4 w-full">
-                                    <div class="relative group/input">
-                                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Hafta
-                                            Bilgisi</label>
-                                        <div class="relative">
-                                            <div
-                                                class="absolute left-4 top-1/2 -translate-y-1/2 text-teal-400 group-focus-within/input:text-teal-600 transition-colors pointer-events-none">
-                                                <i class="fas fa-calendar-week"></i>
-                                            </div>
-                                            <input type="text" id="input-hadith-week"
-                                                class="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:bg-white focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all font-bold text-slate-700"
-                                                placeholder="Örn: 20-27 Şubat Haftası">
-                                        </div>
-                                    </div>
-                                    <input type="hidden" id="input-hadith-image">
-                                    <button
-                                        onclick="document.getElementById('input-hadith-image').value=''; document.getElementById('preview-hadith-img').innerHTML='<i class=\'fas fa-image text-3xl text-slate-300\'></i>'"
-                                        class="text-xs text-red-500 font-bold hover:underline">Görseli Kaldır</button>
+                                <div>
+                                    <h3 class="text-xl font-bold">Merkezi Galeri Yönetimi</h3>
+                                    <p class="text-orange-100/80 text-xs mt-1">Kendi içerikleriniz her zaman önce
+                                        gösterilir. Aşağıdakiler merkezi yönetimden gelmektedir.</p>
                                 </div>
                             </div>
-
-                            <div class="space-y-6">
-                                <div class="relative group/input">
-                                    <label
-                                        class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1 text-right">Arapça
-                                        Metin (Veya Alternatif)</label>
-                                    <textarea id="input-hadith-arabic" rows="3"
-                                        class="w-full px-6 py-6 bg-slate-50 border border-slate-200 rounded-3xl focus:bg-white focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all font-serif text-2xl text-right leading-loose shadow-inner"
-                                        dir="rtl" placeholder="نَصّ الْحَدِيث الشَّرِيف"></textarea>
-                                </div>
-                                <div class="relative group/input">
-                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Türkçe
-                                        Anlamı / Açıklama</label>
-                                    <textarea id="input-hadith-text" rows="4"
-                                        class="w-full px-6 py-6 bg-slate-50 border border-slate-200 rounded-3xl focus:bg-white focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all font-medium text-slate-700 leading-relaxed shadow-inner"
-                                        placeholder="Hadisin mealini veya haftalık mesajı buraya yazın..."></textarea>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- TAB: TEA TALKS (Çay Sohbetleri) -->
-                <div id="tab-tea" class="tab-content max-w-5xl mx-auto hidden space-y-8">
-                    <div
-                        class="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-200 overflow-hidden group">
-                        <div
-                            class="bg-gradient-to-r from-orange-400 to-amber-600 p-6 text-white text-center sm:text-left">
-                            <div class="flex items-center gap-4">
-                                <div
-                                    class="w-12 h-12 bg-white/20 rounded-2xl backdrop-blur-md flex items-center justify-center text-2xl">
-                                    <i class="fas fa-mug-hot"></i>
-                                </div>
-                                <div class="flex-1">
-                                    <h3 class="text-xl font-bold">Çay Sohbetleri</h3>
-                                    <p class="text-orange-50 text-sm opacity-90">Öğrenci randevu ve görüşme saatlerini
-                                        yönetin.</p>
-                                </div>
-                                <label class="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" id="input-tea-active" class="sr-only peer">
-                                    <div
-                                        class="w-12 h-6 bg-white/20 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-400 border border-white/30">
-                                    </div>
-                                </label>
-                            </div>
+                            <button onclick="loadCentralGalleryItems()"
+                                class="bg-white/20 hover:bg-white text-white hover:text-orange-600 px-4 py-2 rounded-xl text-xs font-black transition-all border border-white/20 flex items-center gap-2">
+                                <i class="fas fa-sync-alt"></i> Yenile
+                            </button>
                         </div>
                         <div class="p-8">
-                            <div class="space-y-6">
-                                <!-- Appointment Slots -->
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div class="bg-orange-50/50 p-6 rounded-3xl border border-orange-100/50 space-y-4">
-                                        <label class="block text-[10px] font-black text-orange-700/50 uppercase ml-1">1.
-                                            RANDEVU</label>
-                                        <div class="space-y-3">
-                                            <input type="text" id="input-tea-1-name"
-                                                class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:border-orange-500 outline-none text-xs font-bold text-slate-700"
-                                                placeholder="Öğrenci Adı Soyadı">
-                                            <div class="flex gap-2">
-                                                <input type="date" id="input-tea-1-day"
-                                                    class="flex-1 px-4 py-3 bg-white border border-slate-200 rounded-xl focus:border-orange-500 outline-none text-xs font-bold text-slate-700">
-                                                <input type="time" id="input-tea-1-time"
-                                                    class="w-24 px-4 py-3 bg-white border border-slate-200 rounded-xl focus:border-orange-500 outline-none text-xs font-bold text-slate-700 text-center">
-                                            </div>
+                            <div id="central-gallery-manager" class="min-h-[80px] flex items-center justify-center">
+                                <p class="text-slate-400 text-sm text-center"><i
+                                        class="fas fa-broadcast-tower text-2xl block mb-2 opacity-20"></i>Yüklemek için
+                                    "Yenile" butonuna tıklayın.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="tab-hadith" class="tab-content max-w-5xl mx-auto hidden space-y-6">
+                <div
+                    class="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-200 overflow-hidden group">
+                    <div class="bg-gradient-to-r from-teal-500 to-emerald-600 p-6 text-white text-center sm:text-left">
+                        <div class="flex items-center gap-4">
+                            <div
+                                class="w-12 h-12 bg-white/20 rounded-2xl backdrop-blur-md flex items-center justify-center text-2xl">
+                                <i class="fas fa-book-quran"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-xl font-bold">Haftanın Mesajı / Hadisi</h3>
+                                <p class="text-teal-50 text-sm opacity-90">Manevi değerlerimizi yansıtan haftalık
+                                    mesajı buradan düzenleyin.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-8 space-y-8">
+                        <div class="flex flex-col md:flex-row items-center gap-8 pb-8 border-b border-slate-100">
+                            <div class="w-40 h-40 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-3 group/hadith cursor-pointer hover:border-teal-500 hover:bg-teal-50/30 transition-all overflow-hidden relative"
+                                onclick="triggerUpload('hadith')">
+                                <div id="preview-hadith-img" class="w-full h-full flex items-center justify-center">
+                                    <i
+                                        class="fas fa-image text-3xl text-slate-300 group-hover/hadith:text-teal-400 group-hover/hadith:scale-110 transition-all"></i>
+                                </div>
+                                <div
+                                    class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/hadith:opacity-100 transition-opacity">
+                                    <i class="fas fa-camera text-white text-2xl"></i>
+                                </div>
+                            </div>
+                            <div class="flex-1 space-y-4 w-full">
+                                <div class="relative group/input">
+                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Hafta
+                                        Bilgisi</label>
+                                    <div class="relative">
+                                        <div
+                                            class="absolute left-4 top-1/2 -translate-y-1/2 text-teal-400 group-focus-within/input:text-teal-600 transition-colors pointer-events-none">
+                                            <i class="fas fa-calendar-week"></i>
+                                        </div>
+                                        <input type="text" id="input-hadith-week"
+                                            class="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:bg-white focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all font-bold text-slate-700"
+                                            placeholder="Örn: 20-27 Şubat Haftası">
+                                    </div>
+                                </div>
+                                <input type="hidden" id="input-hadith-image">
+                                <button
+                                    onclick="document.getElementById('input-hadith-image').value=''; document.getElementById('preview-hadith-img').innerHTML='<i class=\'fas fa-image text-3xl text-slate-300\'></i>'"
+                                    class="text-xs text-red-500 font-bold hover:underline">Görseli Kaldır</button>
+                            </div>
+                        </div>
+
+                        <div class="space-y-6">
+                            <div class="relative group/input">
+                                <label
+                                    class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1 text-right">Arapça
+                                    Metin (Veya Alternatif)</label>
+                                <textarea id="input-hadith-arabic" rows="3"
+                                    class="w-full px-6 py-6 bg-slate-50 border border-slate-200 rounded-3xl focus:bg-white focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all font-serif text-2xl text-right leading-loose shadow-inner"
+                                    dir="rtl" placeholder="نَصّ الْحَدِيث الشَّرِيف"></textarea>
+                            </div>
+                            <div class="relative group/input">
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Türkçe
+                                    Anlamı / Açıklama</label>
+                                <textarea id="input-hadith-text" rows="4"
+                                    class="w-full px-6 py-6 bg-slate-50 border border-slate-200 rounded-3xl focus:bg-white focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10 outline-none transition-all font-medium text-slate-700 leading-relaxed shadow-inner"
+                                    placeholder="Hadisin mealini veya haftalık mesajı buraya yazın..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TAB: TEA TALKS (Çay Sohbetleri) -->
+            <div id="tab-tea" class="tab-content max-w-5xl mx-auto hidden space-y-8">
+                <div
+                    class="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-200 overflow-hidden group">
+                    <div class="bg-gradient-to-r from-orange-400 to-amber-600 p-6 text-white text-center sm:text-left">
+                        <div class="flex items-center gap-4">
+                            <div
+                                class="w-12 h-12 bg-white/20 rounded-2xl backdrop-blur-md flex items-center justify-center text-2xl">
+                                <i class="fas fa-mug-hot"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-xl font-bold">Çay Sohbetleri</h3>
+                                <p class="text-orange-50 text-sm opacity-90">Öğrenci randevu ve görüşme saatlerini
+                                    yönetin.</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="input-tea-active" class="sr-only peer">
+                                <div
+                                    class="w-12 h-6 bg-white/20 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-400 border border-white/30">
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="p-8">
+                        <div class="space-y-6">
+                            <!-- Appointment Slots -->
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div class="bg-orange-50/50 p-6 rounded-3xl border border-orange-100/50 space-y-4">
+                                    <label class="block text-[10px] font-black text-orange-700/50 uppercase ml-1">1.
+                                        RANDEVU</label>
+                                    <div class="space-y-3">
+                                        <input type="text" id="input-tea-1-name"
+                                            class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:border-orange-500 outline-none text-xs font-bold text-slate-700"
+                                            placeholder="Öğrenci Adı Soyadı">
+                                        <div class="flex gap-2">
+                                            <input type="date" id="input-tea-1-day"
+                                                class="flex-1 px-4 py-3 bg-white border border-slate-200 rounded-xl focus:border-orange-500 outline-none text-xs font-bold text-slate-700">
+                                            <input type="time" id="input-tea-1-time"
+                                                class="w-24 px-4 py-3 bg-white border border-slate-200 rounded-xl focus:border-orange-500 outline-none text-xs font-bold text-slate-700 text-center">
                                         </div>
                                     </div>
-                                    <div class="bg-orange-50/50 p-6 rounded-3xl border border-orange-100/50 space-y-4">
-                                        <label class="block text-[10px] font-black text-orange-700/50 uppercase ml-1">2.
-                                            RANDEVU</label>
-                                        <div class="space-y-3">
-                                            <input type="text" id="input-tea-2-name"
-                                                class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:border-orange-500 outline-none text-xs font-bold text-slate-700"
-                                                placeholder="Öğrenci Adı Soyadı">
-                                            <div class="flex gap-2">
-                                                <input type="date" id="input-tea-2-day"
-                                                    class="flex-1 px-4 py-3 bg-white border border-slate-200 rounded-xl focus:border-orange-500 outline-none text-xs font-bold text-slate-700">
-                                                <input type="time" id="input-tea-2-time"
-                                                    class="w-24 px-4 py-3 bg-white border border-slate-200 rounded-xl focus:border-orange-500 outline-none text-xs font-bold text-slate-700 text-center">
-                                            </div>
+                                </div>
+                                <div class="bg-orange-50/50 p-6 rounded-3xl border border-orange-100/50 space-y-4">
+                                    <label class="block text-[10px] font-black text-orange-700/50 uppercase ml-1">2.
+                                        RANDEVU</label>
+                                    <div class="space-y-3">
+                                        <input type="text" id="input-tea-2-name"
+                                            class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:border-orange-500 outline-none text-xs font-bold text-slate-700"
+                                            placeholder="Öğrenci Adı Soyadı">
+                                        <div class="flex gap-2">
+                                            <input type="date" id="input-tea-2-day"
+                                                class="flex-1 px-4 py-3 bg-white border border-slate-200 rounded-xl focus:border-orange-500 outline-none text-xs font-bold text-slate-700">
+                                            <input type="time" id="input-tea-2-time"
+                                                class="w-24 px-4 py-3 bg-white border border-slate-200 rounded-xl focus:border-orange-500 outline-none text-xs font-bold text-slate-700 text-center">
                                         </div>
                                     </div>
-                                    <div class="bg-orange-50/50 p-6 rounded-3xl border border-orange-100/50 space-y-4">
-                                        <label class="block text-[10px] font-black text-orange-700/50 uppercase ml-1">3.
-                                            RANDEVU</label>
-                                        <div class="space-y-3">
-                                            <input type="text" id="input-tea-3-name"
-                                                class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:border-orange-500 outline-none text-xs font-bold text-slate-700"
-                                                placeholder="Öğrenci Adı Soyadı">
-                                            <div class="flex gap-2">
-                                                <input type="date" id="input-tea-3-day"
-                                                    class="flex-1 px-4 py-3 bg-white border border-slate-200 rounded-xl focus:border-orange-500 outline-none text-xs font-bold text-slate-700">
-                                                <input type="time" id="input-tea-3-time"
-                                                    class="w-24 px-4 py-3 bg-white border border-slate-200 rounded-xl focus:border-orange-500 outline-none text-xs font-bold text-slate-700 text-center">
-                                            </div>
+                                </div>
+                                <div class="bg-orange-50/50 p-6 rounded-3xl border border-orange-100/50 space-y-4">
+                                    <label class="block text-[10px] font-black text-orange-700/50 uppercase ml-1">3.
+                                        RANDEVU</label>
+                                    <div class="space-y-3">
+                                        <input type="text" id="input-tea-3-name"
+                                            class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:border-orange-500 outline-none text-xs font-bold text-slate-700"
+                                            placeholder="Öğrenci Adı Soyadı">
+                                        <div class="flex gap-2">
+                                            <input type="date" id="input-tea-3-day"
+                                                class="flex-1 px-4 py-3 bg-white border border-slate-200 rounded-xl focus:border-orange-500 outline-none text-xs font-bold text-slate-700">
+                                            <input type="time" id="input-tea-3-time"
+                                                class="w-24 px-4 py-3 bg-white border border-slate-200 rounded-xl focus:border-orange-500 outline-none text-xs font-bold text-slate-700 text-center">
                                         </div>
                                     </div>
-                                    <div class="bg-orange-50/50 p-6 rounded-3xl border border-orange-100/50 space-y-4">
-                                        <label class="block text-[10px] font-black text-orange-700/50 uppercase ml-1">4.
-                                            RANDEVU</label>
-                                        <div class="space-y-3">
-                                            <input type="text" id="input-tea-4-name"
-                                                class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:border-orange-500 outline-none text-xs font-bold text-slate-700"
-                                                placeholder="Öğrenci Adı Soyadı">
-                                            <div class="flex gap-2">
-                                                <input type="date" id="input-tea-4-day"
-                                                    class="flex-1 px-4 py-3 bg-white border border-slate-200 rounded-xl focus:border-orange-500 outline-none text-xs font-bold text-slate-700">
-                                                <input type="time" id="input-tea-4-time"
-                                                    class="w-24 px-4 py-3 bg-white border border-slate-200 rounded-xl focus:border-orange-500 outline-none text-xs font-bold text-slate-700 text-center">
-                                            </div>
+                                </div>
+                                <div class="bg-orange-50/50 p-6 rounded-3xl border border-orange-100/50 space-y-4">
+                                    <label class="block text-[10px] font-black text-orange-700/50 uppercase ml-1">4.
+                                        RANDEVU</label>
+                                    <div class="space-y-3">
+                                        <input type="text" id="input-tea-4-name"
+                                            class="w-full px-4 py-3 bg-white border border-slate-200 rounded-xl focus:border-orange-500 outline-none text-xs font-bold text-slate-700"
+                                            placeholder="Öğrenci Adı Soyadı">
+                                        <div class="flex gap-2">
+                                            <input type="date" id="input-tea-4-day"
+                                                class="flex-1 px-4 py-3 bg-white border border-slate-200 rounded-xl focus:border-orange-500 outline-none text-xs font-bold text-slate-700">
+                                            <input type="time" id="input-tea-4-time"
+                                                class="w-24 px-4 py-3 bg-white border border-slate-200 rounded-xl focus:border-orange-500 outline-none text-xs font-bold text-slate-700 text-center">
                                         </div>
                                     </div>
                                 </div>
@@ -1523,470 +1551,464 @@
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <div id="tab-dorm" class="tab-content max-w-5xl mx-auto hidden space-y-6">
-                    <div
-                        class="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-200 overflow-hidden group">
-                        <div
-                            class="bg-gradient-to-r from-amber-500 to-orange-600 p-6 text-white text-center sm:text-left">
-                            <div class="flex items-center gap-4">
-                                <div
-                                    class="w-12 h-12 bg-white/20 rounded-2xl backdrop-blur-md flex items-center justify-center text-2xl">
-                                    <i class="fas fa-trophy"></i>
-                                </div>
-                                <div class="flex-1">
-                                    <h3 class="text-xl font-bold">Yarışma & Kazananlar</h3>
-                                    <p class="text-amber-50 text-sm opacity-90">Haftalık birincileri veya yurt
-                                        puanlarını yönetin.</p>
-                                </div>
-                                <label class="relative inline-flex items-center cursor-pointer">
-                                    <input type="checkbox" id="input-dorm-active" class="sr-only peer">
-                                    <div
-                                        class="w-12 h-6 bg-white/20 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-400 border border-white/30">
-                                    </div>
-                                </label>
+            <div id="tab-dorm" class="tab-content max-w-5xl mx-auto hidden space-y-6">
+                <div
+                    class="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-200 overflow-hidden group">
+                    <div class="bg-gradient-to-r from-amber-500 to-orange-600 p-6 text-white text-center sm:text-left">
+                        <div class="flex items-center gap-4">
+                            <div
+                                class="w-12 h-12 bg-white/20 rounded-2xl backdrop-blur-md flex items-center justify-center text-2xl">
+                                <i class="fas fa-trophy"></i>
                             </div>
-                        </div>
-                        <div class="p-8 space-y-8">
-                            <div class="relative group/input max-w-md">
-                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Modül
-                                    Başlığı</label>
-                                <div class="relative">
-                                    <div
-                                        class="absolute left-4 top-1/2 -translate-y-1/2 text-amber-500 group-focus-within/input:text-amber-700 transition-colors pointer-events-none">
-                                        <i class="fas fa-star"></i>
-                                    </div>
-                                    <input type="text" id="dorm-main-title"
-                                        class="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none transition-all font-bold text-amber-900 shadow-sm"
-                                        placeholder="Varsayılan: GÜNÜN KAZANAN YATAKHANESİ">
-                                </div>
+                            <div class="flex-1">
+                                <h3 class="text-xl font-bold">Yarışma & Kazananlar</h3>
+                                <p class="text-amber-50 text-sm opacity-90">Haftalık birincileri veya yurt
+                                    puanlarını yönetin.</p>
                             </div>
-
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
-                                <!-- Dorm 1 Card -->
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="input-dorm-active" class="sr-only peer">
                                 <div
-                                    class="bg-amber-50/30 rounded-3xl border border-amber-100 p-8 space-y-6 transition-transform hover:scale-[1.01]">
-                                    <div class="flex items-center justify-between border-b border-amber-100 pb-4">
-                                        <h4
-                                            class="font-black text-amber-800 uppercase tracking-tighter flex items-center gap-2">
-                                            <span
-                                                class="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center text-xs">1</span>
-                                            Grup / Kategori
-                                        </h4>
-                                    </div>
-
-                                    <!-- Image Upload for Category 1 -->
-                                    <div class="flex flex-col items-center gap-4 py-2">
-                                        <div class="w-32 h-32 bg-white rounded-full border-4 border-amber-200 shadow-lg flex flex-col items-center justify-center gap-2 group/dormimg cursor-pointer hover:border-amber-500 transition-all overflow-hidden relative"
-                                            onclick="triggerUpload('dorm1-image')">
-                                            <div id="preview-dorm1-img"
-                                                class="w-full h-full flex items-center justify-center">
-                                                <i
-                                                    class="fas fa-user-graduate text-3xl text-amber-200 group-hover/dormimg:text-amber-400 group-hover/dormimg:scale-110 transition-all"></i>
-                                            </div>
-                                            <div
-                                                class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/dormimg:opacity-100 transition-opacity">
-                                                <i class="fas fa-camera text-white text-xl"></i>
-                                            </div>
-                                        </div>
-                                        <input type="hidden" id="input-dorm1-image">
-                                        <button
-                                            onclick="document.getElementById('input-dorm1-image').value=''; document.getElementById('preview-dorm1-img').innerHTML='<i class=\'fas fa-user-graduate text-3xl text-amber-200\'></i>'"
-                                            class="text-[10px] text-red-500 font-bold hover:underline">Görseli
-                                            Kaldır</button>
-                                    </div>
-
-                                    <div class="space-y-4">
-                                        <div class="relative group/input">
-                                            <input type="text" id="dorm1-name"
-                                                class="w-full px-5 py-4 bg-white border border-amber-200 rounded-2xl focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none text-sm font-black text-slate-700 shadow-sm"
-                                                placeholder="Örn: 5-A Sınıfı veya Erkek Yurdu">
-                                        </div>
-                                        <div class="relative group/input">
-                                            <input type="text" id="dorm1-count"
-                                                class="w-full px-5 py-4 bg-white border border-amber-200 rounded-2xl focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none text-sm font-black text-amber-600 shadow-sm"
-                                                placeholder="Puan / Derece (Örn: 98 Puan)">
-                                        </div>
-
-                                        <div class="grid grid-cols-1 gap-2">
-                                            <label
-                                                class="block text-[10px] font-black text-amber-700/50 uppercase ml-1">Öğrenci
-                                                Listesi</label>
-                                            <div id="dorm1-students-list" class="space-y-2">
-                                                <!-- Dynamic Content -->
-                                            </div>
-                                            <button type="button" onclick="addStudentRow('dorm1', 'amber')"
-                                                class="w-full py-2 bg-amber-100 hover:bg-amber-200 text-amber-700 rounded-xl text-xs font-bold transition-colors">
-                                                <i class="fas fa-plus mr-1"></i> Öğrenci Ekle
-                                            </button>
-                                        </div>
-                                    </div>
+                                    class="w-12 h-6 bg-white/20 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-400 border border-white/30">
                                 </div>
-
-                                <!-- Dorm 2 Card -->
-                                <div
-                                    class="bg-rose-50/30 rounded-3xl border border-rose-100 p-8 space-y-6 transition-transform hover:scale-[1.01]">
-                                    <div class="flex items-center justify-between border-b border-rose-100 pb-4">
-                                        <h4
-                                            class="font-black text-rose-800 uppercase tracking-tighter flex items-center gap-2">
-                                            <span
-                                                class="w-8 h-8 rounded-xl bg-rose-500 text-white flex items-center justify-center text-xs">2</span>
-                                            Grup / Kategori
-                                        </h4>
-                                        <label class="relative inline-flex items-center cursor-pointer">
-                                            <input type="checkbox" id="dorm2-active" class="sr-only peer" checked>
-                                            <div
-                                                class="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-rose-500">
-                                            </div>
-                                        </label>
-                                    </div>
-
-                                    <!-- Image Upload for Category 2 -->
-                                    <div class="flex flex-col items-center gap-4 py-2">
-                                        <div class="w-32 h-32 bg-white rounded-full border-4 border-rose-200 shadow-lg flex flex-col items-center justify-center gap-2 group/dormimg2 cursor-pointer hover:border-rose-500 transition-all overflow-hidden relative"
-                                            onclick="triggerUpload('dorm2-image')">
-                                            <div id="preview-dorm2-img"
-                                                class="w-full h-full flex items-center justify-center">
-                                                <i
-                                                    class="fas fa-certificate text-3xl text-rose-200 group-hover/dormimg2:text-rose-400 group-hover/dormimg2:scale-110 transition-all"></i>
-                                            </div>
-                                            <div
-                                                class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/dormimg2:opacity-100 transition-opacity">
-                                                <i class="fas fa-camera text-white text-xl"></i>
-                                            </div>
-                                        </div>
-                                        <input type="hidden" id="input-dorm2-image">
-                                        <button
-                                            onclick="document.getElementById('input-dorm2-image').value=''; document.getElementById('preview-dorm2-img').innerHTML='<i class=\'fas fa-certificate text-3xl text-rose-200\'></i>'"
-                                            class="text-[10px] text-red-500 font-bold hover:underline">Görseli
-                                            Kaldır</button>
-                                    </div>
-
-                                    <div class="space-y-4">
-                                        <div class="relative group/input">
-                                            <input type="text" id="dorm2-name"
-                                                class="w-full px-5 py-4 bg-white border border-rose-200 rounded-2xl focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 outline-none text-sm font-black text-slate-700 shadow-sm"
-                                                placeholder="Örn: 6-B Sınıfı veya Kız Yurdu">
-                                        </div>
-                                        <div class="relative group/input">
-                                            <input type="text" id="dorm2-count"
-                                                class="w-full px-5 py-4 bg-white border border-rose-200 rounded-2xl focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 outline-none text-sm font-black text-rose-600 shadow-sm"
-                                                placeholder="Puan / Derece">
-                                        </div>
-
-                                        <div class="grid grid-cols-1 gap-2">
-                                            <label
-                                                class="block text-[10px] font-black text-rose-700/50 uppercase ml-1">Öğrenci
-                                                Listesi</label>
-                                            <div id="dorm2-students-list" class="space-y-2">
-                                                <!-- Dynamic Content -->
-                                            </div>
-                                            <button type="button" onclick="addStudentRow('dorm2', 'rose')"
-                                                class="w-full py-2 bg-rose-100 hover:bg-rose-200 text-rose-700 rounded-xl text-xs font-bold transition-colors">
-                                                <i class="fas fa-plus mr-1"></i> Öğrenci Ekle
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            </label>
                         </div>
                     </div>
-                </div>
-
-                <div id="tab-success" class="tab-content max-w-5xl mx-auto hidden space-y-8">
-                    <!-- Student of the Week Section -->
-                    <div
-                        class="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-200 overflow-hidden group">
-                        <div
-                            class="bg-gradient-to-r from-yellow-400 to-amber-500 p-6 text-white text-center sm:text-left">
-                            <div class="flex items-center gap-4">
+                    <div class="p-8 space-y-8">
+                        <div class="relative group/input max-w-md">
+                            <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Modül
+                                Başlığı</label>
+                            <div class="relative">
                                 <div
-                                    class="w-12 h-12 bg-white/20 rounded-2xl backdrop-blur-md flex items-center justify-center text-2xl">
-                                    <i class="fas fa-user-graduate"></i>
+                                    class="absolute left-4 top-1/2 -translate-y-1/2 text-amber-500 group-focus-within/input:text-amber-700 transition-colors pointer-events-none">
+                                    <i class="fas fa-star"></i>
                                 </div>
-                                <div class="flex-1">
-                                    <h3 class="text-xl font-bold">Haftanın Öğrencisi</h3>
-                                    <p class="text-yellow-50 text-sm opacity-90">Örnek davranışları veya başarısıyla öne
-                                        çıkanı seçin.</p>
-                                </div>
+                                <input type="text" id="dorm-main-title"
+                                    class="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none transition-all font-bold text-amber-900 shadow-sm"
+                                    placeholder="Varsayılan: GÜNÜN KAZANAN YATAKHANESİ">
                             </div>
                         </div>
-                        <div class="p-8">
-                            <div class="flex flex-col md:flex-row gap-10">
-                                <div class="w-full md:w-1/3 flex flex-col items-center group/student">
-                                    <div class="w-48 h-48 bg-slate-50 rounded-full border-4 border-dashed border-slate-200 flex items-center justify-center relative overflow-hidden cursor-pointer hover:border-amber-400 hover:bg-amber-50/30 transition-all shadow-inner"
-                                        onclick="triggerUpload('student')">
-                                        <div id="preview-student-img"
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mt-4">
+                            <!-- Dorm 1 Card -->
+                            <div
+                                class="bg-amber-50/30 rounded-3xl border border-amber-100 p-8 space-y-6 transition-transform hover:scale-[1.01]">
+                                <div class="flex items-center justify-between border-b border-amber-100 pb-4">
+                                    <h4
+                                        class="font-black text-amber-800 uppercase tracking-tighter flex items-center gap-2">
+                                        <span
+                                            class="w-8 h-8 rounded-xl bg-amber-500 text-white flex items-center justify-center text-xs">1</span>
+                                        Grup / Kategori
+                                    </h4>
+                                </div>
+
+                                <!-- Image Upload for Category 1 -->
+                                <div class="flex flex-col items-center gap-4 py-2">
+                                    <div class="w-32 h-32 bg-white rounded-full border-4 border-amber-200 shadow-lg flex flex-col items-center justify-center gap-2 group/dormimg cursor-pointer hover:border-amber-500 transition-all overflow-hidden relative"
+                                        onclick="triggerUpload('dorm1-image')">
+                                        <div id="preview-dorm1-img"
                                             class="w-full h-full flex items-center justify-center">
                                             <i
-                                                class="fas fa-user text-6xl text-slate-300 group-hover/student:scale-110 transition-transform"></i>
+                                                class="fas fa-user-graduate text-3xl text-amber-200 group-hover/dormimg:text-amber-400 group-hover/dormimg:scale-110 transition-all"></i>
                                         </div>
                                         <div
-                                            class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/student:opacity-100 transition-opacity">
-                                            <i class="fas fa-camera text-white text-3xl"></i>
+                                            class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/dormimg:opacity-100 transition-opacity">
+                                            <i class="fas fa-camera text-white text-xl"></i>
                                         </div>
                                     </div>
-                                    <p class="mt-4 text-[10px] text-slate-400 font-bold uppercase tracking-widest">Resmi
-                                        Değiştir</p>
-                                    <input type="hidden" id="input-student-image">
+                                    <input type="hidden" id="input-dorm1-image">
+                                    <button
+                                        onclick="document.getElementById('input-dorm1-image').value=''; document.getElementById('preview-dorm1-img').innerHTML='<i class=\'fas fa-user-graduate text-3xl text-amber-200\'></i>'"
+                                        class="text-[10px] text-red-500 font-bold hover:underline">Görseli
+                                        Kaldır</button>
                                 </div>
-                                <div class="w-full md:w-2/3 space-y-6">
+
+                                <div class="space-y-4">
                                     <div class="relative group/input">
+                                        <input type="text" id="dorm1-name"
+                                            class="w-full px-5 py-4 bg-white border border-amber-200 rounded-2xl focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none text-sm font-black text-slate-700 shadow-sm"
+                                            placeholder="Örn: 5-A Sınıfı veya Erkek Yurdu">
+                                    </div>
+                                    <div class="relative group/input">
+                                        <input type="text" id="dorm1-count"
+                                            class="w-full px-5 py-4 bg-white border border-amber-200 rounded-2xl focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none text-sm font-black text-amber-600 shadow-sm"
+                                            placeholder="Puan / Derece (Örn: 98 Puan)">
+                                    </div>
+
+                                    <div class="grid grid-cols-1 gap-2">
                                         <label
-                                            class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Öğrenci
-                                            Ad Soyad</label>
-                                        <div class="relative">
-                                            <div
-                                                class="absolute left-4 top-1/2 -translate-y-1/2 text-amber-500 group-focus-within/input:text-amber-700 transition-colors pointer-events-none">
-                                                <i class="fas fa-id-card"></i>
-                                            </div>
-                                            <input type="text" id="input-student-name"
-                                                class="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none transition-all font-bold text-slate-800"
-                                                placeholder="Örn: Ahmet Yılmaz">
+                                            class="block text-[10px] font-black text-amber-700/50 uppercase ml-1">Öğrenci
+                                            Listesi</label>
+                                        <div id="dorm1-students-list" class="space-y-2">
+                                            <!-- Dynamic Content -->
+                                        </div>
+                                        <button type="button" onclick="addStudentRow('dorm1', 'amber')"
+                                            class="w-full py-2 bg-amber-100 hover:bg-amber-200 text-amber-700 rounded-xl text-xs font-bold transition-colors">
+                                            <i class="fas fa-plus mr-1"></i> Öğrenci Ekle
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Dorm 2 Card -->
+                            <div
+                                class="bg-rose-50/30 rounded-3xl border border-rose-100 p-8 space-y-6 transition-transform hover:scale-[1.01]">
+                                <div class="flex items-center justify-between border-b border-rose-100 pb-4">
+                                    <h4
+                                        class="font-black text-rose-800 uppercase tracking-tighter flex items-center gap-2">
+                                        <span
+                                            class="w-8 h-8 rounded-xl bg-rose-500 text-white flex items-center justify-center text-xs">2</span>
+                                        Grup / Kategori
+                                    </h4>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" id="dorm2-active" class="sr-only peer" checked>
+                                        <div
+                                            class="w-10 h-5 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-rose-500">
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <!-- Image Upload for Category 2 -->
+                                <div class="flex flex-col items-center gap-4 py-2">
+                                    <div class="w-32 h-32 bg-white rounded-full border-4 border-rose-200 shadow-lg flex flex-col items-center justify-center gap-2 group/dormimg2 cursor-pointer hover:border-rose-500 transition-all overflow-hidden relative"
+                                        onclick="triggerUpload('dorm2-image')">
+                                        <div id="preview-dorm2-img"
+                                            class="w-full h-full flex items-center justify-center">
+                                            <i
+                                                class="fas fa-certificate text-3xl text-rose-200 group-hover/dormimg2:text-rose-400 group-hover/dormimg2:scale-110 transition-all"></i>
+                                        </div>
+                                        <div
+                                            class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/dormimg2:opacity-100 transition-opacity">
+                                            <i class="fas fa-camera text-white text-xl"></i>
                                         </div>
                                     </div>
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div class="relative group/input">
-                                            <label
-                                                class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Sınıf
-                                                / Unvan</label>
-                                            <input type="text" id="input-student-class"
-                                                class="w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:bg-white focus:border-amber-500 outline-none transition-all font-medium text-slate-700"
-                                                placeholder="Örn: 8-B Sınıfı">
+                                    <input type="hidden" id="input-dorm2-image">
+                                    <button
+                                        onclick="document.getElementById('input-dorm2-image').value=''; document.getElementById('preview-dorm2-img').innerHTML='<i class=\'fas fa-certificate text-3xl text-rose-200\'></i>'"
+                                        class="text-[10px] text-red-500 font-bold hover:underline">Görseli
+                                        Kaldır</button>
+                                </div>
+
+                                <div class="space-y-4">
+                                    <div class="relative group/input">
+                                        <input type="text" id="dorm2-name"
+                                            class="w-full px-5 py-4 bg-white border border-rose-200 rounded-2xl focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 outline-none text-sm font-black text-slate-700 shadow-sm"
+                                            placeholder="Örn: 6-B Sınıfı veya Kız Yurdu">
+                                    </div>
+                                    <div class="relative group/input">
+                                        <input type="text" id="dorm2-count"
+                                            class="w-full px-5 py-4 bg-white border border-rose-200 rounded-2xl focus:border-rose-500 focus:ring-4 focus:ring-rose-500/10 outline-none text-sm font-black text-rose-600 shadow-sm"
+                                            placeholder="Puan / Derece">
+                                    </div>
+
+                                    <div class="grid grid-cols-1 gap-2">
+                                        <label
+                                            class="block text-[10px] font-black text-rose-700/50 uppercase ml-1">Öğrenci
+                                            Listesi</label>
+                                        <div id="dorm2-students-list" class="space-y-2">
+                                            <!-- Dynamic Content -->
                                         </div>
-                                        <div class="relative group/input">
-                                            <label
-                                                class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Kısa
-                                                Tebrik Mesajı</label>
-                                            <textarea id="input-student-message" rows="2"
-                                                class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:bg-white focus:border-amber-500 outline-none transition-all font-medium text-slate-600 text-sm resize-none"
-                                                placeholder="Örn: Örnek başarısından dolayı tebrik ederiz."></textarea>
-                                        </div>
+                                        <button type="button" onclick="addStudentRow('dorm2', 'rose')"
+                                            class="w-full py-2 bg-rose-100 hover:bg-rose-200 text-rose-700 rounded-xl text-xs font-bold transition-colors">
+                                            <i class="fas fa-plus mr-1"></i> Öğrenci Ekle
+                                        </button>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
 
-                    <!-- Lists Sections -->
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                        <!-- Most Improved -->
-                        <div
-                            class="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-200 overflow-hidden group">
-                            <div class="bg-gradient-to-r from-emerald-500 to-teal-600 p-6 text-white">
-                                <div class="flex items-center gap-4">
-                                    <div
-                                        class="w-10 h-10 bg-white/20 rounded-xl backdrop-blur-md flex items-center justify-center text-xl">
-                                        <i class="fas fa-chart-line"></i>
+            <div id="tab-success" class="tab-content max-w-5xl mx-auto hidden space-y-8">
+                <!-- Student of the Week Section -->
+                <div
+                    class="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-200 overflow-hidden group">
+                    <div class="bg-gradient-to-r from-yellow-400 to-amber-500 p-6 text-white text-center sm:text-left">
+                        <div class="flex items-center gap-4">
+                            <div
+                                class="w-12 h-12 bg-white/20 rounded-2xl backdrop-blur-md flex items-center justify-center text-2xl">
+                                <i class="fas fa-user-graduate"></i>
+                            </div>
+                            <div class="flex-1">
+                                <h3 class="text-xl font-bold">Haftanın Öğrencisi</h3>
+                                <p class="text-yellow-50 text-sm opacity-90">Örnek davranışları veya başarısıyla öne
+                                    çıkanı seçin.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-8">
+                        <div class="flex flex-col md:flex-row gap-10">
+                            <div class="w-full md:w-1/3 flex flex-col items-center group/student">
+                                <div class="w-48 h-48 bg-slate-50 rounded-full border-4 border-dashed border-slate-200 flex items-center justify-center relative overflow-hidden cursor-pointer hover:border-amber-400 hover:bg-amber-50/30 transition-all shadow-inner"
+                                    onclick="triggerUpload('student')">
+                                    <div id="preview-student-img"
+                                        class="w-full h-full flex items-center justify-center">
+                                        <i
+                                            class="fas fa-user text-6xl text-slate-300 group-hover/student:scale-110 transition-transform"></i>
                                     </div>
-                                    <h3 class="font-bold">Gelişim Gösterenler</h3>
+                                    <div
+                                        class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover/student:opacity-100 transition-opacity">
+                                        <i class="fas fa-camera text-white text-3xl"></i>
+                                    </div>
+                                </div>
+                                <p class="mt-4 text-[10px] text-slate-400 font-bold uppercase tracking-widest">Resmi
+                                    Değiştir</p>
+                                <input type="hidden" id="input-student-image">
+                            </div>
+                            <div class="w-full md:w-2/3 space-y-6">
+                                <div class="relative group/input">
+                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Öğrenci
+                                        Ad Soyad</label>
+                                    <div class="relative">
+                                        <div
+                                            class="absolute left-4 top-1/2 -translate-y-1/2 text-amber-500 group-focus-within/input:text-amber-700 transition-colors pointer-events-none">
+                                            <i class="fas fa-id-card"></i>
+                                        </div>
+                                        <input type="text" id="input-student-name"
+                                            class="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:bg-white focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none transition-all font-bold text-slate-800"
+                                            placeholder="Örn: Ahmet Yılmaz">
+                                    </div>
+                                </div>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="relative group/input">
+                                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Sınıf
+                                            / Unvan</label>
+                                        <input type="text" id="input-student-class"
+                                            class="w-full px-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:bg-white focus:border-amber-500 outline-none transition-all font-medium text-slate-700"
+                                            placeholder="Örn: 8-B Sınıfı">
+                                    </div>
+                                    <div class="relative group/input">
+                                        <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Kısa
+                                            Tebrik Mesajı</label>
+                                        <textarea id="input-student-message" rows="2"
+                                            class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:bg-white focus:border-amber-500 outline-none transition-all font-medium text-slate-600 text-sm resize-none"
+                                            placeholder="Örn: Örnek başarısından dolayı tebrik ederiz."></textarea>
+                                    </div>
                                 </div>
                             </div>
-                            <div class="p-6 space-y-4">
-                                <!-- Improved Dynamic List -->
-                                <div id="improved-students-list" class="space-y-4">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Lists Sections -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    <!-- Most Improved -->
+                    <div
+                        class="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-200 overflow-hidden group">
+                        <div class="bg-gradient-to-r from-emerald-500 to-teal-600 p-6 text-white">
+                            <div class="flex items-center gap-4">
+                                <div
+                                    class="w-10 h-10 bg-white/20 rounded-xl backdrop-blur-md flex items-center justify-center text-xl">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <h3 class="font-bold">Gelişim Gösterenler</h3>
+                            </div>
+                        </div>
+                        <div class="p-6 space-y-4">
+                            <!-- Improved Dynamic List -->
+                            <div id="improved-students-list" class="space-y-4">
+                                <!-- Dynamic Content -->
+                            </div>
+                            <button type="button" onclick="addImprovedStudentRow()"
+                                class="w-full py-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-2xl text-sm font-bold transition-colors border border-emerald-100 flex items-center justify-center gap-2 group/btn shadow-sm hover:shadow-md">
+                                <div
+                                    class="w-6 h-6 rounded-full bg-emerald-100 group-hover/btn:bg-emerald-200 text-emerald-600 flex items-center justify-center transition-colors">
+                                    <i class="fas fa-plus text-xs"></i>
+                                </div>
+                                Öğrenci Ekle
+                            </button>
+                            <p class="mt-3 text-[10px] text-slate-400 italic font-medium px-1 text-center">
+                                Öğrencilerin gelişim bilgilerini yan yana girebilir ve fotoğraflarına tıklayarak
+                                görsellerini güncelleyebilirsiniz.</p>
+                        </div>
+                    </div>
+
+                    <!-- Exam Winners -->
+                    <div
+                        class="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-200 overflow-hidden group">
+                        <div class="bg-gradient-to-r from-purple-500 to-fuchsia-600 p-6 text-white">
+                            <div class="flex items-center gap-4">
+                                <div
+                                    class="w-10 h-10 bg-white/20 rounded-xl backdrop-blur-md flex items-center justify-center text-xl">
+                                    <i class="fas fa-crown"></i>
+                                </div>
+                                <h3 class="font-bold">Sınav Şampiyonları</h3>
+                            </div>
+                        </div>
+                        <div class="p-8 space-y-8">
+                            <!-- Exam Title Input -->
+                            <div class="max-w-md">
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Sınav Adı
+                                    (Örn: LGS-3)</label>
+                                <div class="relative">
+                                    <div
+                                        class="absolute left-4 top-1/2 -translate-y-1/2 text-purple-500 pointer-events-none">
+                                        <i class="fas fa-file-signature"></i>
+                                    </div>
+                                    <input type="text" id="input-exam-name"
+                                        class="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:bg-white focus:border-purple-500 outline-none transition-all font-bold text-purple-900 shadow-sm"
+                                        placeholder="Varsayılan: SINAV ŞAMPİYONLARI">
+                                </div>
+                                <p class="mt-2 text-[10px] text-slate-400 italic font-medium px-1">Girdiğiniz isim
+                                    başına eklenerek "{İSİM} ŞAMPİYONLARI" şeklinde gözükecektir.</p>
+                            </div>
+
+                            <div class="space-y-4">
+                                <!-- Exam Dynamic List -->
+                                <div id="exam-students-list" class="space-y-4">
                                     <!-- Dynamic Content -->
                                 </div>
-                                <button type="button" onclick="addImprovedStudentRow()"
-                                    class="w-full py-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-2xl text-sm font-bold transition-colors border border-emerald-100 flex items-center justify-center gap-2 group/btn shadow-sm hover:shadow-md">
+                                <button type="button" onclick="addExamStudentRow()"
+                                    class="w-full py-3 bg-purple-50 hover:bg-purple-100 text-purple-600 rounded-2xl text-sm font-bold transition-colors border border-purple-100 flex items-center justify-center gap-2 group/btn shadow-sm hover:shadow-md">
                                     <div
-                                        class="w-6 h-6 rounded-full bg-emerald-100 group-hover/btn:bg-emerald-200 text-emerald-600 flex items-center justify-center transition-colors">
+                                        class="w-6 h-6 rounded-full bg-purple-100 group-hover/btn:bg-purple-200 text-purple-600 flex items-center justify-center transition-colors">
                                         <i class="fas fa-plus text-xs"></i>
                                     </div>
                                     Öğrenci Ekle
                                 </button>
-                                <p class="mt-3 text-[10px] text-slate-400 italic font-medium px-1 text-center">
-                                    Öğrencilerin gelişim bilgilerini yan yana girebilir ve fotoğraflarına tıklayarak
-                                    görsellerini güncelleyebilirsiniz.</p>
                             </div>
-                        </div>
 
-                        <!-- Exam Winners -->
-                        <div
-                            class="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-200 overflow-hidden group">
-                            <div class="bg-gradient-to-r from-purple-500 to-fuchsia-600 p-6 text-white">
-                                <div class="flex items-center gap-4">
-                                    <div
-                                        class="w-10 h-10 bg-white/20 rounded-xl backdrop-blur-md flex items-center justify-center text-xl">
-                                        <i class="fas fa-crown"></i>
-                                    </div>
-                                    <h3 class="font-bold">Sınav Şampiyonları</h3>
-                                </div>
-                            </div>
-                            <div class="p-8 space-y-8">
-                                <!-- Exam Title Input -->
-                                <div class="max-w-md">
-                                    <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Sınav Adı
-                                        (Örn: LGS-3)</label>
-                                    <div class="relative">
-                                        <div
-                                            class="absolute left-4 top-1/2 -translate-y-1/2 text-purple-500 pointer-events-none">
-                                            <i class="fas fa-file-signature"></i>
-                                        </div>
-                                        <input type="text" id="input-exam-name"
-                                            class="w-full pl-12 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:bg-white focus:border-purple-500 outline-none transition-all font-bold text-purple-900 shadow-sm"
-                                            placeholder="Varsayılan: SINAV ŞAMPİYONLARI">
-                                    </div>
-                                    <p class="mt-2 text-[10px] text-slate-400 italic font-medium px-1">Girdiğiniz isim
-                                        başına eklenerek "{İSİM} ŞAMPİYONLARI" şeklinde gözükecektir.</p>
-                                </div>
-
-                                <div class="space-y-4">
-                                    <!-- Exam Dynamic List -->
-                                    <div id="exam-students-list" class="space-y-4">
-                                        <!-- Dynamic Content -->
-                                    </div>
-                                    <button type="button" onclick="addExamStudentRow()"
-                                        class="w-full py-3 bg-purple-50 hover:bg-purple-100 text-purple-600 rounded-2xl text-sm font-bold transition-colors border border-purple-100 flex items-center justify-center gap-2 group/btn shadow-sm hover:shadow-md">
-                                        <div
-                                            class="w-6 h-6 rounded-full bg-purple-100 group-hover/btn:bg-purple-200 text-purple-600 flex items-center justify-center transition-colors">
-                                            <i class="fas fa-plus text-xs"></i>
-                                        </div>
-                                        Öğrenci Ekle
-                                    </button>
-                                </div>
-
-                                <div
-                                    class="mt-4 p-4 bg-purple-50 rounded-2xl border border-purple-100 flex items-center gap-3">
-                                    <i class="fas fa-info-circle text-purple-400"></i>
-                                    <p class="text-[10px] text-purple-700 font-medium">Şampiyonların bilgilerini yan
-                                        yana girebilir ve fotoğraflarına tıklayarak görsellerini güncelleyebilirsiniz.
-                                    </p>
-                                </div>
+                            <div
+                                class="mt-4 p-4 bg-purple-50 rounded-2xl border border-purple-100 flex items-center gap-3">
+                                <i class="fas fa-info-circle text-purple-400"></i>
+                                <p class="text-[10px] text-purple-700 font-medium">Şampiyonların bilgilerini yan
+                                    yana girebilir ve fotoğraflarına tıklayarak görsellerini güncelleyebilirsiniz.
+                                </p>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <div id="tab-emergency" class="tab-content max-w-5xl mx-auto hidden space-y-8">
-                    <div
-                        class="bg-white rounded-[2rem] shadow-2xl shadow-red-500/10 border border-red-100 overflow-hidden group">
-                        <!-- Dangerous/Crisis Header -->
-                        <div class="bg-gradient-to-r from-red-600 via-rose-600 to-red-700 p-8 text-white">
-                            <div class="flex flex-col md:flex-row items-center justify-between gap-6">
-                                <div class="flex items-center gap-6 text-center md:text-left">
+            <div id="tab-emergency" class="tab-content max-w-5xl mx-auto hidden space-y-8">
+                <div
+                    class="bg-white rounded-[2rem] shadow-2xl shadow-red-500/10 border border-red-100 overflow-hidden group">
+                    <!-- Dangerous/Crisis Header -->
+                    <div class="bg-gradient-to-r from-red-600 via-rose-600 to-red-700 p-8 text-white">
+                        <div class="flex flex-col md:flex-row items-center justify-between gap-6">
+                            <div class="flex items-center gap-6 text-center md:text-left">
+                                <div
+                                    class="w-16 h-16 bg-white/20 rounded-[1.25rem] backdrop-blur-xl flex items-center justify-center text-4xl animate-pulse">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <div>
+                                    <h2 class="text-3xl font-black tracking-tight tracking-wider uppercase">Kriz
+                                        Yönetim Merkezi</h2>
+                                    <p class="text-red-100 font-medium opacity-90 mt-1">Acil durum modunu aktif
+                                        ederek panoyu anında kilitleyin.</p>
+                                </div>
+                            </div>
+                            <div class="flex flex-col items-center gap-2">
+                                <label class="relative inline-flex items-center cursor-pointer scale-150">
+                                    <input type="checkbox" id="input-emergency-active" class="sr-only peer">
                                     <div
-                                        class="w-16 h-16 bg-white/20 rounded-[1.25rem] backdrop-blur-xl flex items-center justify-center text-4xl animate-pulse">
-                                        <i class="fas fa-exclamation-triangle"></i>
+                                        class="w-14 h-7 bg-white/20 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-400 border border-white/30">
                                     </div>
-                                    <div>
-                                        <h2 class="text-3xl font-black tracking-tight tracking-wider uppercase">Kriz
-                                            Yönetim Merkezi</h2>
-                                        <p class="text-red-100 font-medium opacity-90 mt-1">Acil durum modunu aktif
-                                            ederek panoyu anında kilitleyin.</p>
-                                    </div>
-                                </div>
-                                <div class="flex flex-col items-center gap-2">
-                                    <label class="relative inline-flex items-center cursor-pointer scale-150">
-                                        <input type="checkbox" id="input-emergency-active" class="sr-only peer">
+                                </label>
+                                <span
+                                    class="text-[10px] font-black uppercase tracking-[0.2em] text-red-100">Aktif/Pasif</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="p-10 space-y-10">
+                        <!-- Style Selector -->
+                        <div class="space-y-4">
+                            <label class="block text-xs font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Uyarı
+                                Görünümü Seçin</label>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <label class="relative group/style cursor-pointer">
+                                    <input type="radio" name="emergency-style" value="red" class="peer sr-only" checked>
+                                    <div
+                                        class="p-6 rounded-2xl border-2 border-slate-100 bg-white hover:border-red-200 transition-all flex flex-col items-center gap-3 peer-checked:border-red-600 peer-checked:bg-red-50 group">
                                         <div
-                                            class="w-14 h-7 bg-white/20 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-400 border border-white/30">
+                                            class="w-12 h-12 rounded-xl bg-red-100 text-red-600 flex items-center justify-center text-xl group-peer-checked:bg-red-600 group-peer-checked:text-white transition-colors">
+                                            <i class="fas fa-fire"></i>
                                         </div>
-                                    </label>
-                                    <span
-                                        class="text-[10px] font-black uppercase tracking-[0.2em] text-red-100">Aktif/Pasif</span>
-                                </div>
+                                        <div class="text-center">
+                                            <p class="font-black text-sm text-slate-800">KRİTİK ALARM</p>
+                                            <p class="text-[10px] text-slate-400 font-bold">Kırmızı Arkaplan</p>
+                                        </div>
+                                    </div>
+                                </label>
+
+                                <label class="relative group/style cursor-pointer">
+                                    <input type="radio" name="emergency-style" value="yellow" class="peer sr-only">
+                                    <div
+                                        class="p-6 rounded-2xl border-2 border-slate-100 bg-white hover:border-yellow-200 transition-all flex flex-col items-center gap-3 peer-checked:border-yellow-500 peer-checked:bg-yellow-50 group">
+                                        <div
+                                            class="w-12 h-12 rounded-xl bg-yellow-100 text-yellow-600 flex items-center justify-center text-xl group-peer-checked:bg-yellow-500 group-peer-checked:text-white transition-colors">
+                                            <i class="fas fa-bolt"></i>
+                                        </div>
+                                        <div class="text-center">
+                                            <p class="font-black text-sm text-slate-800">HAFİF UYARI</p>
+                                            <p class="text-[10px] text-slate-400 font-bold">Sarı Arkaplan</p>
+                                        </div>
+                                    </div>
+                                </label>
+
+                                <label class="relative group/style cursor-pointer">
+                                    <input type="radio" name="emergency-style" value="blue" class="peer sr-only">
+                                    <div
+                                        class="p-6 rounded-2xl border-2 border-slate-100 bg-white hover:border-blue-200 transition-all flex flex-col items-center gap-3 peer-checked:border-blue-600 peer-checked:bg-blue-50 group">
+                                        <div
+                                            class="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-xl group-peer-checked:bg-blue-600 group-peer-checked:text-white transition-colors">
+                                            <i class="fas fa-info-circle"></i>
+                                        </div>
+                                        <div class="text-center">
+                                            <p class="font-black text-sm text-slate-800">BİLGİ MESAJI</p>
+                                            <p class="text-[10px] text-slate-400 font-bold">Mavi Arkaplan</p>
+                                        </div>
+                                    </div>
+                                </label>
                             </div>
                         </div>
 
-                        <div class="p-10 space-y-10">
-                            <!-- Style Selector -->
-                            <div class="space-y-4">
-                                <label
-                                    class="block text-xs font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Uyarı
-                                    Görünümü Seçin</label>
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <label class="relative group/style cursor-pointer">
-                                        <input type="radio" name="emergency-style" value="red" class="peer sr-only"
-                                            checked>
-                                        <div
-                                            class="p-6 rounded-2xl border-2 border-slate-100 bg-white hover:border-red-200 transition-all flex flex-col items-center gap-3 peer-checked:border-red-600 peer-checked:bg-red-50 group">
-                                            <div
-                                                class="w-12 h-12 rounded-xl bg-red-100 text-red-600 flex items-center justify-center text-xl group-peer-checked:bg-red-600 group-peer-checked:text-white transition-colors">
-                                                <i class="fas fa-fire"></i>
-                                            </div>
-                                            <div class="text-center">
-                                                <p class="font-black text-sm text-slate-800">KRİTİK ALARM</p>
-                                                <p class="text-[10px] text-slate-400 font-bold">Kırmızı Arkaplan</p>
-                                            </div>
-                                        </div>
-                                    </label>
-
-                                    <label class="relative group/style cursor-pointer">
-                                        <input type="radio" name="emergency-style" value="yellow" class="peer sr-only">
-                                        <div
-                                            class="p-6 rounded-2xl border-2 border-slate-100 bg-white hover:border-yellow-200 transition-all flex flex-col items-center gap-3 peer-checked:border-yellow-500 peer-checked:bg-yellow-50 group">
-                                            <div
-                                                class="w-12 h-12 rounded-xl bg-yellow-100 text-yellow-600 flex items-center justify-center text-xl group-peer-checked:bg-yellow-500 group-peer-checked:text-white transition-colors">
-                                                <i class="fas fa-bolt"></i>
-                                            </div>
-                                            <div class="text-center">
-                                                <p class="font-black text-sm text-slate-800">HAFİF UYARI</p>
-                                                <p class="text-[10px] text-slate-400 font-bold">Sarı Arkaplan</p>
-                                            </div>
-                                        </div>
-                                    </label>
-
-                                    <label class="relative group/style cursor-pointer">
-                                        <input type="radio" name="emergency-style" value="blue" class="peer sr-only">
-                                        <div
-                                            class="p-6 rounded-2xl border-2 border-slate-100 bg-white hover:border-blue-200 transition-all flex flex-col items-center gap-3 peer-checked:border-blue-600 peer-checked:bg-blue-50 group">
-                                            <div
-                                                class="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center text-xl group-peer-checked:bg-blue-600 group-peer-checked:text-white transition-colors">
-                                                <i class="fas fa-info-circle"></i>
-                                            </div>
-                                            <div class="text-center">
-                                                <p class="font-black text-sm text-slate-800">BİLGİ MESAJI</p>
-                                                <p class="text-[10px] text-slate-400 font-bold">Mavi Arkaplan</p>
-                                            </div>
-                                        </div>
-                                    </label>
-                                </div>
-                            </div>
-
-                            <!-- Inputs -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                                <div class="space-y-6">
-                                    <div class="relative group/input">
-                                        <label
-                                            class="block text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-2 ml-2">Manşet
-                                            Başlık</label>
-                                        <div class="relative">
-                                            <div
-                                                class="absolute left-5 top-1/2 -translate-y-1/2 text-red-500 group-focus-within/input:scale-110 transition-transform pointer-events-none">
-                                                <i class="fas fa-heading"></i>
-                                            </div>
-                                            <input type="text" id="input-emergency-title"
-                                                class="w-full pl-14 pr-6 py-5 bg-slate-50 border border-slate-200 rounded-3xl focus:bg-white focus:border-red-600 focus:ring-8 focus:ring-red-600/5 outline-none transition-all font-black text-xl text-slate-800 uppercase tracking-tight"
-                                                placeholder="Örn: SOKAĞA ÇIKMA YASAĞI">
-                                        </div>
-                                    </div>
-                                </div>
+                        <!-- Inputs -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div class="space-y-6">
                                 <div class="relative group/input">
                                     <label
-                                        class="block text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-2 ml-2">Detaylı
-                                        Açıklama</label>
-                                    <textarea id="input-emergency-message" rows="4"
-                                        class="w-full px-8 py-6 bg-slate-50 border border-slate-200 rounded-[2rem] focus:bg-white focus:border-red-600 focus:ring-8 focus:ring-red-600/5 outline-none transition-all font-bold text-slate-700 text-lg leading-relaxed shadow-inner"
-                                        placeholder="Ekrandaki öğrencilere iletilecek mesajı buraya yazın..."></textarea>
+                                        class="block text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-2 ml-2">Manşet
+                                        Başlık</label>
+                                    <div class="relative">
+                                        <div
+                                            class="absolute left-5 top-1/2 -translate-y-1/2 text-red-500 group-focus-within/input:scale-110 transition-transform pointer-events-none">
+                                            <i class="fas fa-heading"></i>
+                                        </div>
+                                        <input type="text" id="input-emergency-title"
+                                            class="w-full pl-14 pr-6 py-5 bg-slate-50 border border-slate-200 rounded-3xl focus:bg-white focus:border-red-600 focus:ring-8 focus:ring-red-600/5 outline-none transition-all font-black text-xl text-slate-800 uppercase tracking-tight"
+                                            placeholder="Örn: SOKAĞA ÇIKMA YASAĞI">
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-
-                        <!-- Footer Safety Check -->
-                        <div
-                            class="px-10 py-6 bg-slate-50 border-t border-slate-100 flex items-center gap-4 text-slate-400">
-                            <i class="fas fa-shield-alt text-xl"></i>
-                            <p class="text-xs font-medium">Bu bölümdeki ayarlar panoyu tüm Türkiye genelindeki merkezi
-                                sistemden bağımsız olarak yerel olarak kilitler.</p>
+                            <div class="relative group/input">
+                                <label
+                                    class="block text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-2 ml-2">Detaylı
+                                    Açıklama</label>
+                                <textarea id="input-emergency-message" rows="4"
+                                    class="w-full px-8 py-6 bg-slate-50 border border-slate-200 rounded-[2rem] focus:bg-white focus:border-red-600 focus:ring-8 focus:ring-red-600/5 outline-none transition-all font-bold text-slate-700 text-lg leading-relaxed shadow-inner"
+                                    placeholder="Ekrandaki öğrencilere iletilecek mesajı buraya yazın..."></textarea>
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- Hidden inputs for file upload -->
-                <input type="file" id="upload-trigger" class="hidden" multiple accept="image/*,video/*">
-                <input type="hidden" id="upload-target-type">
-                <input type="hidden" id="input-institution-logo">
+                    <!-- Footer Safety Check -->
+                    <div
+                        class="px-10 py-6 bg-slate-50 border-t border-slate-100 flex items-center gap-4 text-slate-400">
+                        <i class="fas fa-shield-alt text-xl"></i>
+                        <p class="text-xs font-medium">Bu bölümdeki ayarlar panoyu tüm Türkiye genelindeki merkezi
+                            sistemden bağımsız olarak yerel olarak kilitler.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hidden inputs for file upload -->
+            <input type="file" id="upload-trigger" class="hidden" multiple accept="image/*,video/*">
+            <input type="hidden" id="upload-target-type">
+            <input type="hidden" id="input-institution-logo">
         </main>
     </div>
 
@@ -3243,6 +3265,100 @@
             const frame = document.getElementById('preview-frame');
             frame.src = '/' + currentSlug;
             modal.classList.remove('hidden');
+        }
+
+        async function loadCentralGalleryItems() {
+            const container = document.getElementById('central-gallery-manager');
+            if (!container) return;
+            container.innerHTML = '<p class="text-slate-400 text-sm text-center py-4"><i class="fas fa-spinner fa-spin mr-2"></i> Yükleniyor...</p>';
+
+            try {
+                // Fetch merged (includes central) and raw (local only) configs
+                const [mergedRes, rawRes] = await Promise.all([
+                    fetch(`/api/get-config?slug=${currentSlug}`),
+                    fetch(`/api/get-config?slug=${currentSlug}&raw=true`)
+                ]);
+                const merged = await mergedRes.json();
+                const raw = await rawRes.json();
+                const moderated = (window.currentConfig.moderated_items || []);
+
+                const localMain = raw.gallery_links || [];
+                const localLeft = raw.left_gallery_links || [];
+                const localVideos = raw.video_urls || [];
+
+                // Find central items (in merged but not in raw local)
+                const centralItems = [];
+
+                (merged.gallery_links || []).forEach(url => {
+                    if (!localMain.includes(url)) centralItems.push({ url, type: 'Ana Galeri' });
+                });
+                (merged.left_gallery_links || []).forEach(url => {
+                    if (!localLeft.includes(url)) centralItems.push({ url, type: 'Sol Slider' });
+                });
+                (merged.video_urls || []).forEach(url => {
+                    if (!localVideos.includes(url)) centralItems.push({ url, type: 'Video' });
+                });
+
+                if (centralItems.length === 0) {
+                    container.innerHTML = '<p class="text-slate-400 text-sm text-center py-8"><i class="fas fa-check-circle text-green-400 text-2xl block mb-2"></i>Merkezi galeriden gelen içerik bulunmuyor.</p>';
+                    return;
+                }
+
+                container.innerHTML = '';
+                const grid = document.createElement('div');
+                grid.className = 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4';
+
+                centralItems.forEach(item => {
+                    const mod = moderated.find(m => m.url === item.url);
+                    const isRejected = mod && mod.status === 'rejected';
+                    const isVideo = item.url.includes('youtube.com') || item.url.includes('youtu.be') || item.url.endsWith('.mp4');
+                    let thumb = '';
+                    if (isVideo) {
+                        const vidId = item.url.match(/(?:\?v=|\/embed\/|youtu\.be\/)([^#\&\?]*)/)?.[1];
+                        thumb = vidId ? `<img src="https://img.youtube.com/vi/${vidId}/mqdefault.jpg" class="w-full h-full object-cover">` : '<div class="w-full h-full flex items-center justify-center bg-slate-800 text-white"><i class="fab fa-youtube text-3xl"></i></div>';
+                    } else {
+                        thumb = `<img src="${item.url}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/150?text=?'">`;
+                    }
+
+                    const card = document.createElement('div');
+                    card.className = `relative rounded-2xl overflow-hidden border-2 transition-all ${isRejected ? 'border-red-300 opacity-50' : 'border-emerald-400'}`;
+                    card.innerHTML = `
+                        <div class="aspect-video">${thumb}</div>
+                        <div class="absolute top-2 left-2 bg-black/60 text-white text-[9px] font-bold px-2 py-0.5 rounded-full backdrop-blur">${item.type}</div>
+                        <div class="absolute bottom-0 left-0 right-0 p-2 flex items-center justify-between bg-gradient-to-t from-black/70 to-transparent">
+                            <span class="text-[9px] text-white font-bold">${isRejected ? '🚫 Gizli' : '✅ Aktif'}</span>
+                            <button onclick="toggleCentralItem('${item.url}', ${isRejected})"
+                                class="text-[9px] font-black px-2 py-1 rounded-lg ${isRejected ? 'bg-emerald-500 hover:bg-emerald-400' : 'bg-red-500 hover:bg-red-400'} text-white transition-all">
+                                ${isRejected ? 'Aktif Et' : 'Gizle'}
+                            </button>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                });
+
+                container.appendChild(grid);
+            } catch (err) {
+                console.error('[CENTRAL GALLERY]', err);
+                container.innerHTML = '<p class="text-red-400 text-sm text-center py-4">Yüklenirken hata oluştu.</p>';
+            }
+        }
+
+        async function toggleCentralItem(url, isCurrentlyRejected) {
+            if (!window.currentConfig.moderated_items) window.currentConfig.moderated_items = [];
+            const moderated = window.currentConfig.moderated_items;
+            const existing = moderated.findIndex(m => m.url === url);
+            const newStatus = isCurrentlyRejected ? 'approved' : 'rejected';
+
+            if (existing >= 0) {
+                moderated[existing].status = newStatus;
+                moderated[existing].timestamp = new Date().toISOString();
+            } else {
+                moderated.push({ url, status: newStatus, timestamp: new Date().toISOString() });
+            }
+
+            await saveAll(true);
+            showToast(isCurrentlyRejected ? 'İçerik panoda gösterilecek.' : 'İçerik gizlendi.', isCurrentlyRejected ? 'success' : 'info');
+            loadCentralGalleryItems();
         }
     </script>
 
