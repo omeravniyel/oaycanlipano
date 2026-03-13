@@ -1582,7 +1582,26 @@ function renderGallery() {
 
 
 
-    const typeData = currentGallery[type] || {};
+    let typeData = {};
+
+    if (type === 'Tümü') {
+        // Merge all types for preview
+        const allTypes = ['Ortaokul', 'Lise', 'Üniversite Hazırlık', 'Daimi', 'Üniversite', 'Tekamül'];
+        const merged = { images: [], left_images: [], videos: [] };
+        allTypes.forEach(t => {
+            const td = currentGallery[t] || {};
+            if (td.images) merged.images.push(...td.images);
+            if (td.left_images) merged.left_images.push(...td.left_images);
+            if (td.videos) merged.videos.push(...td.videos);
+        });
+        // Deduplicate
+        merged.images = [...new Set(merged.images)];
+        merged.left_images = [...new Set(merged.left_images)];
+        merged.videos = [...new Set(merged.videos)];
+        typeData = merged;
+    } else {
+        typeData = currentGallery[type] || {};
+    }
 
 
 
