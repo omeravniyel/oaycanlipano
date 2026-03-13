@@ -1605,11 +1605,12 @@ function onYouTubeIframeAPIReady() {
             'controls': 0,
             'rel': 0,
             'showinfo': 0,
-            'mute': 1, // SESLİ BAŞLATMA HİLESİ: Önce sessiz başlat (Oto-oynatma garantisi)
+            'mute': 0, // Unmuted playback directly requested
             'modestbranding': 1,
             'loop': 0,
-            'cc_load_policy': 1,
-            'cc_lang_pref': 'tr'
+            'cc_load_policy': 1, // Force Subtitles
+            'cc_lang_pref': 'tr', // Turkish subtitles specifically
+            'hl': 'tr' // Turkish UI
         },
         events: {
             'onReady': onPlayerReady,
@@ -1671,10 +1672,9 @@ function playCurrentVideo() {
 
     if (vid) {
         player.loadVideoById(vid);
-        // ÖNCE SESSİZ BAŞLAT (Oto oynatma garantisi için)
-        player.mute();
+        player.unMute();
+        player.setVolume(100);
         player.playVideo();
-        // SONRA: onPlayerStateChange içinde "PLAYING" olunca sesi açacağız
     } else {
         // Link geçersizse sonrakine atla
         console.warn("Geçersiz Video Linki:", rawUrl);

@@ -332,15 +332,23 @@ module.exports = async (request, response) => {
                     .single();
 
                 let config = globalData?.config || {};
-                if (!config[institution_type]) config[institution_type] = {};
 
-                if (!config[institution_type][globalKey]) config[institution_type][globalKey] = [];
+                const addItemsToGlobalConfig = (type) => {
+                    if (!config[type]) config[type] = {};
+                    if (!config[type][globalKey]) config[type][globalKey] = [];
 
-                // Add new items (prevent duplicates)
-                const existing = new Set(config[institution_type][globalKey].map(i => typeof i === 'string' ? i : i.url));
-                items.forEach(url => {
-                    if (!existing.has(url)) config[institution_type][globalKey].push(url);
-                });
+                    const existing = new Set(config[type][globalKey].map(i => typeof i === 'string' ? i : i.url));
+                    items.forEach(url => {
+                        if (!existing.has(url)) config[type][globalKey].push(url);
+                    });
+                };
+
+                if (institution_type === 'Tümü') {
+                    const allTypes = ['Ortaokul', 'Lise', 'Üniversite Hazırlık', 'Daimi', 'Üniversite', 'Tekamül'];
+                    allTypes.forEach(t => addItemsToGlobalConfig(t));
+                } else {
+                    addItemsToGlobalConfig(institution_type);
+                }
 
                 const { error } = await supabase
                     .from('institutions')
@@ -522,7 +530,7 @@ module.exports = async (request, response) => {
                     admin_contact: admin_contact || { name: '', phone: '', email: '' }, // Varsayılan boş obje
 
                     // Dashboard Config
-                    module_dorm_active: (module_dorm_active !== undefined) ? module_dorm_active : true, // Varsayılan açık
+                    module_dorm_active: (module_dorm_active !== undefined) ? module_dorm_active : false, // Varsayılan kapalı
                     module_bottom_right_type: module_bottom_right_type || 'auto'
                 };
 

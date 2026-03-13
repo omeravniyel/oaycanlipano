@@ -64,7 +64,13 @@ module.exports = async (request, response) => {
                             if (!data.slug_filter.includes(currentSlug)) return false;
                         }
 
-                        // 3. REGION FILTER CHECK (Loose Match)
+                        // 3. MODERATION CHECK (Institutional Approval)
+                        if (institutionConfig.moderated_items && Array.isArray(institutionConfig.moderated_items)) {
+                            const moderation = institutionConfig.moderated_items.find(m => m.url === data.url);
+                            if (moderation && moderation.status === 'rejected') return false;
+                        }
+
+                        // 4. REGION FILTER CHECK (Loose Match)
                         if (data.region_filter && data.region_filter.trim().length > 0) {
                             const filter = data.region_filter.trim().toLocaleLowerCase('tr-TR');
                             const myRegion = (institutionConfig.region || "").trim().toLocaleLowerCase('tr-TR');

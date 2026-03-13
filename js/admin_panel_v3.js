@@ -1473,10 +1473,65 @@ function switchGalleryTab(tab) {
 
     }
 
+    const uploadBtn = document.getElementById('gallery-upload-btn');
+    const ytGroup = document.getElementById('youtube-input-group');
+    if (uploadBtn && ytGroup) {
+        if (tab === 'video') {
+            uploadBtn.classList.add('hidden');
+            ytGroup.classList.remove('hidden');
+        } else {
+            uploadBtn.classList.remove('hidden');
+            ytGroup.classList.add('hidden');
+        }
+    }
 
 
     loadGallery(); // Reload grid
 
+}
+
+async function addYouTubeVideo() {
+    const input = document.getElementById('youtube-link-input');
+    const url = input.value.trim();
+
+    if (!url) {
+        Swal.fire('Hata', 'Lütfen bir YouTube linki girin.', 'error');
+        return;
+    }
+
+    if (!url.includes('youtube.com') && !url.includes('youtu.be')) {
+        Swal.fire('Hata', 'Geçerli bir YouTube linki değil.', 'error');
+        return;
+    }
+
+    const type = document.getElementById('gallery-type').value;
+
+    const addVideoToType = (targetType) => {
+        if (!currentGallery[targetType]) currentGallery[targetType] = {};
+        if (!currentGallery[targetType].videos) currentGallery[targetType].videos = [];
+        currentGallery[targetType].videos.push(url);
+    };
+
+    if (type === 'Tümü') {
+        const allTypes = ['Ortaokul', 'Lise', 'Üniversite Hazırlık', 'Daimi', 'Üniversite', 'Tekamül'];
+        allTypes.forEach(t => addVideoToType(t));
+    } else {
+        addVideoToType(type);
+    }
+
+    input.value = ''; // clear input
+
+    renderGallery();
+
+    Swal.fire({
+        icon: 'success',
+        title: 'Video Eklendi',
+        text: 'Kaydet butonuna basarak değişiklikleri sunucuya göndermeyi unutmayın.',
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 3000
+    });
 }
 
 
