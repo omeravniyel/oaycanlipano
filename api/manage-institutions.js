@@ -531,6 +531,7 @@ module.exports = async (request, response) => {
 
                     // Dashboard Config
                     module_dorm_active: (module_dorm_active !== undefined) ? module_dorm_active : false, // Varsayılan kapalı
+                    module_tea_active: false, // Varsayılan kapalı - isteyen açar
                     module_bottom_right_type: module_bottom_right_type || 'auto'
                 };
 
