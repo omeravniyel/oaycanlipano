@@ -318,29 +318,34 @@ async function fetchConfig() {
             if (el) el.innerText = config.dorm_title;
         }
 
-        // --- 2. Galeri & Video Data Prep ---
-        // Video Playlist Hazırlığı
+        // Video Playlist: local first, then central
         videoPlaylist = [];
+        const localVideos = [];
         if (config.video_urls && Array.isArray(config.video_urls) && config.video_urls.length > 0) {
-            videoPlaylist = config.video_urls;
+            localVideos.push(...config.video_urls);
         } else if (config.video_url) {
             let vUrl = config.video_url;
             if (vUrl.startsWith('[') && vUrl.endsWith(']')) {
-                try { videoPlaylist = JSON.parse(vUrl); } catch (e) { videoPlaylist = [vUrl]; }
+                try { localVideos.push(...JSON.parse(vUrl)); } catch (e) { localVideos.push(vUrl); }
             } else {
-                videoPlaylist = [vUrl];
+                localVideos.push(vUrl);
             }
         }
-        videoPlaylist = videoPlaylist.filter(v => v && v.trim().length > 5);
+        const centralVideos = (config.central_video_urls || []).filter(v => v && v.trim().length > 5);
+        // Local videos first, then central videos (deduplicate)
+        const allVideoUrls = [...new Set([...localVideos.filter(v => v && v.trim().length > 5), ...centralVideos])];
+        videoPlaylist = allVideoUrls;
 
-        // Ana Galeri Linkleri
-        let adminGallery = [];
+        // Ana Galeri: local first, then central
+        let localGallery = [];
         if (config.gallery_links) {
             try {
                 const parsed = (typeof config.gallery_links === 'string') ? JSON.parse(config.gallery_links) : config.gallery_links;
-                if (Array.isArray(parsed) && parsed.length > 0) adminGallery = parsed;
+                if (Array.isArray(parsed) && parsed.length > 0) localGallery = parsed;
             } catch (e) { console.error('Galeri parse hatası', e); }
         }
+        const centralGallery = (config.central_gallery_links || []);
+        const adminGallery = [...new Set([...localGallery, ...centralGallery])];
 
         // Galeri DOM Güncelleme
         if (adminGallery.length > 0) {
@@ -380,14 +385,17 @@ async function fetchConfig() {
             }
         }
 
-        // Sol Galeri
-        let adminLeftGallery = [];
+
+        // Sol Galeri: local first, then central
+        let localLeftGallery = [];
         if (config.left_gallery_links) {
             try {
                 const parsed = (typeof config.left_gallery_links === 'string') ? JSON.parse(config.left_gallery_links) : config.left_gallery_links;
-                if (Array.isArray(parsed) && parsed.length > 0) adminLeftGallery = parsed;
+                if (Array.isArray(parsed) && parsed.length > 0) localLeftGallery = parsed;
             } catch (e) { console.error('Sol Galeri parse hatası', e); }
         }
+        const centralLeftGallery = (config.central_left_gallery_links || []);
+        const adminLeftGallery = [...new Set([...localLeftGallery, ...centralLeftGallery])];
 
         if (adminLeftGallery.length > 0) {
             leftGalleryImages = adminLeftGallery;

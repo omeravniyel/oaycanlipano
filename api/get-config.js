@@ -165,54 +165,28 @@ module.exports = async (request, response) => {
                 const typeConfig = globalGallery.config[type];
 
                 if (typeConfig) {
-                    // MERGE IMAGES (Local FIRST, Central AFTER)
+                    // CENTRAL IMAGES → separate field, main.js will combine (local first)
                     if (typeConfig.images && Array.isArray(typeConfig.images) && typeConfig.images.length > 0) {
-                        let localGallery = [];
-                        try {
-                            if (Array.isArray(config.gallery_links)) localGallery = config.gallery_links;
-                            else if (typeof config.gallery_links === 'string') localGallery = JSON.parse(config.gallery_links);
-                        } catch (e) { }
-
                         const centralImages = processCentralItems(typeConfig.images, slug, config);
-
-                        // Local first, then central (deduplicate)
-                        const combined = [...localGallery, ...centralImages].map(url => typeof url === 'string' ? url.trim() : url);
-                        config.gallery_links = [...new Set(combined)];
+                        config.central_gallery_links = centralImages.map(u => u.trim ? u.trim() : u);
+                    } else {
+                        config.central_gallery_links = [];
                     }
 
-                    // MERGE VIDEOS (Local FIRST, Central AFTER)
+                    // CENTRAL VIDEOS → separate field
                     if (typeConfig.videos && Array.isArray(typeConfig.videos) && typeConfig.videos.length > 0) {
-                        let localVideos = [];
-                        try {
-                            if (config.video_urls && Array.isArray(config.video_urls)) localVideos = config.video_urls;
-                            else if (config.video_url) {
-                                const v = config.video_url;
-                                if (v.startsWith('[')) localVideos = JSON.parse(v);
-                                else localVideos = [v];
-                            }
-                        } catch (e) { }
-
-                        localVideos = localVideos.filter(v => v && v.length > 5);
                         const centralVideos = processCentralItems(typeConfig.videos, slug, config);
-
-                        // Local first, then central (deduplicate)
-                        const combinedVideos = [...localVideos, ...centralVideos].map(v => typeof v === 'string' ? v.trim() : v);
-                        config.video_urls = [...new Set(combinedVideos)];
+                        config.central_video_urls = centralVideos.map(v => v.trim ? v.trim() : v);
+                    } else {
+                        config.central_video_urls = [];
                     }
 
-                    // MERGE LEFT GALLERY (Local FIRST, Central AFTER)
+                    // CENTRAL LEFT GALLERY → separate field
                     if (typeConfig.left_images && Array.isArray(typeConfig.left_images) && typeConfig.left_images.length > 0) {
-                        let localLeft = [];
-                        try {
-                            if (Array.isArray(config.left_gallery_links)) localLeft = config.left_gallery_links;
-                            else if (typeof config.left_gallery_links === 'string') localLeft = JSON.parse(config.left_gallery_links);
-                        } catch (e) { }
-
                         const centralLeft = processCentralItems(typeConfig.left_images, slug, config);
-
-                        // Local first, then central (deduplicate)
-                        const combinedLeft = [...localLeft, ...centralLeft].map(url => typeof url === 'string' ? url.trim() : url);
-                        config.left_gallery_links = [...new Set(combinedLeft)];
+                        config.central_left_gallery_links = centralLeft.map(u => u.trim ? u.trim() : u);
+                    } else {
+                        config.central_left_gallery_links = [];
                     }
                 }
             }
