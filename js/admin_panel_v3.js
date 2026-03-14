@@ -884,7 +884,7 @@ function openInstitutionModal(isNew = true) {
 
         document.getElementById('form-contact-email').value = '';
 
-        document.getElementById('form-dorm-active').checked = true;
+        document.getElementById('form-dorm-active').checked = false;
 
         document.getElementById('form-logo-locked').checked = false;
 
@@ -1753,7 +1753,7 @@ async function deleteGalleryItem(idx) {
 
     const type = document.getElementById('gallery-type').value;
 
-    if (!currentGallery[type]) return;
+    if (type !== 'Tümü' && !currentGallery[type]) return;
 
 
 
@@ -1761,68 +1761,61 @@ async function deleteGalleryItem(idx) {
 
     let arr = null;
 
-    if (activeGalleryTab === 'main') arr = currentGallery[type].images;
+    if (activeGalleryTab === 'main') arr = currentGallery[type]?.images;
 
-    else if (activeGalleryTab === 'left') arr = currentGallery[type].left_images;
+    else if (activeGalleryTab === 'left') arr = currentGallery[type]?.left_images;
 
-    else if (activeGalleryTab === 'video') arr = currentGallery[type].videos;
+    else if (activeGalleryTab === 'video') arr = currentGallery[type]?.videos;
 
 
 
-    if (!arr) return;
+    if (type !== 'Tümü' && !arr) return;
 
 
 
     const item = arr[idx];
-
     const url = typeof item === 'string' ? item : (item.url || '');
 
-
-
     // Confirm
-
     const result = await Swal.fire({
-
         title: 'Silinsin mi?',
-
         text: "Bu öğe galeri listesinden kaldırılacak.",
-
         icon: 'warning',
-
         showCancelButton: true,
-
         confirmButtonText: 'Evet, Sil',
-
         cancelButtonText: 'İptal'
-
     });
-
-
 
     if (!result.isConfirmed) return;
 
-
-
     // Delete from array
+    if (type === 'Tümü') {
+        const allTypes = ['Ortaokul', 'Lise', 'Üniversite Hazırlık', 'Daimi', 'Üniversite', 'Tekamül'];
+        allTypes.forEach(t => {
+            if (!currentGallery[t]) return;
+            let targetArr = null;
+            if (activeGalleryTab === 'main') targetArr = currentGallery[t].images;
+            else if (activeGalleryTab === 'left') targetArr = currentGallery[t].left_images;
+            else if (activeGalleryTab === 'video') targetArr = currentGallery[t].videos;
 
-    arr.splice(idx, 1);
-
-
+            if (targetArr) {
+                const foundIdx = targetArr.findIndex(u => (typeof u === 'string' ? u : u.url) === url);
+                if (foundIdx > -1) targetArr.splice(foundIdx, 1);
+            }
+        });
+    } else {
+        arr.splice(idx, 1);
+    }
 
     // Attempt storage delete if it looks like our storage file
-
     if (url && url.includes('supabase')) {
-
         // Fire and forget storage delete
-
         requestApi('delete_gallery_file', { path: url }).catch(console.error);
-
     }
 
 
 
     // Save Config
-
     try {
 
         await requestApi('save_gallery', { gallery: currentGallery });
@@ -2623,50 +2616,52 @@ async function bulkDeleteSelected() {
 
     const type = document.getElementById('gallery-type').value;
 
-    if (!currentGallery[type]) return;
+    if (type !== 'Tümü' && !currentGallery[type]) return;
 
 
 
     let arr = null;
 
-    if (activeGalleryTab === 'main') arr = currentGallery[type].images;
+    if (activeGalleryTab === 'main') arr = currentGallery[type]?.images;
 
-    else if (activeGalleryTab === 'left') arr = currentGallery[type].left_images;
+    else if (activeGalleryTab === 'left') arr = currentGallery[type]?.left_images;
 
-    else if (activeGalleryTab === 'video') arr = currentGallery[type].videos;
+    else if (activeGalleryTab === 'video') arr = currentGallery[type]?.videos;
 
 
 
-    if (!arr) return;
+    if (type !== 'Tümü' && !arr) return;
 
 
 
     // Get indices to delete (in reverse order to avoid index shift)
 
     const indices = Array.from(checkboxes).map(cb => parseInt(cb.dataset.idx)).sort((a, b) => b - a);
+    const urlsToDelete = Array.from(checkboxes).map(cb => cb.dataset.url);
 
+    for (let url of urlsToDelete) {
+        if (type === 'Tümü') {
+            const allTypes = ['Ortaokul', 'Lise', 'Üniversite Hazırlık', 'Daimi', 'Üniversite', 'Tekamül'];
+            allTypes.forEach(t => {
+                if (!currentGallery[t]) return;
+                let targetArr = null;
+                if (activeGalleryTab === 'main') targetArr = currentGallery[t].images;
+                else if (activeGalleryTab === 'left') targetArr = currentGallery[t].left_images;
+                else if (activeGalleryTab === 'video') targetArr = currentGallery[t].videos;
 
-
-    for (let idx of indices) {
-
-        const item = arr[idx];
-
-        const url = typeof item === 'string' ? item : (item.url || '');
-
-
-
-        arr.splice(idx, 1);
-
-
-
-        // Try storage delete
-
-        if (url && url.includes('supabase')) {
-
-            requestApi('delete_gallery_file', { path: url }).catch(() => { });
-
+                if (targetArr) {
+                    const foundIdx = targetArr.findIndex(u => (typeof u === 'string' ? u : u.url) === url);
+                    if (foundIdx > -1) targetArr.splice(foundIdx, 1);
+                }
+            });
+        } else {
+            const foundIdx = arr.findIndex(u => (typeof u === 'string' ? u : u.url) === url);
+            if (foundIdx > -1) arr.splice(foundIdx, 1);
         }
 
+        if (url && url.includes('supabase')) {
+            requestApi('delete_gallery_file', { path: url }).catch(console.error);
+        }
     }
 
 
