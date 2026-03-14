@@ -1757,24 +1757,32 @@ async function deleteGalleryItem(idx) {
 
 
 
-    // Determine array to splice
+    let url = '';
 
-    let arr = null;
+    if (type === 'Tümü') {
+        const allTypes = ['Ortaokul', 'Lise', 'Üniversite Hazırlık', 'Daimi', 'Üniversite', 'Tekamül'];
+        const merged = [];
+        allTypes.forEach(t => {
+            const td = currentGallery[t] || {};
+            if (activeGalleryTab === 'main') merged.push(...(td.images || []));
+            else if (activeGalleryTab === 'left') merged.push(...(td.left_images || []));
+            else if (activeGalleryTab === 'video') merged.push(...(td.videos || []));
+        });
+        const items = [...new Set(merged)];
+        const item = items[idx];
+        url = typeof item === 'string' ? item : (item?.url || '');
+    } else {
+        let arr = null;
+        if (activeGalleryTab === 'main') arr = currentGallery[type]?.images;
+        else if (activeGalleryTab === 'left') arr = currentGallery[type]?.left_images;
+        else if (activeGalleryTab === 'video') arr = currentGallery[type]?.videos;
 
-    if (activeGalleryTab === 'main') arr = currentGallery[type]?.images;
+        if (!arr) return;
+        const item = arr[idx];
+        url = typeof item === 'string' ? item : (item?.url || '');
+    }
 
-    else if (activeGalleryTab === 'left') arr = currentGallery[type]?.left_images;
-
-    else if (activeGalleryTab === 'video') arr = currentGallery[type]?.videos;
-
-
-
-    if (type !== 'Tümü' && !arr) return;
-
-
-
-    const item = arr[idx];
-    const url = typeof item === 'string' ? item : (item.url || '');
+    if (!url) return;
 
     // Confirm
     const result = await Swal.fire({
