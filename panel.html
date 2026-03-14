@@ -3275,7 +3275,7 @@
             try {
                 // Fetch merged (includes central) and raw (local only) configs
                 const [mergedRes, rawRes] = await Promise.all([
-                    fetch(`/api/get-config?slug=${currentSlug}`),
+                    fetch(`/api/get-config?slug=${currentSlug}&moderation=true`),
                     fetch(`/api/get-config?slug=${currentSlug}&raw=true`)
                 ]);
                 const merged = await mergedRes.json();
@@ -3286,17 +3286,17 @@
                 const localLeft = raw.left_gallery_links || [];
                 const localVideos = raw.video_urls || [];
 
-                // Find central items (in merged but not in raw local)
+                // Find central items (correct keys from API: central_gallery_links, central_video_urls, central_left_gallery_links)
                 const centralItems = [];
 
-                (merged.gallery_links || []).forEach(url => {
-                    if (!localMain.includes(url)) centralItems.push({ url, type: 'Ana Galeri' });
+                (merged.central_gallery_links || []).forEach(url => {
+                    centralItems.push({ url, type: 'Ana Galeri' });
                 });
-                (merged.left_gallery_links || []).forEach(url => {
-                    if (!localLeft.includes(url)) centralItems.push({ url, type: 'Sol Slider' });
+                (merged.central_left_gallery_links || []).forEach(url => {
+                    centralItems.push({ url, type: 'Sol Slider' });
                 });
-                (merged.video_urls || []).forEach(url => {
-                    if (!localVideos.includes(url)) centralItems.push({ url, type: 'Video' });
+                (merged.central_video_urls || []).forEach(url => {
+                    centralItems.push({ url, type: 'Video' });
                 });
 
                 if (centralItems.length === 0) {

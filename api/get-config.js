@@ -6,7 +6,7 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 module.exports = async (request, response) => {
     // URL'den slug'ı al (örn: /api/get-config?slug=omeravniyel)
-    const { slug } = request.query;
+    const { slug, moderation } = request.query;
 
     if (!slug) {
         return response.status(400).json({ error: 'Slug parametresi gereklidir' });
@@ -35,12 +35,12 @@ module.exports = async (request, response) => {
     }
 
     // --- GLOBAL MERGE LOGIC ---
-    // Eğer bu bir 'System' kaydı değilse ve 'institution_type' varsa global veriyi merge et
-    if (!slug.startsWith('system-') && config.institution_type) {
+    // Eğer bu bir 'System' kaydı değilse global veriyi merge et
+    if (!slug.startsWith('system-')) {
         try {
             // Helper to process central items (exclusion logic + REGION FILTER)
             // Helper to process central items (exclusion logic + REGION FILTER + DATE FILTER)
-            function processCentralItems(items, currentSlug, institutionConfig = {}) {
+            function processCentralItems(items, currentSlug, institutionConfig = {}, skipModeration = false) {
                 if (!items || !Array.isArray(items)) return [];
                 const now = new Date();
 
@@ -65,7 +65,7 @@ module.exports = async (request, response) => {
                         }
 
                         // 3. MODERATION CHECK (Institutional Approval)
-                        if (institutionConfig.moderated_items && Array.isArray(institutionConfig.moderated_items)) {
+                        if (!skipModeration && institutionConfig.moderated_items && Array.isArray(institutionConfig.moderated_items)) {
                             const moderation = institutionConfig.moderated_items.find(m => m.url === data.url);
                             if (moderation && moderation.status === 'rejected') return false;
                         }
@@ -144,11 +144,12 @@ module.exports = async (request, response) => {
                 .single();
 
             if (globalData && globalData.config) {
-                const type = config.institution_type || 'Ortaokul'; // Default to Ortaokul if missing
-                const hadithData = globalData.config[type];
+                const rawType = config.institution_type || 'Ortaokul';
+                // Case-insensitive lookup
+                const matchKey = Object.keys(globalData.config).find(k => k.toLowerCase() === rawType.toLowerCase()) || 'Ortaokul';
+                const hadithData = globalData.config[matchKey];
 
                 if (hadithData && hadithData.weeks && hadithData.weeks.length > 0) {
-                    // Pass the FULL structure so frontend can calculate date ranges and week index correctly
                     config.weekly_hadiths = hadithData;
                 }
             }
@@ -161,29 +162,30 @@ module.exports = async (request, response) => {
                 .single();
 
             if (globalGallery && globalGallery.config) {
-                const type = config.institution_type;
-                const typeConfig = globalGallery.config[type];
+                const rawType = config.institution_type || 'Ortaokul';
+                const matchKey = Object.keys(globalGallery.config).find(k => k.toLowerCase() === rawType.toLowerCase()) || 'Ortaokul';
+                const typeConfig = globalGallery.config[matchKey];
 
                 if (typeConfig) {
-                    // CENTRAL IMAGES → separate field, main.js will combine (local first)
+                    // CENTRAL IMAGES
                     if (typeConfig.images && Array.isArray(typeConfig.images) && typeConfig.images.length > 0) {
-                        const centralImages = processCentralItems(typeConfig.images, slug, config);
+                        const centralImages = processCentralItems(typeConfig.images, slug, config, moderation === 'true');
                         config.central_gallery_links = centralImages.map(u => u.trim ? u.trim() : u);
                     } else {
                         config.central_gallery_links = [];
                     }
 
-                    // CENTRAL VIDEOS → separate field
+                    // CENTRAL VIDEOS
                     if (typeConfig.videos && Array.isArray(typeConfig.videos) && typeConfig.videos.length > 0) {
-                        const centralVideos = processCentralItems(typeConfig.videos, slug, config);
+                        const centralVideos = processCentralItems(typeConfig.videos, slug, config, moderation === 'true');
                         config.central_video_urls = centralVideos.map(v => v.trim ? v.trim() : v);
                     } else {
                         config.central_video_urls = [];
                     }
 
-                    // CENTRAL LEFT GALLERY → separate field
+                    // CENTRAL LEFT GALLERY
                     if (typeConfig.left_images && Array.isArray(typeConfig.left_images) && typeConfig.left_images.length > 0) {
-                        const centralLeft = processCentralItems(typeConfig.left_images, slug, config);
+                        const centralLeft = processCentralItems(typeConfig.left_images, slug, config, moderation === 'true');
                         config.central_left_gallery_links = centralLeft.map(u => u.trim ? u.trim() : u);
                     } else {
                         config.central_left_gallery_links = [];

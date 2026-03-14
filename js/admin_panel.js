@@ -242,7 +242,7 @@ async function editInstitution(slug) {
         document.getElementById('form-contact-name').value = cfg.admin_contact?.name || '';
         document.getElementById('form-contact-phone').value = cfg.admin_contact?.phone || '';
         document.getElementById('form-contact-email').value = cfg.admin_contact?.email || '';
-        document.getElementById('form-dorm-active').checked = cfg.module_dorm_active !== false;
+        document.getElementById('form-dorm-active').checked = cfg.module_dorm_active === true;
         document.getElementById('form-logo-locked').checked = !!cfg.logo_locked;
 
         Swal.close();
