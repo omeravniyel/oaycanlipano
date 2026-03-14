@@ -1060,22 +1060,8 @@ async function fetchConfig() {
             infoData = [...rawAnnouncements, ...rawExams, ...rawMenus, ...rawStudent, ...rawImproved, ...rawTeaTalks];
         }
 
-        // 7. Video Listesi (Playlist)
-        videoPlaylist = [];
-        if (config.video_urls && Array.isArray(config.video_urls) && config.video_urls.length > 0) {
-            videoPlaylist = config.video_urls;
-        } else if (config.video_url) {
-            // Fallback for single video
-            let vUrl = config.video_url;
-            // Bazen string array gibi gelebilir "["..."]"
-            if (vUrl.startsWith('[') && vUrl.endsWith(']')) {
-                try { videoPlaylist = JSON.parse(vUrl); } catch (e) { videoPlaylist = [vUrl]; }
-            } else {
-                videoPlaylist = [vUrl];
-            }
-        }
-        // Admin panelinden gelen boş satırları temizle
-        videoPlaylist = videoPlaylist.filter(v => v && v.trim().length > 5);
+        // 7. Video Listesi (Playlist) - Artık yukarıda (satır 322 civarı) merkezi videolarla birleştirilerek hesaplanıyor.
+        // Aşağıdaki mükerrer kod merkezi videoları sildiği için kaldırıldı.
 
         // --- 8. BAŞLAT ---
         // --- 8. BAŞLAT (AKILLI KONTROL) ---
