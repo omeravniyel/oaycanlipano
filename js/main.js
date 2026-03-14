@@ -54,7 +54,10 @@ let currentMediaState = 'none'; // 'video', 'slide'
 let currentVideoIndex = 0;
 let leftGalleryIndex = 0;
 let leftGalleryTimeout = null;
-let videoRotationInterval = null; 
+let slideIntervalHandle = null; 
+let player;
+let isYoutubeReady = false;
+let pendingVideoPlay = false;
 
 // Verileri API'den Çek
 async function fetchConfig() {
@@ -1595,9 +1598,6 @@ fetchConfig();
 
 // --- YOUTUBE API ---
 // --- YOUTUBE & HYBRID LOOP ---
-var player;
-var isYoutubeReady = false;
-var pendingVideoPlay = false;
 
 // Galeriyi Çek (Yerel klasörden)
 async function fetchGalleryImages() {
