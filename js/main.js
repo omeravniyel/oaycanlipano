@@ -344,34 +344,42 @@ async function fetchConfig() {
         const allVideoUrls = [...new Set([...localVideos.filter(v => v && v.trim().length > 5), ...centralVideos])];
         videoPlaylist = allVideoUrls;
 
-        // Ana Galeri: local first, then central
-        let localGallery = [];
-        if (config.gallery_links) {
+        // Yardımcı fonksiyon: Farklı formatlardaki (string, array, object) görsel linklerini güvenli şekilde ayıklar
+        const getLinks = (val) => {
+            if (!val) return [];
+            let arr = [];
             try {
-                const parsed = (typeof config.gallery_links === 'string') ? JSON.parse(config.gallery_links) : config.gallery_links;
-                if (Array.isArray(parsed)) localGallery = parsed;
+                // Eğer string olarak gelmişse ve JSON formatındaysa parse et
+                const parsed = (typeof val === 'string' && (val.trim().startsWith('[') || val.trim().startsWith('{'))) ? JSON.parse(val) : val;
+                if (Array.isArray(parsed)) arr = parsed;
+                else if (parsed && typeof parsed === 'object') arr = Object.values(parsed);
+                else if (typeof parsed === 'string') arr = [parsed];
             } catch (e) {
-                if (typeof config.gallery_links === 'string' && config.gallery_links.length > 5) {
-                    localGallery = [config.gallery_links];
-                }
+                if (typeof val === 'string' && val.length > 5) arr = [val];
             }
-        }
-        
-        // Temizleme ve Filtreleme
-        const cleanLocal = localGallery.filter(u => u && typeof u === 'string' && u.trim().length > 5);
-        const centralGallery = (config.central_gallery_links || []).filter(u => u && typeof u === 'string' && u.trim().length > 5);
-        
-        // Önce yerel, sonra merkezi (Deduplicate)
-        const adminGallery = [...new Set([...cleanLocal, ...centralGallery])];
+            // Obje içindeki .url alanını veya direkt string'i al
+            return arr.map(item => {
+                if (!item) return null;
+                if (typeof item === 'string') return item;
+                if (typeof item === 'object' && item.url) return item.url;
+                return null;
+            }).filter(u => u && typeof u === 'string' && u.trim().length > 5);
+        };
 
-        // Galeri DOM Güncelleme
+        // 1. Ana Galeri (Sağ)
+        // Olası tüm key'leri kontrol et (gallery_links, images vb.)
+        const localMain = getLinks(config.gallery_links || config.gallery_urls || config.images);
+        const centralMain = getLinks(config.central_gallery_links);
+        
+        // Birleştir: Önce yerel, sonra merkezi (tekrar edenleri sil)
+        const adminGallery = [...new Set([...localMain, ...centralMain])];
+
         if (adminGallery.length > 0) {
-            // Check if gallery actually changed to avoid resetting Swiper every 60 seconds
             const currentGalleryStr = JSON.stringify(adminGallery);
             const lastGalleryStr = window.lastGalleryStr || "";
 
             if (currentGalleryStr !== lastGalleryStr) {
-                console.log("Galeri içeriği değişti, güncelleniyor...");
+                console.log(`[GALERİ] Güncellendi. Yerel: ${localMain.length}, Merkezi: ${centralMain.length}`);
                 window.lastGalleryStr = currentGalleryStr;
                 galleryImages = adminGallery;
 
@@ -385,45 +393,35 @@ async function fetchConfig() {
                         wrapper.appendChild(slide);
                     });
 
-                    // Eğer swiper zaten çalışıyorsa güncelle
                     if (window.mySwiperInstance) {
                         try {
                             if (window.reachEndTimeout) clearTimeout(window.reachEndTimeout);
                             window.mySwiperInstance.update();
                             window.mySwiperInstance.slideTo(0);
                             window.mySwiperInstance.autoplay.start();
-                        } catch (e) {
-                            console.error("Swiper update error:", e);
-                        }
+                        } catch (e) { console.error("Swiper güncelleme hatası:", e); }
                     }
                 }
-            } else {
-                console.log("Galeri değişmedi, rotasyon devam ediyor.");
             }
         }
 
 
-        // Sol Galeri: local first, then central
-        let localLeftGallery = [];
-        if (config.left_gallery_links) {
-            try {
-                const parsed = (typeof config.left_gallery_links === 'string') ? JSON.parse(config.left_gallery_links) : config.left_gallery_links;
-                if (Array.isArray(parsed)) localLeftGallery = parsed;
-            } catch (e) {
-                if (typeof config.left_gallery_links === 'string' && config.left_gallery_links.length > 5) {
-                    localLeftGallery = [config.left_gallery_links];
-                }
-            }
-        }
+        // 2. Sol Galeri (Left)
+        const localLeft = getLinks(config.left_gallery_links || config.left_images || config.left_gallery_urls);
+        const centralLeft = getLinks(config.central_left_gallery_links);
         
-        const cleanLeftLocal = localLeftGallery.filter(u => u && typeof u === 'string' && u.trim().length > 5);
-        const centralLeftGallery = (config.central_left_gallery_links || []).filter(u => u && typeof u === 'string' && u.trim().length > 5);
-        
-        const adminLeftGallery = [...new Set([...cleanLeftLocal, ...centralLeftGallery])];
+        const adminLeftGallery = [...new Set([...localLeft, ...centralLeft])];
 
         if (adminLeftGallery.length > 0) {
-            leftGalleryImages = adminLeftGallery;
-            startLeftGalleryRotation();
+            const currentLeftStr = JSON.stringify(adminLeftGallery);
+            const lastLeftStr = window.lastLeftStr || "";
+
+            if (currentLeftStr !== lastLeftStr) {
+                console.log(`[SOL GALERİ] Güncellendi. Yerel: ${localLeft.length}, Merkezi: ${centralLeft.length}`);
+                window.lastLeftStr = currentLeftStr;
+                leftGalleryImages = adminLeftGallery;
+                startLeftGalleryRotation();
+            }
         }
 
         // --- 3. Yemek Menüsü (Global) ---
