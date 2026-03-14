@@ -46,10 +46,15 @@ let dorm1NameIndex = 0;
 let dorm2NameIndex = 0;
 let dormNameRotationInterval = null;
 
-// --- SOL GALERİ DEĞİŞKENLERİ ---
+// --- GALERİ & MEDYA DEĞİŞKENLERİ (GLOBAL) ---
+let galleryImages = [];
 let leftGalleryImages = [];
+let videoPlaylist = [];
+let currentMediaState = 'none'; // 'video', 'slide'
+let currentVideoIndex = 0;
 let leftGalleryIndex = 0;
 let leftGalleryTimeout = null;
+let videoRotationInterval = null; 
 
 // Verileri API'den Çek
 async function fetchConfig() {
@@ -341,11 +346,20 @@ async function fetchConfig() {
         if (config.gallery_links) {
             try {
                 const parsed = (typeof config.gallery_links === 'string') ? JSON.parse(config.gallery_links) : config.gallery_links;
-                if (Array.isArray(parsed) && parsed.length > 0) localGallery = parsed;
-            } catch (e) { console.error('Galeri parse hatası', e); }
+                if (Array.isArray(parsed)) localGallery = parsed;
+            } catch (e) {
+                if (typeof config.gallery_links === 'string' && config.gallery_links.length > 5) {
+                    localGallery = [config.gallery_links];
+                }
+            }
         }
-        const centralGallery = (config.central_gallery_links || []);
-        const adminGallery = [...new Set([...localGallery, ...centralGallery])];
+        
+        // Temizleme ve Filtreleme
+        const cleanLocal = localGallery.filter(u => u && typeof u === 'string' && u.trim().length > 5);
+        const centralGallery = (config.central_gallery_links || []).filter(u => u && typeof u === 'string' && u.trim().length > 5);
+        
+        // Önce yerel, sonra merkezi (Deduplicate)
+        const adminGallery = [...new Set([...cleanLocal, ...centralGallery])];
 
         // Galeri DOM Güncelleme
         if (adminGallery.length > 0) {
@@ -391,11 +405,18 @@ async function fetchConfig() {
         if (config.left_gallery_links) {
             try {
                 const parsed = (typeof config.left_gallery_links === 'string') ? JSON.parse(config.left_gallery_links) : config.left_gallery_links;
-                if (Array.isArray(parsed) && parsed.length > 0) localLeftGallery = parsed;
-            } catch (e) { console.error('Sol Galeri parse hatası', e); }
+                if (Array.isArray(parsed)) localLeftGallery = parsed;
+            } catch (e) {
+                if (typeof config.left_gallery_links === 'string' && config.left_gallery_links.length > 5) {
+                    localLeftGallery = [config.left_gallery_links];
+                }
+            }
         }
-        const centralLeftGallery = (config.central_left_gallery_links || []);
-        const adminLeftGallery = [...new Set([...localLeftGallery, ...centralLeftGallery])];
+        
+        const cleanLeftLocal = localLeftGallery.filter(u => u && typeof u === 'string' && u.trim().length > 5);
+        const centralLeftGallery = (config.central_left_gallery_links || []).filter(u => u && typeof u === 'string' && u.trim().length > 5);
+        
+        const adminLeftGallery = [...new Set([...cleanLeftLocal, ...centralLeftGallery])];
 
         if (adminLeftGallery.length > 0) {
             leftGalleryImages = adminLeftGallery;
@@ -1575,11 +1596,6 @@ fetchConfig();
 // --- YOUTUBE API ---
 // --- YOUTUBE & HYBRID LOOP ---
 var player;
-var galleryImages = [];
-var currentMediaState = 'none'; // 'video', 'slide'
-var videoPlaylist = [];
-var currentVideoIndex = 0;
-var slideIntervalHandle = null;
 var isYoutubeReady = false;
 var pendingVideoPlay = false;
 
