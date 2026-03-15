@@ -1852,6 +1852,7 @@ function extractVideoID(url) {
 
         if (window.mySwiperInstance) {
             try {
+                // Mevcut tüm zamanlayıcıları temizle
                 if (window.reachEndTimeout) {
                     clearTimeout(window.reachEndTimeout);
                     window.reachEndTimeout = null;
@@ -1860,23 +1861,29 @@ function extractVideoID(url) {
                 window.mySwiperInstance.update();
                 window.mySwiperInstance.slideTo(0);
                 
-                // --- TEK GÖRSEL SENARYOSU ---
-                // Tek görsel varsa reachEnd event'i her zaman tetiklenmeyebilir.
-                // Bu yüzden manuel bir 12 sn timer başlatarak sonraki adıma geçişi garantiliyoruz.
-                if (images.length === 1) {
-                    console.log("[DÖNGÜ] Tek slayt tespit edildi, 12sn sonra sonraki adıma geçilecek.");
-                    window.reachEndTimeout = setTimeout(() => {
-                        if (currentMediaState !== 'slide') return;
-                        
-                        // Bir sonraki adıma zorla geç
-                        if (currentMediaStep === 1) currentMediaStep = 2;
-                        else if (currentMediaStep === 3) currentMediaStep = 0;
-                        
-                        currentVideoIndex = 0;
-                        playNextMedia();
-                    }, 12000);
-                } else {
+                // --- GARANTİLİ ADIM ROTASYONU ---
+                // Slayt sayısı ne olursa olsun (1 veya daha fazla), 
+                // her slayt için 12 saniye bekleyip sonraki ADIMA geçmeyi garantiliyoruz.
+                const totalStepDuration = images.length * 12000;
+                console.log(`[DÖNGÜ] Adım Süresi: ${totalStepDuration/1000}sn (Slayt: ${images.length})`);
+
+                window.reachEndTimeout = setTimeout(() => {
+                    if (currentMediaState !== 'slide') return;
+                    
+                    console.log("[DÖNGÜ] Adım süresi bitti, sonraki adıma geçiliyor.");
+                    // Bir sonraki adıma zorla geç
+                    if (currentMediaStep === 1) currentMediaStep = 2;
+                    else if (currentMediaStep === 3) currentMediaStep = 0;
+                    
+                    currentVideoIndex = 0;
+                    playNextMedia();
+                }, totalStepDuration);
+
+                // Eğer birden fazla görsel varsa Swiper autoplay'i başlat
+                if (images.length > 1) {
                     window.mySwiperInstance.autoplay.start();
+                } else {
+                    window.mySwiperInstance.autoplay.stop();
                 }
             } catch (e) { console.error("Swiper güncelleme hatası:", e); }
         }
@@ -1982,26 +1989,10 @@ function extractVideoID(url) {
                     loop: false,
                     speed: 1500,
                     on: {
+                        // reachEnd artık manuel setTimeout tarafından yönetiliyor, 
+                        // çakışmaları önlemek için burayı sadeleştiriyoruz.
                         reachEnd: function () {
-                            // Zaten bir timer varsa temizle (Çakışmayı önle)
-                            if (window.reachEndTimeout) clearTimeout(window.reachEndTimeout);
-                            const swiperObj = this;
-
-                            // Eğer tek slayt ise bu event bazen anında tetiklenir, 
-                            // updateSwiperContent içindeki timer ile yönetilmesi daha sağlıklı.
-                            // Çoklu slaytta ise son slayta gelince tetiklenir.
-                            if (swiperObj.slides.length > 1) {
-                                console.log("[DÖNGÜ] Slaytların sonuna gelindi, 12sn sonra sonraki adıma geçiliyor.");
-                                window.reachEndTimeout = setTimeout(() => {
-                                    if (currentMediaState !== 'slide' || !swiperObj.isEnd) return;
-
-                                    if (currentMediaStep === 1) currentMediaStep = 2;
-                                    else if (currentMediaStep === 3) currentMediaStep = 0;
-
-                                    currentVideoIndex = 0;
-                                    playNextMedia();
-                                }, 12000);
-                            }
+                            console.log("[DÖNGÜ] Swiper sonuna ulaştı (Otomatik geçiş zamanlayıcısı devrede)");
                         },
                         slideChange: function () {
                             if (!this.isEnd && window.reachEndTimeout) {
