@@ -1734,6 +1734,17 @@ function onPlayerStateChange(event) {
 }
 
 function playNextVideoOrSlide() {
+    // Toplam içerik sayısını kontrol et (Akıllı Döngü için)
+    const totalContent = localVideos.length + localSlides.length + centralVideos.length + centralSlides.length;
+
+    // Eğer sistemde SADECE 1 içerik varsa ve o da video ise, hiç beklemeden loop yap
+    if (totalContent === 1 && videoPlaylist.length === 1) {
+        console.log("[DÖNGÜ] Tek video tespit edildi, sonsuz döngü başlatılıyor.");
+        currentVideoIndex = 0;
+        playCurrentVideo();
+        return;
+    }
+
     currentVideoIndex++;
     
     // Mevcut adımdaki video listesini kontrol et
@@ -1750,24 +1761,67 @@ function playNextVideoOrSlide() {
 }
 
 function playCurrentVideo() {
-    if (!player || typeof player.loadVideoById !== 'function') {
-        // Player henüz hazır değilse flag koy, ready olunca çalar
-        pendingVideoPlay = true;
+    const rawUrl = videoPlaylist[currentVideoIndex];
+    if (!rawUrl) {
+        playNextVideoOrSlide();
         return;
     }
 
-    pendingVideoPlay = false;
-    const rawUrl = videoPlaylist[currentVideoIndex];
     const vid = extractVideoID(rawUrl);
+    const playerEl = document.getElementById('player');
+    const nativePlayer = document.getElementById('native-player');
 
+    // YouTube mu yoksa Native mi?
     if (vid) {
+        // --- YOUTUBE SİSTEMİ ---
+        if (!player || typeof player.loadVideoById !== 'function') {
+            pendingVideoPlay = true;
+            return;
+        }
+        pendingVideoPlay = false;
+
+        if (nativePlayer) nativePlayer.classList.add('hidden');
+        if (playerEl) playerEl.classList.remove('hidden');
+
         player.loadVideoById(vid);
-        player.unMute();
-        player.setVolume(100);
+        player.mute(); // Autoplay garantisi için önce sessiz
         player.playVideo();
+        
+        // 1 sn sonra ses açmayı dene
+        setTimeout(() => {
+            if (player && typeof player.unMute === 'function') {
+                player.unMute();
+                player.setVolume(100);
+            }
+        }, 1000);
+    } else if (rawUrl.toLowerCase().includes('.mp4') || rawUrl.toLowerCase().includes('.mov') || rawUrl.toLowerCase().includes('.webm')) {
+        // --- NATIVE VIDEO SİSTEMİ ---
+        if (!nativePlayer) {
+            playNextVideoOrSlide();
+            return;
+        }
+
+        if (playerEl) playerEl.classList.add('hidden');
+        if (player && typeof player.stopVideo === 'function') player.stopVideo();
+        
+        nativePlayer.classList.remove('hidden');
+        nativePlayer.src = rawUrl;
+        nativePlayer.muted = true; // Autoplay garantisi
+        nativePlayer.play().then(() => {
+            setTimeout(() => { nativePlayer.muted = false; }, 1000);
+        }).catch(err => {
+            console.error("Native play error:", err);
+            playNextVideoOrSlide();
+        });
+
+        // Eventler (Eğer atanmamışsa)
+        if (!nativePlayer.onended) {
+            nativePlayer.onended = () => playNextVideoOrSlide();
+            nativePlayer.onerror = () => playNextVideoOrSlide();
+        }
     } else {
-        // Link geçersizse sonrakine atla
-        console.warn("Geçersiz Video Linki:", rawUrl);
+        // Tanımlanamayan format
+        console.warn("Geçersiz veya Desteklenmeyen Video:", rawUrl);
         playNextVideoOrSlide();
     }
 }
@@ -1879,9 +1933,9 @@ function extractVideoID(url) {
     }
 
     function switchMedia(type) {
-        const playerEl = document.getElementById('player');
+        const playerContainer = document.getElementById('right-gallery-wrapper');
         const swiperEl = document.querySelector('.mySwiper');
-        const playerContainer = document.getElementById('video-container');
+        const playerEl = document.getElementById('player');
 
         // Temizle
         if (slideIntervalHandle) {
@@ -1895,18 +1949,25 @@ function extractVideoID(url) {
 
         if (type === 'video') {
             currentMediaState = 'video';
-            if (swiperEl) swiperEl.classList.add('hidden');
             if (playerContainer) playerContainer.classList.remove('hidden');
-            if (playerEl) playerEl.style.display = 'block';
+            if (playerEl) playerEl.classList.remove('hidden');
+            // Native player'ı sakla
+            const nativePlayer = document.getElementById('native-player');
+            if (nativePlayer) nativePlayer.classList.add('hidden');
 
             playCurrentVideo();
         } else if (type === 'slide') {
             currentMediaState = 'slide';
             if (swiperEl) swiperEl.classList.remove('hidden');
-            if (playerContainer) playerContainer.classList.add('hidden');
-            if (playerEl) playerEl.style.display = 'none';
+            if (playerContainer) playerContainer.classList.remove('hidden');
+            if (playerEl) playerEl.classList.add('hidden');
 
             if (player && typeof player.stopVideo === 'function') player.stopVideo();
+            const nativePlayer = document.getElementById('native-player');
+            if (nativePlayer) {
+                nativePlayer.pause();
+                nativePlayer.classList.add('hidden');
+            }
 
             // Swiper Başlatma
             if (!window.mySwiperInstance) {
