@@ -1957,6 +1957,7 @@ function extractVideoID(url) {
         if (type === 'video') {
             currentMediaState = 'video';
             if (playerContainer) playerContainer.classList.remove('hidden');
+            if (swiperEl) swiperEl.classList.add('hidden');
             if (playerEl) playerEl.classList.remove('hidden');
             // Native player'ı sakla
             const nativePlayer = document.getElementById('native-player');
@@ -1965,8 +1966,8 @@ function extractVideoID(url) {
             playCurrentVideo();
         } else if (type === 'slide') {
             currentMediaState = 'slide';
-            if (swiperEl) swiperEl.classList.remove('hidden');
             if (playerContainer) playerContainer.classList.remove('hidden');
+            if (swiperEl) swiperEl.classList.remove('hidden');
             if (playerEl) playerEl.classList.add('hidden');
 
             if (player && typeof player.stopVideo === 'function') player.stopVideo();
