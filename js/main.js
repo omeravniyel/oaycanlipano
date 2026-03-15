@@ -454,10 +454,10 @@ async function fetchConfig() {
 
         // Sayfa ilk yüklendiğinde veya veri değiştiğinde Swiper'ı mevcut moda göre güncelle
         // (Not: Swiper render işlemi artık switchMedia içinde dinamik yapılıyor)
-        const currentDataStr = JSON.stringify([...localSlides, ...centralSlides]);
-        if (currentDataStr !== window.lastGalleryStr) {
+        const currentGalleryStr = JSON.stringify([...localSlides, ...centralSlides]);
+        if (currentGalleryStr !== window.lastGalleryStr) {
             console.log(`[GALERİ] Veriler güncellendi. Yerel: ${localSlides.length}, Merkezi: ${centralSlides.length}`);
-            window.lastGalleryStr = currentDataStr;
+            window.lastGalleryStr = currentGalleryStr;
             // Eğer şu an slide modundaysak içeriği tazele
             if (currentMediaState === 'slide') {
                 updateSwiperContent(currentMediaStep === 1 ? localSlides : centralSlides);
@@ -1178,13 +1178,13 @@ async function fetchConfig() {
 
         // --- 9. Bilgi Kartı Rotasyonunu Başlat ---
         // OPTIMIZASYON: Eğer sadece 1 öğe varsa rotasyonu durdur ve sabit göster.
-        const currentDataStr = JSON.stringify(infoData);
+        const currentInfoStr = JSON.stringify(infoData);
         const lastDataStr = window.lastInfoDataStr || "";
 
         if (infoData && infoData.length > 0) {
             // Veri değiştiyse veya henüz hiç gösterilmediyse
-            if (currentDataStr !== lastDataStr) {
-                window.lastInfoDataStr = currentDataStr;
+            if (currentInfoStr !== lastDataStr) {
+                window.lastInfoDataStr = currentInfoStr;
                 infoIndex = 0; // Başa al
                 rotateInfo(); // Hemen göster
             }
