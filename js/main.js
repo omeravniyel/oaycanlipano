@@ -2299,6 +2299,7 @@ window.addEventListener('load', () => {
     setTimeout(() => clearInterval(bootCheck), 10000);
 });
 document.addEventListener('DOMContentLoaded', resizeApp);
+fetchConfig(); // İlk yüklemeyi başlat
 
 
 
