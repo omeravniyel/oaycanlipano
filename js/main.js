@@ -1220,7 +1220,10 @@ async function fetchConfig() {
             }
         }
 
-        // await fetchLeftGalleryImages(); // REMOVED: Redundant and undefined
+        // Döngü başlatılmamışsa başlat
+        if (currentMediaState === 'none') {
+            playNextMedia();
+        }
 
     } catch (error) {
         console.error("Config error:", error);
@@ -1734,7 +1737,7 @@ function playNextVideoOrSlide() {
     currentVideoIndex++;
     
     // Mevcut adımdaki video listesini kontrol et
-    if (window.videoPlaylist && currentVideoIndex < window.videoPlaylist.length) {
+    if (videoPlaylist && currentVideoIndex < videoPlaylist.length) {
         playCurrentVideo();
     } else {
         // Bu adımdaki videolar bitti, bir sonraki adıma (genelde slayt) geç
@@ -1812,7 +1815,7 @@ function extractVideoID(url) {
         if (currentMediaStep === 0) { // 1. Kurum Videoları
             if (localVideos.length > 0 && currentVideoIndex < localVideos.length) {
                 // videoPlaylist'i bu adıma göre güncelle
-                window.videoPlaylist = localVideos; 
+                videoPlaylist = localVideos; 
                 switchMedia('video');
             } else {
                 // Yerel video yok veya bitti, slayta geç
@@ -1834,7 +1837,7 @@ function extractVideoID(url) {
         }
         else if (currentMediaStep === 2) { // 3. Merkezi Videolar
             if (centralVideos.length > 0 && currentVideoIndex < centralVideos.length) {
-                window.videoPlaylist = centralVideos;
+                videoPlaylist = centralVideos;
                 switchMedia('video');
             } else {
                 // Merkezi video yok veya bitti, merkezi slayta geç
