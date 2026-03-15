@@ -85,61 +85,57 @@ async function processLogo(logoUrl) {
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         const data = imageData.data;
 
+        // 1. Akıllı Arka Plan Tespiti (Sol Üst Köşeden)
+        const bgR = data[0], bgG = data[1], bgB = data[2];
+        const isWhiteBg = bgR > 240 && bgG > 240 && bgB > 240;
+
         let rSum = 0, gSum = 0, bSum = 0, count = 0;
 
-        // 1. Arka Planı Temizle (Beyaz/Açık Gri alanlar) ve Renk Analizi Yap
         for (let i = 0; i < data.length; i += 4) {
-            const r = data[i];
-            const g = data[i + 1];
-            const b = data[i + 2];
+            const r = data[i], g = data[i + 1], b = data[i + 2];
             
-            // Eğer pixel çok açıksa (beyazımsı), şeffaf yap
-            if (r > 240 && g > 240 && b > 240) {
+            // Eğer pixel arka plan rengine çok yakınsa (fark < 30), şeffaf yap
+            const diff = Math.abs(r - bgR) + Math.abs(g - bgG) + Math.abs(b - bgB);
+            
+            if (isWhiteBg && diff < 40) {
                 data[i + 3] = 0;
             } else {
-                // Değilse baskın renk analizi için topla
-                rSum += r;
-                gSum += g;
-                bSum += b;
-                count++;
+                rSum += r; gSum += g; bSum += b; count++;
             }
         }
         ctx.putImageData(imageData, 0, 0);
 
-        // İşlenmiş logoyu img elementine geri bas
         const processedUrl = canvas.toDataURL();
         const headerLogo = document.getElementById('header-logo');
         if (headerLogo) {
             headerLogo.src = processedUrl;
-            headerLogo.style.filter = "none"; // Hardcoded filtreleri temizle
+            headerLogo.style.filter = "none";
         }
 
-        // 2. Akıllı Kontrast ve Gradient Hesaplama
+        // 2. Akıllı Kontrast Hesaplama
         if (count > 0) {
-            const avgR = rSum / count;
-            const avgG = gSum / count;
-            const avgB = bSum / count;
-            
-            // Parlaklık (Luminance) hesabı
+            const avgR = rSum / count, avgG = gSum / count, avgB = bSum / count;
             const brightness = (avgR * 299 + avgG * 587 + avgB * 114) / 1000;
             const headerContainer = document.getElementById('header-container');
 
             if (headerContainer) {
                 let startColor = `rgb(${avgR}, ${avgG}, ${avgB})`;
                 
-                // KOYU LOGO SENARYOSU: Eğer logo koyuysa (brightness < 100), zemini aç (Turuncu/Sarı tonları)
-                if (brightness < 100) {
-                    console.log("[MARKALAMA] Koyu logo tespit edildi, kontrast artırılıyor.");
-                    startColor = "rgba(249, 115, 22, 0.9)"; // Profesyonel Turuncu (Orange-500)
+                // KOYU LOGO ve DÜŞÜK PARLAKLIK SENARYOSU (Lacivert, Siyah, Koyu Yeşil vb.)
+                // Sadece gerçekten koyu olanlar için Turuncu/Sarı geçişi yap
+                if (brightness < 80) { 
+                    startColor = "rgba(249, 115, 22, 0.95)"; // Canlı Turuncu
                 } 
-                // AÇIK LOGO SENARYOSU: Kendi renginden koyuya geç
+                // AÇIK RENKLİ (BEYAZ VB.) LOGOLAR İÇİN: Koyu Temayı Koru
+                else if (brightness > 200) {
+                    startColor = "rgba(30, 31, 53, 0.2)"; // Header rengiyle aynı tonda kalsın (şeffaf geçiş)
+                }
                 else {
-                    console.log("[MARKALAMA] Açık logo tespit edildi, orijinal renk geçişi uygulanıyor.");
-                    startColor = `rgba(${avgR}, ${avgG}, ${avgB}, 0.6)`;
+                    startColor = `rgba(${avgR}, ${avgG}, ${avgB}, 0.7)`;
                 }
 
-                headerContainer.style.background = `linear-gradient(90deg, ${startColor} 0%, #1e1f35 60%)`;
-                headerContainer.style.borderLeft = `6px solid ${startColor}`; // Şık bir sol çizgi
+                headerContainer.style.background = `linear-gradient(90deg, ${startColor} 0%, #1e1f35 65%)`;
+                headerContainer.style.borderLeft = `6px solid ${brightness < 80 ? startColor : "transparent"}`;
             }
         }
     };
@@ -442,15 +438,29 @@ async function fetchConfig() {
             }).filter(u => u && typeof u === 'string' && u.trim().length > 5);
         };
 
-        // 1. Ana Galeri (Sağ)
-        let localMain = getLinks(config.gallery_links);
-        if (localMain.length === 0) localMain = getLinks(config.gallery_urls);
-        if (localMain.length === 0) localMain = getLinks(config.images);
+        const allLocalGallery = getLinks(config.gallery_links) || getLinks(config.gallery_urls) || getLinks(config.images) || [];
+        const allCentralGallery = getLinks(config.central_gallery_links) || [];
 
-        const centralMain = getLinks(config.central_gallery_links);
-        
-        localSlides = localMain;
-        centralSlides = centralMain;
+        // Yardımcı: Video mu yoksa Görsel mi karar veren basit kural
+        const isVideo = (url) => {
+            const low = url.toLowerCase();
+            return low.includes('youtube.com') || low.includes('youtu.be') || low.includes('.mp4') || low.includes('.mov');
+        };
+
+        // Videoları ve Slaytları Ayrıştır (Ayrı listelere dağıt)
+        localVideos = (config.video_urls || []).filter(v => v && v.trim().length > 5);
+        localSlides = [];
+        allLocalGallery.forEach(item => {
+            if (isVideo(item)) { if (!localVideos.includes(item)) localVideos.push(item); }
+            else { localSlides.push(item); }
+        });
+
+        centralVideos = (config.central_video_urls || []).filter(v => v && v.trim().length > 5);
+        centralSlides = [];
+        allCentralGallery.forEach(item => {
+            if (isVideo(item)) { if (!centralVideos.includes(item)) centralVideos.push(item); }
+            else { centralSlides.push(item); }
+        });
 
         // Sayfa ilk yüklendiğinde veya veri değiştiğinde Swiper'ı mevcut moda göre güncelle
         // (Not: Swiper render işlemi artık switchMedia içinde dinamik yapılıyor)
