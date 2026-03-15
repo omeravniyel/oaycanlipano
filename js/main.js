@@ -1787,24 +1787,43 @@ function extractVideoID(url) {
         if (!wrapper) return;
         
         wrapper.innerHTML = '';
-        if (!images || images.length === 0) {
-            // Eğer görsel yoksa boş bırak veya varsayılan göster
-            return;
-        }
+        if (!images || images.length === 0) return;
 
         images.forEach(url => {
             const slide = document.createElement('div');
-            slide.className = 'swiper-slide flex items-center justify-center bg-gradient-to-br from-orange-400 via-red-400 to-pink-400';
+            slide.className = 'swiper-slide flex items-center justify-center bg-black';
             slide.innerHTML = `<img src="${url}" class="w-full h-full object-contain" />`;
             wrapper.appendChild(slide);
         });
 
         if (window.mySwiperInstance) {
             try {
-                if (window.reachEndTimeout) clearTimeout(window.reachEndTimeout);
+                if (window.reachEndTimeout) {
+                    clearTimeout(window.reachEndTimeout);
+                    window.reachEndTimeout = null;
+                }
+                
                 window.mySwiperInstance.update();
                 window.mySwiperInstance.slideTo(0);
-                window.mySwiperInstance.autoplay.start();
+                
+                // --- TEK GÖRSEL SENARYOSU ---
+                // Tek görsel varsa reachEnd event'i her zaman tetiklenmeyebilir.
+                // Bu yüzden manuel bir 12 sn timer başlatarak sonraki adıma geçişi garantiliyoruz.
+                if (images.length === 1) {
+                    console.log("[DÖNGÜ] Tek slayt tespit edildi, 12sn sonra sonraki adıma geçilecek.");
+                    window.reachEndTimeout = setTimeout(() => {
+                        if (currentMediaState !== 'slide') return;
+                        
+                        // Bir sonraki adıma zorla geç
+                        if (currentMediaStep === 1) currentMediaStep = 2;
+                        else if (currentMediaStep === 3) currentMediaStep = 0;
+                        
+                        currentVideoIndex = 0;
+                        playNextMedia();
+                    }, 12000);
+                } else {
+                    window.mySwiperInstance.autoplay.start();
+                }
             } catch (e) { console.error("Swiper güncelleme hatası:", e); }
         }
     }
@@ -1903,19 +1922,25 @@ function extractVideoID(url) {
                     speed: 1500,
                     on: {
                         reachEnd: function () {
+                            // Zaten bir timer varsa temizle (Çakışmayı önle)
                             if (window.reachEndTimeout) clearTimeout(window.reachEndTimeout);
                             const swiperObj = this;
 
-                            window.reachEndTimeout = setTimeout(() => {
-                                if (currentMediaState !== 'slide' || !swiperObj.isEnd) return;
+                            // Eğer tek slayt ise bu event bazen anında tetiklenir, 
+                            // updateSwiperContent içindeki timer ile yönetilmesi daha sağlıklı.
+                            // Çoklu slaytta ise son slayta gelince tetiklenir.
+                            if (swiperObj.slides.length > 1) {
+                                console.log("[DÖNGÜ] Slaytların sonuna gelindi, 12sn sonra sonraki adıma geçiliyor.");
+                                window.reachEndTimeout = setTimeout(() => {
+                                    if (currentMediaState !== 'slide' || !swiperObj.isEnd) return;
 
-                                // Bu adımdaki slaytlar bitti, bir sonraki adıma geç
-                                if (currentMediaStep === 1) currentMediaStep = 2; // Kurum Slaytları -> Merkezi Videolar
-                                else if (currentMediaStep === 3) currentMediaStep = 0; // Merkezi Slaytlar -> Kurum Videoları
+                                    if (currentMediaStep === 1) currentMediaStep = 2;
+                                    else if (currentMediaStep === 3) currentMediaStep = 0;
 
-                                currentVideoIndex = 0;
-                                playNextMedia();
-                            }, 12000);
+                                    currentVideoIndex = 0;
+                                    playNextMedia();
+                                }, 12000);
+                            }
                         },
                         slideChange: function () {
                             if (!this.isEnd && window.reachEndTimeout) {
