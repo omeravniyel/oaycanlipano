@@ -850,11 +850,18 @@
                                                 <p class="text-slate-400 text-xs">Pano başlığında görünecek resmi logo.
                                                 </p>
                                             </div>
-                                            <button onclick="triggerUpload('logo')"
-                                                class="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-lg transition-all shadow-lg active:scale-95">
-                                                <i class="fas fa-upload"></i>
-                                                YÜKLE / DEĞİŞTİR
-                                            </button>
+                                            <div class="flex items-center gap-2">
+                                                <button onclick="triggerUpload('logo')"
+                                                    class="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-lg transition-all shadow-lg active:scale-95">
+                                                    <i class="fas fa-upload"></i>
+                                                    YÜKLE
+                                                </button>
+                                                <button onclick="confirmAndDeleteFile(document.getElementById('input-institution-logo').value, 'input-institution-logo', 'preview-logo-main', 'fa-university')"
+                                                    class="flex items-center gap-2 px-4 py-2 bg-red-100 hover:bg-red-200 text-red-600 text-xs font-bold rounded-lg transition-all active:scale-95">
+                                                    <i class="fas fa-trash-alt"></i>
+                                                    SİL
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="hidden lg:block">
@@ -1407,8 +1414,7 @@
                     </div>
                     <div class="p-8 space-y-8">
                         <div class="flex flex-col md:flex-row items-center gap-8 pb-8 border-b border-slate-100">
-                            <div class="w-40 h-40 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-3 group/hadith cursor-pointer hover:border-teal-500 hover:bg-teal-50/30 transition-all overflow-hidden relative"
-                                onclick="triggerUpload('hadith')">
+                            <div class="w-40 h-40 bg-slate-50 rounded-3xl border-2 border-dashed border-slate-200 flex flex-col items-center justify-center gap-3 group/hadith cursor-pointer hover:border-teal-500 hover:bg-teal-50/30 transition-all overflow-hidden relative">
                                 <div id="preview-hadith-img" class="w-full h-full flex items-center justify-center">
                                     <i
                                         class="fas fa-image text-3xl text-slate-300 group-hover/hadith:text-teal-400 group-hover/hadith:scale-110 transition-all"></i>
@@ -1433,9 +1439,16 @@
                                     </div>
                                 </div>
                                 <input type="hidden" id="input-hadith-image">
-                                <button
-                                    onclick="document.getElementById('input-hadith-image').value=''; document.getElementById('preview-hadith-img').innerHTML='<i class=\'fas fa-image text-3xl text-slate-300\'></i>'"
-                                    class="text-xs text-red-500 font-bold hover:underline">Görseli Kaldır</button>
+                                <div class="flex items-center gap-3">
+                                    <button onclick="triggerUpload('hadith')"
+                                        class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-emerald-200 transition-all active:scale-95 flex items-center gap-2">
+                                        <i class="fas fa-upload"></i> GÖRSEL YÜKLE
+                                    </button>
+                                    <button onclick="confirmAndDeleteFile(document.getElementById('input-hadith-image').value, 'input-hadith-image', 'preview-hadith-img', 'fa-image')"
+                                        class="px-4 py-2.5 bg-red-100 hover:bg-red-200 text-red-600 rounded-xl text-xs font-bold transition-all active:scale-95 flex items-center gap-2">
+                                        <i class="fas fa-trash-alt"></i> SİL
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -1458,7 +1471,6 @@
                         </div>
                     </div>
                 </div>
-            </div>
 
             <!-- TAB: TEA TALKS (Çay Sohbetleri) -->
             <div id="tab-tea" class="tab-content max-w-5xl mx-auto hidden space-y-8">
@@ -1741,8 +1753,7 @@
                     <div class="p-8">
                         <div class="flex flex-col md:flex-row gap-10">
                             <div class="w-full md:w-1/3 flex flex-col items-center group/student">
-                                <div class="w-48 h-48 bg-slate-50 rounded-full border-4 border-dashed border-slate-200 flex items-center justify-center relative overflow-hidden cursor-pointer hover:border-amber-400 hover:bg-amber-50/30 transition-all shadow-inner"
-                                    onclick="triggerUpload('student')">
+                                <div class="w-48 h-48 bg-slate-50 rounded-full border-4 border-dashed border-slate-200 flex items-center justify-center relative overflow-hidden cursor-pointer hover:border-amber-400 hover:bg-amber-50/30 transition-all shadow-inner">
                                     <div id="preview-student-img"
                                         class="w-full h-full flex items-center justify-center">
                                         <i
@@ -2268,11 +2279,16 @@
             if (successCount === 0) {
                 Swal.close();
                 showToast("Yükleme başarısız oldu. Lütfen dosya boyutunu veya formatını kontrol edin.", "error");
-            } else if (totalFiles === 1) {
-                showToast("Dosya başarıyla yüklendi.", "success");
             } else {
-                Swal.close();
-                showToast(`${successCount}/${totalFiles} dosya başarıyla yüklendi.`, "success");
+                // OTOMATİK SESSİZ KAYIT: Her yüklemeden sonra veritabanını güncelle
+                await saveAll(true);
+
+                if (totalFiles === 1) {
+                    showToast("Dosya başarıyla yüklendi.", "success");
+                } else {
+                    Swal.close();
+                    showToast(`${successCount}/${totalFiles} dosya başarıyla yüklendi.`, "success");
+                }
             }
         }
 
@@ -2485,18 +2501,18 @@
         }
 
         async function deleteSelectedImages(type) {
-            const selected = type === 'main' ? selectedGalleryMain : selectedGalleryLeft;
             const items = type === 'main' ? galleryMain : galleryLeft;
+            const selected = type === 'main' ? selectedGalleryMain : selectedGalleryLeft;
 
             if (selected.size === 0) return;
 
             const result = await Swal.fire({
-                title: `${selected.size} Görsel Silinsin mi?`,
-                text: "Seçili görseller hem listeden hem de Storage'dan silinecek.",
+                title: 'Emin misiniz?',
+                text: `${selected.size} adet görsel kalıcı olarak silinecek.`,
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
                 confirmButtonText: 'Evet, Sil',
                 cancelButtonText: 'İptal'
             });
@@ -2511,11 +2527,12 @@
             });
 
             let deletedCount = 0;
-            const sortedIndices = Array.from(selected).sort((a, b) => b - a); // Delete from end to maintain indices
+            const sortedIndices = Array.from(selected).sort((a, b) => b - a);
 
             for (const idx of sortedIndices) {
                 const url = items[idx];
                 try {
+                    // Fiziki silme
                     await fetch('/api/manage-institutions', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
@@ -2538,6 +2555,10 @@
 
             selected.clear();
             renderGalleries();
+            
+            // OTOMATİK SESSİZ KAYIT: Veritabanını güncelle
+            await saveAll(true);
+
             Swal.fire({
                 icon: 'success',
                 title: `${deletedCount} Görsel Silindi!`,
@@ -2546,18 +2567,19 @@
             });
         }
 
-        async function deleteImage(type, index) {
-            const items = type === 'main' ? galleryMain : galleryLeft;
-            const url = items[index];
+        // --- YENİ: GENEL FİZİKİ SİLME YARDIMCISI ---
+        async function confirmAndDeleteFile(url, inputId, previewId, placeholderIcon) {
+            if (!url) return;
 
             const result = await Swal.fire({
-                title: 'Silinsin mi?',
-                text: "Bu görsel hem listeden hem de Storage'dan silinecek.",
+                title: 'Görsel Silinsin mi?',
+                text: "Bu işlem geri alınamaz ve dosya sunucudan tamamen silinir.",
                 icon: 'warning',
                 showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Evet, Sil'
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Evet, Sil',
+                cancelButtonText: 'İptal'
             });
 
             if (!result.isConfirmed) return;
@@ -2569,7 +2591,8 @@
             });
 
             try {
-                const deleteRes = await fetch('/api/manage-institutions', {
+                // 1. Fiziki Silme (Supabase Storage)
+                await fetch('/api/manage-institutions', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -2579,11 +2602,68 @@
                     })
                 });
 
-                const deleteData = await deleteRes.json();
+                // 2. UI Güncelleme
+                const input = document.getElementById(inputId);
+                const preview = document.getElementById(previewId);
+                
+                if (input) input.value = '';
+                if (preview) {
+                    preview.innerHTML = `<i class="fas ${placeholderIcon || 'fa-image'} text-slate-300"></i>`;
+                }
+
+                // 3. Veritabanı Güncelleme (Sessiz Kayıt)
+                await saveAll(true);
+
+                Swal.fire({ icon: 'success', title: 'Silindi!', timer: 1500, showConfirmButton: false });
+            } catch (err) {
+                console.error('[DEBUG] Delete error:', err);
+                Swal.fire('Hata', 'Silme işlemi başarısız', 'error');
+            }
+        }
+
+         async function deleteImage(type, index) {
+            const items = type === 'main' ? galleryMain : galleryLeft;
+            const url = items[index];
+
+            const result = await Swal.fire({
+                title: 'Emin misiniz?',
+                text: "Bu görsel sistemden kalıcı olarak silinecek.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Evet, Sil',
+                cancelButtonText: 'İptal'
+            });
+
+            if (!result.isConfirmed) return;
+
+            Swal.fire({
+                title: 'Siliniyor...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            try {
+                // Fiziki silme
+                await fetch('/api/manage-institutions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        action: 'delete_gallery_file',
+                        master_password: currentPassword,
+                        payload: { url: url }
+                    })
+                });
+
                 if (type === 'main') galleryMain.splice(index, 1);
                 else galleryLeft.splice(index, 1);
 
                 renderGalleries();
+                
+                // OTOMATİK SESSİZ KAYIT: Veritabanını güncelle
+                await saveAll(true);
+
                 Swal.fire({ icon: 'success', title: 'Silindi!', timer: 1500, showConfirmButton: false });
             } catch (err) {
                 console.error('[DEBUG] Delete error:', err);
@@ -2669,7 +2749,7 @@
                 <input type="text" value="${value}" 
                     class="dorm-student-input flex-1 px-4 py-3 bg-white border border-${themeColor}-100 rounded-xl focus:border-${themeColor}-500 outline-none text-xs font-bold text-slate-600 shadow-sm"
                     placeholder="Öğrenci Adı Soyadı">
-                <button type="button" onclick="this.parentElement.remove(); updateDormIndices('${dormId}')" 
+                <button type="button" onclick="removeDormStudentRow(this, '${dormId}')" 
                     class="w-8 h-8 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 flex items-center justify-center transition-colors">
                     <i class="fas fa-trash-alt text-xs"></i>
                 </button>
@@ -2716,7 +2796,7 @@
                     <input type="text" value="${data.points || ''}" class="exam-points-input w-20 px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-purple-500 outline-none text-xs font-bold text-slate-700 text-center transition-all" placeholder="Puan">
                 </div>
                 
-                <button type="button" onclick="this.closest('.exam-row').remove()" 
+                <button type="button" onclick="removeStudentRow(this, 'exam')" 
                     class="w-10 h-10 rounded-xl bg-red-50 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center transition-all shadow-sm hover:shadow-red-200 shrink-0">
                     <i class="fas fa-trash-alt"></i>
                 </button>
@@ -2752,12 +2832,64 @@
                     <input type="text" value="${data.points || ''}" class="improved-points-input w-20 px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-emerald-500 outline-none text-xs font-bold text-slate-700 text-center transition-all" placeholder="Artış">
                 </div>
                 
-                <button type="button" onclick="this.closest('.improved-row').remove()" 
+                <button type="button" onclick="removeStudentRow(this, 'improved')" 
                     class="w-10 h-10 rounded-xl bg-red-50 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center transition-all shadow-sm hover:shadow-red-200 shrink-0">
                     <i class="fas fa-trash-alt"></i>
                 </button>
             `;
             list.appendChild(div);
+        }
+
+        async function removeStudentRow(btn, type) {
+            const row = btn.closest('.' + type + '-row');
+            if (!row) return;
+
+            const urlInput = row.querySelector('.' + type + '-image-input');
+            const url = urlInput ? urlInput.value : '';
+
+            const result = await Swal.fire({
+                title: 'Satır Silinsin mi?',
+                text: url ? "Öğrenci kaydı ve fotoğrafı kalıcı olarak silinecek." : "Öğrenci kaydı silinecek.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Evet, Sil',
+                cancelButtonText: 'İptal'
+            });
+
+            if (!result.isConfirmed) return;
+
+            if (url) {
+                // Fiziki dosya silme
+                try {
+                    await fetch('/api/manage-institutions', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'delete_gallery_file',
+                            master_password: currentPassword,
+                            payload: { url: url }
+                        })
+                    });
+                } catch (e) { console.error("File delete error:", e); }
+            }
+
+            row.remove();
+            
+            // Sessiz Kayıt
+            await saveAll(true);
+            
+            Swal.fire({ icon: 'success', title: 'Silindi!', timer: 1000, showConfirmButton: false });
+        }
+
+        async function removeDormStudentRow(btn, dormId) {
+            const row = btn.closest('.flex');
+            if (!row) return;
+            row.remove();
+            updateDormIndices(dormId);
+            // Sessiz Kayıt
+            await saveAll(true);
         }
     </script>
 
@@ -3036,8 +3168,25 @@
                 const vids = cfg.video_urls || [cfg.video_url].filter(v => v);
                 document.getElementById('input-video-urls').value = Array.isArray(vids) ? vids.join('\\n') : (vids || "");
 
+                // Gallery Population with Fallbacks
                 galleryMain = cfg.gallery_links || [];
+                if (galleryMain.length === 0) {
+                    galleryMain = cfg.gallery_urls || cfg.images || [];
+                    if (typeof galleryMain === 'string') {
+                        try { galleryMain = JSON.parse(galleryMain); } catch (e) { galleryMain = [galleryMain]; }
+                    }
+                    if (!Array.isArray(galleryMain)) galleryMain = [];
+                }
+
                 galleryLeft = cfg.left_gallery_links || [];
+                if (galleryLeft.length === 0) {
+                    galleryLeft = cfg.left_images || cfg.left_gallery_urls || [];
+                    if (typeof galleryLeft === 'string') {
+                        try { galleryLeft = JSON.parse(galleryLeft); } catch (e) { galleryLeft = [galleryLeft]; }
+                    }
+                    if (!Array.isArray(galleryLeft)) galleryLeft = [];
+                }
+
                 renderGalleries();
 
                 const h = (typeof cfg.hadith === 'string') ? JSON.parse(cfg.hadith) : (cfg.hadith || {});

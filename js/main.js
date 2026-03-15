@@ -47,17 +47,107 @@ let dorm2NameIndex = 0;
 let dormNameRotationInterval = null;
 
 // --- GALERİ & MEDYA DEĞİŞKENLERİ (GLOBAL) ---
-let galleryImages = [];
-let leftGalleryImages = [];
-let videoPlaylist = [];
-let currentMediaState = 'none'; // 'video', 'slide'
+let localVideos = [];
+let centralVideos = [];
+let localSlides = [];
+let centralSlides = [];
+let videoPlaylist = []; // Mevcut çalınan videolar
+let galleryImages = []; // Mevcut çalınan slaytlar (backward compatibility için tutuldu)
+let currentMediaStep = 0; // 0: LV, 1: LS, 2: CV, 3: CS
 let currentVideoIndex = 0;
+let currentMediaState = 'none'; // 'video', 'slide'
+let leftGalleryImages = [];
 let leftGalleryIndex = 0;
 let leftGalleryTimeout = null;
 let slideIntervalHandle = null; 
 let player;
 let isYoutubeReady = false;
 let pendingVideoPlay = false;
+
+// --- DİNAMİK LOGO & MARKALAMA SİSTEMİ ---
+/**
+ * Logoyu Canvas üzerinde işleyerek beyaz arka planını temizler 
+ * ve baskın renge göre Header için dinamik gradient oluşturur.
+ */
+async function processLogo(logoUrl) {
+    if (!logoUrl) return;
+    const logoImg = new Image();
+    logoImg.crossOrigin = "anonymous";
+    logoImg.src = logoUrl;
+
+    logoImg.onload = function() {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = logoImg.width;
+        canvas.height = logoImg.height;
+        ctx.drawImage(logoImg, 0, 0);
+
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+
+        let rSum = 0, gSum = 0, bSum = 0, count = 0;
+
+        // 1. Arka Planı Temizle (Beyaz/Açık Gri alanlar) ve Renk Analizi Yap
+        for (let i = 0; i < data.length; i += 4) {
+            const r = data[i];
+            const g = data[i + 1];
+            const b = data[i + 2];
+            
+            // Eğer pixel çok açıksa (beyazımsı), şeffaf yap
+            if (r > 240 && g > 240 && b > 240) {
+                data[i + 3] = 0;
+            } else {
+                // Değilse baskın renk analizi için topla
+                rSum += r;
+                gSum += g;
+                bSum += b;
+                count++;
+            }
+        }
+        ctx.putImageData(imageData, 0, 0);
+
+        // İşlenmiş logoyu img elementine geri bas
+        const processedUrl = canvas.toDataURL();
+        const headerLogo = document.getElementById('header-logo');
+        if (headerLogo) {
+            headerLogo.src = processedUrl;
+            headerLogo.style.filter = "none"; // Hardcoded filtreleri temizle
+        }
+
+        // 2. Akıllı Kontrast ve Gradient Hesaplama
+        if (count > 0) {
+            const avgR = rSum / count;
+            const avgG = gSum / count;
+            const avgB = bSum / count;
+            
+            // Parlaklık (Luminance) hesabı
+            const brightness = (avgR * 299 + avgG * 587 + avgB * 114) / 1000;
+            const headerContainer = document.getElementById('header-container');
+
+            if (headerContainer) {
+                let startColor = `rgb(${avgR}, ${avgG}, ${avgB})`;
+                
+                // KOYU LOGO SENARYOSU: Eğer logo koyuysa (brightness < 100), zemini aç (Turuncu/Sarı tonları)
+                if (brightness < 100) {
+                    console.log("[MARKALAMA] Koyu logo tespit edildi, kontrast artırılıyor.");
+                    startColor = "rgba(249, 115, 22, 0.9)"; // Profesyonel Turuncu (Orange-500)
+                } 
+                // AÇIK LOGO SENARYOSU: Kendi renginden koyuya geç
+                else {
+                    console.log("[MARKALAMA] Açık logo tespit edildi, orijinal renk geçişi uygulanıyor.");
+                    startColor = `rgba(${avgR}, ${avgG}, ${avgB}, 0.6)`;
+                }
+
+                headerContainer.style.background = `linear-gradient(90deg, ${startColor} 0%, #1e1f35 60%)`;
+                headerContainer.style.borderLeft = `6px solid ${startColor}`; // Şık bir sol çizgi
+            }
+        }
+    };
+
+    logoImg.onerror = function() {
+        console.error("[MARKALAMA] Logo yüklenemedi, varsayılan tema korunuyor.");
+    };
+}
 
 // Verileri API'den Çek
 async function fetchConfig() {
@@ -298,8 +388,8 @@ async function fetchConfig() {
         else document.getElementById('header-slogan2').innerText = 'buluştuğu yer';
 
         if (config.institution_logo && config.institution_logo.trim() !== "") {
-            const logoEl = document.getElementById('header-logo');
-            if (logoEl) logoEl.src = config.institution_logo;
+            // Arka planı temizle ve dinamik markalamayı uygula
+            processLogo(config.institution_logo);
 
             // --- DYNAMIC FAVICON ---
             let link = document.querySelector("link[rel~='icon']");
@@ -326,23 +416,9 @@ async function fetchConfig() {
             if (el) el.innerText = config.dorm_title;
         }
 
-        // Video Playlist: local first, then central
-        videoPlaylist = [];
-        const localVideos = [];
-        if (config.video_urls && Array.isArray(config.video_urls) && config.video_urls.length > 0) {
-            localVideos.push(...config.video_urls);
-        } else if (config.video_url) {
-            let vUrl = config.video_url;
-            if (vUrl.startsWith('[') && vUrl.endsWith(']')) {
-                try { localVideos.push(...JSON.parse(vUrl)); } catch (e) { localVideos.push(vUrl); }
-            } else {
-                localVideos.push(vUrl);
-            }
-        }
-        const centralVideos = (config.central_video_urls || []).filter(v => v && v.trim().length > 5);
-        // Local videos first, then central videos (deduplicate)
-        const allVideoUrls = [...new Set([...localVideos.filter(v => v && v.trim().length > 5), ...centralVideos])];
-        videoPlaylist = allVideoUrls;
+        // Video Listesi Temizleme ve Ayrıştırma
+        localVideos = (config.video_urls || []).filter(v => v && v.trim().length > 5);
+        centralVideos = (config.central_video_urls || []).filter(v => v && v.trim().length > 5);
 
         // Yardımcı fonksiyon: Farklı formatlardaki (string, array, object) görsel linklerini güvenli şekilde ayıklar
         const getLinks = (val) => {
@@ -367,47 +443,32 @@ async function fetchConfig() {
         };
 
         // 1. Ana Galeri (Sağ)
-        // Olası tüm key'leri kontrol et (gallery_links, images vb.)
-        const localMain = getLinks(config.gallery_links || config.gallery_urls || config.images);
+        let localMain = getLinks(config.gallery_links);
+        if (localMain.length === 0) localMain = getLinks(config.gallery_urls);
+        if (localMain.length === 0) localMain = getLinks(config.images);
+
         const centralMain = getLinks(config.central_gallery_links);
         
-        // Birleştir: Önce yerel, sonra merkezi (tekrar edenleri sil)
-        const adminGallery = [...new Set([...localMain, ...centralMain])];
+        localSlides = localMain;
+        centralSlides = centralMain;
 
-        if (adminGallery.length > 0) {
-            const currentGalleryStr = JSON.stringify(adminGallery);
-            const lastGalleryStr = window.lastGalleryStr || "";
-
-            if (currentGalleryStr !== lastGalleryStr) {
-                console.log(`[GALERİ] Güncellendi. Yerel: ${localMain.length}, Merkezi: ${centralMain.length}`);
-                window.lastGalleryStr = currentGalleryStr;
-                galleryImages = adminGallery;
-
-                const wrapper = document.getElementById('slide-wrapper');
-                if (wrapper) {
-                    wrapper.innerHTML = '';
-                    galleryImages.forEach(url => {
-                        const slide = document.createElement('div');
-                        slide.className = 'swiper-slide flex items-center justify-center bg-gradient-to-br from-orange-400 via-red-400 to-pink-400';
-                        slide.innerHTML = `<img src="${url}" class="w-full h-full object-contain" />`;
-                        wrapper.appendChild(slide);
-                    });
-
-                    if (window.mySwiperInstance) {
-                        try {
-                            if (window.reachEndTimeout) clearTimeout(window.reachEndTimeout);
-                            window.mySwiperInstance.update();
-                            window.mySwiperInstance.slideTo(0);
-                            window.mySwiperInstance.autoplay.start();
-                        } catch (e) { console.error("Swiper güncelleme hatası:", e); }
-                    }
-                }
+        // Sayfa ilk yüklendiğinde veya veri değiştiğinde Swiper'ı mevcut moda göre güncelle
+        // (Not: Swiper render işlemi artık switchMedia içinde dinamik yapılıyor)
+        const currentDataStr = JSON.stringify([...localSlides, ...centralSlides]);
+        if (currentDataStr !== window.lastGalleryStr) {
+            console.log(`[GALERİ] Veriler güncellendi. Yerel: ${localSlides.length}, Merkezi: ${centralSlides.length}`);
+            window.lastGalleryStr = currentDataStr;
+            // Eğer şu an slide modundaysak içeriği tazele
+            if (currentMediaState === 'slide') {
+                updateSwiperContent(currentMediaStep === 1 ? localSlides : centralSlides);
             }
         }
 
 
         // 2. Sol Galeri (Left)
-        const localLeft = getLinks(config.left_gallery_links || config.left_images || config.left_gallery_urls);
+        let localLeft = getLinks(config.left_gallery_links);
+        if (localLeft.length === 0) localLeft = getLinks(config.left_images);
+        if (localLeft.length === 0) localLeft = getLinks(config.left_gallery_urls);
         const centralLeft = getLinks(config.central_left_gallery_links);
         
         const adminLeftGallery = [...new Set([...localLeft, ...centralLeft])];
@@ -427,6 +488,13 @@ async function fetchConfig() {
         // --- 3. Yemek Menüsü (Global) ---
         window.lunchMenu = config.lunch_menu || "";
         window.dinnerMenu = config.dinner_menu || "";
+
+        // İlk yüklemede döngüyü başlat
+        if (!window.initialCycleStarted && (localVideos.length > 0 || centralVideos.length > 0 || localSlides.length > 0 || centralSlides.length > 0)) {
+            window.initialCycleStarted = true;
+            console.log("[DÖNGÜ] İlk medya döngüsü başlatılıyor...");
+            setTimeout(() => playNextMedia(), 1000);
+        }
 
         // --- 4. Günün Sözleri / Marquee (Gelişmiş Numaralandırma Ayrıştırıcı) ---
         let marqueeItems = [];
@@ -819,7 +887,7 @@ async function fetchConfig() {
 
         const rawExams = [];
         // --- EXAM WINNER PRIORITIZATION: List -> String Array (exam_winners) -> Individual Legacy fields ---
-        if (config.exam_winners_list && Array.isArray(config.exam_winners_list)) {
+        if (config.exam_winners_list && Array.isArray(config.exam_winners_list) && config.exam_winners_list.length > 0) {
             // Newest System: Dynamic List (Priority 1)
             config.exam_winners_list.forEach(student => {
                 if (student.name && student.name.trim()) {
@@ -951,7 +1019,7 @@ async function fetchConfig() {
 
         const rawImproved = [];
         // --- IMPROVED STUDENT PRIORITIZATION: List (improved_list) -> String Array (most_improved_list) -> Individual Legacy fields ---
-        if (config.improved_list && Array.isArray(config.improved_list)) {
+        if (config.improved_list && Array.isArray(config.improved_list) && config.improved_list.length > 0) {
             // Priority 1: New Dynamic List
             config.improved_list.forEach(student => {
                 if (student.name && student.name.trim()) {
@@ -1654,16 +1722,17 @@ function onPlayerStateChange(event) {
 
 function playNextVideoOrSlide() {
     currentVideoIndex++;
-    if (currentVideoIndex < videoPlaylist.length) {
+    
+    // Mevcut adımdaki video listesini kontrol et
+    if (window.videoPlaylist && currentVideoIndex < window.videoPlaylist.length) {
         playCurrentVideo();
     } else {
-        // Liste bitti, görsel varsa slayta geç, yoksa başa sar
+        // Bu adımdaki videolar bitti, bir sonraki adıma (genelde slayt) geç
+        if (currentMediaStep === 0) currentMediaStep = 1; // Kurum Videoları -> Kurum Slaytları
+        else if (currentMediaStep === 2) currentMediaStep = 3; // Merkezi Videolar -> Merkezi Slaytlar
+        
         currentVideoIndex = 0;
-        if (galleryImages.length > 0) {
-            switchMedia('slide');
-        } else {
-            playCurrentVideo();
-        }
+        playNextMedia();
     }
 }
 
@@ -1698,89 +1767,151 @@ function extractVideoID(url) {
 }
 
 // Medya Döngü Kontrolü
-function switchMedia(mode) {
-    const playerEl = document.getElementById('player');
-    const swiperEl = document.querySelector('.mySwiper');
-    const playerContainer = document.getElementById('video-container');
+    // --- 4 ADIMLI MEDYA DÖNGÜSÜ YARDIMCI FONKSİYONLARI ---
+    
+    function updateSwiperContent(images) {
+        const wrapper = document.getElementById('slide-wrapper');
+        if (!wrapper) return;
+        
+        wrapper.innerHTML = '';
+        if (!images || images.length === 0) {
+            // Eğer görsel yoksa boş bırak veya varsayılan göster
+            return;
+        }
 
-    // Temizle
-    if (slideIntervalHandle) {
-        clearTimeout(slideIntervalHandle);
-        slideIntervalHandle = null;
+        images.forEach(url => {
+            const slide = document.createElement('div');
+            slide.className = 'swiper-slide flex items-center justify-center bg-gradient-to-br from-orange-400 via-red-400 to-pink-400';
+            slide.innerHTML = `<img src="${url}" class="w-full h-full object-contain" />`;
+            wrapper.appendChild(slide);
+        });
+
+        if (window.mySwiperInstance) {
+            try {
+                if (window.reachEndTimeout) clearTimeout(window.reachEndTimeout);
+                window.mySwiperInstance.update();
+                window.mySwiperInstance.slideTo(0);
+                window.mySwiperInstance.autoplay.start();
+            } catch (e) { console.error("Swiper güncelleme hatası:", e); }
+        }
     }
 
-    // Swiper'ı durdur (arka planda çalışmasın)
-    if (window.mySwiperInstance && window.mySwiperInstance.autoplay) {
-        window.mySwiperInstance.autoplay.stop();
+    function playNextMedia() {
+        console.log(`[DÖNGÜ] Adım: ${currentMediaStep}, Video Index: ${currentVideoIndex}`);
+
+        if (currentMediaStep === 0) { // 1. Kurum Videoları
+            if (localVideos.length > 0 && currentVideoIndex < localVideos.length) {
+                // videoPlaylist'i bu adıma göre güncelle
+                window.videoPlaylist = localVideos; 
+                switchMedia('video');
+            } else {
+                // Yerel video yok veya bitti, slayta geç
+                currentMediaStep = 1;
+                currentVideoIndex = 0;
+                playNextMedia();
+            }
+        } 
+        else if (currentMediaStep === 1) { // 2. Kurum Slaytları
+            if (localSlides.length > 0) {
+                updateSwiperContent(localSlides);
+                switchMedia('slide');
+            } else {
+                // Yerel slayt yok, merkezi videolara geç
+                currentMediaStep = 2;
+                currentVideoIndex = 0;
+                playNextMedia();
+            }
+        }
+        else if (currentMediaStep === 2) { // 3. Merkezi Videolar
+            if (centralVideos.length > 0 && currentVideoIndex < centralVideos.length) {
+                window.videoPlaylist = centralVideos;
+                switchMedia('video');
+            } else {
+                // Merkezi video yok veya bitti, merkezi slayta geç
+                currentMediaStep = 3;
+                currentVideoIndex = 0;
+                playNextMedia();
+            }
+        }
+        else if (currentMediaStep === 3) { // 4. Merkezi Slaytlar
+            if (centralSlides.length > 0) {
+                updateSwiperContent(centralSlides);
+                switchMedia('slide');
+            } else {
+                // Başa dön ama her şey boşsa sonsuz döngüye girmemek için kısa bir bekleme koy
+                currentMediaStep = 0;
+                currentVideoIndex = 0;
+                setTimeout(() => playNextMedia(), 5000);
+            }
+        }
     }
 
-    if (mode === 'video' && videoPlaylist.length > 0) {
-        // --- 1. VIDEO MODU ---
-        currentMediaState = 'video';
+    function switchMedia(type) {
+        const playerEl = document.getElementById('player');
+        const swiperEl = document.querySelector('.mySwiper');
+        const playerContainer = document.getElementById('video-container');
 
-        // UI Güncelle
-        if (swiperEl) swiperEl.classList.add('hidden');
-        if (playerContainer) playerContainer.classList.remove('hidden');
-        if (playerEl) playerEl.style.display = 'block';
+        // Temizle
+        if (slideIntervalHandle) {
+            clearTimeout(slideIntervalHandle);
+            slideIntervalHandle = null;
+        }
 
-        // Videoyu başlat
-        playCurrentVideo();
+        if (window.mySwiperInstance && window.mySwiperInstance.autoplay) {
+            window.mySwiperInstance.autoplay.stop();
+        }
 
-    } else if (mode === 'slide') {
-        // --- 2. SLAYT MODU ---
-        currentMediaState = 'slide';
+        if (type === 'video') {
+            currentMediaState = 'video';
+            if (swiperEl) swiperEl.classList.add('hidden');
+            if (playerContainer) playerContainer.classList.remove('hidden');
+            if (playerEl) playerEl.style.display = 'block';
 
-        // UI Güncelle
-        if (swiperEl) swiperEl.classList.remove('hidden');
-        if (playerContainer) playerContainer.classList.add('hidden');
-        if (playerEl) playerEl.style.display = 'none';
+            playCurrentVideo();
+        } else if (type === 'slide') {
+            currentMediaState = 'slide';
+            if (swiperEl) swiperEl.classList.remove('hidden');
+            if (playerContainer) playerContainer.classList.add('hidden');
+            if (playerEl) playerEl.style.display = 'none';
 
-        if (player && typeof player.stopVideo === 'function') player.stopVideo();
+            if (player && typeof player.stopVideo === 'function') player.stopVideo();
 
-        // Swiper Init
-        if (!window.mySwiperInstance) {
-            window.mySwiperInstance = new Swiper(".mySwiper", {
-                spaceBetween: 30,
-                effect: "fade",
-                centeredSlides: true,
-                fadeEffect: {
-                    crossFade: true
-                },
-                observer: true, // DOM değişikliklerini izle
-                observeParents: true, // Parent değişikliklerini izle
-                autoplay: {
-                    delay: 12000,
-                    disableOnInteraction: false,
-                },
-                loop: false, // Loop false yapıyoruz ki sona gelince yakalayalım
-                speed: 1500, // Daha yavaş, süslü geçiş
-                on: {
-                    reachEnd: function () {
-                        // Slaytın son görseline ulaşıldı. Bu görselin de ekranda 12 saniye kalmasını bekle
-                        if (window.reachEndTimeout) clearTimeout(window.reachEndTimeout);
-                        const swiperObj = this;
+            // Swiper Başlatma
+            if (!window.mySwiperInstance) {
+                window.mySwiperInstance = new Swiper(".mySwiper", {
+                    spaceBetween: 30,
+                    effect: "fade",
+                    centeredSlides: true,
+                    fadeEffect: { crossFade: true },
+                    observer: true,
+                    observeParents: true,
+                    autoplay: { delay: 12000, disableOnInteraction: false },
+                    loop: false,
+                    speed: 1500,
+                    on: {
+                        reachEnd: function () {
+                            if (window.reachEndTimeout) clearTimeout(window.reachEndTimeout);
+                            const swiperObj = this;
 
-                        window.reachEndTimeout = setTimeout(() => {
-                            if (currentMediaState !== 'slide' || !swiperObj.isEnd) return;
+                            window.reachEndTimeout = setTimeout(() => {
+                                if (currentMediaState !== 'slide' || !swiperObj.isEnd) return;
 
-                            // 12 Saniye dolduktan sonra işlem yap
-                            if (videoPlaylist.length > 0) {
-                                switchMedia('video');
-                            } else {
-                                swiperObj.slideTo(0);
-                                swiperObj.autoplay.start();
+                                // Bu adımdaki slaytlar bitti, bir sonraki adıma geç
+                                if (currentMediaStep === 1) currentMediaStep = 2; // Kurum Slaytları -> Merkezi Videolar
+                                else if (currentMediaStep === 3) currentMediaStep = 0; // Merkezi Slaytlar -> Kurum Videoları
+
+                                currentVideoIndex = 0;
+                                playNextMedia();
+                            }, 12000);
+                        },
+                        slideChange: function () {
+                            if (!this.isEnd && window.reachEndTimeout) {
+                                clearTimeout(window.reachEndTimeout);
+                                window.reachEndTimeout = null;
                             }
-                        }, 12000);
-                    },
-                    slideChange: function () {
-                        // Eğer kullanıcı manuel geri kaydırırsa veya başa dönerse timeout'u iptal et
-                        if (!this.isEnd && window.reachEndTimeout) {
-                            clearTimeout(window.reachEndTimeout);
-                            window.reachEndTimeout = null;
                         }
                     }
-                }
-            });
+                });
         } else {
             window.mySwiperInstance.update();
             window.mySwiperInstance.slideTo(0);
