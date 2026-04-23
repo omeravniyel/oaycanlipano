@@ -2994,7 +2994,7 @@
                 <div class="relative w-12 h-12 shrink-0 rounded-2xl overflow-hidden border border-slate-100 group-hover/row:border-purple-200 transition-colors cursor-pointer bg-slate-50"
                     onclick="triggerUpload('${uniqueId}-image')">
                     <div id="${previewId}" class="w-full h-full flex items-center justify-center">
-                        ${data.image ? \`<img src="\${data.image}" class="w-full h-full object-cover">\` : \`<i class="fas fa-user text-slate-300"></i>\`}
+                        ${data.image ? '<img src="' + data.image + '" class="w-full h-full object-cover">' : '<i class="fas fa-user text-slate-300"></i>'}
                     </div>
                     <div class="absolute inset-0 bg-black/40 opacity-0 group-hover/row:opacity-100 flex items-center justify-center transition-opacity text-white text-[10px]">
                         <i class="fas fa-camera"></i>
@@ -3030,7 +3030,7 @@
                 <div class="relative w-12 h-12 shrink-0 rounded-2xl overflow-hidden border border-slate-100 group-hover/row:border-emerald-200 transition-colors cursor-pointer bg-slate-50"
                     onclick="triggerUpload('${uniqueId}-image')">
                     <div id="${previewId}" class="w-full h-full flex items-center justify-center">
-                        ${data.image ? \`<img src="\${data.image}" class="w-full h-full object-cover">\` : \`<i class="fas fa-user text-slate-300"></i>\`}
+                        ${data.image ? '<img src="' + data.image + '" class="w-full h-full object-cover">' : '<i class="fas fa-user text-slate-300"></i>'}
                     </div>
                     <div class="absolute inset-0 bg-black/40 opacity-0 group-hover/row:opacity-100 flex items-center justify-center transition-opacity text-white text-[10px]">
                         <i class="fas fa-camera"></i>
