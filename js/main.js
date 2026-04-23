@@ -1807,8 +1807,14 @@ function playCurrentVideo() {
     }
 
     // YouTube mu yoksa Native mi?
+    const driveFrame = document.getElementById('drive-player');
+    if (driveFrame) {
+        driveFrame.classList.add('hidden');
+        driveFrame.src = '';
+    }
+
     if (vid) {
-        // --- YOUTUBE S\u0130STEM\u0130 ---
+        // --- YOUTUBE SİSTEMİ ---
         if (!player || typeof player.loadVideoById !== 'function') {
             pendingVideoPlay = true;
             return;
@@ -1843,12 +1849,23 @@ function playCurrentVideo() {
         
         if (!nativePlayer) {
             // Alternatif: iframe ile embed
-            if (playerEl) {
-                playerEl.classList.remove('hidden');
-                playerEl.src = `https://drive.google.com/file/d/${gid}/preview`;
-                // Google Drive embed i\u00E7in timeout ile sonraki videoya ge\u00E7
-                setTimeout(() => playNextVideoOrSlide(), 60000); // 60sn sonra ge\u00E7
+            let driveFrame = document.getElementById('drive-player');
+            if (!driveFrame) {
+                driveFrame = document.createElement('iframe');
+                driveFrame.id = 'drive-player';
+                driveFrame.className = 'absolute inset-0 w-full h-full border-0 bg-black z-40';
+                driveFrame.setAttribute('allow', 'autoplay');
+                const wrapper = document.getElementById('right-gallery-wrapper') || playerEl.parentElement;
+                if (wrapper) wrapper.appendChild(driveFrame);
             }
+            if (playerEl) playerEl.classList.add('hidden');
+            driveFrame.classList.remove('hidden');
+            driveFrame.src = `https://drive.google.com/file/d/${gid}/preview?autoplay=1`;
+            setTimeout(() => {
+                if (driveFrame) driveFrame.classList.add('hidden');
+                driveFrame.src = '';
+                playNextVideoOrSlide();
+            }, 60000);
             return;
         }
 
@@ -1861,16 +1878,28 @@ function playCurrentVideo() {
         nativePlayer.play().then(() => {
             setTimeout(() => { nativePlayer.muted = false; }, 1000);
         }).catch(err => {
-            console.warn("Google Drive native play ba\u015Far\u0131s\u0131z, iframe deneniyor:", err);
-            // Fallback: iframe embed
-            if (playerEl) {
-                nativePlayer.classList.add('hidden');
-                playerEl.classList.remove('hidden');
-                playerEl.src = `https://drive.google.com/file/d/${gid}/preview`;
-                setTimeout(() => playNextVideoOrSlide(), 60000);
-            } else {
-                playNextVideoOrSlide();
+            console.warn("Google Drive native play başarısız, iframe deneniyor:", err);
+            // Fallback: iframe embed (Dedicated iframe to avoid breaking YT player)
+            let driveFrame = document.getElementById('drive-player');
+            if (!driveFrame) {
+                driveFrame = document.createElement('iframe');
+                driveFrame.id = 'drive-player';
+                driveFrame.className = 'absolute inset-0 w-full h-full border-0 bg-black z-40';
+                driveFrame.setAttribute('allow', 'autoplay');
+                const wrapper = document.getElementById('right-gallery-wrapper') || playerEl.parentElement;
+                if (wrapper) wrapper.appendChild(driveFrame);
             }
+            if (playerEl) playerEl.classList.add('hidden');
+            nativePlayer.classList.add('hidden');
+            driveFrame.classList.remove('hidden');
+            driveFrame.src = `https://drive.google.com/file/d/${gid}/preview?autoplay=1`;
+            
+            // 60sn sonra iframe'i gizle ve geç
+            setTimeout(() => {
+                if (driveFrame) driveFrame.classList.add('hidden');
+                driveFrame.src = ''; // stop playback
+                playNextVideoOrSlide();
+            }, 60000);
         });
 
         if (!nativePlayer.onended) {
@@ -2028,6 +2057,7 @@ function extractVideoID(url) {
         const playerContainer = document.getElementById('right-gallery-wrapper');
         const swiperEl = document.querySelector('.mySwiper');
         const playerEl = document.getElementById('player');
+        const driveFrame = document.getElementById('drive-player');
 
         // Temizle
         if (slideIntervalHandle) {
@@ -2044,6 +2074,7 @@ function extractVideoID(url) {
             if (playerContainer) playerContainer.classList.remove('hidden');
             if (swiperEl) swiperEl.classList.add('hidden');
             if (playerEl) playerEl.classList.remove('hidden');
+            if (driveFrame) driveFrame.classList.add('hidden');
             // Native player'ı sakla
             const nativePlayer = document.getElementById('native-player');
             if (nativePlayer) nativePlayer.classList.add('hidden');
@@ -2054,6 +2085,10 @@ function extractVideoID(url) {
             if (playerContainer) playerContainer.classList.remove('hidden');
             if (swiperEl) swiperEl.classList.remove('hidden');
             if (playerEl) playerEl.classList.add('hidden');
+            if (driveFrame) {
+                driveFrame.classList.add('hidden');
+                driveFrame.src = '';
+            }
 
             if (player && typeof player.stopVideo === 'function') player.stopVideo();
             const nativePlayer = document.getElementById('native-player');
