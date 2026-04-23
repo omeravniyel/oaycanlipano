@@ -3480,7 +3480,9 @@
                 document.getElementById('input-announcement').value = ann;
 
                 const vids = cfg.video_urls || [cfg.video_url].filter(v => v);
-                document.getElementById('input-video-urls').value = Array.isArray(vids) ? vids.join('\\n') : (vids || "");
+                window.videoPlaylist = Array.isArray(vids) ? vids : (vids ? [vids] : []);
+                document.getElementById('input-video-urls').value = window.videoPlaylist.join('\n');
+                renderVideoList();
 
                 // Gallery Population with Fallbacks
                 galleryMain = cfg.gallery_links || [];
