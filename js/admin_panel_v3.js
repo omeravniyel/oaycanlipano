@@ -1495,12 +1495,18 @@ async function addYouTubeVideo() {
     const url = input.value.trim();
 
     if (!url) {
-        Swal.fire('Hata', 'Lütfen bir YouTube linki girin.', 'error');
+        Swal.fire('Hata', 'Lütfen bir video linki girin.', 'error');
         return;
     }
 
-    if (!url.includes('youtube.com') && !url.includes('youtu.be')) {
-        Swal.fire('Hata', 'Geçerli bir YouTube linki değil.', 'error');
+    const low = url.toLowerCase();
+    const isYouTube = low.includes('youtube.com') || low.includes('youtu.be');
+    const isGDrive = low.includes('drive.google.com');
+    const isMP4 = low.endsWith('.mp4') || low.endsWith('.mov') || low.endsWith('.webm');
+    const isValidUrl = url.startsWith('http');
+
+    if (!isYouTube && !isGDrive && !isMP4 && !isValidUrl) {
+        Swal.fire('Hata', 'Geçerli bir video linki değil. YouTube, Google Drive veya doğrudan video URL girin.', 'error');
         return;
     }
 
@@ -1656,37 +1662,43 @@ function renderGallery() {
 
 
         if (activeGalleryTab === 'video') {
-
-            if (url.includes('youtube') || url.includes('youtu.be')) {
-
-                const videoId = url.split('v=')[1] || url.split('/').pop();
-
-                const thumbUrl = `https://img.youtube.com/vi/${videoId}/0.jpg`;
-
+            const low = url.toLowerCase();
+            if (low.includes('youtube') || low.includes('youtu.be')) {
+                const videoId = url.match(/(?:\?v=|\/embed\/|\/\d\/|\/vi\/|youtu\.be\/|\/v\/|\/e\/|watch\?v=|\/user\/\S+\/\S+\/|\/ytscreeningroom\?v=|\/sandalsResorts#\w\/\w\/.*\/|watch\?.*v=)([^#\&\?]*).*/)?.[1];
+                const thumbUrl = videoId ? `https://img.youtube.com/vi/${videoId}/0.jpg` : '';
                 content = `
-
                     <div class="relative w-full h-full bg-black">
-
-                        <img src="${thumbUrl}" class="w-full h-full object-contain opacity-70 group-hover:opacity-100 transition-opacity">
-
+                        <img src="${thumbUrl}" class="w-full h-full object-contain opacity-70 group-hover:opacity-100 transition-opacity" onerror="this.src='https://placehold.co/600x400/000000/FFFFFF?text=YouTube+Video'">
                         <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-
                             <div class="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center shadow-lg text-white transform group-hover:scale-110 transition-transform">
-
                                 <i class="fa-solid fa-play ml-1 text-lg"></i>
-
                             </div>
-
                         </div>
-
+                        <div class="absolute bottom-2 left-2 px-2 py-0.5 bg-red-600 text-white text-[9px] font-bold rounded">YouTube</div>
                     </div>`;
-
+            } else if (low.includes('drive.google.com')) {
+                const gid = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/)?.[1] || url.match(/[?&]id=([a-zA-Z0-9_-]+)/)?.[1];
+                const thumbUrl = gid ? `https://drive.google.com/thumbnail?id=${gid}&sz=w600` : '';
+                content = `
+                    <div class="relative w-full h-full bg-black">
+                        <img src="${thumbUrl}" class="w-full h-full object-contain opacity-70 group-hover:opacity-100 transition-opacity" onerror="this.src='https://placehold.co/600x400/000000/FFFFFF?text=Google+Drive+Video'">
+                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <div class="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center shadow-lg text-white transform group-hover:scale-110 transition-transform">
+                                <i class="fa-solid fa-play ml-1 text-lg"></i>
+                            </div>
+                        </div>
+                        <div class="absolute bottom-2 left-2 px-2 py-0.5 bg-green-600 text-white text-[9px] font-bold rounded">Drive</div>
+                    </div>`;
+            } else if (low.endsWith('.mp4') || low.endsWith('.mov') || low.endsWith('.webm') || low.includes('/storage/') || low.includes('supabase')) {
+                content = `
+                    <div class="relative w-full h-full bg-slate-900 flex flex-col items-center justify-center">
+                        <i class="fa-solid fa-file-video text-5xl text-blue-500 mb-2 opacity-50 group-hover:opacity-100 transition-opacity"></i>
+                        <span class="text-[10px] text-slate-500 font-mono truncate max-w-[80%]">${url.split('/').pop()}</span>
+                        <div class="absolute bottom-2 left-2 px-2 py-0.5 bg-blue-600 text-white text-[9px] font-bold rounded">MP4</div>
+                    </div>`;
             } else {
-
-                content = `<video src="${url}" class="w-full h-full object-contain bg-black" muted></video>`;
-
+                content = `<div class="w-full h-full flex items-center justify-center bg-black text-white"><i class="fa-solid fa-video text-3xl"></i></div>`;
             }
-
         }
 
 
@@ -3951,6 +3963,196 @@ async function changePassword() {
 
 
 // --- GLOBAL EXPORTS ---
+
+// --- EXAM TIMER MODAL ---
+async function openExamTimerModal() {
+    document.getElementById('exam-timer-modal').classList.remove('hidden');
+    
+    // Populate institution dropdown
+    const select = document.getElementById('exam-timer-target-institution');
+    // Keep only the first "Genel" option
+    select.innerHTML = '<option value="__global__">🌐 Genel (Tüm Kurumlar İçin)</option>';
+    
+    try {
+        const data = await requestApi('list');
+        const institutions = data.institutions || [];
+        institutions.forEach(inst => {
+            if (inst.slug && !inst.slug.startsWith('system-')) {
+                const opt = document.createElement('option');
+                opt.value = inst.slug;
+                opt.textContent = inst.name || inst.slug;
+                select.appendChild(opt);
+            }
+        });
+    } catch(e) {
+        console.error('Kurum listesi yüklenemedi', e);
+    }
+    
+    loadExamTimerConfig();
+}
+
+function closeExamTimerModal() {
+    document.getElementById('exam-timer-modal').classList.add('hidden');
+}
+
+function toggleExamTimerInputs() {
+    const isActive = document.getElementById('exam-timer-active').checked;
+    const settingsDiv = document.getElementById('exam-timer-settings');
+    if (isActive) {
+        settingsDiv.classList.remove('opacity-50', 'pointer-events-none');
+    } else {
+        settingsDiv.classList.add('opacity-50', 'pointer-events-none');
+    }
+}
+
+async function uploadExamTimerBg(event) {
+    const f = event.target.files[0];
+    if (!f) return;
+    
+    Swal.fire({ title: 'Yükleniyor...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+    
+    const r = new FileReader();
+    r.onload = async ev => {
+        try {
+            const res = await fetch('/api/upload', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ filename: 'exam-bg-' + Date.now() + '.png', fileBase64: ev.target.result.split(',')[1], contentType: f.type })
+            });
+            const data = await res.json();
+            if (data.url) {
+                document.getElementById('exam-timer-bg').value = data.url;
+                Swal.close();
+                Swal.fire({ icon: 'success', title: 'Yüklendi', timer: 1000, showConfirmButton: false });
+            } else {
+                throw new Error(data.error || 'Yükleme hatası');
+            }
+        } catch (e) {
+            Swal.fire('Hata', 'Görsel yüklenemedi: ' + e.message, 'error');
+        }
+    };
+    r.readAsDataURL(f);
+}
+
+function _getExamTimerTargetSlug() {
+    const sel = document.getElementById('exam-timer-target-institution');
+    return sel ? sel.value : '__global__';
+}
+
+async function loadExamTimerConfig() {
+    try {
+        const targetSlug = _getExamTimerTargetSlug();
+        let configObj;
+        
+        if (targetSlug === '__global__') {
+            const r = await requestApi('get_global_gallery'); 
+            configObj = r.config || {};
+        } else {
+            // Load per-institution config via public API
+            const res = await fetch('/api/get-config?slug=' + targetSlug + '&raw=true');
+            configObj = await res.json();
+        }
+        
+        const examTimer = configObj.exam_timer || {
+            active: false,
+            theme: 'glass',
+            bg: '',
+            show_title: true, title: '',
+            show_session: true, session: '',
+            start: '', end: '',
+            session2_active: false, session2_name: '', start2: '', end2: '',
+            show_quote: true, quote: ''
+        };
+
+        document.getElementById('exam-timer-active').checked = examTimer.active === true;
+        document.getElementById('exam-timer-theme').value = examTimer.theme || 'light';
+        document.getElementById('exam-timer-preview').src = '/galeri/temalar/' + (examTimer.theme || 'light') + '.png';
+        document.getElementById('exam-timer-bg').value = examTimer.bg || '';
+        document.getElementById('exam-timer-show-title').checked = examTimer.show_title !== false;
+        document.getElementById('exam-timer-title').value = examTimer.title || '';
+        document.getElementById('exam-timer-show-session').checked = examTimer.show_session !== false;
+        document.getElementById('exam-timer-session').value = examTimer.session || '';
+        
+        const formatForInput = (isoStr) => {
+            if (!isoStr) return '';
+            const date = new Date(isoStr);
+            if(isNaN(date.getTime())) return '';
+            return new Date(date.getTime() - (date.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
+        };
+
+        document.getElementById('exam-timer-start').value = formatForInput(examTimer.start);
+        document.getElementById('exam-timer-end').value = formatForInput(examTimer.end);
+        
+        document.getElementById('exam-timer-session2-active').checked = examTimer.session2_active === true;
+        document.getElementById('exam-timer-session2-name').value = examTimer.session2_name || '';
+        document.getElementById('exam-timer-start2').value = formatForInput(examTimer.start2);
+        document.getElementById('exam-timer-end2').value = formatForInput(examTimer.end2);
+        
+        const s2Inputs = document.getElementById('session2-inputs');
+        if (s2Inputs) {
+            s2Inputs.style.opacity = examTimer.session2_active ? '1' : '0.5';
+            s2Inputs.style.pointerEvents = examTimer.session2_active ? 'auto' : 'none';
+        }
+
+        document.getElementById('exam-timer-show-quote').checked = examTimer.show_quote !== false;
+        document.getElementById('exam-timer-quote').value = examTimer.quote || '';
+
+        toggleExamTimerInputs();
+    } catch(e) {
+        console.error('Sınav sayacı ayarları yüklenemedi', e);
+    }
+}
+
+async function saveExamTimerConfig() {
+    try {
+        Swal.fire({ title: 'Kaydediliyor...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+        
+        const targetSlug = _getExamTimerTargetSlug();
+        let configObj;
+        
+        if (targetSlug === '__global__') {
+            const r = await requestApi('get_global_gallery');
+            configObj = r.config || {};
+        } else {
+            const res = await fetch('/api/get-config?slug=' + targetSlug + '&raw=true');
+            configObj = await res.json();
+        }
+        
+        let startVal = document.getElementById('exam-timer-start').value;
+        let endVal = document.getElementById('exam-timer-end').value;
+        let start2Val = document.getElementById('exam-timer-start2').value;
+        let end2Val = document.getElementById('exam-timer-end2').value;
+        
+        configObj.exam_timer = {
+            active: document.getElementById('exam-timer-active').checked,
+            theme: document.getElementById('exam-timer-theme').value,
+            bg: document.getElementById('exam-timer-bg').value,
+            show_title: document.getElementById('exam-timer-show-title').checked,
+            title: document.getElementById('exam-timer-title').value,
+            show_session: document.getElementById('exam-timer-show-session').checked,
+            session: document.getElementById('exam-timer-session').value,
+            start: startVal ? new Date(startVal).toISOString() : '',
+            end: endVal ? new Date(endVal).toISOString() : '',
+            session2_active: document.getElementById('exam-timer-session2-active').checked,
+            session2_name: document.getElementById('exam-timer-session2-name').value,
+            start2: start2Val ? new Date(start2Val).toISOString() : '',
+            end2: end2Val ? new Date(end2Val).toISOString() : '',
+            show_quote: document.getElementById('exam-timer-show-quote').checked,
+            quote: document.getElementById('exam-timer-quote').value
+        };
+
+        if (targetSlug === '__global__') {
+            await requestApi('save_global_gallery', { config: configObj });
+        } else {
+            // Save exam_timer to per-institution config via authenticated API
+            await requestApi('save_institution_exam_timer', { slug: targetSlug, exam_timer: configObj.exam_timer });
+        }
+        
+        Swal.fire({ icon: 'success', title: 'Kaydedildi', timer: 1500, showConfirmButton: false });
+    } catch(e) {
+        Swal.fire('Hata', e.message || 'Sınav sayacı ayarları kaydedilemedi', 'error');
+    }
+}
 
 window.attemptLogin = doLogin;
 

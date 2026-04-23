@@ -75,8 +75,6 @@
             }
         }
 
-
-
         /* Dot Pattern Background for Hadith */
         .bg-dots {
             background-color: #f0fdf9;
@@ -670,57 +668,56 @@
     </style>
 </head>
 
-<body class="bg-[#0f172a] w-screen h-screen overflow-hidden flex items-start justify-start m-0 p-0">
+<body class="bg-[#eef2f6] w-screen h-screen overflow-hidden flex items-start justify-center m-0 p-0 antialiased" style="text-rendering: optimizeLegibility;">
 
     <!-- Global Fullscreen Weather Overlay -->
     <div id="global-weather-overlay"></div>
 
-    <!-- PIXEL-PERFECT CANVAS (Fixed 1920x1080 Base) -->
+    <!-- PIXEL-PERFECT CANVAS (Ekranı Orantılı Olarak %100 Kaplar) -->
     <div id="app-scaler"
-        class="w-[1920px] h-[1080px] bg-[#eef2f6] flex flex-col p-6 gap-6 box-border overflow-hidden relative origin-top-left shrink-0"
-        style="will-change: transform;">
+        class="w-full h-full bg-[#eef2f6] flex flex-col p-[2vh] gap-[2vh] box-border relative shrink-0 overflow-hidden">
 
         <!-- Ana İçerik Grid (Sabit Oranlar) -->
-        <div class="grid grid-cols-12 gap-6 w-full flex-grow overflow-hidden">
+        <div class="grid grid-cols-12 gap-[2vh] w-full flex-grow overflow-hidden">
 
             <!-- SOL SÜTUN (5 Birim) -->
-            <div class="col-span-5 flex flex-col gap-6 h-full">
+            <div id="left-column" class="col-span-5 flex flex-col gap-[2vh] h-full relative transition-all duration-700 ease-in-out">
 
-                <!-- HEADER (Sabit Yükseklik: 140px) -->
+                <!-- Sol Galeri (Bakırköy panosundaki gibi BEYAZ Zemin) -->
+                <div id="left-gallery-container"
+                    class="absolute inset-0 bg-white border border-gray-200 shadow-xl rounded-xl hidden z-50 flex items-center justify-center p-2">
+                    <img id="left-gallery-image" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="
+                        class="w-full h-full object-contain rounded-xl transition-all duration-700 ease-in-out"
+                        onerror="handleGalleryError()" onload="this.style.opacity='1';" />
+                </div>
+
+                <!-- HEADER (Sabit Yükseklik: 12vh) -->
                 <div id="header-container"
-                    class="h-[140px] bg-[#1e1f35] rounded-xl shadow-lg p-4 flex items-center justify-between text-white w-full relative overflow-hidden flex-none">
-                    <div class="flex items-center gap-6">
-                        <div class="w-24 h-24 flex items-center justify-center relative overflow-hidden">
+                    class="h-[12vh] bg-[#1e1f35] rounded-xl shadow-lg p-[1.5vh] flex items-center justify-between text-white w-full relative overflow-hidden flex-none">
+                    <div class="flex items-center gap-[1.5vh]">
+                        <div class="w-[8vh] h-[8vh] flex items-center justify-center relative overflow-hidden">
                             <img id="header-logo" src="logo.png" alt="Kurum Logo"
                                 class="w-full h-full object-contain">
                         </div>
                         <div>
-                            <h1 id="header-title" class="text-xl font-extrabold tracking-tight leading-tight">
+                            <h1 id="header-title" class="text-[2.2vh] font-extrabold tracking-tight leading-tight">
                                 YÜKLENİYOR...
                             </h1>
                             <p id="header-subtitle"
-                                class="text-[0.65rem] tracking-[0.2em] font-medium text-gray-400 uppercase">
+                                class="text-[1.2vh] tracking-[0.2em] font-medium text-gray-400 uppercase mt-[0.5vh]">
                                 Dijital Pano Sistemi
                             </p>
                         </div>
                     </div>
                     <div class="text-right">
-                        <p id="header-slogan1" class="font-script text-lg text-gray-300 leading-none">...</p>
-                        <p id="header-slogan2" class="font-script text-lg text-white leading-none">...</p>
+                        <p id="header-slogan1" class="font-script text-[1.8vh] text-gray-300 leading-none">...</p>
+                        <p id="header-slogan2" class="font-script text-[1.8vh] text-white leading-none mt-[0.5vh]">...</p>
                     </div>
                 </div>
 
 
-                <!-- HADİS VE YATAKHANE BİRLEŞİK ALAN (Galeri için) - Grid ile kalan alan -->
+                <!-- HADİS VE YATAKHANE BİRLEŞİK ALAN -->
                 <div class="relative rounded-xl overflow-hidden flex flex-col h-full w-full">
-
-                    <!-- Sol Galeri (Tek Kutu) -->
-                    <div id="left-gallery-container"
-                        class="absolute inset-0 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-xl hidden z-20 flex items-center justify-center">
-                        <img id="left-gallery-image" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="
-                            class="w-full h-full object-contain rounded-xl transition-all duration-700 ease-in-out"
-                            onerror="handleGalleryError()" onload="this.style.opacity='1'" />
-                    </div>
 
                     <!-- Normal İçerik (Galeri yokken veya gösterilmiyorken) -->
                     <div id="left-normal-content" class="flex flex-col gap-3 h-full min-h-0">
@@ -739,32 +736,32 @@
                             <div class="corner-decor bottom-right"></div>
 
                             <!-- Header Badge -->
-                            <div class="header-area mt-4 w-full flex justify-center">
+                            <div class="header-area mt-[2vh] w-full flex justify-center">
                                 <div
-                                    class="header-badge px-4 py-1.5 bg-blue-100/90 rounded-full border border-blue-200/50 shadow-sm flex items-center justify-center gap-2 max-w-[90%]">
-                                    <span class="header-icon text-blue-400 text-xs shrink-0">✦</span>
+                                    class="header-badge px-[1vw] py-[0.5vh] bg-blue-100/90 rounded-full border border-blue-200/50 shadow-sm flex items-center justify-center gap-[0.5vw] max-w-[90%]">
+                                    <span class="header-icon text-blue-400 text-[1.2vh] shrink-0">✦</span>
                                     <span
-                                        class="header-title font-bold text-blue-900 uppercase tracking-wide text-center leading-tight whitespace-normal text-[0.65rem] md:text-xs break-words">HAFTANIN
+                                        class="header-title font-bold text-blue-900 uppercase tracking-wide text-center leading-tight whitespace-normal text-[1.2vh] break-words">HAFTANIN
                                         HADİS-İ ŞERİFİ</span>
-                                    <span class="header-icon text-blue-400 text-xs shrink-0">✦</span>
+                                    <span class="header-icon text-blue-400 text-[1.2vh] shrink-0">✦</span>
                                 </div>
                             </div>
 
                             <!-- Content Area -->
                             <div
-                                class="content-area flex-grow flex flex-col justify-evenly items-center p-2 relative z-10 w-full overflow-hidden">
+                                class="content-area flex-grow flex flex-col justify-evenly items-center p-[1vh] relative z-10 w-full overflow-hidden">
 
                                 <!-- Arabic Text (TOP) -->
                                 <div id="hadith-arabic"
-                                    class="arabic-text w-full text-center text-5xl leading-relaxed text-blue-950 drop-shadow-sm px-4">
+                                    class="arabic-text w-full text-center text-[4.5vh] leading-relaxed text-blue-950 drop-shadow-sm px-[2vw]">
                                     <!-- JS Doldurur -->
                                 </div>
 
                                 <!-- Turkish Text (BOTTOM) -->
                                 <div id="hadith-content-wrapper"
-                                    class="turkish-text w-full flex items-center justify-center mt-2">
+                                    class="turkish-text w-full flex items-center justify-center mt-[1vh]">
                                     <div id="hadith-content"
-                                        class="text-center leading-snug text-2xl text-slate-700 font-semibold px-6">
+                                        class="text-center leading-snug text-[2.5vh] text-slate-700 font-semibold px-[2vw]">
                                         Yükleniyor...
                                     </div>
                                 </div>
@@ -775,15 +772,15 @@
                             </div>
 
                             <!-- Footer / Date -->
-                            <div class="footer-area mb-4">
-                                <div class="date-box">
-                                    <svg class="w-5 h-5 date-icon-svg" fill="none" stroke="currentColor"
+                            <div class="footer-area mb-[2vh]">
+                                <div class="date-box flex items-center gap-[0.5vw]">
+                                    <svg class="w-[2.5vh] h-[2.5vh] date-icon-svg" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z">
                                         </path>
                                     </svg>
-                                    <span class="date-text">
+                                    <span class="date-text text-[1.4vh] font-medium text-slate-600">
                                         <span id="hadith-week"></span> <span id="week-date-range"></span>
                                     </span>
                                 </div>
@@ -869,11 +866,11 @@
             </div>
 
             <!-- SAĞ SÜTUN (7 Birim) -->
-            <div class="col-span-7 flex flex-col gap-6 h-full">
+            <div id="right-column" class="col-span-7 flex flex-col gap-6 h-full">
 
                 <!-- VİDEO ALANI (Grid ile otomatik kalan alan) -->
                 <div id="right-gallery-wrapper"
-                    class="bg-black rounded-xl shadow-lg overflow-hidden relative group border-4 border-[#1e1f35] h-full w-full transition-all duration-500">
+                    class="bg-black rounded-xl shadow-lg overflow-hidden relative group border-4 border-[#1e1f35] flex-1 w-full transition-all duration-500">
                     <button onclick="toggleRightGalleryFullscreen()"
                         class="absolute top-4 right-4 z-[999999] bg-black/50 hover:bg-black/80 text-white p-3 rounded-xl backdrop-blur-sm border border-white/20 shadow-xl transition-all opacity-0 group-hover:opacity-100 cursor-pointer pointer-events-auto">
                         <i id="fullscreen-icon" class="fa-solid fa-expand text-2xl"></i>
@@ -885,78 +882,80 @@
                     </div>
                 </div>
 
-                <!-- ALT BİLGİ ŞERİDİ (Sabit Yükseklik: 240px) -->
-                <div class="h-[240px] flex gap-6 w-full flex-none overflow-hidden pb-2">
+                <!-- ALT BİLGİ ŞERİDİ (Sabit Yükseklik: 20vh) -->
+                <div class="h-[20vh] flex gap-[2vh] w-full flex-none overflow-hidden pb-[0.5vh]">
 
                     <!-- Sol Kısım (Saat & Hava) -->
-                    <div class="flex flex-col gap-3 w-1/3 h-full">
+                    <div class="flex flex-col gap-[1vh] w-1/3 h-full">
                         <!-- Saat -->
                         <div
-                            class="bg-[#1e293b] rounded-xl shadow-lg text-white flex flex-col items-center justify-center flex-1 p-2 min-h-0">
-                            <div class="text-5xl font-extrabold tracking-tighter" id="clock">12:00</div>
-                            <div class="text-xs font-semibold text-blue-200 mt-1 uppercase tracking-wide" id="date">12
+                            class="bg-gradient-to-br from-purple-500 to-purple-700 rounded-xl shadow-lg text-white flex flex-col items-center justify-center flex-1 p-[1vh] min-h-0">
+                            <div class="text-[4.5vh] font-bold tracking-tighter leading-none" id="clock">12:00</div>
+                            <div class="text-[1.2vh] font-semibold text-blue-200 mt-[0.5vh] uppercase tracking-wide" id="date">12
                                 ARALIK CUMA</div>
                         </div>
                         <!-- Hava -->
                         <div id="weather-card"
-                            class="bg-blue-500 rounded-xl shadow-lg text-white flex items-center justify-between flex-1 px-6 relative overflow-hidden transition-colors duration-1000 min-h-0">
+                            class="bg-gradient-to-br from-cyan-400 to-blue-500 rounded-xl shadow-lg text-white flex items-center justify-between flex-1 px-[1.5vw] relative overflow-hidden transition-colors duration-1000 min-h-0">
                             <div class="z-10">
-                                <div class="text-[0.65rem] font-bold opacity-80 uppercase tracking-widest mb-1"
+                                <div class="text-[1.2vh] font-bold opacity-80 uppercase tracking-widest mb-[0.2vh]"
                                     id="weather-desc">İSTANBUL</div>
-                                <div class="text-3xl font-bold flex items-start leading-none">
-                                    <span id="weather-temp">--</span><span class="text-lg mt-0.5">°</span>
+                                <div class="text-[3.5vh] font-bold flex items-start leading-none">
+                                    <span id="weather-temp">--</span><span class="text-[2vh] mt-[0.2vh]">°</span>
                                 </div>
-                                <div class="text-[0.65rem] opacity-70 mt-1" id="weather-condition">Açık</div>
+                                <div class="text-[1.2vh] opacity-70 mt-[0.2vh]" id="weather-condition">Açık</div>
                             </div>
-                            <svg class="w-12 h-12 text-white/80 z-10" fill="currentColor" viewBox="0 0 24 24">
-                                <path
-                                    d="M19.36 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.64-4.96z" />
-                            </svg>
+                            <div id="weather-icon" class="z-10">
+                                <svg class="w-[5vh] h-[5vh] text-white/80" fill="currentColor" viewBox="0 0 24 24">
+                                    <path
+                                        d="M19.36 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.64-4.96z" />
+                                </svg>
+                            </div>
                             <!-- Cloud decoration -->
                             <div
-                                class="absolute -right-4 -bottom-4 text-white/10 w-24 h-24 rounded-full bg-white/20 blur-xl">
+                                class="absolute -right-4 -bottom-4 text-white/10 w-[10vh] h-[10vh] rounded-full bg-white/20 blur-xl">
                             </div>
                         </div>
                     </div>
 
                     <!-- Sağ Kısım (Dönen Kart: Duyuru / Sınav) -->
                     <div
-                        class="w-2/3 bg-gradient-to-br from-[#4c1d95] to-[#7c3aed] rounded-xl shadow-lg p-5 flex flex-col relative overflow-hidden text-white border border-purple-800 h-full">
+                        class="w-2/3 bg-gradient-to-br from-[#4c1d95] to-[#7c3aed] rounded-xl shadow-lg p-[1.5vh] flex flex-col relative overflow-hidden text-white border border-purple-800 h-full">
 
                         <!-- Dönen Alan -->
                         <div id="info-carousel"
                             class="transition-all duration-700 ease-in-out h-full flex flex-col justify-center min-h-0">
 
                             <!-- Header -->
-                            <div class="relative flex items-center justify-center mb-2 w-full shrink-0">
+                            <div class="relative flex items-center justify-center mb-[1vh] w-full shrink-0">
                                 <!-- Title Group restricted to 70% width to avoid badge overlap -->
-                                <div class="flex items-center justify-center gap-2 max-w-full z-10">
-                                    <h3 class="font-bold text-lg leading-tight tracking-normal uppercase drop-shadow-sm text-center break-words"
+                                <div class="flex items-center justify-center gap-[0.5vw] max-w-full z-10">
+                                    <h3 class="font-extrabold text-[1.6vh] leading-tight tracking-wider uppercase drop-shadow-md text-center break-words bg-white/20 px-[2vw] py-[0.5vh] rounded-full border border-white/30 shadow-inner backdrop-blur-sm text-white"
                                         id="info-title">
                                         Yükleniyor...</h3>
                                 </div>
                                 <!-- Badge on the right -->
                                 <span
-                                    class="absolute right-0 top-1/2 -translate-y-1/2 bg-white/20 text-[0.6rem] px-2 py-1 rounded-full uppercase tracking-wider font-bold text-white shadow-sm whitespace-nowrap hidden"
+                                    class="absolute right-0 top-1/2 -translate-y-1/2 bg-white/20 text-[1vh] px-[0.5vw] py-[0.2vh] rounded-full uppercase tracking-wider font-bold text-white shadow-sm whitespace-nowrap hidden"
                                     id="info-badge">...</span>
                             </div>
 
                             <!-- Content Container (Vertical Stack for maximum width) -->
                             <div
-                                class="flex-grow flex flex-col items-center justify-center p-1 relative overflow-hidden w-full min-h-0">
+                                class="flex-grow flex flex-col items-center justify-center p-[0.5vh] relative overflow-hidden w-full min-h-0">
 
                                 <!-- Icon -->
-                                <div class="w-16 h-16 rounded-full bg-yellow-500 flex items-center justify-center text-white font-bold text-lg shadow-lg border-4 border-yellow-300 transform transition-transform duration-500 hover:scale-110 mb-1 shrink-0"
+                                <div class="w-[6vh] h-[6vh] rounded-full bg-yellow-500 flex items-center justify-center text-white font-bold text-[2vh] shadow-lg border-[0.3vh] border-yellow-300 transform transition-transform duration-500 hover:scale-110 mb-[0.5vh] shrink-0"
                                     id="info-circle-badge">
                                     <!-- JS fills this -->
                                 </div>
 
                                 <!-- Label -->
-                                <div class="text-[0.7rem] text-purple-200 uppercase tracking-widest font-bold mb-1 opacity-80 shrink-0"
+                                <div class="text-[1.2vh] text-purple-200 uppercase tracking-widest font-bold mb-[0.2vh] opacity-80 shrink-0"
                                     id="info-top-label">BİLGİLENDİRME</div>
 
                                 <!-- Text -->
-                                <div class="text-2xl font-bold tracking-tight text-center w-full px-2 leading-tight"
+                                <div class="text-[2.5vh] font-bold tracking-tight text-center w-full px-[1vw] leading-tight"
                                     id="info-main-text">
                                     ---
                                 </div>
@@ -974,17 +973,17 @@
 
         <!-- FOOTER -->
         <div
-            class="h-16 bg-[#312e81] text-white flex items-center rounded-lg shadow-lg overflow-hidden relative border-t-2 border-indigo-400">
-            <div class="bg-[#4338ca] px-6 h-full flex items-center justify-center z-10 shadow-md">
-                <svg class="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            class="h-[6vh] bg-[#312e81] text-white flex items-center rounded-lg shadow-lg overflow-hidden relative border-t-[0.2vh] border-indigo-400">
+            <div class="bg-[#4338ca] px-[1.5vw] h-full flex items-center justify-center z-10 shadow-md">
+                <svg class="w-[3vh] h-[3vh] text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M13 10V3L4 14h7v7l9-11h-7z">
                     </path>
                 </svg>
-                <span class="font-bold text-sm tracking-wider ml-3">GÜNÜN SÖZÜ</span>
+                <span class="font-bold text-[1.8vh] tracking-wider ml-[0.5vw]">GÜNÜN SÖZÜ</span>
             </div>
             <div class="marquee-container flex-1 min-w-0 h-full flex items-center bg-[#312e81]">
-                <div class="marquee-content px-4 text-2xl font-semibold tracking-wide text-indigo-100 whitespace-nowrap"
+                <div class="marquee-content px-[1vw] text-[2.5vh] font-semibold tracking-wide text-indigo-100 whitespace-nowrap"
                     style="white-space: nowrap !important;" id="marquee-text">
                     Dijital Pano sistemine hoşgeldiniz...
                 </div>

@@ -444,7 +444,7 @@ async function fetchConfig() {
         // Yardımcı: Video mu yoksa Görsel mi karar veren basit kural
         const isVideo = (url) => {
             const low = url.toLowerCase();
-            return low.includes('youtube.com') || low.includes('youtu.be') || low.includes('.mp4') || low.includes('.mov');
+            return low.includes('youtube.com') || low.includes('youtu.be') || low.includes('.mp4') || low.includes('.mov') || low.includes('.webm') || low.includes('drive.google.com');
         };
 
         // Videoları ve Slaytları Ayrıştır (Ayrı listelere dağıt)
@@ -530,20 +530,8 @@ async function fetchConfig() {
                     if (!marqueeItems.includes(p)) marqueeItems.push(p);
                 });
             }
-        }
-
-        // 1. Duyurular (Dizi veya Tekil olabilir) - İPTAL EDİLDİ (Kayan yazıda çıkmasın istendi)
-        /*
-        if (config.announcements && Array.isArray(config.announcements)) {
-            config.announcements.forEach(a => {
-                const parsed = parseNumberedText(a);
-                marqueeItems.push(...parsed);
-            });
-        }
-        */
-
-        // 2. Günün Sözü (Tekil)
-        if (config.quote_of_day) {
+        } else if (config.quote_of_day) {
+            // 2. Günün Sözü (Legacy Fallback - only if marquee_text is missing/empty)
             const parsed = parseNumberedText(config.quote_of_day);
             parsed.forEach(p => {
                 if (!marqueeItems.includes(p)) marqueeItems.push(p);
@@ -913,7 +901,10 @@ async function fetchConfig() {
                         circle: `<svg class="w-16 h-16 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M20.2 2H19.5H18C17.1 2 16.3 2.4 15.8 3C15.3 2.4 14.6 2 13.5 2H12.2C11.6 2 11 2.2 10.6 2.6L10 3.3L9.4 2.6C9 2.2 8.4 2 7.8 2H6.5C5.4 2 4.7 2.4 4.2 3C3.7 2.4 2.9 2 2 2H1.3H0V6C0 9.3 2.7 12 6 12H7.2L10 16.2L12.8 12H14C17.3 12 20 9.3 20 6V2H20.2ZM6 10C3.8 10 2 8.2 2 6V4H2.2H3.5C4.1 4 4.5 4.4 4.5 5V6C4.5 6.6 4.9 7 5.5 7H6C6.6 7 7 6.6 7 6V4H7.8C8.4 4 9 4.6 9 5.2V6.5L10 8L11 6.5V5.2C11 4.6 11.6 4 12.2 4H13C13.6-4 14 3.6 14 3H14.5H15.8C16.4 4 17 4.6 17 5.2V6.5L18 8L19 6.5V5.2C19 4.6 19.6 4 20.2 4H21.5H22V6C22 8.2 20.2 10 18 10H14.6L12.8 12.7L10 16.9L7.2 12.7L5.4 10H6ZM10 18H14V22H10V18Z"/></svg>`,
                         topLabel: 'TEBRİK EDERİZ',
                         content: displayStr,
-                        image: student.image || ''
+                        image: student.image || '',
+                        rawClass: student.class || '',
+                        rawName: student.name || '',
+                        rawScore: student.points || ''
                     });
                 }
             });
@@ -953,7 +944,10 @@ async function fetchConfig() {
                     circle: '<svg class="w-16 h-16 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M20.2 2H19.5H18C17.1 2 16.3 2.4 15.8 3C15.3 2.4 14.6 2 13.5 2H12.2C11.6 2 11 2.2 10.6 2.6L10 3.3L9.4 2.6C9 2.2 8.4 2 7.8 2H6.5C5.4 2 4.7 2.4 4.2 3C3.7 2.4 2.9 2 2 2H1.3H0V6C0 9.3 2.7 12 6 12H7.2L10 16.2L12.8 12H14C17.3 12 20 9.3 20 6V2H20.2ZM6 10C3.8 10 2 8.2 2 6V4H2.2H3.5C4.1 4 4.5 4.4 4.5 5V6C4.5 6.6 4.9 7 5.5 7H6C6.6 7 7 6.6 7 6V4H7.8C8.4 4 9 4.6 9 5.2V6.5L10 8L11 6.5V5.2C11 4.6 11.6 4 12.2 4H13C13.6-4 14 3.6 14 3H14.5H15.8C16.4 4 17 4.6 17 5.2V6.5L18 8L19 6.5V5.2C19 4.6 19.6 4 20.2 4H21.5H22V6C22 8.2 20.2 10 18 10H14.6L12.8 12.7L10 16.9L7.2 12.7L5.4 10H6ZM10 18H14V22H10V18Z"/></svg>',
                     topLabel: 'TEBRİK EDERİZ',
                     content: displayStr,
-                    image: imageUrl
+                    image: imageUrl,
+                    rawClass: className,
+                    rawName: studentName,
+                    rawScore: score
                 });
             });
         } else {
@@ -977,7 +971,10 @@ async function fetchConfig() {
                         circle: `<svg class="w-16 h-16 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M20.2 2H19.5H18C17.1 2 16.3 2.4 15.8 3C15.3 2.4 14.6 2 13.5 2H12.2C11.6 2 11 2.2 10.6 2.6L10 3.3L9.4 2.6C9 2.2 8.4 2 7.8 2H6.5C5.4 2 4.7 2.4 4.2 3C3.7 2.4 2.9 2 2 2H1.3H0V6C0 9.3 2.7 12 6 12H7.2L10 16.2L12.8 12H14C17.3 12 20 9.3 20 6V2H20.2ZM6 10C3.8 10 2 8.2 2 6V4H2.2H3.5C4.1 4 4.5 4.4 4.5 5V6C4.5 6.6 4.9 7 5.5 7H6C6.6 7 7 6.6 7 6V4H7.8C8.4 4 9 4.6 9 5.2V6.5L10 8L11 6.5V5.2C11 4.6 11.6 4 12.2 4H13C13.6-4 14 3.6 14 3H14.5H15.8C16.4 4 17 4.6 17 5.2V6.5L18 8L19 6.5V5.2C19 4.6 19.6 4 20.2 4H21.5H22V6C22 8.2 20.2 10 18 10H14.6L12.8 12.7L10 16.9L7.2 12.7L5.4 10H6ZM10 18H14V22H10V18Z"/></svg>`,
                         topLabel: 'TEBRİK EDERİZ',
                         content: displayStr,
-                        image: imageUrl
+                        image: imageUrl,
+                        rawClass: className,
+                        rawName: name,
+                        rawScore: score
                     });
                 }
             }
@@ -1340,6 +1337,7 @@ function rotateInfo() {
 
         // Reset display
         circle.style.display = 'flex';
+        document.getElementById('info-top-label').style.display = 'block';
 
         if (item.image) {
             circle.innerHTML = `<img src="${item.image}" class="w-full h-full object-cover rounded-full shadow-lg border-4 border-white/30">`;
@@ -1432,6 +1430,36 @@ function rotateInfo() {
             `;
             mainText.classList.add('text-center');
             mainText.classList.remove('text-2xl', 'whitespace-pre-wrap', 'columns-2', 'gap-8', 'text-left');
+        } else if (item.type === 'exam') {
+            // Sınav Şampiyonları: Özel Yatay Tasarım
+            circle.style.display = 'none'; // Üstteki yuvarlağı gizle
+            document.getElementById('info-top-label').style.display = 'none'; // Üstteki TEBRİK EDERİZ yazısını gizle
+
+            let imgHTML = '';
+            if (item.image) {
+                imgHTML = `<img src="${item.image}" class="w-[8vh] h-[8vh] object-cover rounded-full border-[0.3vh] border-yellow-300 shadow-md shrink-0">`;
+            } else {
+                imgHTML = `<div class="w-[8vh] h-[8vh] bg-yellow-500 rounded-full border-[0.3vh] border-yellow-300 shadow-md flex items-center justify-center shrink-0"><i class="fa-solid fa-medal text-[3.5vh] text-white"></i></div>`;
+            }
+
+            mainText.innerHTML = `
+            <div class="flex items-center w-full gap-[1vw] bg-white/10 rounded-2xl p-[1vh] shadow-inner mt-[1vh] overflow-hidden border border-white/20">
+                ${imgHTML}
+                <div class="flex flex-col flex-1 text-left justify-center overflow-hidden min-w-0">
+                    <span class="text-yellow-300 text-[1.4vh] font-black uppercase tracking-wider drop-shadow-sm truncate">${item.rawClass || ''}</span>
+                    <span class="text-white text-[2.6vh] font-extrabold leading-tight drop-shadow-md truncate">${item.rawName || ''}</span>
+                </div>
+                ${item.rawScore ? `
+                <div class="shrink-0 bg-green-500 text-white px-[1vw] py-[0.5vh] rounded-xl border-[0.2vh] border-green-400 shadow-xl flex items-center justify-center">
+                    <span class="text-[2.2vh] font-black leading-none">${item.rawScore} <span class="text-[1.2vh] opacity-80">PUAN</span></span>
+                </div>` : ''}
+            </div>
+            `;
+            
+            mainText.classList.remove('text-2xl', 'whitespace-pre-wrap', 'columns-2', 'gap-8', 'text-left');
+            mainText.classList.add('w-full', 'px-0');
+            mainText.style.fontSize = ''; 
+            
         } else if (item.type === 'announcement') {
             const container = mainText.parentElement;
 
@@ -1770,10 +1798,17 @@ function playCurrentVideo() {
     const vid = extractVideoID(rawUrl);
     const playerEl = document.getElementById('player');
     const nativePlayer = document.getElementById('native-player');
+    const low = rawUrl.toLowerCase();
+
+    // Helper: Google Drive file ID
+    function extractGDriveId(url) {
+        const match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+        return match ? match[1] : null;
+    }
 
     // YouTube mu yoksa Native mi?
     if (vid) {
-        // --- YOUTUBE SİSTEMİ ---
+        // --- YOUTUBE S\u0130STEM\u0130 ---
         if (!player || typeof player.loadVideoById !== 'function') {
             pendingVideoPlay = true;
             return;
@@ -1784,18 +1819,66 @@ function playCurrentVideo() {
         if (playerEl) playerEl.classList.remove('hidden');
 
         player.loadVideoById(vid);
-        player.mute(); // Autoplay garantisi için önce sessiz
+        player.mute(); // Autoplay garantisi i\u00E7in \u00F6nce sessiz
         player.playVideo();
         
-        // 1 sn sonra ses açmayı dene
+        // 1 sn sonra ses a\u00E7may\u0131 dene
         setTimeout(() => {
             if (player && typeof player.unMute === 'function') {
                 player.unMute();
                 player.setVolume(100);
             }
         }, 1000);
-    } else if (rawUrl.toLowerCase().includes('.mp4') || rawUrl.toLowerCase().includes('.mov') || rawUrl.toLowerCase().includes('.webm')) {
-        // --- NATIVE VIDEO SİSTEMİ ---
+    } else if (low.includes('drive.google.com')) {
+        // --- GOOGLE DRIVE S\u0130STEM\u0130 ---
+        const gid = extractGDriveId(rawUrl);
+        if (!gid) {
+            console.warn("Google Drive ID bulunamad\u0131:", rawUrl);
+            playNextVideoOrSlide();
+            return;
+        }
+
+        // Google Drive videosu: preview URL ile native video player kullan
+        const drivePreviewUrl = `https://drive.google.com/uc?export=download&id=${gid}`;
+        
+        if (!nativePlayer) {
+            // Alternatif: iframe ile embed
+            if (playerEl) {
+                playerEl.classList.remove('hidden');
+                playerEl.src = `https://drive.google.com/file/d/${gid}/preview`;
+                // Google Drive embed i\u00E7in timeout ile sonraki videoya ge\u00E7
+                setTimeout(() => playNextVideoOrSlide(), 60000); // 60sn sonra ge\u00E7
+            }
+            return;
+        }
+
+        if (playerEl) playerEl.classList.add('hidden');
+        if (player && typeof player.stopVideo === 'function') player.stopVideo();
+
+        nativePlayer.classList.remove('hidden');
+        nativePlayer.src = drivePreviewUrl;
+        nativePlayer.muted = true;
+        nativePlayer.play().then(() => {
+            setTimeout(() => { nativePlayer.muted = false; }, 1000);
+        }).catch(err => {
+            console.warn("Google Drive native play ba\u015Far\u0131s\u0131z, iframe deneniyor:", err);
+            // Fallback: iframe embed
+            if (playerEl) {
+                nativePlayer.classList.add('hidden');
+                playerEl.classList.remove('hidden');
+                playerEl.src = `https://drive.google.com/file/d/${gid}/preview`;
+                setTimeout(() => playNextVideoOrSlide(), 60000);
+            } else {
+                playNextVideoOrSlide();
+            }
+        });
+
+        if (!nativePlayer.onended) {
+            nativePlayer.onended = () => playNextVideoOrSlide();
+            nativePlayer.onerror = () => playNextVideoOrSlide();
+        }
+    } else if (low.includes('.mp4') || low.includes('.mov') || low.includes('.webm')) {
+        // --- NATIVE VIDEO S\u0130STEM\u0130 ---
         if (!nativePlayer) {
             playNextVideoOrSlide();
             return;
@@ -1814,17 +1897,19 @@ function playCurrentVideo() {
             playNextVideoOrSlide();
         });
 
-        // Eventler (Eğer atanmamışsa)
+        // Eventler (E\u011Fer atanmam\u0131\u015Fsa)
         if (!nativePlayer.onended) {
             nativePlayer.onended = () => playNextVideoOrSlide();
             nativePlayer.onerror = () => playNextVideoOrSlide();
         }
     } else {
-        // Tanımlanamayan format
-        console.warn("Geçersiz veya Desteklenmeyen Video:", rawUrl);
+        // Tan\u0131mlanamayan format
+        console.warn("Ge\u00E7ersiz veya Desteklenmeyen Video:", rawUrl);
         playNextVideoOrSlide();
     }
 }
+
+
 
 // Helper: Youtube ID
 function extractVideoID(url) {
@@ -2118,7 +2203,7 @@ async function fetchWeather() {
                 document.getElementById('weather-condition').innerText = desc;
             }
         }
-        if (document.getElementById('weather-icon')) document.getElementById('weather-icon').innerText = icon;
+        if (document.getElementById('weather-icon')) document.getElementById('weather-icon').innerHTML = icon;
 
     } catch (e) {
         console.error("Hava durumu hatası:", e);
@@ -2348,31 +2433,9 @@ setInterval(() => {
 
 // --- UNIVERSAL PIXEL-PERFECT SCALING (LG, Samsung, Vestel & More) ---
 function resizeApp() {
-    const appRoot = document.getElementById('app-scaler');
-    if (!appRoot) return;
-
-    const baseWidth = 1920;
-    const baseHeight = 1080;
-
-    // Daha kararlı döküman boyutu ölçümü (TV tarayıcıları için)
-    const viewportWidth = document.documentElement.clientWidth || window.innerWidth;
-    const viewportHeight = document.documentElement.clientHeight || window.innerHeight;
-
-    if (viewportWidth === 0 || viewportHeight === 0) return;
-
-    // Genişlik ve yüksekliği bağımsız ölçeklendirerek köşelere tam yapıştır (Stretch)
-    const scaleX = viewportWidth / baseWidth;
-    const scaleY = viewportHeight / baseHeight;
-
-    // Vendor Prefixleri (Eski Smart TV'ler için kritik)
-    const transformStr = `scale(${scaleX}, ${scaleY})`;
-    appRoot.style.webkitTransform = transformStr;
-    appRoot.style.mozTransform = transformStr;
-    appRoot.style.msTransform = transformStr;
-    appRoot.style.oTransform = transformStr;
-    appRoot.style.transform = transformStr;
-
-    appRoot.style.transformOrigin = 'top left';
+    // KULLANICI TALEBİ: "İlla sığacak diye kalite düşmesin, gerekirse kaydırayım"
+    // Bu yüzden ekranı zorla küçülten (ve bulanıklaştıran) transform scale iptal edildi.
+    // Ekran orijinal 1920x1080 olarak çizilir, eğer donanımın ekranı küçükse scroll çıkar ama cam gibi net kalır.
 }
 
 // Event Listeners for Scaling

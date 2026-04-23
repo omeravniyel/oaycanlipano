@@ -1384,6 +1384,36 @@ module.exports = async (request, response) => {
             return response.status(200).json({ success: true, data: result });
         }
 
+        // --- INSTITUTION-SPECIFIC EXAM TIMER ---
+        if (action === 'save_institution_exam_timer') {
+            const { slug, exam_timer } = payload;
+            if (!slug || !exam_timer) {
+                return response.status(400).json({ error: 'slug ve exam_timer gereklidir' });
+            }
+            
+            // Get existing config
+            const { data: existing, error: fetchErr } = await supabase
+                .from('institutions')
+                .select('config')
+                .eq('slug', slug)
+                .single();
+            
+            if (fetchErr || !existing) {
+                return response.status(404).json({ error: 'Kurum bulunamadı: ' + slug });
+            }
+            
+            const updatedConfig = { ...(existing.config || {}), exam_timer };
+            
+            const { data, error } = await supabase
+                .from('institutions')
+                .update({ config: updatedConfig })
+                .eq('slug', slug)
+                .select();
+            
+            if (error) throw error;
+            return response.status(200).json({ success: true, data: data[0] });
+        }
+
         // --- CENTRAL GALLERY MANAGEMENT ---
         const GLOBAL_GALLERY_SLUG = 'system-global-gallery';
 

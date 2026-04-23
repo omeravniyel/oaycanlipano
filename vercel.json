@@ -49,7 +49,11 @@
             "destination": "/panel.html"
         },
         {
-            "source": "/((?!api/|js/|css/|img/|admin\\.html|debug\\.html|panel\\.html|board\\.html|super-admin|favicon\\.ico).*)",
+            "source": "/sayim",
+            "destination": "/sayim.html"
+        },
+        {
+            "source": "/((?!api/|js/|css/|img/|sayim\\.html|admin\\.html|debug\\.html|panel\\.html|board\\.html|super-admin|favicon\\.ico).*)",
             "destination": "/api/serve-board?path=$1"
         }
     ]
