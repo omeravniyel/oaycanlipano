@@ -3008,9 +3008,9 @@
                     });
                 };
 
-                checkType(merged.gallery_links, window.currentConfig.gallery_links);
-                checkType(merged.left_gallery_links, window.currentConfig.left_gallery_links);
-                checkType(merged.video_urls, window.currentConfig.video_urls);
+                checkType(merged.central_gallery_links, window.currentConfig.gallery_links);
+                checkType(merged.central_left_gallery_links, window.currentConfig.left_gallery_links);
+                checkType(merged.central_video_urls, window.currentConfig.video_urls);
 
                 if (newItems.length > 0) {
                     Swal.fire({
@@ -3069,9 +3069,9 @@
                     });
                 };
 
-                pushItems(merged.gallery_links, 'Ana Galeri', window.currentConfig.gallery_links);
-                pushItems(merged.left_gallery_links, 'Sol Slider', window.currentConfig.left_gallery_links);
-                pushItems(merged.video_urls, 'Video Listesi', window.currentConfig.video_urls);
+                pushItems(merged.central_gallery_links, 'Ana Galeri', window.currentConfig.gallery_links);
+                pushItems(merged.central_left_gallery_links, 'Sol Slider', window.currentConfig.left_gallery_links);
+                pushItems(merged.central_video_urls, 'Video Listesi', window.currentConfig.video_urls);
 
                 window.allCentralItemsCached = centralItems;
                 renderCentralGrid();
