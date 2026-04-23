@@ -441,10 +441,9 @@ async function fetchConfig() {
         const allLocalGallery = getLinks(config.gallery_links) || getLinks(config.gallery_urls) || getLinks(config.images) || [];
         const allCentralGallery = getLinks(config.central_gallery_links) || [];
 
-        // Yardımcı: Video mu yoksa Görsel mi karar veren basit kural
         const isVideo = (url) => {
             const low = url.toLowerCase();
-            return low.includes('youtube.com') || low.includes('youtu.be') || low.includes('.mp4') || low.includes('.mov') || low.includes('.webm') || low.includes('drive.google.com');
+            return low.includes('youtube.com') || low.includes('youtu.be') || low.includes('.mp4') || low.includes('.mov') || low.includes('.webm');
         };
 
         // Videoları ve Slaytları Ayrıştır (Ayrı listelere dağıt)
@@ -1800,19 +1799,7 @@ function playCurrentVideo() {
     const nativePlayer = document.getElementById('native-player');
     const low = rawUrl.toLowerCase();
 
-    // Helper: Google Drive file ID
-    function extractGDriveId(url) {
-        const match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-        return match ? match[1] : null;
-    }
-
     // YouTube mu yoksa Native mi?
-    const driveFrame = document.getElementById('drive-player');
-    if (driveFrame) {
-        driveFrame.classList.add('hidden');
-        driveFrame.src = '';
-    }
-
     if (vid) {
         // --- YOUTUBE SİSTEMİ ---
         if (!player || typeof player.loadVideoById !== 'function') {
@@ -1835,77 +1822,6 @@ function playCurrentVideo() {
                 player.setVolume(100);
             }
         }, 1000);
-    } else if (low.includes('drive.google.com')) {
-        // --- GOOGLE DRIVE S\u0130STEM\u0130 ---
-        const gid = extractGDriveId(rawUrl);
-        if (!gid) {
-            console.warn("Google Drive ID bulunamad\u0131:", rawUrl);
-            playNextVideoOrSlide();
-            return;
-        }
-
-        // Google Drive videosu: preview URL ile native video player kullan
-        const drivePreviewUrl = `https://drive.google.com/uc?export=download&id=${gid}`;
-        
-        if (!nativePlayer) {
-            // Alternatif: iframe ile embed
-            let driveFrame = document.getElementById('drive-player');
-            if (!driveFrame) {
-                driveFrame = document.createElement('iframe');
-                driveFrame.id = 'drive-player';
-                driveFrame.className = 'absolute inset-0 w-full h-full border-0 bg-black z-40';
-                driveFrame.setAttribute('allow', 'autoplay');
-                const wrapper = document.getElementById('right-gallery-wrapper') || playerEl.parentElement;
-                if (wrapper) wrapper.appendChild(driveFrame);
-            }
-            if (playerEl) playerEl.classList.add('hidden');
-            driveFrame.classList.remove('hidden');
-            driveFrame.src = `https://drive.google.com/file/d/${gid}/preview?autoplay=1`;
-            setTimeout(() => {
-                if (driveFrame) driveFrame.classList.add('hidden');
-                driveFrame.src = '';
-                playNextVideoOrSlide();
-            }, 60000);
-            return;
-        }
-
-        if (playerEl) playerEl.classList.add('hidden');
-        if (player && typeof player.stopVideo === 'function') player.stopVideo();
-
-        nativePlayer.classList.remove('hidden');
-        nativePlayer.src = drivePreviewUrl;
-        nativePlayer.muted = true;
-        nativePlayer.play().then(() => {
-            setTimeout(() => { nativePlayer.muted = false; }, 1000);
-        }).catch(err => {
-            console.warn("Google Drive native play başarısız, iframe deneniyor:", err);
-            // Fallback: iframe embed (Dedicated iframe to avoid breaking YT player)
-            let driveFrame = document.getElementById('drive-player');
-            if (!driveFrame) {
-                driveFrame = document.createElement('iframe');
-                driveFrame.id = 'drive-player';
-                driveFrame.className = 'absolute inset-0 w-full h-full border-0 bg-black z-40';
-                driveFrame.setAttribute('allow', 'autoplay');
-                const wrapper = document.getElementById('right-gallery-wrapper') || playerEl.parentElement;
-                if (wrapper) wrapper.appendChild(driveFrame);
-            }
-            if (playerEl) playerEl.classList.add('hidden');
-            nativePlayer.classList.add('hidden');
-            driveFrame.classList.remove('hidden');
-            driveFrame.src = `https://drive.google.com/file/d/${gid}/preview?autoplay=1`;
-            
-            // 60sn sonra iframe'i gizle ve geç
-            setTimeout(() => {
-                if (driveFrame) driveFrame.classList.add('hidden');
-                driveFrame.src = ''; // stop playback
-                playNextVideoOrSlide();
-            }, 60000);
-        });
-
-        if (!nativePlayer.onended) {
-            nativePlayer.onended = () => playNextVideoOrSlide();
-            nativePlayer.onerror = () => playNextVideoOrSlide();
-        }
     } else if (low.includes('.mp4') || low.includes('.mov') || low.includes('.webm')) {
         // --- NATIVE VIDEO S\u0130STEM\u0130 ---
         if (!nativePlayer) {
@@ -2057,7 +1973,6 @@ function extractVideoID(url) {
         const playerContainer = document.getElementById('right-gallery-wrapper');
         const swiperEl = document.querySelector('.mySwiper');
         const playerEl = document.getElementById('player');
-        const driveFrame = document.getElementById('drive-player');
 
         // Temizle
         if (slideIntervalHandle) {
@@ -2074,7 +1989,6 @@ function extractVideoID(url) {
             if (playerContainer) playerContainer.classList.remove('hidden');
             if (swiperEl) swiperEl.classList.add('hidden');
             if (playerEl) playerEl.classList.remove('hidden');
-            if (driveFrame) driveFrame.classList.add('hidden');
             // Native player'ı sakla
             const nativePlayer = document.getElementById('native-player');
             if (nativePlayer) nativePlayer.classList.add('hidden');
@@ -2085,10 +1999,6 @@ function extractVideoID(url) {
             if (playerContainer) playerContainer.classList.remove('hidden');
             if (swiperEl) swiperEl.classList.remove('hidden');
             if (playerEl) playerEl.classList.add('hidden');
-            if (driveFrame) {
-                driveFrame.classList.add('hidden');
-                driveFrame.src = '';
-            }
 
             if (player && typeof player.stopVideo === 'function') player.stopVideo();
             const nativePlayer = document.getElementById('native-player');

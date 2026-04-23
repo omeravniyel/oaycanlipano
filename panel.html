@@ -1344,7 +1344,7 @@
                                 </div>
                                 <div>
                                     <h3 class="text-xl font-bold">Video Oynatma Listesi</h3>
-                                    <p class="text-slate-400 text-xs">YouTube, Google Drive veya MP4 dosyası ekleyin.</p>
+                                    <p class="text-slate-400 text-xs">YouTube veya MP4 dosyası ekleyin.</p>
                                 </div>
                             </div>
                             <div class="flex items-center gap-2">
@@ -1362,7 +1362,7 @@
                             <!-- Hızlı Giriş & Drag-Drop Alanı -->
                             <div id="video-drop-zone" class="relative group border-2 border-dashed border-slate-200 rounded-[2rem] bg-slate-50/50 p-1 transition-all hover:border-blue-400 hover:bg-white focus-within:border-blue-500 focus-within:ring-4 focus-within:ring-blue-500/5">
                                 <textarea id="video-links-quick" 
-                                    placeholder="YouTube veya Google Drive linklerini buraya yapıştırın... (Her satıra bir link)"
+                                    placeholder="YouTube linklerini buraya yapıştırın... (Her satıra bir link)"
                                     class="w-full min-h-[120px] bg-transparent border-none focus:ring-0 p-8 text-sm text-slate-700 placeholder:text-slate-400 resize-none font-medium leading-relaxed"
                                     onkeydown="if(event.ctrlKey && event.keyCode === 13) processQuickLinks()"></textarea>
                                 
@@ -1401,7 +1401,7 @@
                                 </div>
                                 <div class="text-[11px] text-slate-500 font-medium leading-relaxed">
                                     <p class="mb-1 text-slate-700 font-bold">Kullanım İpucu:</p>
-                                    <p><i class="fab fa-youtube text-red-500 mr-1"></i> YouTube/Drive linklerini yukarıdaki kutuya yapıştırıp "Ekle" butonuna basın.</p>
+                                    <p><i class="fab fa-youtube text-red-500 mr-1"></i> YouTube linklerini yukarıdaki kutuya yapıştırıp "Ekle" butonuna basın.</p>
                                     <p><i class="fas fa-mouse-pointer text-blue-500 mr-1"></i> Video dosyalarını (.mp4, .mov) doğrudan bu alana sürükleyip bırakabilirsiniz.</p>
                                 </div>
                             </div>
@@ -2787,16 +2787,8 @@
         function detectVideoSource(url) {
             const low = url.toLowerCase();
             if (low.includes('youtube.com') || low.includes('youtu.be')) return 'youtube';
-            if (low.includes('drive.google.com')) return 'gdrive';
             if (low.endsWith('.mp4') || low.endsWith('.mov') || low.endsWith('.webm') || low.includes('/storage/') || low.includes('supabase')) return 'file';
             return 'other';
-        }
-
-        // Helper: Google Drive file ID çıkar
-        function extractGDriveId(url) {
-            // /file/d/XXXXX/ veya ?id=XXXXX formatları
-            const match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
-            return match ? match[1] : null;
         }
 
         function renderVideoList() {
@@ -2819,11 +2811,6 @@
                     if (vidId) thumb = `<img src="https://img.youtube.com/vi/${vidId}/mqdefault.jpg" class="w-full h-full object-cover">`;
                     else thumb = `<div class="w-full h-full flex items-center justify-center bg-red-900/80 text-white"><i class="fab fa-youtube text-4xl"></i></div>`;
                     badge = 'YouTube'; badgeColor = 'bg-red-500';
-                } else if (source === 'gdrive') {
-                    const gid = extractGDriveId(url);
-                    if (gid) thumb = `<img src="https://drive.google.com/thumbnail?id=${gid}&sz=w320" class="w-full h-full object-cover" onerror="this.parentElement.innerHTML='<div class=\\'w-full h-full flex items-center justify-center bg-green-900/80 text-white\\'><i class=\\'fab fa-google-drive text-4xl\\'></i></div>'">`;
-                    else thumb = `<div class="w-full h-full flex items-center justify-center bg-green-900/80 text-white"><i class="fab fa-google-drive text-4xl"></i></div>`;
-                    badge = 'Google Drive'; badgeColor = 'bg-green-600';
                 } else if (source === 'file') {
                     thumb = `<div class="w-full h-full flex items-center justify-center bg-blue-900/80 text-white"><i class="fas fa-file-video text-4xl"></i></div>`;
                     badge = 'MP4'; badgeColor = 'bg-blue-600';
@@ -2928,8 +2915,8 @@
             const { value: url } = await Swal.fire({
                 title: 'Video Linki Ekle',
                 input: 'url',
-                inputLabel: 'YouTube, Google Drive veya doğrudan video URL',
-                inputPlaceholder: 'https://www.youtube.com/watch?v=... veya Google Drive linki',
+                inputLabel: 'YouTube veya doğrudan video URL',
+                inputPlaceholder: 'https://www.youtube.com/watch?v=... veya .mp4 linki',
                 showCancelButton: true,
                 confirmButtonText: 'Ekle',
                 cancelButtonText: 'İptal',
@@ -2937,8 +2924,8 @@
                 inputValidator: (value) => {
                     if (!value) return 'Lütfen bir URL girin.';
                     const low = value.toLowerCase();
-                    const isValid = low.includes('youtube.com') || low.includes('youtu.be') || low.includes('drive.google.com') || low.endsWith('.mp4') || low.endsWith('.mov') || low.endsWith('.webm') || low.startsWith('http');
-                    if (!isValid) return 'Geçersiz URL. YouTube, Google Drive veya doğrudan video linki girin.';
+                    const isValid = low.includes('youtube.com') || low.includes('youtu.be') || low.endsWith('.mp4') || low.endsWith('.mov') || low.endsWith('.webm') || low.startsWith('http');
+                    if (!isValid) return 'Geçersiz URL. YouTube veya doğrudan video (.mp4) linki girin.';
                 }
             });
 
