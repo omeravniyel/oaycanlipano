@@ -2950,6 +2950,155 @@
             }
         }
 
+        // --- 6. DYNAMIC LIST HELPERS ---
+        function addStudentRow(dormId, themeColor, value = "") {
+            const list = document.getElementById(dormId + '-students-list');
+            if (!list) return;
+
+            const div = document.createElement('div');
+            div.className = 'flex items-center gap-2 group/row';
+            div.innerHTML = `
+                <span class="text-[10px] font-bold text-slate-400 w-4 text-center index-label"></span>
+                <input type="text" value="${value}" 
+                    class="dorm-student-input flex-1 px-4 py-3 bg-white border border-${themeColor}-100 rounded-xl focus:border-${themeColor}-500 outline-none text-xs font-bold text-slate-600 shadow-sm"
+                    placeholder="Öğrenci Adı Soyadı">
+                <button type="button" onclick="removeDormStudentRow(this, '${dormId}')" 
+                    class="w-8 h-8 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 flex items-center justify-center transition-colors">
+                    <i class="fas fa-trash-alt text-xs"></i>
+                </button>
+            `;
+            list.appendChild(div);
+            updateDormIndices(dormId);
+        }
+
+        function updateDormIndices(dormId) {
+            const list = document.getElementById(dormId + '-students-list');
+            if (!list) return;
+            Array.from(list.children).forEach((child, index) => {
+                const label = child.querySelector('.index-label');
+                if (label) label.textContent = (index + 1) + '.';
+            });
+        }
+
+        function addExamStudentRow(data = {}) {
+            const list = document.getElementById('exam-students-list');
+            if (!list) return;
+
+            const uniqueId = 'exam-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
+            const imageId = 'input-' + uniqueId + '-image';
+            const previewId = 'preview-' + uniqueId + '-img';
+
+            const div = document.createElement('div');
+            div.className = 'w-full flex items-center gap-3 group/row bg-white p-3 rounded-2xl border border-slate-200 shadow-sm hover:border-purple-300 hover:shadow-md transition-all relative exam-row';
+            div.innerHTML = `
+                <div class="relative w-12 h-12 shrink-0 rounded-2xl overflow-hidden border border-slate-100 group-hover/row:border-purple-200 transition-colors cursor-pointer bg-slate-50"
+                    onclick="triggerUpload('${uniqueId}-image')">
+                    <div id="${previewId}" class="w-full h-full flex items-center justify-center">
+                        ${data.image ? \`<img src="\${data.image}" class="w-full h-full object-cover">\` : \`<i class="fas fa-user text-slate-300"></i>\`}
+                    </div>
+                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover/row:opacity-100 flex items-center justify-center transition-opacity text-white text-[10px]">
+                        <i class="fas fa-camera"></i>
+                    </div>
+                </div>
+                <input type="hidden" id="${imageId}" value="${data.image || ''}" class="exam-image-input">
+
+                <div class="flex-1 flex gap-2 overflow-hidden">
+                    <input type="text" value="${data.class || ''}" class="exam-class-input w-16 px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-purple-500 outline-none text-xs font-bold text-slate-700 text-center transition-all" placeholder="Sınıf">
+                    <input type="text" value="${data.name || ''}" class="exam-name-input flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-purple-500 outline-none text-xs font-bold text-slate-700 transition-all min-w-0" placeholder="Öğrenci Adı Soyadı">
+                    <input type="text" value="${data.points || ''}" class="exam-points-input w-20 px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-purple-500 outline-none text-xs font-bold text-slate-700 text-center transition-all" placeholder="Puan">
+                </div>
+                
+                <button type="button" onclick="removeStudentRow(this, 'exam')" 
+                    class="w-10 h-10 rounded-xl bg-red-50 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center transition-all shadow-sm hover:shadow-red-200 shrink-0">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            `;
+            list.appendChild(div);
+        }
+
+        function addImprovedStudentRow(data = {}) {
+            const list = document.getElementById('improved-students-list');
+            if (!list) return;
+
+            const uniqueId = 'improved-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
+            const imageId = 'input-' + uniqueId + '-image';
+            const previewId = 'preview-' + uniqueId + '-img';
+
+            const div = document.createElement('div');
+            div.className = 'w-full flex items-center gap-3 group/row bg-white p-3 rounded-2xl border border-slate-200 shadow-sm hover:border-emerald-300 hover:shadow-md transition-all relative improved-row';
+            div.innerHTML = `
+                <div class="relative w-12 h-12 shrink-0 rounded-2xl overflow-hidden border border-slate-100 group-hover/row:border-emerald-200 transition-colors cursor-pointer bg-slate-50"
+                    onclick="triggerUpload('${uniqueId}-image')">
+                    <div id="${previewId}" class="w-full h-full flex items-center justify-center">
+                        ${data.image ? \`<img src="\${data.image}" class="w-full h-full object-cover">\` : \`<i class="fas fa-user text-slate-300"></i>\`}
+                    </div>
+                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover/row:opacity-100 flex items-center justify-center transition-opacity text-white text-[10px]">
+                        <i class="fas fa-camera"></i>
+                    </div>
+                </div>
+                <input type="hidden" id="${imageId}" value="${data.image || ''}" class="improved-image-input">
+
+                <div class="flex-1 flex gap-2 overflow-hidden">
+                    <input type="text" value="${data.class || ''}" class="improved-class-input w-16 px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-emerald-500 outline-none text-xs font-bold text-slate-700 text-center transition-all" placeholder="Sınıf">
+                    <input type="text" value="${data.name || ''}" class="improved-name-input flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-emerald-500 outline-none text-xs font-bold text-slate-700 transition-all min-w-0" placeholder="Öğrenci Adı Soyadı">
+                    <input type="text" value="${data.points || ''}" class="improved-points-input w-20 px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-emerald-500 outline-none text-xs font-bold text-slate-700 text-center transition-all" placeholder="Artış">
+                </div>
+                
+                <button type="button" onclick="removeStudentRow(this, 'improved')" 
+                    class="w-10 h-10 rounded-xl bg-red-50 text-red-500 hover:bg-red-500 hover:text-white flex items-center justify-center transition-all shadow-sm hover:shadow-red-200 shrink-0">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            `;
+            list.appendChild(div);
+        }
+
+        async function removeStudentRow(btn, type) {
+            const row = btn.closest('.' + type + '-row');
+            if (!row) return;
+
+            const urlInput = row.querySelector('.' + type + '-image-input');
+            const url = urlInput ? urlInput.value : '';
+
+            const result = await Swal.fire({
+                title: 'Satır Silinsin mi?',
+                text: url ? "Öğrenci kaydı ve fotoğrafı kalıcı olarak silinecek." : "Öğrenci kaydı silinecek.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Evet, Sil',
+                cancelButtonText: 'İptal'
+            });
+
+            if (!result.isConfirmed) return;
+
+            if (url) {
+                try {
+                    await fetch('/api/manage-institutions', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'delete_gallery_file',
+                            master_password: currentPassword,
+                            payload: { url: url }
+                        })
+                    });
+                } catch (e) { console.error("File delete error:", e); }
+            }
+
+            row.remove();
+            await saveAll(true);
+            Swal.fire({ icon: 'success', title: 'Silindi!', timer: 1000, showConfirmButton: false });
+        }
+
+        async function removeDormStudentRow(btn, dormId) {
+            const row = btn.closest('.flex');
+            if (!row) return;
+            row.remove();
+            updateDormIndices(dormId);
+            await saveAll(true);
+        }
+
         function switchTab(id) {
             console.log("[DEBUG] Switching to tab:", id);
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
