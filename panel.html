@@ -9,6 +9,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script>
         tailwind.config = {
@@ -913,9 +914,9 @@
                                     class="absolute left-5 top-1/2 -translate-y-1/2 text-fuchsia-400 group-focus-within/input:text-fuchsia-600 transition-colors">
                                     <i class="fas fa-bolt"></i>
                                 </div>
-                                <input type="text" id="input-marquee"
+                                <input type="text" id="input-marquee" maxlength="200"
                                     class="w-full pl-14 pr-4 py-5 bg-slate-50 border border-slate-200 rounded-2xl focus:bg-white focus:border-fuchsia-500 focus:ring-4 focus:ring-fuchsia-500/10 outline-none transition-all font-medium text-slate-700 text-lg shadow-inner"
-                                    placeholder="Örn: 2024-2025 Eğitim Yılı Hayırlı Olsun... Başarılar Dileriz!">
+                                    placeholder="Örn: 2024-2025 Eğitim Yılı Hayırlı Olsun... Başarılar Dileriz! (Maks 200 Karakter)">
                             </div>
                             <div
                                 class="mt-4 flex items-center gap-2 text-fuchsia-600/60 text-[10px] font-bold uppercase tracking-wider pl-1">
@@ -1223,6 +1224,51 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- Slayt Geçiş Hızı (Phase 4) -->
+                        <div
+                            class="bg-white rounded-3xl shadow-xl shadow-slate-200/50 border border-slate-200 overflow-hidden flex flex-col">
+                            <div
+                                class="bg-gradient-to-r from-sky-500 to-blue-600 p-6 text-white text-center sm:text-left">
+                                <div class="flex items-center gap-4">
+                                    <div
+                                        class="w-12 h-12 bg-white/20 rounded-2xl backdrop-blur-md flex items-center justify-center text-2xl">
+                                        <i class="fas fa-stopwatch"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-xl font-bold">Slayt Geçiş Hızı</h3>
+                                        <p class="text-sky-50 text-sm opacity-90">Resim ve duyuruların ekranda kalma süresi.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-8 flex-1 flex flex-col justify-center">
+                                <div class="relative group/input">
+                                    <div
+                                        class="absolute left-4 top-1/2 -translate-y-1/2 text-sky-400 group-focus-within/input:text-sky-600 transition-colors pointer-events-none z-10">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                    <select id="input-slide-duration"
+                                        class="w-full pl-12 pr-10 py-4 bg-slate-50 border border-slate-200 rounded-2xl focus:bg-white focus:border-sky-500 focus:ring-4 focus:ring-sky-500/10 outline-none transition-all font-bold text-slate-700 appearance-none cursor-pointer">
+                                        <option value="8000">Hızlı (8 Saniye)</option>
+                                        <option value="12000" selected>Normal (12 Saniye)</option>
+                                        <option value="20000">Yavaş (20 Saniye)</option>
+                                    </select>
+                                    <div
+                                        class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
+                                        <i class="fas fa-chevron-down text-xs"></i>
+                                    </div>
+                                </div>
+                                <div class="mt-4 p-4 bg-sky-50 rounded-xl border border-sky-100">
+                                    <p
+                                        class="text-[10px] text-sky-700 font-bold uppercase tracking-wider flex items-center gap-2">
+                                        <i class="fas fa-info-circle"></i> Etkileşim Uyarısı
+                                    </p>
+                                    <p class="text-xs text-sky-600/70 mt-1 leading-relaxed">
+                                        Okuma hızına uygun bir süre seçmeniz panodaki içeriklerin daha rahat anlaşılmasını sağlar.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -1249,12 +1295,21 @@
                                     class="absolute left-5 top-5 text-purple-400 group-focus-within/input:text-purple-600 transition-colors pointer-events-none">
                                     <i class="fas fa-pen-nib text-xl"></i>
                                 </div>
-                                <textarea id="input-announcement" rows="12"
+                                <textarea id="input-announcement" rows="12" maxlength="800"
                                     class="w-full pl-14 pr-6 py-6 bg-slate-50 border border-slate-200 rounded-3xl focus:bg-white focus:border-purple-500 focus:ring-4 focus:ring-purple-500/10 outline-none transition-all font-medium text-slate-700 leading-relaxed text-lg resize-none shadow-inner"
-                                    placeholder="Duyurularınızı buraya giriniz..."></textarea>
+                                    placeholder="Duyurularınızı buraya giriniz... (Maks 800 Karakter)"></textarea>
                             </div>
 
-                            <div class="p-4 bg-purple-50 rounded-2xl border border-purple-100 flex items-start gap-4">
+                            <div class="mt-4 p-4 bg-white border border-slate-200 rounded-2xl shadow-sm">
+                                <label class="block text-xs font-bold text-slate-500 uppercase mb-2"><i class="far fa-clock mr-1 text-purple-400"></i> Bitiş Tarihi ve Saati (Opsiyonel)</label>
+                                <div class="flex gap-2">
+                                    <input type="date" id="input-announcement-end-date" class="flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-purple-500 outline-none text-sm font-medium text-slate-700 transition-colors">
+                                    <input type="time" id="input-announcement-end-time" class="w-32 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:border-purple-500 outline-none text-sm font-medium text-slate-700 text-center transition-colors">
+                                </div>
+                                <p class="text-[10px] text-slate-400 mt-2"><i class="fas fa-info-circle mr-1"></i>Tarih dolduğunda duyuru otomatik olarak panodan kaldırılır.</p>
+                            </div>
+
+                            <div class="p-4 bg-purple-50 rounded-2xl border border-purple-100 flex items-start gap-4 mt-6">
                                 <div
                                     class="w-10 h-10 bg-white rounded-xl shadow-sm flex-shrink-0 flex items-center justify-center text-purple-600 text-lg">
                                     <i class="fas fa-magic"></i>
@@ -1824,9 +1879,9 @@
                                     <div class="relative group/input">
                                         <label class="block text-xs font-bold text-slate-500 uppercase mb-2 ml-1">Kısa
                                             Tebrik Mesajı</label>
-                                        <textarea id="input-student-message" rows="2"
+                                        <textarea id="input-student-message" rows="2" maxlength="150"
                                             class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:bg-white focus:border-amber-500 outline-none transition-all font-medium text-slate-600 text-sm resize-none"
-                                            placeholder="Örn: Örnek başarısından dolayı tebrik ederiz."></textarea>
+                                            placeholder="Örn: Örnek başarısından dolayı tebrik ederiz. (Maks 150 Karakter)"></textarea>
                                     </div>
                                 </div>
                             </div>
@@ -2093,9 +2148,9 @@
                                 <label
                                     class="block text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-2 ml-2">Detaylı
                                     Açıklama</label>
-                                <textarea id="input-emergency-message" rows="4"
+                                <textarea id="input-emergency-message" rows="4" maxlength="300"
                                     class="w-full px-8 py-6 bg-slate-50 border border-slate-200 rounded-[2rem] focus:bg-white focus:border-red-600 focus:ring-8 focus:ring-red-600/5 outline-none transition-all font-bold text-slate-700 text-lg leading-relaxed shadow-inner"
-                                    placeholder="Ekrandaki öğrencilere iletilecek mesajı buraya yazın..."></textarea>
+                                    placeholder="Ekrandaki öğrencilere iletilecek mesajı buraya yazın... (Maks 300 Karakter)"></textarea>
                             </div>
                         </div>
                     </div>
@@ -2513,7 +2568,7 @@
             // Add bulk action buttons if there are items
             if (items.length > 0) {
                 const bulkActions = document.createElement('div');
-                bulkActions.className = "col-span-3 flex items-center justify-between gap-2 mb-2 p-3 bg-slate-50 rounded-xl border border-slate-200";
+                bulkActions.className = "ignore-sort col-span-3 flex items-center justify-between gap-2 mb-2 p-3 bg-slate-50 rounded-xl border border-slate-200";
                 bulkActions.innerHTML = `
                     <div class="flex items-center gap-2">
                         <label class="flex items-center gap-2 cursor-pointer hover:text-blue-600">
@@ -2544,7 +2599,8 @@
                     : `<img src="${url}" class="w-full h-full object-cover" onerror="this.src='https://via.placeholder.com/150?text=Error'">`;
 
                 const div = document.createElement('div');
-                div.className = "relative aspect-square rounded-lg overflow-hidden group shadow-sm bg-slate-50 border hover:border-blue-500 transition-all";
+                div.className = "gallery-item relative aspect-square rounded-lg overflow-hidden group shadow-sm bg-slate-50 border hover:border-blue-500 transition-all cursor-move";
+                div.setAttribute('data-url', url);
                 const isSelected = selected.has(idx);
                 if (isSelected) div.classList.add('ring-4', 'ring-blue-500');
 
@@ -2554,7 +2610,7 @@
                         <a href="${url}" target="_blank" class="w-8 h-8 flex items-center justify-center bg-white/20 hover:bg-white text-white hover:text-blue-600 rounded-full backdrop-blur"><i class="fas fa-eye"></i></a>
                         <button onclick="deleteImage('${type}', ${idx})" class="w-8 h-8 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white rounded-full"><i class="fas fa-trash"></i></button>
                     </div>
-                    <div class="absolute top-1 left-1 bg-black/40 text-white text-[10px] px-1.5 rounded font-mono backdrop-blur">${idx + 1}</div>
+                    <div class="absolute top-1 left-1 bg-black/40 text-white text-[10px] px-1.5 rounded font-mono backdrop-blur"><i class="fas fa-grip-vertical mr-1 opacity-50"></i>${idx + 1}</div>
                     <div class="absolute top-1 right-1">
                         <label class="cursor-pointer block">
                             <input type="checkbox" 
@@ -2567,6 +2623,28 @@
                 container.appendChild(div);
             });
             updateBulkDeleteUI(type); // Initial update for the UI elements
+
+            // Initialize Drag and Drop (SortableJS)
+            if (window.Sortable) {
+                const sortableId = `sortable-${type}`;
+                if (window[sortableId]) window[sortableId].destroy();
+                
+                window[sortableId] = new Sortable(container, {
+                    animation: 150,
+                    filter: '.ignore-sort',
+                    draggable: '.gallery-item',
+                    ghostClass: 'opacity-50',
+                    onEnd: function (evt) {
+                        const newArray = Array.from(container.querySelectorAll('.gallery-item'))
+                            .map(el => el.getAttribute('data-url'));
+                        
+                        if (type === 'main') galleryMain = newArray;
+                        else galleryLeft = newArray;
+                        
+                        renderGrid(type, newArray); // Re-render to update numbers
+                    }
+                });
+            }
         }
 
         function toggleImageSelection(type, idx) {
@@ -2783,6 +2861,53 @@
         }
 
         // --- 5. VIDEO PLAYLIST (LINK-BASED) ---
+        async function deleteVideo(idx) {
+            const url = window.videoPlaylist[idx];
+
+            const result = await Swal.fire({
+                title: 'Emin misiniz?',
+                text: "Bu video sistemden kalıcı olarak silinecek.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Evet, Sil',
+                cancelButtonText: 'İptal'
+            });
+
+            if (!result.isConfirmed) return;
+
+            Swal.fire({
+                title: 'Siliniyor...',
+                allowOutsideClick: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            try {
+                // Sadece kendi dosyalarımız (Supabase Storage) ise fiziki silme yap
+                if (url && (url.includes('/storage/') || url.includes('supabase'))) {
+                    await fetch('/api/manage-institutions', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            action: 'delete_gallery_file',
+                            master_password: currentPassword,
+                            payload: { url: url }
+                        })
+                    });
+                }
+
+                window.videoPlaylist.splice(idx, 1);
+                renderVideoList();
+                await saveAll(true);
+
+                Swal.fire({ icon: 'success', title: 'Silindi!', timer: 1500, showConfirmButton: false });
+            } catch (err) {
+                console.error('[DEBUG] Delete video error:', err);
+                Swal.fire('Hata', 'Silme işlemi başarısız', 'error');
+            }
+        }
+
         // Helper: Video kaynağını tespit et
         function detectVideoSource(url) {
             const low = url.toLowerCase();
@@ -2924,8 +3049,8 @@
                 inputValidator: (value) => {
                     if (!value) return 'Lütfen bir URL girin.';
                     const low = value.toLowerCase();
-                    const isValid = low.includes('youtube.com') || low.includes('youtu.be') || low.endsWith('.mp4') || low.endsWith('.mov') || low.endsWith('.webm') || low.startsWith('http');
-                    if (!isValid) return 'Geçersiz URL. YouTube veya doğrudan video (.mp4) linki girin.';
+                    const isValid = low.includes('youtube.com') || low.includes('youtu.be') || low.includes('drive.google.com') || low.endsWith('.mp4') || low.endsWith('.mov') || low.endsWith('.webm');
+                    if (!isValid) return 'Geçersiz URL. Lütfen sadece YouTube, Google Drive veya doğrudan video (.mp4) linki girin.';
                 }
             });
 
@@ -3086,6 +3211,20 @@
             await saveAll(true);
         }
 
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            if (!sidebar) return;
+            const isClosed = sidebar.classList.contains('-translate-x-full');
+            if (isClosed) {
+                sidebar.classList.remove('-translate-x-full');
+                if (overlay) overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                if (overlay) overlay.classList.add('hidden');
+            }
+        }
+
         function switchTab(id) {
             console.log("[DEBUG] Switching to tab:", id);
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
@@ -3117,8 +3256,7 @@
                 currentConfig = await res.json();
                 populateForm(currentConfig);
 
-                // Start Central Moderation Check
-                setTimeout(() => checkCentralModeration(), 1500);
+                // Central items are now active by default, no moderation popup needed.
             } catch (e) {
                 console.warn("Load Config Failed:", e);
                 const local = localStorage.getItem('offline_config_' + currentSlug);
@@ -3126,52 +3264,7 @@
             }
         }
 
-        async function checkCentralModeration() {
-            console.log("[MODERATION] Checking for new content...");
-            try {
-                const res = await fetch(`/api/get-config?slug=${currentSlug}`);
-                if (!res.ok) return;
-                const merged = await res.json();
-
-                const newItems = [];
-                const moderated = window.currentConfig.moderated_items || [];
-
-                const checkType = (mergedList, rawList) => {
-                    (mergedList || []).forEach(url => {
-                        if (!(rawList || []).includes(url) && !moderated.some(m => m.url === url)) {
-                            newItems.push(url);
-                        }
-                    });
-                };
-
-                checkType(merged.central_gallery_links, window.currentConfig.gallery_links);
-                checkType(merged.central_left_gallery_links, window.currentConfig.left_gallery_links);
-                checkType(merged.central_video_urls, window.currentConfig.video_urls);
-
-                if (newItems.length > 0) {
-                    Swal.fire({
-                        title: 'Yeni Merkezi İçerikler',
-                        text: `Genel merkezden ${newItems.length} adet yeni içerik gönderildi. İncelemek ister misiniz?`,
-                        icon: 'info',
-                        showCancelButton: true,
-                        confirmButtonText: 'İncele ve Onayla',
-                        cancelButtonText: 'Daha Sonra',
-                        confirmButtonColor: '#2563eb',
-                        customClass: {
-                            popup: 'rounded-[1.5rem]',
-                            confirmButton: 'rounded-xl px-6 py-3 font-bold',
-                            cancelButton: 'rounded-xl px-6 py-3 font-bold'
-                        }
-                    }).then((result) => {
-                        if (result.isConfirmed) {
-                            switchTab('central');
-                        }
-                    });
-                }
-            } catch (err) {
-                console.error("[MODERATION] Error:", err);
-            }
-        }
+        // Central moderation popup removed.
 
         // --- MERKEZİ GALERİ YÖNETİMİ (GENİŞLETİLMİŞ) ---
         window.selectedCentralItems = new Set();
@@ -3199,7 +3292,7 @@
                             centralItems.push({
                                 url,
                                 type,
-                                status: mod ? mod.status : 'pending'
+                                status: mod ? mod.status : 'approved'
                             });
                         }
                     });
@@ -3242,10 +3335,8 @@
                 div.className = `relative aspect-square rounded-[1.5rem] overflow-hidden group shadow-sm border-2 transition-all ${isSelected ? 'border-blue-500 ring-4 ring-blue-500/10' : 'border-slate-100 hover:border-blue-300'}`;
                 
                 const statusBadge = item.status === 'approved' 
-                    ? '<span class="bg-emerald-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow-sm">AKTİF</span>'
-                    : item.status === 'rejected'
-                        ? '<span class="bg-slate-400 text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow-sm">GİZLİ</span>'
-                        : '<span class="bg-blue-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow-sm">BEKLİYOR</span>';
+                    ? '<span class="bg-emerald-500 text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow-sm">AKTİF (Varsayılan)</span>'
+                    : '<span class="bg-slate-400 text-white text-[9px] font-black px-2 py-0.5 rounded-full shadow-sm">GİZLİ</span>';
 
                 div.innerHTML = `
                     <div class="w-full h-full bg-slate-50">${preview}</div>
@@ -3425,6 +3516,10 @@
                 document.getElementById('input-countdown-event').value = cfg.countdown_event || "";
                 document.getElementById('input-countdown-date').value = cfg.countdown_date || "";
 
+                if (cfg.slide_duration) {
+                    document.getElementById('input-slide-duration').value = cfg.slide_duration;
+                }
+
                 document.getElementById('input-tea-active').checked = cfg.module_tea_active === true;
                 const teaTalks = Array.isArray(cfg.tea_talks) ? cfg.tea_talks : [];
                 [1, 2, 3, 4].forEach(i => {
@@ -3465,6 +3560,8 @@
 
                 const ann = Array.isArray(cfg.announcements) ? cfg.announcements.join('\\n') : (cfg.announcements || "");
                 document.getElementById('input-announcement').value = ann;
+                document.getElementById('input-announcement-end-date').value = cfg.announcement_end_date || '';
+                document.getElementById('input-announcement-end-time').value = cfg.announcement_end_time || '';
 
                 const vids = cfg.video_urls || [cfg.video_url].filter(v => v);
                 window.videoPlaylist = Array.isArray(vids) ? vids : (vids ? [vids] : []);
@@ -3501,7 +3598,8 @@
                     document.getElementById('preview-hadith-img').innerHTML = `<img src="${h.img}" class="w-full h-full object-cover">`;
                 }
 
-                const stu = cfg.student_of_week || {};
+                const stuRaw = cfg.student_of_week;
+                const stu = (typeof stuRaw === 'string') ? JSON.parse(stuRaw) : (stuRaw || {});
                 document.getElementById('input-student-name').value = stu.name || "";
                 document.getElementById('input-student-class').value = stu.class || "";
                 document.getElementById('input-student-message').value = stu.message || "";
@@ -3562,7 +3660,8 @@
                     }
                 }
 
-                const em = cfg.emergency_alert || {};
+                const emRaw = cfg.emergency_alert;
+                const em = (typeof emRaw === 'string') ? JSON.parse(emRaw) : (emRaw || {});
                 document.getElementById('input-emergency-active').checked = !!cfg.emergency_alert;
                 document.getElementById('input-emergency-title').value = em.title || "";
                 document.getElementById('input-emergency-message').value = em.message || "";
@@ -3595,11 +3694,21 @@
                 newConfig.countdown_event = document.getElementById('input-countdown-event').value;
                 newConfig.countdown_date = document.getElementById('input-countdown-date').value;
 
-                const menu = [1, 2, 3, 4].map(i => document.getElementById('input-menu-' + i).value).filter(x => x.trim());
+                newConfig.slide_duration = parseInt(document.getElementById('input-slide-duration').value) || 12000;
+
+                newConfig.slide_duration = parseInt(document.getElementById('input-slide-duration').value) || 12000;
+
+                const menu = [1, 2, 3, 4]
+                    .map(i => document.getElementById('input-menu-' + i).value.trim())
+                    .filter(x => x !== '');
                 newConfig.lunch_menu = menu.join('\n');
-                const dinner = [1, 2, 3, 4].map(i => document.getElementById('input-dinner-' + i).value).filter(x => x.trim());
+                const dinner = [1, 2, 3, 4]
+                    .map(i => document.getElementById('input-dinner-' + i).value.trim())
+                    .filter(x => x !== '');
                 newConfig.dinner_menu = dinner.join('\n');
                 newConfig.announcements = [document.getElementById('input-announcement').value];
+                newConfig.announcement_end_date = document.getElementById('input-announcement-end-date').value;
+                newConfig.announcement_end_time = document.getElementById('input-announcement-end-time').value;
 
                 newConfig.video_urls = document.getElementById('input-video-urls').value.split('\n').map(v => v.trim()).filter(v => v);
                 newConfig.gallery_links = galleryMain;
@@ -3694,7 +3803,7 @@
                 });
 
                 if (res.ok) {
-                    if (!silent) Swal.fire({ icon: 'success', title: 'Başarılı', text: 'Ayarlar güncellendi!', timer: 1500, showConfirmButton: false });
+                    if (!silent) Swal.fire({ icon: 'success', title: 'Başarılı', text: 'Değişiklikler canlı panolara anında iletildi.', timer: 1500, showConfirmButton: false });
                     window.currentConfig = newConfig; // Update local state
                 } else {
                     const d = await res.json();
@@ -3712,7 +3821,14 @@
             }
         }
 
-        function openPreview() {
+        async function openPreview() {
+            // Önce sessizce kaydet
+            try {
+                await saveAll(true);
+            } catch(e) {
+                console.error("Önizleme öncesi oto-kayıt başarısız:", e);
+            }
+            
             const modal = document.getElementById('preview-modal');
             const frame = document.getElementById('preview-frame');
             frame.src = '/' + currentSlug;
@@ -3778,7 +3894,7 @@
                         <div class="aspect-video">${thumb}</div>
                         <div class="absolute top-2 left-2 bg-black/60 text-white text-[9px] font-bold px-2 py-0.5 rounded-full backdrop-blur">${item.type}</div>
                         <div class="absolute bottom-0 left-0 right-0 p-2 flex items-center justify-between bg-gradient-to-t from-black/70 to-transparent">
-                            <span class="text-[9px] text-white font-bold">${isRejected ? '🚫 Gizli' : '✅ Aktif'}</span>
+                            <span class="text-[9px] text-white font-bold">${isRejected ? '🚫 Gizli' : '✅ Aktif (Varsayılan)'}</span>
                             <button onclick="toggleCentralItem('${item.url}', ${isRejected})"
                                 class="text-[9px] font-black px-2 py-1 rounded-lg ${isRejected ? 'bg-emerald-500 hover:bg-emerald-400' : 'bg-red-500 hover:bg-red-400'} text-white transition-all">
                                 ${isRejected ? 'Aktif Et' : 'Gizle'}

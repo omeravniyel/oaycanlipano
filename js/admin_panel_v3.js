@@ -1503,10 +1503,9 @@ async function addYouTubeVideo() {
     const isYouTube = low.includes('youtube.com') || low.includes('youtu.be');
     const isGDrive = low.includes('drive.google.com');
     const isMP4 = low.endsWith('.mp4') || low.endsWith('.mov') || low.endsWith('.webm');
-    const isValidUrl = url.startsWith('http');
 
-    if (!isYouTube && !isGDrive && !isMP4 && !isValidUrl) {
-        Swal.fire('Hata', 'Geçerli bir video linki değil. YouTube, Google Drive veya doğrudan video URL girin.', 'error');
+    if (!isYouTube && !isGDrive && !isMP4) {
+        Swal.fire('Hata', 'Geçerli bir video linki değil. Lütfen sadece YouTube, Google Drive veya doğrudan video (.mp4) linki girin.', 'error');
         return;
     }
 

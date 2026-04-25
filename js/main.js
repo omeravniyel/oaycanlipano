@@ -296,22 +296,44 @@ async function fetchConfig() {
                 video_url: "https://www.w3schools.com/html/mov_bbb.mp4"
             };
         } else {
-            const res = await fetch(`/api/get-config?slug=${slug}&_t=${Date.now()}`);
+            try {
+                const res = await fetch(`/api/get-config?slug=${slug}&_t=${Date.now()}`);
 
-            if (res.status === 404) {
-                let errInfo = {};
-                try { errInfo = await res.json(); } catch (e) { }
+                if (res.status === 404) {
+                    let errInfo = {};
+                    try { errInfo = await res.json(); } catch (e) { }
 
-                document.body.innerHTML = `
-                    <div class="flex flex-col items-center justify-center h-screen bg-slate-900 text-white font-sans">
-                        <div class="text-6xl mb-4 animate-bounce">⚠️</div>
-                        <h1 class="text-3xl font-bold mb-2">Kurum Bulunamadı</h1>
-                        <p class="text-slate-400">Aradığınız <b>/${slug}</b> adresine ait bir kayıt bulunamadı.</p>
-                        <a href="/" class="mt-6 px-6 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-white transition">Ana Sayfaya Dön</a>
-                    </div>`;
-                return;
+                    document.body.innerHTML = `
+                        <div class="flex flex-col items-center justify-center h-screen bg-slate-900 text-white font-sans">
+                            <div class="text-6xl mb-4 animate-bounce">⚠️</div>
+                            <h1 class="text-3xl font-bold mb-2">Kurum Bulunamadı</h1>
+                            <p class="text-slate-400">Aradığınız <b>/${slug}</b> adresine ait bir kayıt bulunamadı.</p>
+                            <a href="/" class="mt-6 px-6 py-2 bg-blue-600 hover:bg-blue-500 rounded-lg text-white transition">Ana Sayfaya Dön</a>
+                        </div>`;
+                    return;
+                }
+                config = await res.json();
+                
+                // Cache data for offline mode
+                if (config && slug) {
+                    localStorage.setItem(`pano_offline_config_${slug}`, JSON.stringify(config));
+                }
+            } catch (networkError) {
+                console.warn("[OFFLINE MODE] Network error fetching config. Trying to load from cache...", networkError);
+                const cachedData = localStorage.getItem(`pano_offline_config_${slug}`);
+                if (cachedData) {
+                    try {
+                        config = JSON.parse(cachedData);
+                        console.log("[OFFLINE MODE] Successfully loaded config from local cache.");
+                    } catch (parseError) {
+                        console.error("[OFFLINE MODE] Cache parse error:", parseError);
+                        throw networkError; // Re-throw the original error if cache is corrupted
+                    }
+                } else {
+                    console.error("[OFFLINE MODE] No offline cache available.");
+                    throw networkError; // Re-throw if no cache
+                }
             }
-            config = await res.json();
         }
 
         // --- ACİL DURUM KONTROLÜ (EMERGENCY MODE) ---
@@ -369,7 +391,7 @@ async function fetchConfig() {
         fetchWeather();
 
         // --- 0. Header Bilgileri ---
-        // --- 0. Header Bilgileri ---
+        window.panoSlideDuration = parseInt(config.slide_duration) || 12000;
         const title = config.institution_title || config.name || 'Dijital Pano';
         document.getElementById('header-title').innerText = title;
         document.title = title; // Browser Tab Title
@@ -868,9 +890,30 @@ async function fetchConfig() {
         // --- 7. Bilgi Kartı (Modüller) ---
         // 1. Duyurular
         const rawAnnouncements = [];
-        if (config.announcements && Array.isArray(config.announcements) && config.announcements.length > 0) {
+        
+        // Zaman ayarlı duyuru kontrolü
+        let isAnnouncementValid = true;
+        if (config.announcement_end_date) {
+            try {
+                let endStr = config.announcement_end_date;
+                if (config.announcement_end_time) {
+                    endStr += "T" + config.announcement_end_time;
+                } else {
+                    endStr += "T23:59:59";
+                }
+                const endDate = new Date(endStr);
+                if (endDate < new Date()) {
+                    isAnnouncementValid = false;
+                    console.log("[DUYURU] Süresi dolduğu için gösterilmiyor:", endStr);
+                }
+            } catch (e) { 
+                console.error("Announcement date parse error", e); 
+            }
+        }
+
+        if (isAnnouncementValid && config.announcements && Array.isArray(config.announcements) && config.announcements.length > 0) {
             config.announcements.forEach(text => {
-                if (!text) return;
+                if (!text || text.trim() === '') return;
                 rawAnnouncements.push({
                     type: 'announcement',
                     title: 'DUYURULAR',
@@ -1832,6 +1875,10 @@ function playCurrentVideo() {
         if (playerEl) playerEl.classList.add('hidden');
         if (player && typeof player.stopVideo === 'function') player.stopVideo();
         
+        // Garbage collection protection for old videos
+        nativePlayer.src = '';
+        nativePlayer.load();
+
         nativePlayer.classList.remove('hidden');
         nativePlayer.src = rawUrl;
         nativePlayer.muted = true; // Autoplay garantisi
@@ -1870,6 +1917,20 @@ function extractVideoID(url) {
         const wrapper = document.getElementById('slide-wrapper');
         if (!wrapper) return;
         
+        if (window.mySwiperInstance) {
+            try {
+                // Clear all timeouts and perfectly destroy old instance to prevent memory leaks
+                if (window.reachEndTimeout) {
+                    clearTimeout(window.reachEndTimeout);
+                    window.reachEndTimeout = null;
+                }
+                window.mySwiperInstance.destroy(true, true);
+                window.mySwiperInstance = null;
+            } catch (e) {
+                console.warn("Swiper destroy warning:", e);
+            }
+        }
+        
         wrapper.innerHTML = '';
         if (!images || images.length === 0) return;
 
@@ -1880,43 +1941,7 @@ function extractVideoID(url) {
             wrapper.appendChild(slide);
         });
 
-        if (window.mySwiperInstance) {
-            try {
-                // Mevcut tüm zamanlayıcıları temizle
-                if (window.reachEndTimeout) {
-                    clearTimeout(window.reachEndTimeout);
-                    window.reachEndTimeout = null;
-                }
-                
-                window.mySwiperInstance.update();
-                window.mySwiperInstance.slideTo(0);
-                
-                // --- GARANTİLİ ADIM ROTASYONU ---
-                // Slayt sayısı ne olursa olsun (1 veya daha fazla), 
-                // her slayt için 12 saniye bekleyip sonraki ADIMA geçmeyi garantiliyoruz.
-                const totalStepDuration = images.length * 12000;
-                console.log(`[DÖNGÜ] Adım Süresi: ${totalStepDuration/1000}sn (Slayt: ${images.length})`);
-
-                window.reachEndTimeout = setTimeout(() => {
-                    if (currentMediaState !== 'slide') return;
-                    
-                    console.log("[DÖNGÜ] Adım süresi bitti, sonraki adıma geçiliyor.");
-                    // Bir sonraki adıma zorla geç
-                    if (currentMediaStep === 1) currentMediaStep = 2;
-                    else if (currentMediaStep === 3) currentMediaStep = 0;
-                    
-                    currentVideoIndex = 0;
-                    playNextMedia();
-                }, totalStepDuration);
-
-                // Eğer birden fazla görsel varsa Swiper autoplay'i başlat
-                if (images.length > 1) {
-                    window.mySwiperInstance.autoplay.start();
-                } else {
-                    window.mySwiperInstance.autoplay.stop();
-                }
-            } catch (e) { console.error("Swiper güncelleme hatası:", e); }
-        }
+        // Garantili adım rotasyonu kısmı artık switchMedia() içindeki init esnasında ayarlanacak
     }
 
     function playNextMedia() {
@@ -2007,7 +2032,7 @@ function extractVideoID(url) {
                 nativePlayer.classList.add('hidden');
             }
 
-            // Swiper Başlatma
+                // Swiper Başlatma
             if (!window.mySwiperInstance) {
                 window.mySwiperInstance = new Swiper(".mySwiper", {
                     spaceBetween: 30,
@@ -2016,12 +2041,10 @@ function extractVideoID(url) {
                     fadeEffect: { crossFade: true },
                     observer: true,
                     observeParents: true,
-                    autoplay: { delay: 12000, disableOnInteraction: false },
+                    autoplay: { delay: (window.panoSlideDuration || 12000), disableOnInteraction: false },
                     loop: false,
                     speed: 1500,
                     on: {
-                        // reachEnd artık manuel setTimeout tarafından yönetiliyor, 
-                        // çakışmaları önlemek için burayı sadeleştiriyoruz.
                         reachEnd: function () {
                             console.log("[DÖNGÜ] Swiper sonuna ulaştı (Otomatik geçiş zamanlayıcısı devrede)");
                         },
@@ -2033,13 +2056,28 @@ function extractVideoID(url) {
                         }
                     }
                 });
-        } else {
-            window.mySwiperInstance.update();
-            window.mySwiperInstance.slideTo(0);
-            window.mySwiperInstance.autoplay.start();
+            } else {
+                window.mySwiperInstance.update();
+                window.mySwiperInstance.slideTo(0);
+                window.mySwiperInstance.autoplay.start();
+            }
+
+            // --- GARANTİLİ ADIM ROTASYONU ---
+            // Slayt sayısı ne olursa olsun (1 veya daha fazla), 
+            // her slayt için 12 saniye bekleyip sonraki ADIMA geçmeyi garantiler.
+            let slideCount = 1;
+            if (window.mySwiperInstance) {
+                slideCount = window.mySwiperInstance.slides.length || 1;
+            }
+            const totalDisplayTime = slideCount * (window.panoSlideDuration || 12000); 
+
+            if (window.reachEndTimeout) clearTimeout(window.reachEndTimeout);
+            window.reachEndTimeout = setTimeout(() => {
+                console.log(`[DÖNGÜ] Slaytlar bitti (${slideCount} adet). Sonraki adıma geçiliyor...`);
+                playNextMedia();
+            }, totalDisplayTime);
         }
     }
-}
 
 
 // --- WEATHER API (Open-Meteo with Geocoding) ---
